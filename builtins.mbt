@@ -111,6 +111,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::StringLength, Primitive::StringLength)
     | (Primitive::StringAppend, Primitive::StringAppend)
     | (Primitive::StringRef, Primitive::StringRef)
+    | (Primitive::StringCopy, Primitive::StringCopy)
     | (Primitive::StringToList, Primitive::StringToList)
     | (Primitive::ListToString, Primitive::ListToString)
     | (Primitive::StringUpcase, Primitive::StringUpcase)
@@ -1165,6 +1166,32 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::StringCopy => {
+      match args.length() {
+        1 | 2 | 3 => {
+          let s = value_as_string(args[0])
+          let start = if args.length() >= 2 {
+            value_as_int_index(args[1])
+          } else {
+            0
+          }
+          let end = if args.length() == 3 {
+            value_as_int_index(args[2])
+          } else {
+            s.length()
+          }
+          if start < 0 || end < start || end > s.length() {
+            raise EvalError("index out of range")
+          }
+          let view = try? s[start:end]
+          match view {
+            Ok(slice) => Value::Datum(Datum::String(slice.to_string()))
+            Err(_) => raise EvalError("index out of range")
+          }
+        }
+        n => raise EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
     }
     Primitive::StringToList => {

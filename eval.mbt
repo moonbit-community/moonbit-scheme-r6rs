@@ -124,6 +124,7 @@ fn init_env() -> Env {
   env_define(env, "string-length", Value::Primitive(Primitive::StringLength))
   env_define(env, "string-append", Value::Primitive(Primitive::StringAppend))
   env_define(env, "string-ref", Value::Primitive(Primitive::StringRef))
+  env_define(env, "string-copy", Value::Primitive(Primitive::StringCopy))
   env_define(env, "string->list", Value::Primitive(Primitive::StringToList))
   env_define(env, "list->string", Value::Primitive(Primitive::ListToString))
   env_define(env, "string-upcase", Value::Primitive(Primitive::StringUpcase))

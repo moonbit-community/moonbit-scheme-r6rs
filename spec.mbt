@@ -28,7 +28,7 @@
 ///   char-upper-case? char-lower-case? char-upcase char-downcase char-foldcase
 ///   string? string=? string<? string>? string<=? string>=?
 ///   string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-///   string-length string-append string-ref string->list list->string
+///   string-length string-append string-ref string-copy string->list list->string
 ///   string-upcase string-downcase string-foldcase
 ///   vector make-vector vector? vector-length vector-ref vector-set!
 ///   vector-copy vector-fill!
@@ -162,6 +162,7 @@ pub enum Primitive {
   StringLength
   StringAppend
   StringRef
+  StringCopy
   StringToList
   ListToString
   StringUpcase

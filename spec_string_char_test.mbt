@@ -11,6 +11,9 @@ test "r6rs char and string primitives" {
   inspect(value_to_string(eval_program("(string-append)")), content="\"\"")
   inspect(value_to_string(eval_program("(string-ref \"hi\" 0)")), content="#\\h")
   inspect(value_to_string(eval_program("(string-ref \"hi\" 1)")), content="#\\i")
+  inspect(value_to_string(eval_program("(string-copy \"hi\")")), content="\"hi\"")
+  inspect(value_to_string(eval_program("(string-copy \"hello\" 2)")), content="\"llo\"")
+  inspect(value_to_string(eval_program("(string-copy \"hello\" 1 4)")), content="\"ell\"")
   inspect(value_to_string(eval_program("(string->list \"hi\")")), content="(#\\h #\\i)")
   inspect(value_to_string(eval_program("(list->string '(#\\h #\\i))")), content="\"hi\"")
   inspect(value_to_string(eval_program("(list->string '())")), content="\"\"")
@@ -55,6 +58,12 @@ test "r6rs string-ref: errors" {
   match bad_char_list {
     Err(err) => inspect(err, content="EvalError(\"type error: char expected\")")
     _ => fail("expected EvalError for non-char list->string")
+  }
+
+  let bad_copy = try? eval_program("(string-copy \"a\" 1 0)")
+  match bad_copy {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for invalid string-copy range")
   }
 }
 
