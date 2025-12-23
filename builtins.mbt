@@ -958,10 +958,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       raise EvalError("internal error: call-with-values should be handled in apply_proc")
     }
     Primitive::MakeParameter => {
-      match args.length() {
-        1 => Value::Parameter(make_parameter(args[0]))
-        n => raise arity_mismatch(1, n)
-      }
+      raise EvalError("internal error: make-parameter should be handled in apply_proc")
     }
     Primitive::DynamicWind => {
       raise EvalError("internal error: dynamic-wind should be handled in apply_proc")

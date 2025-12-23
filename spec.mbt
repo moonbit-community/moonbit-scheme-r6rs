@@ -175,6 +175,7 @@ pub struct CaseClosure {
 pub struct Parameter {
   id : Int
   value : Ref[Value]
+  converter : Value?
 }
 
 ///|

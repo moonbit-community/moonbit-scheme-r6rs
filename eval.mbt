@@ -106,7 +106,7 @@ fn next_parameter_id() -> Int {
 
 ///|
 fn make_parameter(value : Value) -> Parameter {
-  { id: next_parameter_id(), value: Ref::new(value) }
+  { id: next_parameter_id(), value: Ref::new(value), converter: None }
 }
 
 ///|
@@ -125,6 +125,11 @@ fn parameter_get(param : Parameter) -> Value {
 ///|
 fn parameter_set(param : Parameter, value : Value) -> Unit {
   param.value.val = value
+}
+
+///|
+fn parameter_with_converter(value : Value, converter : Value) -> Parameter {
+  { id: next_parameter_id(), value: Ref::new(value), converter: Some(converter) }
 }
 
 ///|
@@ -176,6 +181,17 @@ priv enum Kont {
     Array[Datum],
     Kont,
   )
+  ParameterizeConvert(
+    Array[(Datum, Datum)],
+    Int,
+    Array[Parameter],
+    Array[Value],
+    Env,
+    Array[Datum],
+    Kont,
+  )
+  MakeParameter(Value, Kont)
+  SetParameter(Parameter, Kont)
   Case(Array[Datum], Env, Kont)
   CaseArrow(Value, Kont)
   CallWithValues(Value, Kont)
@@ -580,11 +596,65 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           }
           Kont::ParameterizeValue(bindings, index, params, values, env, body, next) => {
             let new_value = expect_single(value)
+            let param = params[index]
+            match param.converter {
+              Some(converter) =>
+                state = apply_proc(
+                  converter,
+                  [new_value],
+                  Kont::ParameterizeConvert(bindings, index, params, values, env, body, next),
+                  handlers,
+                )
+              None => {
+                let next_values : Array[Value] = []
+                for item in values {
+                  next_values.push(item)
+                }
+                next_values.push(new_value)
+                let next_index = index + 1
+                if next_index < bindings.length() {
+                  let (param_expr, _) = bindings[next_index]
+                  state = MachineState::Eval(
+                    param_expr,
+                    env,
+                    Kont::ParameterizeParam(
+                      bindings,
+                      next_index,
+                      params,
+                      next_values,
+                      env,
+                      body,
+                      next,
+                    ),
+                    handlers,
+                  )
+                } else {
+                  let bindings_info : Array[ParamBinding] = []
+                  let mut i = 0
+                  while i < params.length() {
+                    let current = params[i]
+                    let old_value = parameter_get(current)
+                    let new_val = next_values[i]
+                    bindings_info.push(
+                      ParamBinding::{ param: current, old_value: old_value, new_value: new_val },
+                    )
+                    parameter_set(current, new_val)
+                    i = i + 1
+                  }
+                  let winder = make_param_winder(bindings_info)
+                  wind_push(winder)
+                  state = eval_sequence_state(body, env, Kont::WindExit(winder, next), handlers)
+                }
+              }
+            }
+          }
+          Kont::ParameterizeConvert(bindings, index, params, values, env, body, next) => {
+            let converted = expect_single(value)
             let next_values : Array[Value] = []
             for item in values {
               next_values.push(item)
             }
-            next_values.push(new_value)
+            next_values.push(converted)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (param_expr, _) = bindings[next_index]
@@ -606,19 +676,29 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
               let bindings_info : Array[ParamBinding] = []
               let mut i = 0
               while i < params.length() {
-                let param = params[i]
-                let old_value = parameter_get(param)
+                let current = params[i]
+                let old_value = parameter_get(current)
                 let new_val = next_values[i]
                 bindings_info.push(
-                  ParamBinding::{ param, old_value: old_value, new_value: new_val },
+                  ParamBinding::{ param: current, old_value: old_value, new_value: new_val },
                 )
-                parameter_set(param, new_val)
+                parameter_set(current, new_val)
                 i = i + 1
               }
               let winder = make_param_winder(bindings_info)
               wind_push(winder)
               state = eval_sequence_state(body, env, Kont::WindExit(winder, next), handlers)
             }
+          }
+          Kont::MakeParameter(converter, next) => {
+            let converted = expect_single(value)
+            let param = parameter_with_converter(converted, converter)
+            state = MachineState::Apply(Value::Parameter(param), next, handlers)
+          }
+          Kont::SetParameter(param, next) => {
+            let converted = expect_single(value)
+            parameter_set(param, converted)
+            state = MachineState::Apply(Value::Void, next, handlers)
           }
           Kont::Case(clauses, env, next) => {
             let key_value = expect_single(value)
@@ -1892,6 +1972,16 @@ fn apply_proc(
         apply_proc(producer, [], Kont::CallWithValues(consumer, kont), handlers)
       }
     }
+    Value::Primitive(Primitive::MakeParameter) => {
+      match args.length() {
+        1 => MachineState::Apply(Value::Parameter(make_parameter(args[0])), kont, handlers)
+        2 => {
+          let converter = args[1]
+          apply_proc(converter, [args[0]], Kont::MakeParameter(converter, kont), handlers)
+        }
+        n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
+      }
+    }
     Value::Primitive(Primitive::DynamicWind) => {
       if args.length() != 3 {
         raise arity_mismatch(3, args.length())
@@ -2008,10 +2098,15 @@ fn apply_proc(
     Value::Parameter(param) => {
       match args.length() {
         0 => MachineState::Apply(parameter_get(param), kont, handlers)
-        1 => {
-          parameter_set(param, args[0])
-          MachineState::Apply(Value::Void, kont, handlers)
-        }
+        1 =>
+          match param.converter {
+            Some(converter) =>
+              apply_proc(converter, [args[0]], Kont::SetParameter(param, kont), handlers)
+            None => {
+              parameter_set(param, args[0])
+              MachineState::Apply(Value::Void, kont, handlers)
+            }
+          }
         n => raise EvalError("arity mismatch: expected 0 or 1 got \{n}")
       }
     }
