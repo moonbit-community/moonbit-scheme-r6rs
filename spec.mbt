@@ -13,7 +13,9 @@
 /// - define-record-type (simple record types, no inheritance)
 /// - library and import (minimal library support)
 /// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
-///   boolean? number? procedure? not apply call/cc eq? eqv? equal? list? length append
+///   boolean? number? integer? rational? real? exact? inexact? exact->inexact
+///   inexact->exact numerator denominator procedure? not apply call/cc eq? eqv?
+///   equal? list? length append
 ///   reverse char? string? string-length string-append string-ref
 ///   vector vector? vector-length vector-ref vector-set!
 ///   bytevector bytevector? bytevector-length bytevector-u8-ref bytevector-u8-set!
@@ -72,10 +74,19 @@ pub enum Primitive {
   SymbolP
   BooleanP
   NumberP
+  IntegerP
+  RationalP
+  RealP
+  ExactP
+  InexactP
   ProcedureP
   Not
   Apply
   CallCC
+  ExactToInexact
+  InexactToExact
+  Numerator
+  Denominator
   ListP
   Length
   Append

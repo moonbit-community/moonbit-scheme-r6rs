@@ -19,3 +19,23 @@ test "r6rs numeric: comparisons and inexact" {
   inspect(value_to_string(eval_program("(= (/ 1.0 2.0) 0.5)")), content="#t")
   inspect(value_to_string(eval_program("(number? 1.0)")), content="#t")
 }
+
+///|
+test "r6rs numeric: predicates and exactness" {
+  inspect(value_to_string(eval_program("(integer? 3)")), content="#t")
+  inspect(value_to_string(eval_program("(integer? 1/2)")), content="#f")
+  inspect(value_to_string(eval_program("(rational? 1/2)")), content="#t")
+  inspect(value_to_string(eval_program("(real? 2.5)")), content="#t")
+  inspect(value_to_string(eval_program("(exact? 1/2)")), content="#t")
+  inspect(value_to_string(eval_program("(inexact? 1/2)")), content="#f")
+  inspect(value_to_string(eval_program("(inexact? 2.5)")), content="#t")
+}
+
+///|
+test "r6rs numeric: conversions and fractions" {
+  inspect(value_to_string(eval_program("(exact->inexact 1/2)")), content="0.5")
+  inspect(value_to_string(eval_program("(inexact->exact 2.0)")), content="2")
+  inspect(value_to_string(eval_program("(numerator 3/4)")), content="3")
+  inspect(value_to_string(eval_program("(denominator 3/4)")), content="4")
+  inspect(value_to_string(eval_program("(denominator 5)")), content="1")
+}

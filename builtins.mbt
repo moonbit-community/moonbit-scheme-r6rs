@@ -40,10 +40,19 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::SymbolP, Primitive::SymbolP)
     | (Primitive::BooleanP, Primitive::BooleanP)
     | (Primitive::NumberP, Primitive::NumberP)
+    | (Primitive::IntegerP, Primitive::IntegerP)
+    | (Primitive::RationalP, Primitive::RationalP)
+    | (Primitive::RealP, Primitive::RealP)
+    | (Primitive::ExactP, Primitive::ExactP)
+    | (Primitive::InexactP, Primitive::InexactP)
     | (Primitive::ProcedureP, Primitive::ProcedureP)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
+    | (Primitive::ExactToInexact, Primitive::ExactToInexact)
+    | (Primitive::InexactToExact, Primitive::InexactToExact)
+    | (Primitive::Numerator, Primitive::Numerator)
+    | (Primitive::Denominator, Primitive::Denominator)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::Length, Primitive::Length)
     | (Primitive::Append, Primitive::Append)
@@ -458,6 +467,63 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         bool_value(ok)
       }
     }
+    Primitive::ExactToInexact => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(_)) => args[0]
+            _ => {
+              let value = value_as_number(args[0])
+              Value::Datum(Datum::Float(number_to_float(value)))
+            }
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::InexactToExact => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(f)) => {
+              let n = f.to_int()
+              if f == Float::from_int(n) {
+                Value::Datum(Datum::Int(n))
+              } else {
+                raise EvalError("inexact->exact: unsupported")
+              }
+            }
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => args[0]
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Numerator => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(n)) => Value::Datum(Datum::Int(n))
+            Value::Datum(Datum::Rat(n, _)) => Value::Datum(Datum::Int(n))
+            _ => raise EvalError("type error: rational expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Denominator => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(_)) => Value::Datum(Datum::Int(1))
+            Value::Datum(Datum::Rat(_, d)) => Value::Datum(Datum::Int(d))
+            _ => raise EvalError("type error: rational expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
     Primitive::Eq => {
       match args.length() {
         2 => bool_value(value_eqv(args[0], args[1]))
@@ -562,6 +628,63 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::Float(_)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::IntegerP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(_)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RationalP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RealP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(_))
+            | Value::Datum(Datum::Rat(_, _))
+            | Value::Datum(Datum::Float(_)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::ExactP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::InexactP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(_)) => bool_value(true)
             _ => bool_value(false)
           }
         }
