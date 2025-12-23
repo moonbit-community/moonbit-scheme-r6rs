@@ -1,6 +1,7 @@
 ///|
 fn init_env() -> Env {
   let env = env_new()
+  set_current_output_port(new_output_string_port())
   env_define(env, "+", Value::Primitive(Primitive::Add))
   env_define(env, "-", Value::Primitive(Primitive::Sub))
   env_define(env, "*", Value::Primitive(Primitive::Mul))
@@ -44,6 +45,12 @@ fn init_env() -> Env {
   env_define(env, "bytevector-length", Value::Primitive(Primitive::ByteVectorLength))
   env_define(env, "bytevector-u8-ref", Value::Primitive(Primitive::ByteVectorU8Ref))
   env_define(env, "bytevector-u8-set!", Value::Primitive(Primitive::ByteVectorU8Set))
+  env_define(env, "display", Value::Primitive(Primitive::Display))
+  env_define(env, "write", Value::Primitive(Primitive::Write))
+  env_define(env, "newline", Value::Primitive(Primitive::Newline))
+  env_define(env, "open-output-string", Value::Primitive(Primitive::OpenOutputString))
+  env_define(env, "get-output-string", Value::Primitive(Primitive::GetOutputString))
+  env_define(env, "current-output-port", Value::Primitive(Primitive::CurrentOutputPort))
   env_define(env, "call/cc", Value::Primitive(Primitive::CallCC))
   env_define(
     env,

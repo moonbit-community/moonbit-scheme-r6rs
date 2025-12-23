@@ -62,7 +62,13 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::ByteVectorP, Primitive::ByteVectorP)
     | (Primitive::ByteVectorLength, Primitive::ByteVectorLength)
     | (Primitive::ByteVectorU8Ref, Primitive::ByteVectorU8Ref)
-    | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set) => true
+    | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set)
+    | (Primitive::Display, Primitive::Display)
+    | (Primitive::Write, Primitive::Write)
+    | (Primitive::Newline, Primitive::Newline)
+    | (Primitive::OpenOutputString, Primitive::OpenOutputString)
+    | (Primitive::GetOutputString, Primitive::GetOutputString)
+    | (Primitive::CurrentOutputPort, Primitive::CurrentOutputPort) => true
     _ => false
   }
 }
@@ -74,6 +80,7 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::Primitive(a), Value::Primitive(b)) => primitive_eq(a, b)
     (Value::Closure(a), Value::Closure(b)) => a.id == b.id
     (Value::Continuation(a), Value::Continuation(b)) => a.id == b.id
+    (Value::Port(a), Value::Port(b)) => a.id == b.id
     (Value::Void, Value::Void) => true
     _ => false
   }
@@ -267,6 +274,31 @@ fn value_as_byte(value : Value) -> Int raise EvalError {
       n
     }
     _ => raise EvalError("type error: byte expected")
+  }
+}
+
+///|
+fn value_as_port(value : Value) -> Port raise EvalError {
+  match value {
+    Value::Port(port) => port
+    _ => raise EvalError("type error: port expected")
+  }
+}
+
+///|
+fn char_to_raw_string(ch : Char) -> String {
+  let buf = @buffer.new()
+  buf.write_char(ch)
+  buf.to_string()
+}
+
+///|
+fn display_string(value : Value) -> String {
+  match value {
+    Value::Datum(Datum::String(s)) => s
+    Value::Datum(Datum::Char(ch)) => char_to_raw_string(ch)
+    Value::Datum(Datum::Symbol(name)) => name
+    _ => value_to_string(value)
   }
 }
 
@@ -692,6 +724,72 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Void
         }
         n => raise arity_mismatch(3, n)
+      }
+    }
+    Primitive::Display => {
+      match args.length() {
+        1 => {
+          let port = get_current_output_port()
+          port_write(port, display_string(args[0]))
+          Value::Void
+        }
+        2 => {
+          let port = value_as_port(args[1])
+          port_write(port, display_string(args[0]))
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
+      }
+    }
+    Primitive::Write => {
+      match args.length() {
+        1 => {
+          let port = get_current_output_port()
+          port_write(port, value_to_string(args[0]))
+          Value::Void
+        }
+        2 => {
+          let port = value_as_port(args[1])
+          port_write(port, value_to_string(args[0]))
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
+      }
+    }
+    Primitive::Newline => {
+      match args.length() {
+        0 => {
+          let port = get_current_output_port()
+          port_write(port, "\n")
+          Value::Void
+        }
+        1 => {
+          let port = value_as_port(args[0])
+          port_write(port, "\n")
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 0 or 1 got \{n}")
+      }
+    }
+    Primitive::OpenOutputString => {
+      match args.length() {
+        0 => Value::Port(new_output_string_port())
+        n => raise arity_mismatch(0, n)
+      }
+    }
+    Primitive::GetOutputString => {
+      match args.length() {
+        1 => {
+          let port = value_as_port(args[0])
+          Value::Datum(Datum::String(port_get_output_string(port)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::CurrentOutputPort => {
+      match args.length() {
+        0 => Value::Port(get_current_output_port())
+        n => raise arity_mismatch(0, n)
       }
     }
     Primitive::Not => {

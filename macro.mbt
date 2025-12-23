@@ -77,6 +77,12 @@ fn is_core_identifier(name : String) -> Bool {
     "bytevector-length",
     "bytevector-u8-ref",
     "bytevector-u8-set!",
+    "display",
+    "write",
+    "newline",
+    "open-output-string",
+    "get-output-string",
+    "current-output-port",
   ]
   let mut i = 0
   while i < core.length() {

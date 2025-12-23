@@ -15,10 +15,11 @@
 ///   reverse char? string? string-length string-append string-ref
 ///   vector vector? vector-length vector-ref vector-set!
 ///   bytevector bytevector? bytevector-length bytevector-u8-ref bytevector-u8-set!
+///   display write newline open-output-string get-output-string current-output-port
 ///   (equality is structural for datums in this subset)
 /// - printing via value_to_string (booleans as #t/#f, empty list as ())
 ///
-/// Out of scope for now: records, ports, exceptions, modules, and full numeric tower.
+/// Out of scope for now: records, exceptions, modules, and full numeric tower.
 ///|
 pub(all) suberror ParseError String derive(Show, Eq)
 
@@ -91,6 +92,12 @@ pub enum Primitive {
   ByteVectorLength
   ByteVectorU8Ref
   ByteVectorU8Set
+  Display
+  Write
+  Newline
+  OpenOutputString
+  GetOutputString
+  CurrentOutputPort
 }
 
 ///|
@@ -135,6 +142,7 @@ pub enum Value {
   Primitive(Primitive)
   Closure(Closure)
   Continuation(Continuation)
+  Port(Port)
   Macro(SyntaxRules)
 }
 
@@ -171,6 +179,7 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
 /// - Improper lists print as "(a b . c)"
 /// - Macros print as "#<syntax>"
 /// - Continuations print as "#<procedure>"
+/// - Ports print as "#<port>"
 ///|
 #declaration_only
 pub fn value_to_string(value : Value) -> String {

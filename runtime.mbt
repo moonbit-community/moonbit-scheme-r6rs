@@ -4,6 +4,60 @@ fn bool_value(value : Bool) -> Value {
 }
 
 ///|
+priv enum PortKind {
+  OutputString(Ref[String])
+}
+
+///|
+struct Port {
+  id : Int
+  kind : PortKind
+}
+
+///|
+let port_counter : Ref[Int] = Ref::new(0)
+
+///|
+fn next_port_id() -> Int {
+  let id = port_counter.val
+  port_counter.val = id + 1
+  id
+}
+
+///|
+fn new_output_string_port() -> Port {
+  let buffer = Ref::new("")
+  Port::{ id: next_port_id(), kind: PortKind::OutputString(buffer) }
+}
+
+///|
+let current_output_port : Ref[Port] = Ref::new(new_output_string_port())
+
+///|
+fn get_current_output_port() -> Port {
+  current_output_port.val
+}
+
+///|
+fn set_current_output_port(port : Port) -> Unit {
+  current_output_port.val = port
+}
+
+///|
+fn port_write(port : Port, text : String) -> Unit {
+  match port.kind {
+    PortKind::OutputString(buffer) => buffer.val = buffer.val + text
+  }
+}
+
+///|
+fn port_get_output_string(port : Port) -> String {
+  match port.kind {
+    PortKind::OutputString(buffer) => buffer.val
+  }
+}
+
+///|
 fn is_false(value : Value) -> Bool {
   match value {
     Value::Datum(Datum::Bool(false)) => true

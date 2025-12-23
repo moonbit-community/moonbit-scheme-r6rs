@@ -101,6 +101,7 @@ pub fn value_to_string(value : Value) -> String {
     Value::Primitive(_) => "#<procedure>"
     Value::Closure(_) => "#<procedure>"
     Value::Continuation(_) => "#<procedure>"
+    Value::Port(_) => "#<port>"
     Value::Macro(_) => "#<syntax>"
   }
 }
