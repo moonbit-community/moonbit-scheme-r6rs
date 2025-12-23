@@ -318,6 +318,22 @@ test "r6rs bytevectors" {
     )),
     content="#vu8(2)",
   )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(bytevector-append)
+      )
+    )),
+    content="#vu8()",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(bytevector-append #vu8(1 2) #vu8(3) (bytevector 4 5))
+      )
+    )),
+    content="#vu8(1 2 3 4 5)",
+  )
 }
 
 ///|
@@ -400,6 +416,16 @@ test "r6rs vectors/bytevectors: errors" {
   match bad_byte_copy {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid bytevector-copy range")
+  }
+
+  let bad_byte_append = try? eval_program(
+    (
+      #|(bytevector-append #vu8(1 2) 3)
+    )
+  )
+  match bad_byte_append {
+    Err(err) => inspect(err, content="EvalError(\"type error: bytevector expected\")")
+    _ => fail("expected EvalError for invalid bytevector-append argument")
   }
 
   let bad_byte_fill = try? eval_program(

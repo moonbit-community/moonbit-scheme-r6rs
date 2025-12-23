@@ -228,6 +228,7 @@ pub enum Primitive {
   ByteVectorU8Set
   ByteVectorCopy
   ByteVectorCopyBang
+  ByteVectorAppend
   ByteVectorFill
   ByteVectorToU8List
   U8ListToByteVector

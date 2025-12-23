@@ -168,6 +168,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set)
     | (Primitive::ByteVectorCopy, Primitive::ByteVectorCopy)
     | (Primitive::ByteVectorCopyBang, Primitive::ByteVectorCopyBang)
+    | (Primitive::ByteVectorAppend, Primitive::ByteVectorAppend)
     | (Primitive::ByteVectorFill, Primitive::ByteVectorFill)
     | (Primitive::ByteVectorToU8List, Primitive::ByteVectorToU8List)
     | (Primitive::U8ListToByteVector, Primitive::U8ListToByteVector)
@@ -2242,6 +2243,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
+    }
+    Primitive::ByteVectorAppend => {
+      let items : Array[Int] = []
+      for arg in args {
+        let vec = value_as_bytevector(arg)
+        for item in vec {
+          items.push(item)
+        }
+      }
+      Value::Datum(Datum::ByteVector(items))
     }
     Primitive::ByteVectorFill => {
       match args.length() {

@@ -181,6 +181,7 @@ fn init_env() -> Env {
   env_define(env, "bytevector-u8-set!", Value::Primitive(Primitive::ByteVectorU8Set))
   env_define(env, "bytevector-copy", Value::Primitive(Primitive::ByteVectorCopy))
   env_define(env, "bytevector-copy!", Value::Primitive(Primitive::ByteVectorCopyBang))
+  env_define(env, "bytevector-append", Value::Primitive(Primitive::ByteVectorAppend))
   env_define(env, "bytevector-fill!", Value::Primitive(Primitive::ByteVectorFill))
   env_define(env, "bytevector->u8-list", Value::Primitive(Primitive::ByteVectorToU8List))
   env_define(env, "u8-list->bytevector", Value::Primitive(Primitive::U8ListToByteVector))
