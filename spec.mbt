@@ -275,6 +275,7 @@ pub type Env = Array[Map[String, Value]]
 pub struct SyntaxRule {
   pattern : Datum
   template : Datum
+  fender : Datum?
 }
 
 ///|

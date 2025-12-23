@@ -286,7 +286,7 @@ fn parse_syntax_rules(expr : Datum) -> SyntaxRules raise EvalError {
     if rule_parts.length() != 2 {
       raise EvalError("invalid syntax-rules")
     }
-    rules.push({ pattern: rule_parts[0], template: rule_parts[1] })
+    rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
     i = i + 1
   }
   { literals, rules }
@@ -304,7 +304,7 @@ fn parse_identifier_syntax(expr : Datum, name : String) -> SyntaxRules raise Eva
   }
   let rules : Array[SyntaxRule] = []
   if parts.length() == 2 {
-    rules.push({ pattern: Datum::Symbol(name), template: parts[1] })
+    rules.push({ pattern: Datum::Symbol(name), template: parts[1], fender: None })
   } else {
     let mut i = 1
     while i < parts.length() {
@@ -312,7 +312,7 @@ fn parse_identifier_syntax(expr : Datum, name : String) -> SyntaxRules raise Eva
       if rule_parts.length() != 2 {
         raise EvalError("invalid identifier-syntax")
       }
-      rules.push({ pattern: rule_parts[0], template: rule_parts[1] })
+      rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
       i = i + 1
     }
   }
@@ -366,10 +366,17 @@ fn parse_syntax_case_transformer(expr : Datum) -> SyntaxRules raise EvalError {
   let mut i = 3
   while i < sc_parts.length() {
     let rule_parts = datum_list_to_array(sc_parts[i])
-    if rule_parts.length() != 2 {
-      raise EvalError("unsupported syntax-case clause")
+    if rule_parts.length() == 2 {
+      rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
+    } else if rule_parts.length() == 3 {
+      rules.push({
+        pattern: rule_parts[0],
+        template: rule_parts[2],
+        fender: Some(rule_parts[1]),
+      })
+    } else {
+      raise EvalError("invalid syntax-case clause")
     }
-    rules.push({ pattern: rule_parts[0], template: rule_parts[1] })
     i = i + 1
   }
   { literals, rules }
@@ -507,6 +514,33 @@ fn binding_len_at(value : BindingVal, indices : Array[Int], depth : Int) -> Int 
 }
 
 ///|
+fn binding_to_datum(value : BindingVal) -> Datum {
+  match value {
+    BindingVal::Leaf(datum) => datum
+    BindingVal::Seq(values) => {
+      let items : Array[Datum] = []
+      for item in values {
+        items.push(binding_to_datum(item))
+      }
+      list_from_array(items)
+    }
+  }
+}
+
+///|
+fn fender_allows(expr : Datum, bindings : Map[String, BindingVal], env : Env) -> Bool raise EvalError {
+  let fenv = env_extend(env)
+  for name in bindings.keys() {
+    match bindings.get(name) {
+      Some(value) => env_define(fenv, name, Value::Datum(binding_to_datum(value)))
+      None => ()
+    }
+  }
+  let result = eval_expr(expr, fenv)
+  !is_false(result)
+}
+
+///|
 fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise EvalError {
   let mut i = 0
   while i < rules.rules.length() {
@@ -517,6 +551,15 @@ fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise Eva
       (Datum::Pair(_, _), Datum::Symbol(_)) => ()
       _ => {
         if match_pattern(rule.pattern, call, rules.literals, bindings) {
+          match rule.fender {
+            Some(fender) => {
+              if !fender_allows(fender, bindings, env) {
+                i = i + 1
+                continue
+              }
+            }
+            None => ()
+          }
           let renames = build_rename_map(rule.template, bindings, rules.literals, env)
           return expand_template(rule.template, bindings, renames)
         }
