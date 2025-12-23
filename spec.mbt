@@ -8,6 +8,7 @@
 ///   set!, let, let*, letrec, let-syntax, letrec-syntax, and, or, cond
 /// - define-syntax + syntax-rules (hygienic identifiers), including "..." repetition
 /// - application with left-to-right evaluation
+/// - proper tail calls for procedure application
 /// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
 ///   boolean? number? procedure? not apply eq? eqv? equal? list? length append
 ///   reverse char? string? string-length string-append string-ref
@@ -16,8 +17,8 @@
 ///   (equality is structural for datums in this subset)
 /// - printing via value_to_string (booleans as #t/#f, empty list as ())
 ///
-/// Out of scope for now: characters, vectors, bytevectors, records, ports,
-/// exceptions, and full numeric tower.
+/// Out of scope for now: continuations (call/cc), records, ports, exceptions,
+/// modules, and full numeric tower.
 ///|
 pub(all) suberror ParseError String derive(Show, Eq)
 

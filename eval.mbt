@@ -63,6 +63,12 @@ fn make_closure(params : Array[String], body : Array[Datum], env : Env) -> Closu
 }
 
 ///|
+priv enum EvalStep {
+  Done(Value)
+  Tail(Datum, Env)
+}
+
+///|
 pub fn eval_program(src : String) -> Value raise {
   let results = eval_program_all(src)
   if results.is_empty() {
@@ -86,43 +92,55 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
 
 ///|
 fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
-  match expr {
-    Datum::Nil
-    | Datum::Bool(_)
-    | Datum::Int(_)
-    | Datum::Rat(_, _)
-    | Datum::Float(_)
-    | Datum::Char(_)
-    | Datum::String(_)
-    | Datum::Vector(_)
-    | Datum::ByteVector(_) => Value::Datum(expr)
-    Datum::Symbol(name) => {
-      match env_lookup(env, name) {
-        Value::Macro(_) => raise EvalError("macro used as value")
-        value => value
+  let mut current_expr = expr
+  let mut current_env = env
+  while true {
+    let step = match current_expr {
+      Datum::Nil
+      | Datum::Bool(_)
+      | Datum::Int(_)
+      | Datum::Rat(_, _)
+      | Datum::Float(_)
+      | Datum::Char(_)
+      | Datum::String(_)
+      | Datum::Vector(_)
+      | Datum::ByteVector(_) => EvalStep::Done(Value::Datum(current_expr))
+      Datum::Symbol(name) => {
+        match env_lookup(current_env, name) {
+          Value::Macro(_) => raise EvalError("macro used as value")
+          value => EvalStep::Done(value)
+        }
+      }
+      Datum::Pair(_, _) => eval_list(current_expr, current_env)
+    }
+    match step {
+      EvalStep::Done(value) => return value
+      EvalStep::Tail(next_expr, next_env) => {
+        current_expr = next_expr
+        current_env = next_env
       }
     }
-    Datum::Pair(_, _) => eval_list(expr, env)
   }
+  Value::Void
 }
 
 ///|
-fn eval_list(expr : Datum, env : Env) -> Value raise EvalError {
+fn eval_list(expr : Datum, env : Env) -> EvalStep raise EvalError {
   let items = datum_list_to_array(expr)
   if items.is_empty() {
-    Value::Datum(Datum::Nil)
+    EvalStep::Done(Value::Datum(Datum::Nil))
   } else {
     let head = items[0]
     let args = items.sub(start=1).to_array()
     match symbol_name(head) {
-      Some("define-syntax") => eval_define_syntax(args, env)
-      Some("quote") => eval_quote(args)
-      Some("quasiquote") => eval_quasiquote(args, env)
+      Some("define-syntax") => EvalStep::Done(eval_define_syntax(args, env))
+      Some("quote") => EvalStep::Done(eval_quote(args))
+      Some("quasiquote") => EvalStep::Done(eval_quasiquote(args, env))
       Some("if") => eval_if(args, env)
       Some("begin") => eval_sequence(args, env)
-      Some("lambda") => eval_lambda(args, env)
-      Some("define") => eval_define(args, env)
-      Some("set!") => eval_set(args, env)
+      Some("lambda") => EvalStep::Done(eval_lambda(args, env))
+      Some("define") => EvalStep::Done(eval_define(args, env))
+      Some("set!") => EvalStep::Done(eval_set(args, env))
       Some("let") => eval_let(args, env)
       Some("let*") => eval_let_star(args, env)
       Some("letrec") => eval_letrec(args, env)
@@ -135,7 +153,7 @@ fn eval_list(expr : Datum, env : Env) -> Value raise EvalError {
         match env_get_macro(env, name) {
           Some(rules) => {
             let expanded = expand_macro(rules, expr, env)
-            eval_expr(expanded, env)
+            EvalStep::Tail(expanded, env)
           }
           None => eval_application(items, env)
         }
@@ -146,12 +164,18 @@ fn eval_list(expr : Datum, env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn eval_sequence(exprs : Array[Datum], env : Env) -> Value raise EvalError {
-  let mut last = Value::Void
-  for expr in exprs {
-    last = eval_expr(expr, env)
+fn eval_sequence(exprs : Array[Datum], env : Env) -> EvalStep raise EvalError {
+  if exprs.is_empty() {
+    EvalStep::Done(Value::Void)
+  } else {
+    let last_idx = exprs.length() - 1
+    let mut i = 0
+    while i < last_idx {
+      let _ = eval_expr(exprs[i], env)
+      i = i + 1
+    }
+    EvalStep::Tail(exprs[last_idx], env)
   }
-  last
 }
 
 ///|
@@ -240,15 +264,15 @@ fn list_with_tail(items : Array[Datum], tail : Datum) -> Datum {
   result
 }
 ///|
-fn eval_if(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_if(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() != 3 {
     raise arity_mismatch(3, args.length())
   } else {
     let cond_value = eval_expr(args[0], env)
     if is_false(cond_value) {
-      eval_expr(args[2], env)
+      EvalStep::Tail(args[2], env)
     } else {
-      eval_expr(args[1], env)
+      EvalStep::Tail(args[1], env)
     }
   }
 }
@@ -353,7 +377,7 @@ fn parse_syntax_bindings(expr : Datum) -> Array[(String, SyntaxRules)] raise Eva
 }
 
 ///|
-fn eval_let_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_let_syntax(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -369,7 +393,7 @@ fn eval_let_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn eval_letrec_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_letrec_syntax(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -420,7 +444,7 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
 }
 
 ///|
-fn eval_let(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_let(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -442,7 +466,7 @@ fn eval_let(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn eval_let_star(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_let_star(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -461,7 +485,7 @@ fn eval_let_star(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn eval_letrec(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_letrec(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -482,51 +506,45 @@ fn eval_letrec(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn eval_and(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_and(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.is_empty() {
-    bool_value(true)
+    EvalStep::Done(bool_value(true))
   } else {
-    let mut last = bool_value(true)
+    let last_idx = args.length() - 1
     let mut i = 0
-    while i < args.length() {
+    while i < last_idx {
       let value = eval_expr(args[i], env)
-      last = value
       if is_false(value) {
-        break
-      } else {
-        i = i + 1
+        return EvalStep::Done(value)
       }
+      i = i + 1
     }
-    last
+    EvalStep::Tail(args[last_idx], env)
   }
 }
 
 ///|
-fn eval_or(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_or(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   if args.is_empty() {
-    bool_value(false)
+    EvalStep::Done(bool_value(false))
   } else {
-    let mut result = bool_value(false)
+    let last_idx = args.length() - 1
     let mut i = 0
-    while i < args.length() {
+    while i < last_idx {
       let value = eval_expr(args[i], env)
       if !is_false(value) {
-        result = value
-        break
-      } else {
-        i = i + 1
+        return EvalStep::Done(value)
       }
+      i = i + 1
     }
-    result
+    EvalStep::Tail(args[last_idx], env)
   }
 }
 
 ///|
-fn eval_cond(args : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_cond(args : Array[Datum], env : Env) -> EvalStep raise EvalError {
   let mut i = 0
-  let mut done = false
-  let mut result = Value::Void
-  while i < args.length() && !done {
+  while i < args.length() {
     let parts = datum_list_to_array(args[i])
     if parts.is_empty() {
       i = i + 1
@@ -534,30 +552,26 @@ fn eval_cond(args : Array[Datum], env : Env) -> Value raise EvalError {
       let head = symbol_name(parts[0])
       if head is Some("else") {
         let body = parts.sub(start=1).to_array()
-        result = eval_sequence(body, env)
-        done = true
+        return eval_sequence(body, env)
       } else {
         let cond_value = eval_expr(parts[0], env)
         if !is_false(cond_value) {
           if parts.length() == 1 {
-            result = cond_value
+            return EvalStep::Done(cond_value)
           } else {
             let body = parts.sub(start=1).to_array()
-            result = eval_sequence(body, env)
+            return eval_sequence(body, env)
           }
-          done = true
-        } else {
-          ()
         }
       }
       i = i + 1
     }
   }
-  result
+  EvalStep::Done(Value::Void)
 }
 
 ///|
-fn eval_application(items : Array[Datum], env : Env) -> Value raise EvalError {
+fn eval_application(items : Array[Datum], env : Env) -> EvalStep raise EvalError {
   let proc = eval_expr(items[0], env)
   let args : Array[Value] = []
   let mut i = 1
@@ -569,17 +583,17 @@ fn eval_application(items : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn apply_proc(proc : Value, args : Array[Value]) -> Value raise EvalError {
+fn apply_proc(proc : Value, args : Array[Value]) -> EvalStep raise EvalError {
   match proc {
     Value::Primitive(Primitive::Apply) => apply_apply(args)
-    Value::Primitive(prim) => apply_primitive(prim, args)
+    Value::Primitive(prim) => EvalStep::Done(apply_primitive(prim, args))
     Value::Closure(cl) => apply_closure(cl, args)
     _ => raise EvalError("type error: procedure expected")
   }
 }
 
 ///|
-fn apply_apply(args : Array[Value]) -> Value raise EvalError {
+fn apply_apply(args : Array[Value]) -> EvalStep raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -598,7 +612,7 @@ fn apply_apply(args : Array[Value]) -> Value raise EvalError {
 }
 
 ///|
-fn apply_closure(cl : Closure, args : Array[Value]) -> Value raise EvalError {
+fn apply_closure(cl : Closure, args : Array[Value]) -> EvalStep raise EvalError {
   if args.length() != cl.params.length() {
     raise arity_mismatch(cl.params.length(), args.length())
   } else {
