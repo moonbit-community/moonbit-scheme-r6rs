@@ -173,7 +173,9 @@ fn is_core_identifier(name : String) -> Bool {
     "string-length",
     "string-append",
     "string-ref",
+    "string-set!",
     "string-copy",
+    "string-fill!",
     "string->list",
     "list->string",
     "string-map",
@@ -551,7 +553,7 @@ fn match_pattern(
     }
     Datum::String(s) => {
       match input {
-        Datum::String(other) => other == s
+        Datum::String(other) => other.val == s.val
         _ => false
       }
     }
@@ -788,7 +790,7 @@ fn datum_equal(a : Datum, b : Datum) -> Bool {
     (Datum::Rat(ax, ay), Datum::Rat(bx, by)) => ax == bx && ay == by
     (Datum::Float(x), Datum::Float(y)) => x == y
     (Datum::Char(x), Datum::Char(y)) => x == y
-    (Datum::String(x), Datum::String(y)) => x == y
+    (Datum::String(x), Datum::String(y)) => x.val == y.val
     (Datum::Symbol(x), Datum::Symbol(y)) => x == y
     (Datum::Pair(ax, ay), Datum::Pair(bx, by)) =>
       datum_equal(ax.val, bx.val) && datum_equal(ay.val, by.val)

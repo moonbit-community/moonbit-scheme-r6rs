@@ -132,7 +132,9 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::StringLength, Primitive::StringLength)
     | (Primitive::StringAppend, Primitive::StringAppend)
     | (Primitive::StringRef, Primitive::StringRef)
+    | (Primitive::StringSet, Primitive::StringSet)
     | (Primitive::StringCopy, Primitive::StringCopy)
+    | (Primitive::StringFill, Primitive::StringFill)
     | (Primitive::StringToList, Primitive::StringToList)
     | (Primitive::ListToString, Primitive::ListToString)
     | (Primitive::StringMap, Primitive::StringMap)
@@ -445,9 +447,41 @@ fn float_round_int(value : Float) -> Int {
 ///|
 fn value_as_string(value : Value) -> String raise EvalError {
   match value {
+    Value::Datum(Datum::String(s)) => s.val
+    _ => raise EvalError("type error: string expected")
+  }
+}
+
+///|
+fn value_as_string_ref(value : Value) -> Ref[String] raise EvalError {
+  match value {
     Value::Datum(Datum::String(s)) => s
     _ => raise EvalError("type error: string expected")
   }
+}
+
+///|
+fn string_replace_range(s : String, start : Int, end : Int, fill : Char) -> String raise EvalError {
+  let len = s.length()
+  if start < 0 || end < start || end > len {
+    raise EvalError("index out of range")
+  }
+  let buf = @buffer.new()
+  let mut i = 0
+  while i < len {
+    match s.get_char(i) {
+      Some(ch) => {
+        if i >= start && i < end {
+          buf.write_char(fill)
+        } else {
+          buf.write_char(ch)
+        }
+      }
+      None => raise EvalError("index out of range")
+    }
+    i = i + 1
+  }
+  buf.to_string()
 }
 
 ///|
@@ -660,7 +694,7 @@ fn char_to_raw_string(ch : Char) -> String {
 ///|
 fn display_string(value : Value) -> String {
   match value {
-    Value::Datum(Datum::String(s)) => s
+    Value::Datum(Datum::String(s)) => s.val
     Value::Datum(Datum::Char(ch)) => char_to_raw_string(ch)
     Value::Datum(Datum::Symbol(name)) => name
     _ => value_to_string(value)
@@ -1231,7 +1265,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::Datum(Datum::Symbol(name)) => Value::Datum(Datum::String(name))
+            Value::Datum(Datum::Symbol(name)) => Value::Datum(Datum::String(Ref::new(name)))
             _ => raise EvalError("type error: symbol expected")
           }
         }
@@ -1242,7 +1276,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::Datum(Datum::String(name)) => Value::Datum(Datum::Symbol(name))
+            Value::Datum(Datum::String(name)) => Value::Datum(Datum::Symbol(name.val))
             _ => raise EvalError("type error: string expected")
           }
         }
@@ -1531,7 +1565,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         let ch = value_as_char(arg)
         buf.write_char(ch)
       }
-      Value::Datum(Datum::String(buf.to_string()))
+      Value::Datum(Datum::String(Ref::new(buf.to_string())))
     }
     Primitive::MakeString => {
       match args.length() {
@@ -1553,7 +1587,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             buf.write_char(fill)
             i = i + 1
           }
-          Value::Datum(Datum::String(buf.to_string()))
+          Value::Datum(Datum::String(Ref::new(buf.to_string())))
         }
         n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
@@ -1583,7 +1617,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       for arg in args {
         buf.write_string(value_as_string(arg))
       }
-      Value::Datum(Datum::String(buf.to_string()))
+      Value::Datum(Datum::String(Ref::new(buf.to_string())))
     }
     Primitive::StringRef => {
       match args.length() {
@@ -1597,6 +1631,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::StringSet => {
+      match args.length() {
+        3 => {
+          let sref = value_as_string_ref(args[0])
+          let idx = value_as_int_index(args[1])
+          let ch = value_as_char(args[2])
+          let updated = string_replace_range(sref.val, idx, idx + 1, ch)
+          sref.val = updated
+          Value::Void
+        }
+        n => raise arity_mismatch(3, n)
       }
     }
     Primitive::StringCopy => {
@@ -1618,11 +1665,33 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           let view = try? s[start:end]
           match view {
-            Ok(slice) => Value::Datum(Datum::String(slice.to_string()))
+            Ok(slice) => Value::Datum(Datum::String(Ref::new(slice.to_string())))
             Err(_) => raise EvalError("index out of range")
           }
         }
         n => raise EvalError("arity mismatch: expected 1 to 3 got \{n}")
+      }
+    }
+    Primitive::StringFill => {
+      match args.length() {
+        2 | 3 | 4 => {
+          let sref = value_as_string_ref(args[0])
+          let fill = value_as_char(args[1])
+          let start = if args.length() >= 3 {
+            value_as_int_index(args[2])
+          } else {
+            0
+          }
+          let end = if args.length() == 4 {
+            value_as_int_index(args[3])
+          } else {
+            sref.val.length()
+          }
+          let updated = string_replace_range(sref.val, start, end, fill)
+          sref.val = updated
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 2 to 4 got \{n}")
       }
     }
     Primitive::StringToList => {
@@ -1655,7 +1724,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               _ => raise EvalError("type error: char expected")
             }
           }
-          Value::Datum(Datum::String(buf.to_string()))
+          Value::Datum(Datum::String(Ref::new(buf.to_string())))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -1664,7 +1733,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(s.to_upper()))
+          Value::Datum(Datum::String(Ref::new(s.to_upper())))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -1673,7 +1742,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(s.to_lower()))
+          Value::Datum(Datum::String(Ref::new(s.to_lower())))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -1682,7 +1751,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(s.to_lower()))
+          Value::Datum(Datum::String(Ref::new(s.to_lower())))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -2034,7 +2103,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let port = value_as_port(args[0])
-          Value::Datum(Datum::String(port_get_output_string(port)))
+          Value::Datum(Datum::String(Ref::new(port_get_output_string(port))))
         }
         n => raise arity_mismatch(1, n)
       }

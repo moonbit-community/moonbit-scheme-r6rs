@@ -32,7 +32,8 @@
 ///   char-upper-case? char-lower-case? char-upcase char-downcase char-foldcase
 ///   string make-string string? string=? string<? string>? string<=? string>=?
 ///   string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-///   string-length string-append string-ref string-copy string->list list->string
+///   string-length string-append string-ref string-set! string-copy string-fill!
+///   string->list list->string
 ///   string-map string-for-each
 ///   string-upcase string-downcase string-foldcase
 ///   vector make-vector vector? vector-length vector-ref vector-set!
@@ -66,7 +67,7 @@ pub enum Datum {
   Rat(Int, Int)
   Float(Float)
   Char(Char)
-  String(String)
+  String(Ref[String])
   Symbol(String)
   Pair(Ref[Datum], Ref[Datum])
   Vector(Array[Datum])
@@ -190,7 +191,9 @@ pub enum Primitive {
   StringLength
   StringAppend
   StringRef
+  StringSet
   StringCopy
+  StringFill
   StringToList
   ListToString
   StringMap

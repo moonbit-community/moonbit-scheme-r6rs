@@ -472,7 +472,7 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
     }
     Some('"') => {
       r.pos = r.pos + 1
-      Datum::String(read_string(r))
+      Datum::String(Ref::new(read_string(r)))
     }
     Some(_) => {
       let tok = read_token(r)

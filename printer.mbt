@@ -39,7 +39,7 @@ fn datum_to_string(datum : Datum) -> String {
     Datum::Rat(n, d) => "\{n}/\{d}"
     Datum::Float(f) => f.to_string()
     Datum::Char(ch) => char_to_string(ch)
-    Datum::String(s) => "\"\{escape_string(s)}\""
+    Datum::String(s) => "\"\{escape_string(s.val)}\""
     Datum::Symbol(name) => name
     Datum::Pair(_, _) => datum_list_to_string(datum)
     Datum::Vector(items) => vector_to_string(items)

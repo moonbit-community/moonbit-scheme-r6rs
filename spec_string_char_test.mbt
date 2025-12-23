@@ -9,6 +9,11 @@ test "r6rs char and string primitives" {
   inspect(value_to_string(eval_program("(string #\\a #\\b)")), content="\"ab\"")
   inspect(value_to_string(eval_program("(make-string 3 #\\x)")), content="\"xxx\"")
   inspect(value_to_string(eval_program("(make-string 0)")), content="\"\"")
+  let set_program = "(let ((s (string #\\a #\\b #\\c))) (string-set! s 1 #\\x) s)"
+  inspect(value_to_string(eval_program(set_program)), content="\"axc\"")
+  let fill_program =
+    "(let ((s (string #\\a #\\b #\\c #\\d))) (string-fill! s #\\x 1 3) s)"
+  inspect(value_to_string(eval_program(fill_program)), content="\"axxd\"")
   inspect(value_to_string(eval_program("(string-length \"hi\")")), content="2")
   inspect(value_to_string(eval_program("(string-append \"a\" \"b\" \"c\")")), content="\"abc\"")
   inspect(value_to_string(eval_program("(string-append)")), content="\"\"")
@@ -86,6 +91,18 @@ test "r6rs string-ref: errors" {
   match bad_make {
     Err(err) => inspect(err, content="EvalError(\"type error: exact nonnegative integer expected\")")
     _ => fail("expected EvalError for invalid make-string length")
+  }
+
+  let bad_set = try? eval_program("(string-set! \"a\" 1 #\\b)")
+  match bad_set {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for out of range string-set!")
+  }
+
+  let bad_fill = try? eval_program("(string-fill! \"a\" #\\b 1 0)")
+  match bad_fill {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for invalid string-fill! range")
   }
 }
 
