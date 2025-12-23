@@ -19,6 +19,7 @@ fn is_core_identifier(name : String) -> Bool {
     "if",
     "begin",
     "lambda",
+    "case-lambda",
     "define",
     "define-syntax",
     "library",

@@ -6,7 +6,7 @@
 ///   characters, strings, pairs/lists
 /// - quote, quasiquote, unquote, unquote-splicing, if, begin, lambda, define,
 ///   set!, let (including named let), let*, letrec, letrec*, let-syntax,
-///   letrec-syntax, and, or, cond (including =>), case, do
+///   letrec-syntax, and, or, cond (including =>), case, do, case-lambda
 /// - define-syntax + syntax-rules (hygienic identifiers), including "..." repetition
 /// - application with left-to-right evaluation
 /// - proper tail calls for procedure application
@@ -152,6 +152,19 @@ pub struct Closure {
 }
 
 ///|
+pub struct CaseClause {
+  params : Array[String]
+  body : Array[Datum]
+}
+
+///|
+pub struct CaseClosure {
+  id : Int
+  clauses : Array[CaseClause]
+  env : Env
+}
+
+///|
 /// Runtime values produced by evaluation.
 ///|
 pub enum Value {
@@ -159,6 +172,7 @@ pub enum Value {
   Datum(Datum)
   Primitive(Primitive)
   Closure(Closure)
+  CaseClosure(CaseClosure)
   Continuation(Continuation)
   Port(Port)
   Record(Record)

@@ -91,6 +91,11 @@ fn make_closure(params : Array[String], body : Array[Datum], env : Env) -> Closu
 }
 
 ///|
+fn make_case_closure(clauses : Array[CaseClause], env : Env) -> CaseClosure {
+  { id: next_closure_id(), clauses, env }
+}
+
+///|
 priv enum Kont {
   Halt
   If(Datum, Datum, Env, Kont)
@@ -476,6 +481,24 @@ fn eval_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
     let body = args.sub(start=1).to_array()
     Value::Closure(make_closure(params, body, env))
   }
+}
+
+///|
+fn eval_case_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
+  if args.is_empty() {
+    raise arity_mismatch(1, 0)
+  }
+  let clauses : Array[CaseClause] = []
+  for clause in args {
+    let parts = datum_list_to_array(clause)
+    if parts.length() < 2 {
+      raise EvalError("invalid case-lambda")
+    }
+    let params = parse_params(parts[0])
+    let body = parts.sub(start=1).to_array()
+    clauses.push(CaseClause::{ params, body })
+  }
+  Value::CaseClosure(make_case_closure(clauses, env))
 }
 
 ///|
@@ -1292,6 +1315,7 @@ fn eval_pair(
       Some("if") => eval_if_state(args, env, kont, handlers)
       Some("begin") => eval_sequence_state(args, env, kont, handlers)
       Some("lambda") => MachineState::Apply(eval_lambda(args, env), kont, handlers)
+      Some("case-lambda") => MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
       Some("define") => eval_define_state(args, env, kont, handlers)
       Some("set!") => eval_set_state(args, env, kont, handlers)
       Some("let") => eval_let_state(args, env, kont, handlers)
@@ -1384,6 +1408,42 @@ fn apply_proc(
         }
         eval_sequence_state(cl.body, new_env, kont, handlers)
       }
+    }
+    Value::CaseClosure(cl) => {
+      let mut matched = false
+      let mut matched_params : Array[String] = []
+      let mut matched_body : Array[Datum] = []
+      for clause in cl.clauses {
+        if clause.params.length() == args.length() {
+          matched = true
+          matched_params = clause.params
+          matched_body = clause.body
+          break
+        }
+      }
+      if !matched {
+        let lengths : Array[Int] = []
+        for clause in cl.clauses {
+          lengths.push(clause.params.length())
+        }
+        if lengths.length() == 1 {
+          raise arity_mismatch(lengths[0], args.length())
+        } else {
+          let expected_parts : Array[String] = []
+          for len in lengths {
+            expected_parts.push(len.to_string())
+          }
+          let expected = expected_parts.join(", ")
+          raise EvalError("arity mismatch: expected one of \{expected} got \{args.length()}")
+        }
+      }
+      let new_env = env_extend(cl.env)
+      let mut i = 0
+      while i < matched_params.length() {
+        env_define(new_env, matched_params[i], args[i])
+        i = i + 1
+      }
+      eval_sequence_state(matched_body, new_env, kont, handlers)
     }
     Value::Continuation(cont) => {
       if args.length() != 1 {
