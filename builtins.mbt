@@ -58,6 +58,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::InexactToExact, Primitive::InexactToExact)
     | (Primitive::Numerator, Primitive::Numerator)
     | (Primitive::Denominator, Primitive::Denominator)
+    | (Primitive::Abs, Primitive::Abs)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -751,6 +752,25 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::Datum(Datum::Int(_)) => Value::Datum(Datum::Int(1))
             Value::Datum(Datum::Rat(_, d)) => Value::Datum(Datum::Int(d))
             _ => raise EvalError("type error: rational expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Abs => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          match value {
+            Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
+            Datum::Rat(n, d) => Value::Datum(normalize_rat_or_error(int_abs(n), d))
+            Datum::Float(f) =>
+              if f < 0.0 {
+                Value::Datum(Datum::Float(-f))
+              } else {
+                Value::Datum(Datum::Float(f))
+              }
+            _ => raise EvalError("type error: number expected")
           }
         }
         n => raise arity_mismatch(1, n)

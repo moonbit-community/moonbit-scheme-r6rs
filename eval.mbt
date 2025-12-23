@@ -36,6 +36,7 @@ fn init_env() -> Env {
   env_define(env, "inexact->exact", Value::Primitive(Primitive::InexactToExact))
   env_define(env, "numerator", Value::Primitive(Primitive::Numerator))
   env_define(env, "denominator", Value::Primitive(Primitive::Denominator))
+  env_define(env, "abs", Value::Primitive(Primitive::Abs))
   env_define(env, "eq?", Value::Primitive(Primitive::Eq))
   env_define(env, "eqv?", Value::Primitive(Primitive::Eqv))
   env_define(env, "equal?", Value::Primitive(Primitive::Equal))

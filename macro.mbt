@@ -190,6 +190,7 @@ fn is_core_identifier(name : String) -> Bool {
     "inexact->exact",
     "numerator",
     "denominator",
+    "abs",
     "display",
     "write",
     "newline",

@@ -38,4 +38,7 @@ test "r6rs numeric: conversions and fractions" {
   inspect(value_to_string(eval_program("(numerator 3/4)")), content="3")
   inspect(value_to_string(eval_program("(denominator 3/4)")), content="4")
   inspect(value_to_string(eval_program("(denominator 5)")), content="1")
+  inspect(value_to_string(eval_program("(abs -3)")), content="3")
+  inspect(value_to_string(eval_program("(abs -1/2)")), content="1/2")
+  inspect(value_to_string(eval_program("(abs -2.5)")), content="2.5")
 }
