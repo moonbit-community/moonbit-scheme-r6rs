@@ -1097,26 +1097,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           if radix < 2 || radix > 36 {
             raise EvalError("radix out of range")
           }
-          if radix == 10 {
-            match parse_int_token(s) {
-              Some(n) => Value::Datum(Datum::Int(n))
-              None => {
-                match parse_rat_token(s) {
-                  Some(rat) => Value::Datum(rat)
-                  None => {
-                    match parse_float_token(s) {
-                      Some(f) => Value::Datum(Datum::Float(f))
-                      None => Value::Datum(Datum::Bool(false))
-                    }
-                  }
-                }
-              }
-            }
+          let parsed = if args.length() == 2 {
+            parse_number_token_with_radix(s, radix)
           } else {
-            match parse_int_token_radix(s, radix) {
-              Some(n) => Value::Datum(Datum::Int(n))
-              None => Value::Datum(Datum::Bool(false))
-            }
+            parse_number_token(s)
+          }
+          match parsed {
+            Some(num) => Value::Datum(num)
+            None => Value::Datum(Datum::Bool(false))
           }
         }
         n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")

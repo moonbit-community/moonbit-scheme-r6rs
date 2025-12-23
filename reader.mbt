@@ -276,6 +276,321 @@ fn parse_float_token(tok : String) -> Float? {
 }
 
 ///|
+fn pow10_int(exp : Int) -> Int {
+  let mut result = 1
+  let mut i = 0
+  while i < exp {
+    result = result * 10
+    i = i + 1
+  }
+  result
+}
+
+///|
+fn pow10_float(exp : Int) -> Float {
+  let mut result = Float::from_int(1)
+  let mut i = 0
+  let limit = int_abs(exp)
+  while i < limit {
+    result = result * Float::from_int(10)
+    i = i + 1
+  }
+  if exp < 0 {
+    Float::from_int(1) / result
+  } else {
+    result
+  }
+}
+
+///|
+fn split_exp_token(tok : String) -> (String, Int)? {
+  let chars : Array[Char] = []
+  for ch in tok {
+    chars.push(ch)
+  }
+  let mut idx = -1
+  let mut i = 0
+  while i < chars.length() {
+    let ch = chars[i]
+    if ch == 'e' || ch == 'E' {
+      idx = i
+      break
+    }
+    i = i + 1
+  }
+  if idx == -1 {
+    None
+  } else if idx == 0 || idx == chars.length() - 1 {
+    None
+  } else {
+    let base = String::from_array(chars.sub(end=idx).to_array())
+    let exp_str = String::from_array(chars.sub(start=idx + 1).to_array())
+    match parse_int_token(exp_str) {
+      Some(exp) => Some((base, exp))
+      None => None
+    }
+  }
+}
+
+///|
+fn parse_float_token_with_exp(tok : String) -> Float? {
+  match split_exp_token(tok) {
+    Some((base, exp)) => {
+      let base_val = match parse_float_token(base) {
+        Some(f) => Some(f)
+        None => {
+          match parse_int_token(base) {
+            Some(n) => Some(Float::from_int(n))
+            None => None
+          }
+        }
+      }
+      match base_val {
+        Some(value) => Some(value * pow10_float(exp))
+        None => None
+      }
+    }
+    None => parse_float_token(tok)
+  }
+}
+
+///|
+fn parse_exact_decimal(tok : String) -> Datum? {
+  let mut base = tok
+  let mut exp = 0
+  match split_exp_token(tok) {
+    Some((b, e)) => {
+      base = b
+      exp = e
+    }
+    None => ()
+  }
+  let chars : Array[Char] = []
+  for ch in base {
+    chars.push(ch)
+  }
+  if chars.is_empty() {
+    return None
+  }
+  let mut sign = 1
+  let mut i = 0
+  if chars[0] == '+' || chars[0] == '-' {
+    sign = if chars[0] == '-' { -1 } else { 1 }
+    i = 1
+  }
+  let mut seen_dot = false
+  let mut frac_len = 0
+  let digits : Array[Char] = []
+  while i < chars.length() {
+    let ch = chars[i]
+    if ch == '.' {
+      if seen_dot {
+        return None
+      }
+      seen_dot = true
+    } else if ch.is_ascii_digit() {
+      digits.push(ch)
+      if seen_dot {
+        frac_len = frac_len + 1
+      }
+    } else {
+      return None
+    }
+    i = i + 1
+  }
+  if digits.is_empty() {
+    return None
+  }
+  let mut acc = 0
+  for ch in digits {
+    acc = acc * 10 + (ch.to_int() - '0'.to_int())
+  }
+  let mut num = sign * acc
+  let mut den = pow10_int(frac_len)
+  if exp >= 0 {
+    num = num * pow10_int(exp)
+  } else {
+    den = den * pow10_int(-exp)
+  }
+  normalize_rat(num, den)
+}
+
+///|
+fn parse_rat_token_radix(tok : String, radix : Int) -> Datum? {
+  let chars : Array[Char] = []
+  for ch in tok {
+    chars.push(ch)
+  }
+  let mut slash = -1
+  let mut i = 0
+  while i < chars.length() {
+    if chars[i] == '/' {
+      if slash != -1 {
+        return None
+      }
+      slash = i
+    }
+    i = i + 1
+  }
+  if slash <= 0 || slash >= chars.length() - 1 {
+    None
+  } else {
+    let num_str = String::from_array(chars.sub(end=slash).to_array())
+    let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
+    match (parse_int_token_radix(num_str, radix), parse_int_token_radix(den_str, radix)) {
+      (Some(num), Some(den)) => normalize_rat(num, den)
+      _ => None
+    }
+  }
+}
+
+///|
+fn datum_to_float(value : Datum) -> Float? {
+  match value {
+    Datum::Int(n) => Some(Float::from_int(n))
+    Datum::Rat(n, d) => Some(Float::from_int(n) / Float::from_int(d))
+    _ => None
+  }
+}
+
+///|
+fn parse_number_token_internal(tok : String, radix_override : Int?) -> Datum? {
+  let chars : Array[Char] = []
+  for ch in tok {
+    chars.push(ch)
+  }
+  let mut radix = match radix_override {
+    Some(r) => r
+    None => 10
+  }
+  let mut exactness : Char? = None
+  let mut i = 0
+  while i + 1 < chars.length() && chars[i] == '#' {
+    let tag = chars[i + 1]
+    match tag {
+      'b' | 'B' | 'o' | 'O' | 'd' | 'D' | 'x' | 'X' => {
+        if radix_override is None {
+          if radix != 10 {
+            return None
+          }
+          radix = match tag {
+            'b' | 'B' => 2
+            'o' | 'O' => 8
+            'd' | 'D' => 10
+            _ => 16
+          }
+        } else {
+          return None
+        }
+      }
+      'e' | 'E' | 'i' | 'I' => {
+        if exactness is Some(_) {
+          return None
+        }
+        exactness = Some(tag)
+      }
+      _ => return None
+    }
+    i = i + 2
+  }
+  if i >= chars.length() {
+    return None
+  }
+  let rest = String::from_array(chars.sub(start=i).to_array())
+  let mut has_dot = false
+  let mut has_exp = false
+  let mut has_slash = false
+  for ch in rest {
+    if ch == '.' {
+      has_dot = true
+    } else if ch == 'e' || ch == 'E' {
+      has_exp = true
+    } else if ch == '/' {
+      has_slash = true
+    }
+  }
+  let allow_rat = radix_override is None
+  if radix != 10 {
+    if has_dot || has_exp {
+      return None
+    }
+    if has_slash && !allow_rat {
+      return None
+    }
+    let parsed = if has_slash {
+      parse_rat_token_radix(rest, radix)
+    } else {
+      match parse_int_token_radix(rest, radix) {
+        Some(n) => Some(Datum::Int(n))
+        None => None
+      }
+    }
+    match parsed {
+      Some(datum) => {
+        match exactness {
+          Some('i') | Some('I') =>
+            match datum_to_float(datum) {
+              Some(f) => Some(Datum::Float(f))
+              None => None
+            }
+          _ => Some(datum)
+        }
+      }
+      None => None
+    }
+  } else {
+    if has_slash {
+      if !allow_rat {
+        return None
+      }
+      match parse_rat_token(rest) {
+        Some(datum) => {
+          match exactness {
+            Some('i') | Some('I') =>
+              match datum_to_float(datum) {
+                Some(f) => Some(Datum::Float(f))
+                None => None
+              }
+            _ => Some(datum)
+          }
+        }
+        None => None
+      }
+    } else if has_dot || has_exp {
+      match exactness {
+        Some('e') | Some('E') => parse_exact_decimal(rest)
+        _ => {
+          match parse_float_token_with_exp(rest) {
+            Some(f) => Some(Datum::Float(f))
+            None => None
+          }
+        }
+      }
+    } else {
+      match parse_int_token(rest) {
+        Some(n) => {
+          match exactness {
+            Some('i') | Some('I') => Some(Datum::Float(Float::from_int(n)))
+            _ => Some(Datum::Int(n))
+          }
+        }
+        None => None
+      }
+    }
+  }
+}
+
+///|
+fn parse_number_token(tok : String) -> Datum? {
+  parse_number_token_internal(tok, None)
+}
+
+///|
+fn parse_number_token_with_radix(tok : String, radix : Int) -> Datum? {
+  parse_number_token_internal(tok, Some(radix))
+}
+
+///|
 fn parse_char_token(tok : String) -> Char? {
   let chars : Array[Char] = []
   for ch in tok {
@@ -446,19 +761,9 @@ fn token_to_datum(tok : String) -> Datum {
     match parse_char_token(tok) {
       Some(ch) => Datum::Char(ch)
       None => {
-        match parse_int_token(tok) {
-          Some(n) => Datum::Int(n)
-          None => {
-            match parse_rat_token(tok) {
-              Some(rat) => rat
-              None => {
-                match parse_float_token(tok) {
-                  Some(f) => Datum::Float(f)
-                  None => Datum::Symbol(tok)
-                }
-              }
-            }
-          }
+        match parse_number_token(tok) {
+          Some(num) => num
+          None => Datum::Symbol(tok)
         }
       }
     }

@@ -511,6 +511,74 @@ test "r6rs numeric: conversions and fractions" {
 }
 
 ///|
+test "r6rs numeric: reader prefixes and exponent" {
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|#b1010
+      )
+    )),
+    content="10",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|#o17
+      )
+    )),
+    content="15",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|#x1f
+      )
+    )),
+    content="31",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|#e1.25
+      )
+    )),
+    content="5/4",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(= #i3/2 1.5)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(= 1e3 1000.0)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(= 1.25e1 12.5)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(string->number "#x1f")
+      )
+    )),
+    content="31",
+  )
+}
+
+///|
 test "r6rs numeric: gcd" {
   inspect(
     value_to_string(eval_program(
