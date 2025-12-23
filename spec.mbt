@@ -20,7 +20,8 @@
 ///   boolean? number? integer? rational? real? exact? inexact? exact->inexact
 ///   inexact->exact numerator denominator procedure? not apply call/cc eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
-///   reverse c[ad]+r member memq memv assoc assq assv char? char=? char<? char>? char<=? char>=?
+///   reverse c[ad]+r member memq memv assoc assq assv map for-each
+///   char? char=? char<? char>? char<=? char>=?
 ///   char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
 ///   char->integer integer->char char-alphabetic? char-numeric? char-whitespace?
 ///   char-upper-case? char-lower-case? char-upcase char-downcase char-foldcase
@@ -119,6 +120,8 @@ pub enum Primitive {
   Assoc
   Assq
   Assv
+  Map
+  ForEach
   CharEq
   CharLess
   CharGreater

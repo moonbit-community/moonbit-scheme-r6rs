@@ -71,6 +71,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Assoc, Primitive::Assoc)
     | (Primitive::Assq, Primitive::Assq)
     | (Primitive::Assv, Primitive::Assv)
+    | (Primitive::Map, Primitive::Map)
+    | (Primitive::ForEach, Primitive::ForEach)
     | (Primitive::CharEq, Primitive::CharEq)
     | (Primitive::CharLess, Primitive::CharLess)
     | (Primitive::CharGreater, Primitive::CharGreater)
@@ -1427,6 +1429,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::CallCC => {
       raise EvalError("internal error: call/cc should be handled in apply_proc")
+    }
+    Primitive::Map => {
+      raise EvalError("internal error: map should be handled in apply_proc")
+    }
+    Primitive::ForEach => {
+      raise EvalError("internal error: for-each should be handled in apply_proc")
     }
     Primitive::Values => Value::Values(args)
     Primitive::CallWithValues => {

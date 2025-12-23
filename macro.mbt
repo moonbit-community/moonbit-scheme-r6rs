@@ -93,6 +93,8 @@ fn is_core_identifier(name : String) -> Bool {
     "assoc",
     "assq",
     "assv",
+    "map",
+    "for-each",
     "caar",
     "cadr",
     "cdar",

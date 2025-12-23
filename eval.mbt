@@ -48,6 +48,8 @@ fn init_env() -> Env {
   env_define(env, "assoc", Value::Primitive(Primitive::Assoc))
   env_define(env, "assq", Value::Primitive(Primitive::Assq))
   env_define(env, "assv", Value::Primitive(Primitive::Assv))
+  env_define(env, "map", Value::Primitive(Primitive::Map))
+  env_define(env, "for-each", Value::Primitive(Primitive::ForEach))
   let cxr_chains : Array[String] = [
     "aa",
     "ad",
@@ -298,6 +300,7 @@ priv enum Kont {
   Case(Array[Datum], Env, Kont)
   CaseArrow(Value, Kont)
   CallWithValues(Value, Kont)
+  MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
   WindEnter(Value, Winder, Kont)
   WindExit(Winder, Kont)
   WindActions(Array[WindAction], Value, Kont, Array[Value])
@@ -861,6 +864,14 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           Kont::CallWithValues(consumer, next) => {
             let values = value_to_values(value)
             state = apply_proc(consumer, values, next, handlers)
+          }
+          Kont::MapStep(proc, lists, results, for_each, next) => {
+            let single = expect_single(value)
+            let next_results = results
+            if !for_each {
+              next_results.push(value_as_datum(single))
+            }
+            state = map_step(proc, lists, next_results, for_each, next, handlers)
           }
           Kont::WindEnter(thunk, winder, next) => {
             wind_push(winder)
@@ -2215,6 +2226,38 @@ fn eval_pair(
 }
 
 ///|
+fn map_step(
+  proc : Value,
+  lists : Array[Datum],
+  results : Array[Datum],
+  for_each : Bool,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if lists.is_empty() {
+    raise EvalError("arity mismatch: expected at least 1 list")
+  }
+  let args : Array[Value] = []
+  let next_lists : Array[Datum] = []
+  for list in lists {
+    match list {
+      Datum::Nil => {
+        if for_each {
+          return MachineState::Apply(Value::Void, kont, handlers)
+        }
+        return MachineState::Apply(Value::Datum(list_from_array(results)), kont, handlers)
+      }
+      Datum::Pair(car, cdr) => {
+        args.push(Value::Datum(car))
+        next_lists.push(cdr)
+      }
+      _ => raise EvalError("type error: proper list expected")
+    }
+  }
+  apply_proc(proc, args, Kont::MapStep(proc, next_lists, results, for_each, kont), handlers)
+}
+
+///|
 fn apply_proc(
   proc : Value,
   args : Array[Value],
@@ -2300,6 +2343,34 @@ fn apply_proc(
       } else {
         let cont = capture_continuation(kont, handlers)
         apply_proc(args[0], [Value::Continuation(cont)], kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::Map) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let proc_value = args[0]
+        let lists : Array[Datum] = []
+        let mut i = 1
+        while i < args.length() {
+          lists.push(value_as_datum(args[i]))
+          i = i + 1
+        }
+        map_step(proc_value, lists, [], false, kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::ForEach) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let proc_value = args[0]
+        let lists : Array[Datum] = []
+        let mut i = 1
+        while i < args.length() {
+          lists.push(value_as_datum(args[i]))
+          i = i + 1
+        }
+        map_step(proc_value, lists, [], true, kont, handlers)
       }
     }
     Value::Primitive(prim) => MachineState::Apply(apply_primitive(prim, args), kont, handlers)
