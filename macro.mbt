@@ -83,6 +83,9 @@ fn is_core_identifier(name : String) -> Bool {
     "open-output-string",
     "get-output-string",
     "current-output-port",
+    "with-exception-handler",
+    "raise",
+    "raise-continuable",
   ]
   let mut i = 0
   while i < core.length() {

@@ -68,7 +68,10 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Newline, Primitive::Newline)
     | (Primitive::OpenOutputString, Primitive::OpenOutputString)
     | (Primitive::GetOutputString, Primitive::GetOutputString)
-    | (Primitive::CurrentOutputPort, Primitive::CurrentOutputPort) => true
+    | (Primitive::CurrentOutputPort, Primitive::CurrentOutputPort)
+    | (Primitive::WithExceptionHandler, Primitive::WithExceptionHandler)
+    | (Primitive::Raise, Primitive::Raise)
+    | (Primitive::RaiseContinuable, Primitive::RaiseContinuable) => true
     _ => false
   }
 }
@@ -791,6 +794,15 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         0 => Value::Port(get_current_output_port())
         n => raise arity_mismatch(0, n)
       }
+    }
+    Primitive::WithExceptionHandler => {
+      raise EvalError("internal error: with-exception-handler should be handled in apply_proc")
+    }
+    Primitive::Raise => {
+      raise EvalError("internal error: raise should be handled in apply_proc")
+    }
+    Primitive::RaiseContinuable => {
+      raise EvalError("internal error: raise-continuable should be handled in apply_proc")
     }
     Primitive::Not => {
       match args.length() {

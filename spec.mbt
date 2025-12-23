@@ -16,10 +16,11 @@
 ///   vector vector? vector-length vector-ref vector-set!
 ///   bytevector bytevector? bytevector-length bytevector-u8-ref bytevector-u8-set!
 ///   display write newline open-output-string get-output-string current-output-port
+///   with-exception-handler raise raise-continuable
 ///   (equality is structural for datums in this subset)
 /// - printing via value_to_string (booleans as #t/#f, empty list as ())
 ///
-/// Out of scope for now: records, exceptions, modules, and full numeric tower.
+/// Out of scope for now: records, modules, and full numeric tower.
 ///|
 pub(all) suberror ParseError String derive(Show, Eq)
 
@@ -98,6 +99,9 @@ pub enum Primitive {
   OpenOutputString
   GetOutputString
   CurrentOutputPort
+  WithExceptionHandler
+  Raise
+  RaiseContinuable
 }
 
 ///|

@@ -51,6 +51,13 @@ fn init_env() -> Env {
   env_define(env, "open-output-string", Value::Primitive(Primitive::OpenOutputString))
   env_define(env, "get-output-string", Value::Primitive(Primitive::GetOutputString))
   env_define(env, "current-output-port", Value::Primitive(Primitive::CurrentOutputPort))
+  env_define(
+    env,
+    "with-exception-handler",
+    Value::Primitive(Primitive::WithExceptionHandler),
+  )
+  env_define(env, "raise", Value::Primitive(Primitive::Raise))
+  env_define(env, "raise-continuable", Value::Primitive(Primitive::RaiseContinuable))
   env_define(env, "call/cc", Value::Primitive(Primitive::CallCC))
   env_define(
     env,
@@ -90,18 +97,22 @@ priv enum Kont {
   Let(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
   LetStar(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
   LetRec(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
+  RaiseNonCont
+  RaiseCont(Kont)
+  RestoreHandlers(Array[Value], Kont)
 }
 
 ///|
 struct Continuation {
   id : Int
   kont : Kont
+  handlers : Array[Value]
 }
 
 ///|
 priv enum MachineState {
-  Eval(Datum, Env, Kont)
-  Apply(Value, Kont)
+  Eval(Datum, Env, Kont, Array[Value])
+  Apply(Value, Kont, Array[Value])
 }
 
 ///|
@@ -138,10 +149,11 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
 
 ///|
 fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
-  let mut state = MachineState::Eval(expr, env, Kont::Halt)
+  let handlers : Array[Value] = []
+  let mut state = MachineState::Eval(expr, env, Kont::Halt, handlers)
   while true {
     match state {
-      MachineState::Eval(current_expr, current_env, kont) => {
+      MachineState::Eval(current_expr, current_env, kont, handlers) => {
         match current_expr {
           Datum::Nil
           | Datum::Bool(_)
@@ -152,48 +164,53 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           | Datum::String(_)
           | Datum::Vector(_)
           | Datum::ByteVector(_) =>
-            state = MachineState::Apply(Value::Datum(current_expr), kont)
+            state = MachineState::Apply(Value::Datum(current_expr), kont, handlers)
           Datum::Symbol(name) => {
             match env_lookup(current_env, name) {
               Value::Macro(_) => raise EvalError("macro used as value")
-              value => state = MachineState::Apply(value, kont)
+              value => state = MachineState::Apply(value, kont, handlers)
             }
           }
-          Datum::Pair(_, _) => state = eval_pair(current_expr, current_env, kont)
+          Datum::Pair(_, _) => state = eval_pair(current_expr, current_env, kont, handlers)
         }
       }
-      MachineState::Apply(value, kont) => {
+      MachineState::Apply(value, kont, handlers) => {
         match kont {
           Kont::Halt => return value
           Kont::If(then_expr, else_expr, env, next) => {
             if is_false(value) {
-              state = MachineState::Eval(else_expr, env, next)
+              state = MachineState::Eval(else_expr, env, next, handlers)
             } else {
-              state = MachineState::Eval(then_expr, env, next)
+              state = MachineState::Eval(then_expr, env, next, handlers)
             }
           }
           Kont::Begin(rest, env, next) => {
             if rest.is_empty() {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::Begin(tail, env, next))
+              state = MachineState::Eval(rest[0], env, Kont::Begin(tail, env, next), handlers)
             }
           }
           Kont::Set(name, env, next) => {
             env_set(env, name, value)
-            state = MachineState::Apply(Value::Void, next)
+            state = MachineState::Apply(Value::Void, next, handlers)
           }
           Kont::Define(name, env, next) => {
             env_define(env, name, value)
-            state = MachineState::Apply(Value::Void, next)
+            state = MachineState::Apply(Value::Void, next, handlers)
           }
           Kont::AppFun(args, env, next) => {
             if args.is_empty() {
-              state = apply_proc(value, [], next)
+              state = apply_proc(value, [], next, handlers)
             } else {
               let rest = args.sub(start=1).to_array()
-              state = MachineState::Eval(args[0], env, Kont::AppArgs(value, [], rest, env, next))
+              state = MachineState::Eval(
+                args[0],
+                env,
+                Kont::AppArgs(value, [], rest, env, next),
+                handlers,
+              )
             }
           }
           Kont::AppArgs(proc, evaluated, remaining, env, next) => {
@@ -203,40 +220,45 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
             }
             next_values.push(value)
             if remaining.is_empty() {
-              state = apply_proc(proc, next_values, next)
+              state = apply_proc(proc, next_values, next, handlers)
             } else {
               let rest = remaining.sub(start=1).to_array()
-              state = MachineState::Eval(remaining[0], env, Kont::AppArgs(proc, next_values, rest, env, next))
+              state = MachineState::Eval(
+                remaining[0],
+                env,
+                Kont::AppArgs(proc, next_values, rest, env, next),
+                handlers,
+              )
             }
           }
           Kont::And(rest, env, next) => {
             if is_false(value) {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else if rest.is_empty() {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::And(tail, env, next))
+              state = MachineState::Eval(rest[0], env, Kont::And(tail, env, next), handlers)
             }
           }
           Kont::Or(rest, env, next) => {
             if !is_false(value) {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else if rest.is_empty() {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::Or(tail, env, next))
+              state = MachineState::Eval(rest[0], env, Kont::Or(tail, env, next), handlers)
             }
           }
           Kont::Cond(parts, rest, env, next) => {
             if is_false(value) {
-              state = cond_start(rest, env, next)
+              state = cond_start(rest, env, next, handlers)
             } else if parts.length() == 1 {
-              state = MachineState::Apply(value, next)
+              state = MachineState::Apply(value, next, handlers)
             } else {
               let body = parts.sub(start=1).to_array()
-              state = eval_sequence_state(body, env, next)
+              state = eval_sequence_state(body, env, next, handlers)
             }
           }
           Kont::Let(bindings, index, values, env, body, next) => {
@@ -252,6 +274,7 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 expr,
                 env,
                 Kont::Let(bindings, next_index, next_values, env, body, next),
+                handlers,
               )
             } else {
               let new_env = env_extend(env)
@@ -261,7 +284,7 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 env_define(new_env, name, next_values[i])
                 i = i + 1
               }
-              state = eval_sequence_state(body, new_env, next)
+              state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
           Kont::LetStar(bindings, index, env, body, next) => {
@@ -275,9 +298,10 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 expr,
                 new_env,
                 Kont::LetStar(bindings, next_index, new_env, body, next),
+                handlers,
               )
             } else {
-              state = eval_sequence_state(body, new_env, next)
+              state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
           Kont::LetRec(bindings, index, env, body, next) => {
@@ -290,11 +314,16 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 expr,
                 env,
                 Kont::LetRec(bindings, next_index, env, body, next),
+                handlers,
               )
             } else {
-              state = eval_sequence_state(body, env, next)
+              state = eval_sequence_state(body, env, next, handlers)
             }
           }
+          Kont::RaiseNonCont => raise EvalError("non-continuable exception")
+          Kont::RaiseCont(next) => state = MachineState::Apply(value, next, handlers)
+          Kont::RestoreHandlers(prev_handlers, next) =>
+            state = MachineState::Apply(value, next, prev_handlers)
         }
       }
     }
@@ -469,33 +498,48 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
 }
 
 ///|
-fn eval_sequence_state(exprs : Array[Datum], env : Env, kont : Kont) -> MachineState {
+fn eval_sequence_state(
+  exprs : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState {
   if exprs.is_empty() {
-    MachineState::Apply(Value::Void, kont)
+    MachineState::Apply(Value::Void, kont, handlers)
   } else {
     let rest = exprs.sub(start=1).to_array()
-    MachineState::Eval(exprs[0], env, Kont::Begin(rest, env, kont))
+    MachineState::Eval(exprs[0], env, Kont::Begin(rest, env, kont), handlers)
   }
 }
 
 ///|
-fn eval_if_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_if_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() != 3 {
     raise arity_mismatch(3, args.length())
   } else {
-    MachineState::Eval(args[0], env, Kont::If(args[1], args[2], env, kont))
+    MachineState::Eval(args[0], env, Kont::If(args[1], args[2], env, kont), handlers)
   }
 }
 
 ///|
-fn eval_define_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_define_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
     match args[0] {
       Datum::Symbol(name) => {
         match args.length() {
-          2 => MachineState::Eval(args[1], env, Kont::Define(name, env, kont))
+          2 => MachineState::Eval(args[1], env, Kont::Define(name, env, kont), handlers)
           n => raise arity_mismatch(2, n)
         }
       }
@@ -509,7 +553,7 @@ fn eval_define_state(args : Array[Datum], env : Env, kont : Kont) -> MachineStat
               let params = parse_params(list_from_array(sig.sub(start=1).to_array()))
               let body = args.sub(start=1).to_array()
               env_define(env, name, Value::Closure(make_closure(params, body, env)))
-              MachineState::Apply(Value::Void, kont)
+              MachineState::Apply(Value::Void, kont, handlers)
             }
             _ => raise EvalError("type error: symbol expected")
           }
@@ -521,11 +565,17 @@ fn eval_define_state(args : Array[Datum], env : Env, kont : Kont) -> MachineStat
 }
 
 ///|
-fn eval_set_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_set_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   match args.length() {
     2 => {
       match args[0] {
-        Datum::Symbol(name) => MachineState::Eval(args[1], env, Kont::Set(name, env, kont))
+        Datum::Symbol(name) =>
+          MachineState::Eval(args[1], env, Kont::Set(name, env, kont), handlers)
         _ => raise EvalError("type error: symbol expected")
       }
     }
@@ -534,39 +584,54 @@ fn eval_set_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState r
 }
 
 ///|
-fn eval_let_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_let_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
     let bindings = parse_bindings(args[0])
     let body = args.sub(start=1).to_array()
     if bindings.is_empty() {
-      eval_sequence_state(body, env, kont)
+      eval_sequence_state(body, env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::Let(bindings, 0, [], env, body, kont))
+      MachineState::Eval(expr, env, Kont::Let(bindings, 0, [], env, body, kont), handlers)
     }
   }
 }
 
 ///|
-fn eval_let_star_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_let_star_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
     let bindings = parse_bindings(args[0])
     let body = args.sub(start=1).to_array()
     if bindings.is_empty() {
-      eval_sequence_state(body, env, kont)
+      eval_sequence_state(body, env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::LetStar(bindings, 0, env, body, kont))
+      MachineState::Eval(expr, env, Kont::LetStar(bindings, 0, env, body, kont), handlers)
     }
   }
 }
 
 ///|
-fn eval_letrec_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_letrec_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -578,16 +643,26 @@ fn eval_letrec_state(args : Array[Datum], env : Env, kont : Kont) -> MachineStat
       env_define(new_env, name, Value::Void)
     }
     if bindings.is_empty() {
-      eval_sequence_state(body, new_env, kont)
+      eval_sequence_state(body, new_env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, new_env, Kont::LetRec(bindings, 0, new_env, body, kont))
+      MachineState::Eval(
+        expr,
+        new_env,
+        Kont::LetRec(bindings, 0, new_env, body, kont),
+        handlers,
+      )
     }
   }
 }
 
 ///|
-fn eval_let_syntax_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_let_syntax_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -598,12 +673,17 @@ fn eval_let_syntax_state(args : Array[Datum], env : Env, kont : Kont) -> Machine
       let (name, rules) = binding
       env_define(new_env, name, Value::Macro(rules))
     }
-    eval_sequence_state(body, new_env, kont)
+    eval_sequence_state(body, new_env, kont, handlers)
   }
 }
 
 ///|
-fn eval_letrec_syntax_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_letrec_syntax_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -614,32 +694,47 @@ fn eval_letrec_syntax_state(args : Array[Datum], env : Env, kont : Kont) -> Mach
       let (name, rules) = binding
       env_define(new_env, name, Value::Macro(rules))
     }
-    eval_sequence_state(body, new_env, kont)
+    eval_sequence_state(body, new_env, kont, handlers)
   }
 }
 
 ///|
-fn eval_and_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState {
+fn eval_and_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState {
   if args.is_empty() {
-    MachineState::Apply(bool_value(true), kont)
+    MachineState::Apply(bool_value(true), kont, handlers)
   } else {
     let rest = args.sub(start=1).to_array()
-    MachineState::Eval(args[0], env, Kont::And(rest, env, kont))
+    MachineState::Eval(args[0], env, Kont::And(rest, env, kont), handlers)
   }
 }
 
 ///|
-fn eval_or_state(args : Array[Datum], env : Env, kont : Kont) -> MachineState {
+fn eval_or_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState {
   if args.is_empty() {
-    MachineState::Apply(bool_value(false), kont)
+    MachineState::Apply(bool_value(false), kont, handlers)
   } else {
     let rest = args.sub(start=1).to_array()
-    MachineState::Eval(args[0], env, Kont::Or(rest, env, kont))
+    MachineState::Eval(args[0], env, Kont::Or(rest, env, kont), handlers)
   }
 }
 
 ///|
-fn cond_start(clauses : Array[Datum], env : Env, kont : Kont) -> MachineState raise EvalError {
+fn cond_start(
+  clauses : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   let mut i = 0
   while i < clauses.length() {
     let parts = datum_list_to_array(clauses[i])
@@ -649,68 +744,113 @@ fn cond_start(clauses : Array[Datum], env : Env, kont : Kont) -> MachineState ra
       let head = symbol_name(parts[0])
       if head is Some("else") {
         let body = parts.sub(start=1).to_array()
-        return eval_sequence_state(body, env, kont)
+        return eval_sequence_state(body, env, kont, handlers)
       } else {
         let rest = clauses.sub(start=i + 1).to_array()
-        return MachineState::Eval(parts[0], env, Kont::Cond(parts, rest, env, kont))
+        return MachineState::Eval(parts[0], env, Kont::Cond(parts, rest, env, kont), handlers)
       }
     }
   }
-  MachineState::Apply(Value::Void, kont)
+  MachineState::Apply(Value::Void, kont, handlers)
 }
 
 ///|
-fn eval_pair(expr : Datum, env : Env, kont : Kont) -> MachineState raise EvalError {
+fn eval_pair(
+  expr : Datum,
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   let items = datum_list_to_array(expr)
   if items.is_empty() {
-    MachineState::Apply(Value::Datum(Datum::Nil), kont)
+    MachineState::Apply(Value::Datum(Datum::Nil), kont, handlers)
   } else {
     let head = items[0]
     let args = items.sub(start=1).to_array()
     match symbol_name(head) {
-      Some("define-syntax") => MachineState::Apply(eval_define_syntax(args, env), kont)
-      Some("quote") => MachineState::Apply(eval_quote(args), kont)
-      Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont)
-      Some("if") => eval_if_state(args, env, kont)
-      Some("begin") => eval_sequence_state(args, env, kont)
-      Some("lambda") => MachineState::Apply(eval_lambda(args, env), kont)
-      Some("define") => eval_define_state(args, env, kont)
-      Some("set!") => eval_set_state(args, env, kont)
-      Some("let") => eval_let_state(args, env, kont)
-      Some("let*") => eval_let_star_state(args, env, kont)
-      Some("letrec") => eval_letrec_state(args, env, kont)
-      Some("let-syntax") => eval_let_syntax_state(args, env, kont)
-      Some("letrec-syntax") => eval_letrec_syntax_state(args, env, kont)
-      Some("and") => eval_and_state(args, env, kont)
-      Some("or") => eval_or_state(args, env, kont)
-      Some("cond") => cond_start(args, env, kont)
+      Some("define-syntax") => MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
+      Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
+      Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
+      Some("if") => eval_if_state(args, env, kont, handlers)
+      Some("begin") => eval_sequence_state(args, env, kont, handlers)
+      Some("lambda") => MachineState::Apply(eval_lambda(args, env), kont, handlers)
+      Some("define") => eval_define_state(args, env, kont, handlers)
+      Some("set!") => eval_set_state(args, env, kont, handlers)
+      Some("let") => eval_let_state(args, env, kont, handlers)
+      Some("let*") => eval_let_star_state(args, env, kont, handlers)
+      Some("letrec") => eval_letrec_state(args, env, kont, handlers)
+      Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
+      Some("letrec-syntax") => eval_letrec_syntax_state(args, env, kont, handlers)
+      Some("and") => eval_and_state(args, env, kont, handlers)
+      Some("or") => eval_or_state(args, env, kont, handlers)
+      Some("cond") => cond_start(args, env, kont, handlers)
       Some(name) => {
         match env_get_macro(env, name) {
           Some(rules) => {
             let expanded = expand_macro(rules, expr, env)
-            MachineState::Eval(expanded, env, kont)
+            MachineState::Eval(expanded, env, kont, handlers)
           }
-          None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont))
+          None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)
         }
       }
-      None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont))
+      None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)
     }
   }
 }
 
 ///|
-fn apply_proc(proc : Value, args : Array[Value], kont : Kont) -> MachineState raise EvalError {
+fn apply_proc(
+  proc : Value,
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   match proc {
-    Value::Primitive(Primitive::Apply) => apply_apply(args, kont)
+    Value::Primitive(Primitive::Apply) => apply_apply(args, kont, handlers)
+    Value::Primitive(Primitive::WithExceptionHandler) => {
+      if args.length() != 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let handler = args[0]
+        let thunk = args[1]
+        let next_handlers : Array[Value] = []
+        for item in handlers {
+          next_handlers.push(item)
+        }
+        next_handlers.push(handler)
+        let restore = Kont::RestoreHandlers(handlers, kont)
+        apply_proc(thunk, [], restore, next_handlers)
+      }
+    }
+    Value::Primitive(Primitive::Raise) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else if handlers.is_empty() {
+        raise EvalError("uncaught exception")
+      } else {
+        let handler = handlers[handlers.length() - 1]
+        apply_proc(handler, [args[0]], Kont::RaiseNonCont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::RaiseContinuable) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else if handlers.is_empty() {
+        raise EvalError("uncaught exception")
+      } else {
+        let handler = handlers[handlers.length() - 1]
+        apply_proc(handler, [args[0]], Kont::RaiseCont(kont), handlers)
+      }
+    }
     Value::Primitive(Primitive::CallCC) => {
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
-        let cont = Continuation::{ id: next_continuation_id(), kont }
-        apply_proc(args[0], [Value::Continuation(cont)], kont)
+        let cont = Continuation::{ id: next_continuation_id(), kont, handlers }
+        apply_proc(args[0], [Value::Continuation(cont)], kont, handlers)
       }
     }
-    Value::Primitive(prim) => MachineState::Apply(apply_primitive(prim, args), kont)
+    Value::Primitive(prim) => MachineState::Apply(apply_primitive(prim, args), kont, handlers)
     Value::Closure(cl) => {
       if args.length() != cl.params.length() {
         raise arity_mismatch(cl.params.length(), args.length())
@@ -721,14 +861,14 @@ fn apply_proc(proc : Value, args : Array[Value], kont : Kont) -> MachineState ra
           env_define(new_env, cl.params[i], args[i])
           i = i + 1
         }
-        eval_sequence_state(cl.body, new_env, kont)
+        eval_sequence_state(cl.body, new_env, kont, handlers)
       }
     }
     Value::Continuation(cont) => {
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
-        MachineState::Apply(args[0], cont.kont)
+        MachineState::Apply(args[0], cont.kont, cont.handlers)
       }
     }
     _ => raise EvalError("type error: procedure expected")
@@ -736,7 +876,11 @@ fn apply_proc(proc : Value, args : Array[Value], kont : Kont) -> MachineState ra
 }
 
 ///|
-fn apply_apply(args : Array[Value], kont : Kont) -> MachineState raise EvalError {
+fn apply_apply(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
@@ -750,6 +894,6 @@ fn apply_apply(args : Array[Value], kont : Kont) -> MachineState raise EvalError
     let list_value = value_as_datum(args[args.length() - 1])
     let tail = datum_list_to_value_array(list_value)
     flat.append(tail[:])
-    apply_proc(proc, flat, kont)
+    apply_proc(proc, flat, kont, handlers)
   }
 }
