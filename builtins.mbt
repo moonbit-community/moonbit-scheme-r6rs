@@ -69,6 +69,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::StringLength, Primitive::StringLength)
     | (Primitive::StringAppend, Primitive::StringAppend)
     | (Primitive::StringRef, Primitive::StringRef)
+    | (Primitive::StringToList, Primitive::StringToList)
+    | (Primitive::ListToString, Primitive::ListToString)
     | (Primitive::Vector, Primitive::Vector)
     | (Primitive::MakeVector, Primitive::MakeVector)
     | (Primitive::VectorP, Primitive::VectorP)
@@ -800,6 +802,41 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::StringToList => {
+      match args.length() {
+        1 => {
+          let s = value_as_string(args[0])
+          let items : Array[Datum] = []
+          let mut i = 0
+          while i < s.length() {
+            match s.get_char(i) {
+              Some(ch) => items.push(Datum::Char(ch))
+              None => raise EvalError("index out of range")
+            }
+            i = i + 1
+          }
+          Value::Datum(list_from_array(items))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::ListToString => {
+      match args.length() {
+        1 => {
+          let datum = value_as_datum(args[0])
+          let items = datum_list_to_array(datum)
+          let buf = @buffer.new()
+          for item in items {
+            match item {
+              Datum::Char(ch) => buf.write_char(ch)
+              _ => raise EvalError("type error: char expected")
+            }
+          }
+          Value::Datum(Datum::String(buf.to_string()))
+        }
+        n => raise arity_mismatch(1, n)
       }
     }
     Primitive::Vector => {

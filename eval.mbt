@@ -50,6 +50,8 @@ fn init_env() -> Env {
   env_define(env, "string-length", Value::Primitive(Primitive::StringLength))
   env_define(env, "string-append", Value::Primitive(Primitive::StringAppend))
   env_define(env, "string-ref", Value::Primitive(Primitive::StringRef))
+  env_define(env, "string->list", Value::Primitive(Primitive::StringToList))
+  env_define(env, "list->string", Value::Primitive(Primitive::ListToString))
   env_define(env, "vector", Value::Primitive(Primitive::Vector))
   env_define(env, "make-vector", Value::Primitive(Primitive::MakeVector))
   env_define(env, "vector?", Value::Primitive(Primitive::VectorP))

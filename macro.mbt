@@ -95,6 +95,8 @@ fn is_core_identifier(name : String) -> Bool {
     "string-length",
     "string-append",
     "string-ref",
+    "string->list",
+    "list->string",
     "vector",
     "make-vector",
     "vector?",
