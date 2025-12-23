@@ -450,6 +450,34 @@ fn float_round_int(value : Float) -> Int {
 }
 
 ///|
+fn int_to_string_radix(value : Int, radix : Int) -> String {
+  if value == 0 {
+    return "0"
+  }
+  let digits : Array[Char] = [
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z',
+  ]
+  let mut n = if value < 0 { -value } else { value }
+  let chars : Array[Char] = []
+  while n > 0 {
+    let rem = n % radix
+    chars.push(digits[rem])
+    n = n / radix
+  }
+  if value < 0 {
+    chars.push('-')
+  }
+  let out : Array[Char] = []
+  for ch in chars.rev_iter() {
+    out.push(ch)
+  }
+  String::from_array(out)
+}
+
+///|
 fn value_as_string(value : Value) -> String raise EvalError {
   match value {
     Value::Datum(Datum::String(s)) => s.val
@@ -892,34 +920,69 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::NumberToString => {
       match args.length() {
-        1 => {
+        1 | 2 => {
           let num = value_as_number(args[0])
-          let text = value_to_string(Value::Datum(num))
-          Value::Datum(Datum::String(Ref::new(text)))
+          let radix = if args.length() == 2 {
+            value_as_int_index(args[1])
+          } else {
+            10
+          }
+          if radix < 2 || radix > 36 {
+            raise EvalError("radix out of range")
+          }
+          match num {
+            Datum::Int(n) => {
+              let text = int_to_string_radix(n, radix)
+              Value::Datum(Datum::String(Ref::new(text)))
+            }
+            Datum::Rat(_, _) | Datum::Float(_) => {
+              if radix != 10 {
+                raise EvalError("type error: exact integer expected")
+              }
+              let text = value_to_string(Value::Datum(num))
+              Value::Datum(Datum::String(Ref::new(text)))
+            }
+            _ => raise EvalError("type error: number expected")
+          }
         }
-        n => raise arity_mismatch(1, n)
+        n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
     }
     Primitive::StringToNumber => {
       match args.length() {
-        1 => {
+        1 | 2 => {
           let s = value_as_string(args[0])
-          match parse_int_token(s) {
-            Some(n) => Value::Datum(Datum::Int(n))
-            None => {
-              match parse_rat_token(s) {
-                Some(rat) => Value::Datum(rat)
-                None => {
-                  match parse_float_token(s) {
-                    Some(f) => Value::Datum(Datum::Float(f))
-                    None => Value::Datum(Datum::Bool(false))
+          let radix = if args.length() == 2 {
+            value_as_int_index(args[1])
+          } else {
+            10
+          }
+          if radix < 2 || radix > 36 {
+            raise EvalError("radix out of range")
+          }
+          if radix == 10 {
+            match parse_int_token(s) {
+              Some(n) => Value::Datum(Datum::Int(n))
+              None => {
+                match parse_rat_token(s) {
+                  Some(rat) => Value::Datum(rat)
+                  None => {
+                    match parse_float_token(s) {
+                      Some(f) => Value::Datum(Datum::Float(f))
+                      None => Value::Datum(Datum::Bool(false))
+                    }
                   }
                 }
               }
             }
+          } else {
+            match parse_int_token_radix(s, radix) {
+              Some(n) => Value::Datum(Datum::Int(n))
+              None => Value::Datum(Datum::Bool(false))
+            }
           }
         }
-        n => raise arity_mismatch(1, n)
+        n => raise EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
     }
     Primitive::Numerator => {

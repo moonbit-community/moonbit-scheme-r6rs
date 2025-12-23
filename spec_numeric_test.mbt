@@ -51,9 +51,14 @@ test "r6rs numeric: conversions and fractions" {
   inspect(value_to_string(eval_program("(inexact->exact 2.0)")), content="2")
   inspect(value_to_string(eval_program("(number->string 3)")), content="\"3\"")
   inspect(value_to_string(eval_program("(number->string 1/2)")), content="\"1/2\"")
+  inspect(value_to_string(eval_program("(number->string 10 2)")), content="\"1010\"")
+  inspect(value_to_string(eval_program("(number->string -15 16)")), content="\"-f\"")
   inspect(value_to_string(eval_program("(string->number \"3\")")), content="3")
   inspect(value_to_string(eval_program("(string->number \"1/2\")")), content="1/2")
   inspect(value_to_string(eval_program("(string->number \"2.5\")")), content="2.5")
+  inspect(value_to_string(eval_program("(string->number \"1010\" 2)")), content="10")
+  inspect(value_to_string(eval_program("(string->number \"ff\" 16)")), content="255")
+  inspect(value_to_string(eval_program("(string->number \"1/2\" 16)")), content="#f")
   inspect(value_to_string(eval_program("(string->number \"nope\")")), content="#f")
   inspect(value_to_string(eval_program("(numerator 3/4)")), content="3")
   inspect(value_to_string(eval_program("(denominator 3/4)")), content="4")
@@ -129,6 +134,27 @@ test "r6rs numeric: predicate errors" {
   match bad_zero {
     Err(err) => inspect(err, content="EvalError(\"type error: number expected\")")
     _ => fail("expected EvalError for zero? on non-number")
+  }
+}
+
+///|
+test "r6rs numeric: radix errors" {
+  let bad_radix = try? eval_program("(string->number \"10\" 1)")
+  match bad_radix {
+    Err(err) => inspect(err, content="EvalError(\"radix out of range\")")
+    _ => fail("expected EvalError for invalid radix")
+  }
+
+  let bad_number_radix = try? eval_program("(number->string 10 37)")
+  match bad_number_radix {
+    Err(err) => inspect(err, content="EvalError(\"radix out of range\")")
+    _ => fail("expected EvalError for invalid radix")
+  }
+
+  let bad_nonint_radix = try? eval_program("(number->string 1/2 16)")
+  match bad_nonint_radix {
+    Err(err) => inspect(err, content="EvalError(\"type error: exact integer expected\")")
+    _ => fail("expected EvalError for non-integer radix conversion")
   }
 }
 

@@ -152,6 +152,53 @@ fn parse_int_token(tok : String) -> Int? {
 }
 
 ///|
+fn digit_value(ch : Char) -> Int? {
+  if ch.is_ascii_digit() {
+    Some(ch.to_int() - '0'.to_int())
+  } else if ch.is_ascii_lowercase() {
+    Some(ch.to_int() - 'a'.to_int() + 10)
+  } else if ch.is_ascii_uppercase() {
+    Some(ch.to_int() - 'A'.to_int() + 10)
+  } else {
+    None
+  }
+}
+
+///|
+fn parse_int_token_radix(tok : String, radix : Int) -> Int? {
+  if radix < 2 || radix > 36 {
+    return None
+  }
+  let mut sign = 1
+  let mut acc = 0
+  let mut i = 0
+  let mut has_digit = false
+  for ch in tok {
+    if i == 0 && (ch == '+' || ch == '-') {
+      sign = if ch == '-' { -1 } else { 1 }
+      i = i + 1
+      continue
+    }
+    match digit_value(ch) {
+      Some(digit) => {
+        if digit >= radix {
+          return None
+        }
+        acc = acc * radix + digit
+        has_digit = true
+        i = i + 1
+      }
+      None => return None
+    }
+  }
+  if has_digit {
+    Some(sign * acc)
+  } else {
+    None
+  }
+}
+
+///|
 fn parse_rat_token(tok : String) -> Datum? {
   let chars : Array[Char] = []
   for ch in tok {
