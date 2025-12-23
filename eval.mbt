@@ -498,6 +498,23 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
 }
 
 ///|
+fn parse_symbol(expr : Datum) -> String raise EvalError {
+  match expr {
+    Datum::Symbol(name) => name
+    _ => raise EvalError("type error: symbol expected")
+  }
+}
+
+///|
+fn parse_symbol_list(items : Array[Datum]) -> Array[String] raise EvalError {
+  let names : Array[String] = []
+  for item in items {
+    names.push(parse_symbol(item))
+  }
+  names
+}
+
+///|
 fn eval_sequence_state(
   exprs : Array[Datum],
   env : Env,
@@ -699,6 +716,172 @@ fn eval_letrec_syntax_state(
 }
 
 ///|
+fn eval_define_record_type_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() < 3 {
+    raise EvalError("invalid define-record-type")
+  }
+  let record_name = parse_symbol(args[0])
+  let ctor_parts = datum_list_to_array(args[1])
+  if ctor_parts.is_empty() {
+    raise EvalError("invalid define-record-type")
+  }
+  let ctor_name = parse_symbol(ctor_parts[0])
+  let ctor_fields = parse_symbol_list(ctor_parts.sub(start=1).to_array())
+  let pred_name = parse_symbol(args[2])
+  let field_specs = args.sub(start=3).to_array()
+  if field_specs.length() != ctor_fields.length() {
+    raise EvalError("invalid define-record-type")
+  }
+  let accessors : Map[String, String] = {}
+  let mutators : Map[String, String] = {}
+  let mutable : Map[String, Bool] = {}
+  for spec in field_specs {
+    let parts = datum_list_to_array(spec)
+    if parts.length() < 2 || parts.length() > 3 {
+      raise EvalError("invalid define-record-type")
+    }
+    let field_name = parse_symbol(parts[0])
+    if accessors.contains(field_name) {
+      raise EvalError("invalid define-record-type")
+    }
+    let accessor = parse_symbol(parts[1])
+    accessors[field_name] = accessor
+    if parts.length() == 3 {
+      let mutator = parse_symbol(parts[2])
+      mutators[field_name] = mutator
+      mutable[field_name] = true
+    } else {
+      mutable[field_name] = false
+    }
+  }
+  let fields : Array[RecordField] = []
+  let field_index : Map[String, Int] = {}
+  let mut i = 0
+  while i < ctor_fields.length() {
+    let field_name = ctor_fields[i]
+    match accessors.get(field_name) {
+      Some(_) => ()
+      None => raise EvalError("invalid define-record-type")
+    }
+    let is_mutable = match mutable.get(field_name) {
+      Some(flag) => flag
+      None => false
+    }
+    fields.push(RecordField::{ name: field_name, mutable: is_mutable })
+    field_index[field_name] = i
+    i = i + 1
+  }
+  let record_type = make_record_type(record_name, fields)
+  env_define(
+    env,
+    ctor_name,
+    Value::RecordProc(make_record_proc(RecordProcKind::Constructor(record_type))),
+  )
+  env_define(
+    env,
+    pred_name,
+    Value::RecordProc(make_record_proc(RecordProcKind::Predicate(record_type))),
+  )
+  for field_name in ctor_fields {
+    let idx = match field_index.get(field_name) {
+      Some(value) => value
+      None => raise EvalError("invalid define-record-type")
+    }
+    let accessor_name = match accessors.get(field_name) {
+      Some(name) => name
+      None => raise EvalError("invalid define-record-type")
+    }
+    env_define(
+      env,
+      accessor_name,
+      Value::RecordProc(make_record_proc(RecordProcKind::Accessor(record_type, idx))),
+    )
+    match mutators.get(field_name) {
+      Some(mut_name) => {
+        env_define(
+          env,
+          mut_name,
+          Value::RecordProc(make_record_proc(RecordProcKind::Mutator(record_type, idx))),
+        )
+      }
+      None => ()
+    }
+  }
+  MachineState::Apply(Value::Void, kont, handlers)
+}
+
+///|
+fn value_as_record(value : Value) -> Record raise EvalError {
+  match value {
+    Value::Record(record) => record
+    _ => raise EvalError("type error: record expected")
+  }
+}
+
+///|
+fn apply_record_proc(
+  proc : RecordProc,
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  match proc.kind {
+    RecordProcKind::Constructor(record_type) => {
+      let field_count = record_type.fields.length()
+      if args.length() != field_count {
+        raise arity_mismatch(field_count, args.length())
+      } else {
+        let record = make_record_instance(record_type, args)
+        MachineState::Apply(Value::Record(record), kont, handlers)
+      }
+    }
+    RecordProcKind::Predicate(record_type) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let result = match args[0] {
+          Value::Record(record) => record.record_type.id == record_type.id
+          _ => false
+        }
+        MachineState::Apply(bool_value(result), kont, handlers)
+      }
+    }
+    RecordProcKind::Accessor(record_type, idx) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let record = value_as_record(args[0])
+        if record.record_type.id != record_type.id {
+          raise EvalError("type error: record type mismatch: expected \{record_type.name}")
+        }
+        MachineState::Apply(record.fields[idx].val, kont, handlers)
+      }
+    }
+    RecordProcKind::Mutator(record_type, idx) => {
+      if args.length() != 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let record = value_as_record(args[0])
+        if record.record_type.id != record_type.id {
+          raise EvalError("type error: record type mismatch: expected \{record_type.name}")
+        }
+        let field = record.record_type.fields[idx]
+        if !field.mutable {
+          raise EvalError("record field is immutable: \{field.name}")
+        }
+        record.fields[idx].val = args[1]
+        MachineState::Apply(Value::Void, kont, handlers)
+      }
+    }
+  }
+}
+
+///|
 fn eval_and_state(
   args : Array[Datum],
   env : Env,
@@ -769,6 +952,7 @@ fn eval_pair(
     let args = items.sub(start=1).to_array()
     match symbol_name(head) {
       Some("define-syntax") => MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
+      Some("define-record-type") => eval_define_record_type_state(args, env, kont, handlers)
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
       Some("if") => eval_if_state(args, env, kont, handlers)
@@ -871,6 +1055,7 @@ fn apply_proc(
         MachineState::Apply(args[0], cont.kont, cont.handlers)
       }
     }
+    Value::RecordProc(proc) => apply_record_proc(proc, args, kont, handlers)
     _ => raise EvalError("type error: procedure expected")
   }
 }

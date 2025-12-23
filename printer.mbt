@@ -102,6 +102,8 @@ pub fn value_to_string(value : Value) -> String {
     Value::Closure(_) => "#<procedure>"
     Value::Continuation(_) => "#<procedure>"
     Value::Port(_) => "#<port>"
+    Value::Record(_) => "#<record>"
+    Value::RecordProc(_) => "#<procedure>"
     Value::Macro(_) => "#<syntax>"
   }
 }

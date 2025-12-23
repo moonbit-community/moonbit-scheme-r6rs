@@ -28,6 +28,7 @@ fn is_core_identifier(name : String) -> Bool {
     "letrec",
     "let-syntax",
     "letrec-syntax",
+    "define-record-type",
     "and",
     "or",
     "cond",

@@ -84,6 +84,8 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::Closure(a), Value::Closure(b)) => a.id == b.id
     (Value::Continuation(a), Value::Continuation(b)) => a.id == b.id
     (Value::Port(a), Value::Port(b)) => a.id == b.id
+    (Value::Record(a), Value::Record(b)) => a.id == b.id
+    (Value::RecordProc(a), Value::RecordProc(b)) => a.id == b.id
     (Value::Void, Value::Void) => true
     _ => false
   }
@@ -570,7 +572,10 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::Primitive(_) | Value::Closure(_) | Value::Continuation(_) => bool_value(true)
+            Value::Primitive(_)
+            | Value::Closure(_)
+            | Value::Continuation(_)
+            | Value::RecordProc(_) => bool_value(true)
             _ => bool_value(false)
           }
         }

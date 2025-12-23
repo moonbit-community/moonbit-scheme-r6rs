@@ -15,13 +15,90 @@ struct Port {
 }
 
 ///|
+priv struct RecordField {
+  name : String
+  mutable : Bool
+}
+
+///|
+priv struct RecordType {
+  id : Int
+  name : String
+  fields : Array[RecordField]
+}
+
+///|
+struct Record {
+  id : Int
+  record_type : RecordType
+  fields : Array[Ref[Value]]
+}
+
+///|
+priv enum RecordProcKind {
+  Constructor(RecordType)
+  Predicate(RecordType)
+  Accessor(RecordType, Int)
+  Mutator(RecordType, Int)
+}
+
+///|
+struct RecordProc {
+  id : Int
+  kind : RecordProcKind
+}
+
+///|
 let port_counter : Ref[Int] = Ref::new(0)
+let record_type_counter : Ref[Int] = Ref::new(0)
+let record_counter : Ref[Int] = Ref::new(0)
+let record_proc_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_port_id() -> Int {
   let id = port_counter.val
   port_counter.val = id + 1
   id
+}
+
+///|
+fn next_record_type_id() -> Int {
+  let id = record_type_counter.val
+  record_type_counter.val = id + 1
+  id
+}
+
+///|
+fn next_record_id() -> Int {
+  let id = record_counter.val
+  record_counter.val = id + 1
+  id
+}
+
+///|
+fn next_record_proc_id() -> Int {
+  let id = record_proc_counter.val
+  record_proc_counter.val = id + 1
+  id
+}
+
+///|
+fn make_record_type(name : String, fields : Array[RecordField]) -> RecordType {
+  RecordType::{ id: next_record_type_id(), name, fields }
+}
+
+///|
+fn make_record_proc(kind : RecordProcKind) -> RecordProc {
+  RecordProc::{ id: next_record_proc_id(), kind }
+}
+
+///|
+fn make_record_instance(record_type : RecordType, values : Array[Value]) -> Record {
+  let fields : Array[Ref[Value]] = []
+  for value in values {
+    fields.push(Ref::new(value))
+  }
+  Record::{ id: next_record_id(), record_type, fields }
 }
 
 ///|
