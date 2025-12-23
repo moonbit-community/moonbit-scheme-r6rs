@@ -4,8 +4,12 @@ fn init_env() -> Env {
   env_define(env, "+", Value::Primitive(Primitive::Add))
   env_define(env, "-", Value::Primitive(Primitive::Sub))
   env_define(env, "*", Value::Primitive(Primitive::Mul))
+  env_define(env, "/", Value::Primitive(Primitive::Div))
   env_define(env, "=", Value::Primitive(Primitive::NumEq))
   env_define(env, "<", Value::Primitive(Primitive::Less))
+  env_define(env, ">", Value::Primitive(Primitive::Greater))
+  env_define(env, "<=", Value::Primitive(Primitive::LessEq))
+  env_define(env, ">=", Value::Primitive(Primitive::GreaterEq))
   env_define(env, "cons", Value::Primitive(Primitive::Cons))
   env_define(env, "car", Value::Primitive(Primitive::Car))
   env_define(env, "cdr", Value::Primitive(Primitive::Cdr))
@@ -18,7 +22,44 @@ fn init_env() -> Env {
   env_define(env, "procedure?", Value::Primitive(Primitive::ProcedureP))
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
+  env_define(env, "eq?", Value::Primitive(Primitive::Eq))
+  env_define(env, "eqv?", Value::Primitive(Primitive::Eqv))
+  env_define(env, "equal?", Value::Primitive(Primitive::Equal))
+  env_define(env, "list?", Value::Primitive(Primitive::ListP))
+  env_define(env, "length", Value::Primitive(Primitive::Length))
+  env_define(env, "append", Value::Primitive(Primitive::Append))
+  env_define(env, "reverse", Value::Primitive(Primitive::Reverse))
+  env_define(env, "char?", Value::Primitive(Primitive::CharP))
+  env_define(env, "string?", Value::Primitive(Primitive::StringP))
+  env_define(env, "string-length", Value::Primitive(Primitive::StringLength))
+  env_define(env, "string-append", Value::Primitive(Primitive::StringAppend))
+  env_define(env, "string-ref", Value::Primitive(Primitive::StringRef))
+  env_define(env, "vector", Value::Primitive(Primitive::Vector))
+  env_define(env, "vector?", Value::Primitive(Primitive::VectorP))
+  env_define(env, "vector-length", Value::Primitive(Primitive::VectorLength))
+  env_define(env, "vector-ref", Value::Primitive(Primitive::VectorRef))
+  env_define(env, "vector-set!", Value::Primitive(Primitive::VectorSet))
+  env_define(env, "bytevector", Value::Primitive(Primitive::ByteVector))
+  env_define(env, "bytevector?", Value::Primitive(Primitive::ByteVectorP))
+  env_define(env, "bytevector-length", Value::Primitive(Primitive::ByteVectorLength))
+  env_define(env, "bytevector-u8-ref", Value::Primitive(Primitive::ByteVectorU8Ref))
+  env_define(env, "bytevector-u8-set!", Value::Primitive(Primitive::ByteVectorU8Set))
   env
+}
+
+///|
+let closure_counter : Ref[Int] = Ref::new(0)
+
+///|
+fn next_closure_id() -> Int {
+  let id = closure_counter.val
+  closure_counter.val = id + 1
+  id
+}
+
+///|
+fn make_closure(params : Array[String], body : Array[Datum], env : Env) -> Closure {
+  { id: next_closure_id(), params, body, env }
 }
 
 ///|
@@ -49,7 +90,12 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
     Datum::Nil
     | Datum::Bool(_)
     | Datum::Int(_)
-    | Datum::String(_) => Value::Datum(expr)
+    | Datum::Rat(_, _)
+    | Datum::Float(_)
+    | Datum::Char(_)
+    | Datum::String(_)
+    | Datum::Vector(_)
+    | Datum::ByteVector(_) => Value::Datum(expr)
     Datum::Symbol(name) => {
       match env_lookup(env, name) {
         Value::Macro(_) => raise EvalError("macro used as value")
@@ -80,13 +126,15 @@ fn eval_list(expr : Datum, env : Env) -> Value raise EvalError {
       Some("let") => eval_let(args, env)
       Some("let*") => eval_let_star(args, env)
       Some("letrec") => eval_letrec(args, env)
+      Some("let-syntax") => eval_let_syntax(args, env)
+      Some("letrec-syntax") => eval_letrec_syntax(args, env)
       Some("and") => eval_and(args, env)
       Some("or") => eval_or(args, env)
       Some("cond") => eval_cond(args, env)
       Some(name) => {
         match env_get_macro(env, name) {
           Some(rules) => {
-            let expanded = expand_macro(rules, expr)
+            let expanded = expand_macro(rules, expr, env)
             eval_expr(expanded, env)
           }
           None => eval_application(items, env)
@@ -225,7 +273,7 @@ fn eval_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
   } else {
     let params = parse_params(args[0])
     let body = args.sub(start=1).to_array()
-    Value::Closure({ params, body, env })
+    Value::Closure(make_closure(params, body, env))
   }
 }
 
@@ -254,7 +302,7 @@ fn eval_define(args : Array[Datum], env : Env) -> Value raise EvalError {
             Datum::Symbol(name) => {
               let params = parse_params(list_from_array(sig.sub(start=1).to_array()))
               let body = args.sub(start=1).to_array()
-              env_define(env, name, Value::Closure({ params, body, env }))
+              env_define(env, name, Value::Closure(make_closure(params, body, env)))
               Value::Void
             }
             _ => raise EvalError("type error: symbol expected")
@@ -280,6 +328,59 @@ fn eval_define_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
       }
     }
     n => raise arity_mismatch(2, n)
+  }
+}
+
+///|
+fn parse_syntax_bindings(expr : Datum) -> Array[(String, SyntaxRules)] raise EvalError {
+  let bindings = datum_list_to_array(expr)
+  let parsed : Array[(String, SyntaxRules)] = []
+  for binding in bindings {
+    let parts = datum_list_to_array(binding)
+    if parts.length() != 2 {
+      raise EvalError("type error: syntax binding expected")
+    } else {
+      match parts[0] {
+        Datum::Symbol(name) => {
+          let rules = parse_syntax_rules(parts[1])
+          parsed.push((name, rules))
+        }
+        _ => raise EvalError("type error: symbol expected")
+      }
+    }
+  }
+  parsed
+}
+
+///|
+fn eval_let_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
+  if args.length() < 2 {
+    raise arity_mismatch(2, args.length())
+  } else {
+    let bindings = parse_syntax_bindings(args[0])
+    let body = args.sub(start=1).to_array()
+    let new_env = env_extend(env)
+    for binding in bindings {
+      let (name, rules) = binding
+      env_define(new_env, name, Value::Macro(rules))
+    }
+    eval_sequence(body, new_env)
+  }
+}
+
+///|
+fn eval_letrec_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
+  if args.length() < 2 {
+    raise arity_mismatch(2, args.length())
+  } else {
+    let bindings = parse_syntax_bindings(args[0])
+    let body = args.sub(start=1).to_array()
+    let new_env = env_extend(env)
+    for binding in bindings {
+      let (name, rules) = binding
+      env_define(new_env, name, Value::Macro(rules))
+    }
+    eval_sequence(body, new_env)
   }
 }
 

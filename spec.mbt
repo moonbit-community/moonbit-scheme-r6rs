@@ -2,13 +2,18 @@
 /// Spec for a small, R6RS-compatible Scheme interpreter.
 ///
 /// Phase 1 scope (implemented by tests in this module):
-/// - exact integers, booleans, symbols, strings, pairs/lists
+/// - exact integers, exact rationals, inexact floats, booleans, symbols,
+///   characters, strings, pairs/lists
 /// - quote, quasiquote, unquote, unquote-splicing, if, begin, lambda, define,
-///   set!, let, let*, letrec, and, or, cond
+///   set!, let, let*, letrec, let-syntax, letrec-syntax, and, or, cond
 /// - define-syntax + syntax-rules (hygienic identifiers), including "..." repetition
 /// - application with left-to-right evaluation
-/// - builtins: + - * = < cons car cdr list null? pair? symbol? boolean?
-///   number? procedure? not apply
+/// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
+///   boolean? number? procedure? not apply eq? eqv? equal? list? length append
+///   reverse char? string? string-length string-append string-ref
+///   vector vector? vector-length vector-ref vector-set!
+///   bytevector bytevector? bytevector-length bytevector-u8-ref bytevector-u8-set!
+///   (equality is structural for datums in this subset)
 /// - printing via value_to_string (booleans as #t/#f, empty list as ())
 ///
 /// Out of scope for now: characters, vectors, bytevectors, records, ports,
@@ -27,9 +32,14 @@ pub enum Datum {
   Nil
   Bool(Bool)
   Int(Int)
+  Rat(Int, Int)
+  Float(Float)
+  Char(Char)
   String(String)
   Symbol(String)
   Pair(Datum, Datum)
+  Vector(Array[Datum])
+  ByteVector(Array[Int])
 }
 
 ///|
@@ -39,8 +49,15 @@ pub enum Primitive {
   Add
   Sub
   Mul
+  Div
   NumEq
   Less
+  Greater
+  LessEq
+  GreaterEq
+  Eq
+  Eqv
+  Equal
   Cons
   Car
   Cdr
@@ -53,6 +70,25 @@ pub enum Primitive {
   ProcedureP
   Not
   Apply
+  ListP
+  Length
+  Append
+  Reverse
+  CharP
+  StringP
+  StringLength
+  StringAppend
+  StringRef
+  Vector
+  VectorP
+  VectorLength
+  VectorRef
+  VectorSet
+  ByteVector
+  ByteVectorP
+  ByteVectorLength
+  ByteVectorU8Ref
+  ByteVectorU8Set
 }
 
 ///|
@@ -82,6 +118,7 @@ pub struct SyntaxRules {
 /// The interpreter may store extra data internally; tests treat it as opaque.
 ///|
 pub struct Closure {
+  id : Int
   params : Array[String]
   body : Array[Datum]
   env : Env

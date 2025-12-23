@@ -15,16 +15,56 @@ fn escape_string(s : String) -> String {
 }
 
 ///|
+fn char_to_string(ch : Char) -> String {
+  match ch {
+    ' ' => "#\\space"
+    '\n' => "#\\newline"
+    '\t' => "#\\tab"
+    _ => {
+      let buf = @buffer.new()
+      buf.write_string("#\\")
+      buf.write_char(ch)
+      buf.to_string()
+    }
+  }
+}
+
+///|
 fn datum_to_string(datum : Datum) -> String {
   match datum {
     Datum::Nil => "()"
     Datum::Bool(true) => "#t"
     Datum::Bool(false) => "#f"
     Datum::Int(n) => n.to_string()
+    Datum::Rat(n, d) => "\{n}/\{d}"
+    Datum::Float(f) => f.to_string()
+    Datum::Char(ch) => char_to_string(ch)
     Datum::String(s) => "\"\{escape_string(s)}\""
     Datum::Symbol(name) => name
     Datum::Pair(_, _) => datum_list_to_string(datum)
+    Datum::Vector(items) => vector_to_string(items)
+    Datum::ByteVector(items) => bytevector_to_string(items)
   }
+}
+
+///|
+fn vector_to_string(items : Array[Datum]) -> String {
+  let parts : Array[String] = []
+  for item in items {
+    parts.push(datum_to_string(item))
+  }
+  let joined = parts.join(" ")
+  "#(\{joined})"
+}
+
+///|
+fn bytevector_to_string(items : Array[Int]) -> String {
+  let parts : Array[String] = []
+  for item in items {
+    parts.push(item.to_string())
+  }
+  let joined = parts.join(" ")
+  "#vu8(\{joined})"
 }
 
 ///|

@@ -88,6 +88,24 @@ fn is_ellipsis_start(r : Reader) -> Bool {
 }
 
 ///|
+fn is_vector_start(r : Reader) -> Bool {
+  r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '('
+}
+
+///|
+fn is_bytevector_start(r : Reader) -> Bool {
+  if r.pos + 4 >= r.chars.length() {
+    false
+  } else {
+    let mut ok = r.chars[r.pos + 1] == 'v'
+    ok = ok && r.chars[r.pos + 2] == 'u'
+    ok = ok && r.chars[r.pos + 3] == '8'
+    ok = ok && r.chars[r.pos + 4] == '('
+    ok
+  }
+}
+
+///|
 fn read_token(r : Reader) -> String raise ParseError {
   let chars : Array[Char] = []
   while true {
@@ -130,6 +148,109 @@ fn parse_int_token(tok : String) -> Int? {
     Some(sign * acc)
   } else {
     None
+  }
+}
+
+///|
+fn parse_rat_token(tok : String) -> Datum? {
+  let chars : Array[Char] = []
+  for ch in tok {
+    chars.push(ch)
+  }
+  let mut slash = -1
+  let mut i = 0
+  while i < chars.length() {
+    if chars[i] == '/' {
+      if slash != -1 {
+        return None
+      }
+      slash = i
+    }
+    i = i + 1
+  }
+  if slash <= 0 || slash >= chars.length() - 1 {
+    None
+  } else {
+    let num_str = String::from_array(chars.sub(end=slash).to_array())
+    let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
+    match (parse_int_token(num_str), parse_int_token(den_str)) {
+      (Some(num), Some(den)) => normalize_rat(num, den)
+      _ => None
+    }
+  }
+}
+
+///|
+fn parse_float_token(tok : String) -> Float? {
+  let mut sign = Float::from_int(1)
+  let mut int_part = 0
+  let mut frac_part = 0
+  let mut frac_div = 1
+  let mut seen_dot = false
+  let mut seen_digit = false
+  let mut i = 0
+  for ch in tok {
+    if i == 0 && (ch == '+' || ch == '-') {
+      sign = if ch == '-' { Float::from_int(-1) } else { Float::from_int(1) }
+      i = i + 1
+      continue
+    }
+    if ch == '.' {
+      if seen_dot {
+        return None
+      }
+      seen_dot = true
+      i = i + 1
+      continue
+    }
+    if ch.is_ascii_digit() {
+      let digit = ch.to_int() - '0'.to_int()
+      seen_digit = true
+      if seen_dot {
+        frac_part = frac_part * 10 + digit
+        frac_div = frac_div * 10
+      } else {
+        int_part = int_part * 10 + digit
+      }
+      i = i + 1
+      continue
+    }
+    return None
+  }
+  if !seen_dot || !seen_digit {
+    None
+  } else {
+    let int_value = Float::from_int(int_part)
+    let frac_value = Float::from_int(frac_part)
+    let div_value = Float::from_int(frac_div)
+    let value = sign * (int_value + frac_value / div_value)
+    Some(value)
+  }
+}
+
+///|
+fn parse_char_token(tok : String) -> Char? {
+  let chars : Array[Char] = []
+  for ch in tok {
+    chars.push(ch)
+  }
+  if chars.length() < 3 {
+    None
+  } else if chars[0] != '#' || chars[1] != '\\' {
+    None
+  } else {
+    let rest = chars.sub(start=2).to_array()
+    if rest.length() == 1 {
+      Some(rest[0])
+    } else {
+      let name = String::from_array(rest)
+      match name {
+        "space" => Some(' ')
+        "newline" => Some('\n')
+        "tab" => Some('\t')
+        _ => None
+      }
+    }
   }
 }
 
@@ -238,6 +359,78 @@ fn read_list(r : Reader) -> Datum raise ParseError {
 }
 
 ///|
+fn datum_list_to_array_parse(list : Datum) -> Array[Datum] raise ParseError {
+  let items : Array[Datum] = []
+  let mut cur = list
+  while true {
+    match cur {
+      Datum::Nil => break
+      Datum::Pair(a, b) => {
+        items.push(a)
+        cur = b
+      }
+      _ => raise ParseError("expected proper list")
+    }
+  }
+  items
+}
+
+///|
+fn read_vector_literal(r : Reader) -> Datum raise ParseError {
+  let list = read_list(r)
+  let items = datum_list_to_array_parse(list)
+  Datum::Vector(items)
+}
+
+///|
+fn read_bytevector_literal(r : Reader) -> Datum raise ParseError {
+  let list = read_list(r)
+  let items = datum_list_to_array_parse(list)
+  let bytes : Array[Int] = []
+  for item in items {
+    match item {
+      Datum::Int(n) => {
+        if n < 0 || n > 255 {
+          raise ParseError("bytevector element out of range")
+        }
+        bytes.push(n)
+      }
+      _ => raise ParseError("bytevector element must be integer")
+    }
+  }
+  Datum::ByteVector(bytes)
+}
+
+///|
+fn token_to_datum(tok : String) -> Datum {
+  if tok == "#t" {
+    Datum::Bool(true)
+  } else if tok == "#f" {
+    Datum::Bool(false)
+  } else {
+    match parse_char_token(tok) {
+      Some(ch) => Datum::Char(ch)
+      None => {
+        match parse_int_token(tok) {
+          Some(n) => Datum::Int(n)
+          None => {
+            match parse_rat_token(tok) {
+              Some(rat) => rat
+              None => {
+                match parse_float_token(tok) {
+                  Some(f) => Datum::Float(f)
+                  None => Datum::Symbol(tok)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+///|
 fn read_expr(r : Reader) -> Datum raise ParseError {
   skip_ws_and_comments(r)
   match reader_peek(r) {
@@ -277,22 +470,25 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
         make_unquote(expr)
       }
     }
+    Some('#') => {
+      if is_vector_start(r) {
+        r.pos = r.pos + 2
+        read_vector_literal(r)
+      } else if is_bytevector_start(r) {
+        r.pos = r.pos + 5
+        read_bytevector_literal(r)
+      } else {
+        let tok = read_token(r)
+        token_to_datum(tok)
+      }
+    }
     Some('"') => {
       r.pos = r.pos + 1
       Datum::String(read_string(r))
     }
     Some(_) => {
       let tok = read_token(r)
-      if tok == "#t" {
-        Datum::Bool(true)
-      } else if tok == "#f" {
-        Datum::Bool(false)
-      } else {
-        match parse_int_token(tok) {
-          Some(n) => Datum::Int(n)
-          None => Datum::Symbol(tok)
-        }
-      }
+      token_to_datum(tok)
     }
   }
 }

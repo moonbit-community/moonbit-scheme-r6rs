@@ -20,10 +20,44 @@ fn value_as_datum(value : Value) -> Datum raise EvalError {
 }
 
 ///|
-fn value_as_int(value : Value) -> Int raise EvalError {
-  match value {
-    Value::Datum(Datum::Int(n)) => n
-    _ => raise EvalError("type error: number expected")
+///|
+fn int_abs(value : Int) -> Int {
+  if value < 0 { -value } else { value }
+}
+
+///|
+fn gcd(a : Int, b : Int) -> Int {
+  let mut x = int_abs(a)
+  let mut y = int_abs(b)
+  while y != 0 {
+    let temp = x % y
+    x = y
+    y = temp
+  }
+  x
+}
+
+///|
+fn normalize_rat(num : Int, den : Int) -> Datum? {
+  if den == 0 {
+    None
+  } else if num == 0 {
+    Some(Datum::Int(0))
+  } else {
+    let mut n = num
+    let mut d = den
+    if d < 0 {
+      n = -n
+      d = -d
+    }
+    let g = gcd(n, d)
+    let nn = n / g
+    let dd = d / g
+    if dd == 1 {
+      Some(Datum::Int(nn))
+    } else {
+      Some(Datum::Rat(nn, dd))
+    }
   }
 }
 
