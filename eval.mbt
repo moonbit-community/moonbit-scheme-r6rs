@@ -147,6 +147,7 @@ fn init_env() -> Env {
   env_define(env, "string-ref", Value::Primitive(Primitive::StringRef))
   env_define(env, "string-set!", Value::Primitive(Primitive::StringSet))
   env_define(env, "string-copy", Value::Primitive(Primitive::StringCopy))
+  env_define(env, "string-copy!", Value::Primitive(Primitive::StringCopyBang))
   env_define(env, "string-fill!", Value::Primitive(Primitive::StringFill))
   env_define(env, "string->list", Value::Primitive(Primitive::StringToList))
   env_define(env, "list->string", Value::Primitive(Primitive::ListToString))

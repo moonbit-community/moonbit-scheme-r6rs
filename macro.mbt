@@ -175,6 +175,7 @@ fn is_core_identifier(name : String) -> Bool {
     "string-ref",
     "string-set!",
     "string-copy",
+    "string-copy!",
     "string-fill!",
     "string->list",
     "list->string",

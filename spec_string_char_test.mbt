@@ -14,6 +14,12 @@ test "r6rs char and string primitives" {
   let fill_program =
     "(let ((s (string #\\a #\\b #\\c #\\d))) (string-fill! s #\\x 1 3) s)"
   inspect(value_to_string(eval_program(fill_program)), content="\"axxd\"")
+  let copy_program =
+    "(let ((to (string #\\a #\\b #\\c #\\d)) (from (string #\\x #\\y #\\z))) (string-copy! to 1 from 0 2) to)"
+  inspect(value_to_string(eval_program(copy_program)), content="\"axyd\"")
+  let overlap_program =
+    "(let ((s (string #\\a #\\b #\\c #\\d))) (string-copy! s 1 s 0 3) s)"
+  inspect(value_to_string(eval_program(overlap_program)), content="\"aabc\"")
   inspect(value_to_string(eval_program("(string-length \"hi\")")), content="2")
   inspect(value_to_string(eval_program("(string-append \"a\" \"b\" \"c\")")), content="\"abc\"")
   inspect(value_to_string(eval_program("(string-append)")), content="\"\"")
@@ -103,6 +109,12 @@ test "r6rs string-ref: errors" {
   match bad_fill {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid string-fill! range")
+  }
+
+  let bad_copy_bang = try? eval_program("(string-copy! \"a\" 0 \"bc\")")
+  match bad_copy_bang {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for out of range string-copy!")
   }
 }
 

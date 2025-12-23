@@ -134,6 +134,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::StringRef, Primitive::StringRef)
     | (Primitive::StringSet, Primitive::StringSet)
     | (Primitive::StringCopy, Primitive::StringCopy)
+    | (Primitive::StringCopyBang, Primitive::StringCopyBang)
     | (Primitive::StringFill, Primitive::StringFill)
     | (Primitive::StringToList, Primitive::StringToList)
     | (Primitive::ListToString, Primitive::ListToString)
@@ -1670,6 +1671,56 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise EvalError("arity mismatch: expected 1 to 3 got \{n}")
+      }
+    }
+    Primitive::StringCopyBang => {
+      match args.length() {
+        3 | 4 | 5 => {
+          let to_ref = value_as_string_ref(args[0])
+          let at = value_as_int_index(args[1])
+          let from_str = value_as_string(args[2])
+          let start = if args.length() >= 4 {
+            value_as_int_index(args[3])
+          } else {
+            0
+          }
+          let end = if args.length() == 5 {
+            value_as_int_index(args[4])
+          } else {
+            from_str.length()
+          }
+          if start < 0 || end < start || end > from_str.length() || at < 0 {
+            raise EvalError("index out of range")
+          }
+          let count = end - start
+          let to_str = to_ref.val
+          let to_len = to_str.length()
+          if at + count > to_len {
+            raise EvalError("index out of range")
+          }
+          let buf = @buffer.new()
+          let mut i = 0
+          while i < to_len {
+            match to_str.get_char(i) {
+              Some(ch) => {
+                if i >= at && i < at + count {
+                  let from_idx = start + (i - at)
+                  match from_str.get_char(from_idx) {
+                    Some(fch) => buf.write_char(fch)
+                    None => raise EvalError("index out of range")
+                  }
+                } else {
+                  buf.write_char(ch)
+                }
+              }
+              None => raise EvalError("index out of range")
+            }
+            i = i + 1
+          }
+          to_ref.val = buf.to_string()
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
     }
     Primitive::StringFill => {
