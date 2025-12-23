@@ -102,9 +102,12 @@ priv enum Kont {
   And(Array[Datum], Env, Kont)
   Or(Array[Datum], Env, Kont)
   Cond(Array[Datum], Array[Datum], Env, Kont)
+  CondArrow(Value, Kont)
   Let(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
   LetStar(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
   LetRec(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
+  Case(Array[Datum], Env, Kont)
+  CaseArrow(Value, Kont)
   RaiseNonCont
   RaiseCont(Kont)
   RestoreHandlers(Array[Value], Kont)
@@ -266,10 +269,18 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
               state = cond_start(rest, env, next, handlers)
             } else if parts.length() == 1 {
               state = MachineState::Apply(value, next, handlers)
+            } else if parts.length() >= 2 && symbol_name(parts[1]) is Some("=>") {
+              if parts.length() != 3 {
+                raise EvalError("invalid cond")
+              }
+              state = MachineState::Eval(parts[2], env, Kont::CondArrow(value, next), handlers)
             } else {
               let body = parts.sub(start=1).to_array()
               state = eval_sequence_state(body, env, next, handlers)
             }
+          }
+          Kont::CondArrow(test_value, next) => {
+            state = apply_proc(value, [test_value], next, handlers)
           }
           Kont::Let(bindings, index, values, env, body, next) => {
             let next_values : Array[Value] = []
@@ -329,6 +340,12 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
             } else {
               state = eval_sequence_state(body, env, next, handlers)
             }
+          }
+          Kont::Case(clauses, env, next) => {
+            state = case_dispatch(value, clauses, env, next, handlers)
+          }
+          Kont::CaseArrow(test_value, next) => {
+            state = apply_proc(value, [test_value], next, handlers)
           }
           Kont::RaiseNonCont => raise EvalError("non-continuable exception")
           Kont::RaiseCont(next) => state = MachineState::Apply(value, next, handlers)
@@ -620,13 +637,26 @@ fn eval_let_state(
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
-    let bindings = parse_bindings(args[0])
-    let body = args.sub(start=1).to_array()
-    if bindings.is_empty() {
-      eval_sequence_state(body, env, kont, handlers)
-    } else {
-      let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::Let(bindings, 0, [], env, body, kont), handlers)
+    match args[0] {
+      Datum::Symbol(name) => {
+        if args.length() < 3 {
+          raise arity_mismatch(3, args.length())
+        }
+        let bindings = parse_bindings(args[1])
+        let body = args.sub(start=2).to_array()
+        let expanded = expand_named_let(name, bindings, body)
+        MachineState::Eval(expanded, env, kont, handlers)
+      }
+      _ => {
+        let bindings = parse_bindings(args[0])
+        let body = args.sub(start=1).to_array()
+        if bindings.is_empty() {
+          eval_sequence_state(body, env, kont, handlers)
+        } else {
+          let (_, expr) = bindings[0]
+          MachineState::Eval(expr, env, Kont::Let(bindings, 0, [], env, body, kont), handlers)
+        }
+      }
     }
   }
 }
@@ -681,6 +711,33 @@ fn eval_letrec_state(
       )
     }
   }
+}
+
+///|
+fn expand_named_let(name : String, bindings : Array[(String, Datum)], body : Array[Datum]) -> Datum {
+  let param_items : Array[Datum] = []
+  let arg_items : Array[Datum] = []
+  for binding in bindings {
+    let (param, expr) = binding
+    param_items.push(Datum::Symbol(param))
+    arg_items.push(expr)
+  }
+  let lambda_items : Array[Datum] = []
+  lambda_items.push(Datum::Symbol("lambda"))
+  lambda_items.push(list_from_array(param_items))
+  for expr in body {
+    lambda_items.push(expr)
+  }
+  let lambda_expr = list_from_array(lambda_items)
+  let binding_expr = list_from_array([Datum::Symbol(name), lambda_expr])
+  let bindings_expr = list_from_array([binding_expr])
+  let call_items : Array[Datum] = []
+  call_items.push(Datum::Symbol(name))
+  for arg in arg_items {
+    call_items.push(arg)
+  }
+  let call_expr = list_from_array(call_items)
+  list_from_array([Datum::Symbol("letrec"), bindings_expr, call_expr])
 }
 
 ///|
@@ -1022,6 +1079,65 @@ fn eval_or_state(
 }
 
 ///|
+fn eval_case_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() < 2 {
+    raise arity_mismatch(2, args.length())
+  }
+  let key_expr = args[0]
+  let clauses = args.sub(start=1).to_array()
+  MachineState::Eval(key_expr, env, Kont::Case(clauses, env, kont), handlers)
+}
+
+///|
+fn case_dispatch(
+  key : Value,
+  clauses : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  let mut i = 0
+  while i < clauses.length() {
+    let parts = datum_list_to_array(clauses[i])
+    if parts.is_empty() {
+      i = i + 1
+    } else {
+      match symbol_name(parts[0]) {
+        Some("else") => {
+          let body = parts.sub(start=1).to_array()
+          return eval_sequence_state(body, env, kont, handlers)
+        }
+        _ => ()
+      }
+      let datums = datum_list_to_array(parts[0])
+      let mut matched = false
+      for datum in datums {
+        if value_eqv(key, Value::Datum(datum)) {
+          matched = true
+        }
+      }
+      if matched {
+        if parts.length() >= 2 && symbol_name(parts[1]) is Some("=>") {
+          if parts.length() != 3 {
+            raise EvalError("invalid case")
+          }
+          return MachineState::Eval(parts[2], env, Kont::CaseArrow(key, kont), handlers)
+        }
+        let body = parts.sub(start=1).to_array()
+        return eval_sequence_state(body, env, kont, handlers)
+      }
+      i = i + 1
+    }
+  }
+  MachineState::Apply(Value::Void, kont, handlers)
+}
+
+///|
 fn cond_start(
   clauses : Array[Datum],
   env : Env,
@@ -1075,11 +1191,13 @@ fn eval_pair(
       Some("let") => eval_let_state(args, env, kont, handlers)
       Some("let*") => eval_let_star_state(args, env, kont, handlers)
       Some("letrec") => eval_letrec_state(args, env, kont, handlers)
+      Some("letrec*") => eval_letrec_state(args, env, kont, handlers)
       Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
       Some("letrec-syntax") => eval_letrec_syntax_state(args, env, kont, handlers)
       Some("and") => eval_and_state(args, env, kont, handlers)
       Some("or") => eval_or_state(args, env, kont, handlers)
       Some("cond") => cond_start(args, env, kont, handlers)
+      Some("case") => eval_case_state(args, env, kont, handlers)
       Some(name) => {
         match env_get_macro(env, name) {
           Some(rules) => {
