@@ -472,12 +472,70 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
   set_current_output_port(new_output_string_port())
   wind_stack.val = []
   let env = init_env()
+  load_stdlib(env)
   let results : Array[Value] = []
   for form in forms {
     let value = eval_expr(form, env)
     results.push(value)
   }
   results
+}
+
+///|
+fn stdlib_source() -> String {
+  let lines : Array[String] = [
+    "(define (fold-left f acc lst)",
+    "  (let loop ((acc acc) (lst lst))",
+    "    (if (null? lst) acc",
+    "        (loop (f acc (car lst)) (cdr lst)))))",
+    "(define (fold-right f acc lst)",
+    "  (if (null? lst) acc",
+    "      (f (car lst) (fold-right f acc (cdr lst)))))",
+    "(define (filter pred lst)",
+    "  (cond ((null? lst) '())",
+    "        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))",
+    "        (else (filter pred (cdr lst)))))",
+    "(define (remove pred lst)",
+    "  (filter (lambda (x) (not (pred x))) lst))",
+    "(define (find pred lst)",
+    "  (cond ((null? lst) #f)",
+    "        ((pred (car lst)) (car lst))",
+    "        (else (find pred (cdr lst)))))",
+    "(define (any pred lst)",
+    "  (cond ((null? lst) #f)",
+    "        ((pred (car lst)) #t)",
+    "        (else (any pred (cdr lst)))))",
+    "(define (every pred lst)",
+    "  (cond ((null? lst) #t)",
+    "        ((pred (car lst)) (every pred (cdr lst)))",
+    "        (else #f)))",
+    "(define (take lst n)",
+    "  (if (<= n 0) '()",
+    "      (cons (car lst) (take (cdr lst) (- n 1)))))",
+    "(define (drop lst n)",
+    "  (if (<= n 0) lst",
+    "      (drop (cdr lst) (- n 1))))",
+    "(define (take-while pred lst)",
+    "  (cond ((null? lst) '())",
+    "        ((pred (car lst)) (cons (car lst) (take-while pred (cdr lst))))",
+    "        (else '())))",
+    "(define (drop-while pred lst)",
+    "  (cond ((null? lst) '())",
+    "        ((pred (car lst)) (drop-while pred (cdr lst)))",
+    "        (else lst)))",
+    "(define (append-map f lst)",
+    "  (if (null? lst) '()",
+    "      (append (f (car lst)) (append-map f (cdr lst)))))",
+  ]
+  lines.join("\n")
+}
+
+///|
+fn load_stdlib(env : Env) -> Unit raise {
+  let forms = parse_program(stdlib_source())
+  for form in forms {
+    let _ = eval_expr(form, env)
+  }
 }
 
 ///|
