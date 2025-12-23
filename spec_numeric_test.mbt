@@ -85,6 +85,17 @@ test "r6rs numeric: lcm" {
 }
 
 ///|
+test "r6rs numeric: min/max" {
+  inspect(value_to_string(eval_program("(max 1 3 2)")), content="3")
+  inspect(value_to_string(eval_program("(min 1 3 2)")), content="1")
+  inspect(value_to_string(eval_program("(max 1/2 3/4)")), content="3/4")
+  inspect(value_to_string(eval_program("(min -1 2.5)")), content="-1")
+  inspect(value_to_string(eval_program("(inexact? (min -1 2.5))")), content="#t")
+  inspect(value_to_string(eval_program("(max 2 1.0)")), content="2")
+  inspect(value_to_string(eval_program("(inexact? (max 2 1.0))")), content="#t")
+}
+
+///|
 test "r6rs numeric: predicate errors" {
   let bad_odd = try? eval_program("(odd? 1/2)")
   match bad_odd {

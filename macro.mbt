@@ -204,6 +204,8 @@ fn is_core_identifier(name : String) -> Bool {
     "modulo",
     "gcd",
     "lcm",
+    "max",
+    "min",
     "display",
     "write",
     "newline",

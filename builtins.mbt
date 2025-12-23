@@ -69,6 +69,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Modulo, Primitive::Modulo)
     | (Primitive::Gcd, Primitive::Gcd)
     | (Primitive::Lcm, Primitive::Lcm)
+    | (Primitive::Max, Primitive::Max)
+    | (Primitive::Min, Primitive::Min)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -854,6 +856,52 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
       }
       Value::Datum(Datum::Int(acc))
+    }
+    Primitive::Max => {
+      if args.is_empty() {
+        raise arity_mismatch(1, 0)
+      }
+      let mut best = value_as_number(args[0])
+      let mut has_inexact = best is Datum::Float(_)
+      let mut i = 1
+      while i < args.length() {
+        let cur = value_as_number(args[i])
+        if cur is Datum::Float(_) {
+          has_inexact = true
+        }
+        if num_less(best, cur) {
+          best = cur
+        }
+        i = i + 1
+      }
+      if has_inexact {
+        Value::Datum(Datum::Float(number_to_float(best)))
+      } else {
+        Value::Datum(best)
+      }
+    }
+    Primitive::Min => {
+      if args.is_empty() {
+        raise arity_mismatch(1, 0)
+      }
+      let mut best = value_as_number(args[0])
+      let mut has_inexact = best is Datum::Float(_)
+      let mut i = 1
+      while i < args.length() {
+        let cur = value_as_number(args[i])
+        if cur is Datum::Float(_) {
+          has_inexact = true
+        }
+        if num_greater(best, cur) {
+          best = cur
+        }
+        i = i + 1
+      }
+      if has_inexact {
+        Value::Datum(Datum::Float(number_to_float(best)))
+      } else {
+        Value::Datum(best)
+      }
     }
     Primitive::Eq => {
       match args.length() {

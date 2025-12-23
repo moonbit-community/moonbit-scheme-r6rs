@@ -47,6 +47,8 @@ fn init_env() -> Env {
   env_define(env, "modulo", Value::Primitive(Primitive::Modulo))
   env_define(env, "gcd", Value::Primitive(Primitive::Gcd))
   env_define(env, "lcm", Value::Primitive(Primitive::Lcm))
+  env_define(env, "max", Value::Primitive(Primitive::Max))
+  env_define(env, "min", Value::Primitive(Primitive::Min))
   env_define(env, "eq?", Value::Primitive(Primitive::Eq))
   env_define(env, "eqv?", Value::Primitive(Primitive::Eqv))
   env_define(env, "equal?", Value::Primitive(Primitive::Equal))

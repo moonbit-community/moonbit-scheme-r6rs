@@ -20,6 +20,7 @@
 ///   boolean? number? integer? rational? real? exact? inexact? zero? positive?
 ///   negative? odd? even? exact->inexact
 ///   inexact->exact numerator denominator abs quotient remainder modulo gcd lcm
+///   max min
 ///   procedure? not apply call/cc eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
 ///   reverse c[ad]+r member memq memv assoc assq assv map for-each list-copy
@@ -122,6 +123,8 @@ pub enum Primitive {
   Modulo
   Gcd
   Lcm
+  Max
+  Min
   ListP
   MakeList
   Length
