@@ -151,6 +151,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::VectorSet, Primitive::VectorSet)
     | (Primitive::VectorFill, Primitive::VectorFill)
     | (Primitive::VectorCopy, Primitive::VectorCopy)
+    | (Primitive::VectorCopyBang, Primitive::VectorCopyBang)
     | (Primitive::VectorMap, Primitive::VectorMap)
     | (Primitive::VectorForEach, Primitive::VectorForEach)
     | (Primitive::VectorToList, Primitive::VectorToList)
@@ -1926,6 +1927,45 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(Datum::Vector(slice))
         }
         n => raise EvalError("arity mismatch: expected 1 to 3 got \{n}")
+      }
+    }
+    Primitive::VectorCopyBang => {
+      match args.length() {
+        3 | 4 | 5 => {
+          let to_items = value_as_vector(args[0])
+          let at = value_as_int_index(args[1])
+          let from_items = value_as_vector(args[2])
+          let start = if args.length() >= 4 {
+            value_as_int_index(args[3])
+          } else {
+            0
+          }
+          let end = if args.length() == 5 {
+            value_as_int_index(args[4])
+          } else {
+            from_items.length()
+          }
+          if start < 0 || end < start || end > from_items.length() || at < 0 {
+            raise EvalError("index out of range")
+          }
+          let count = end - start
+          if at + count > to_items.length() {
+            raise EvalError("index out of range")
+          }
+          let temp : Array[Datum] = []
+          let mut i = 0
+          while i < count {
+            temp.push(from_items[start + i])
+            i = i + 1
+          }
+          let mut j = 0
+          while j < count {
+            to_items[at + j] = temp[j]
+            j = j + 1
+          }
+          Value::Void
+        }
+        n => raise EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
     }
     Primitive::VectorToList => {

@@ -17,6 +17,12 @@ test "r6rs vectors" {
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3))")), content="#(1 2 3)")
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3) 1)")), content="#(2 3)")
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3) 1 2)")), content="#(2)")
+  let copy_bang_program =
+    "(let ((to (vector 1 2 3 4)) (from (vector 9 8 7))) (vector-copy! to 1 from 0 2) to)"
+  inspect(value_to_string(eval_program(copy_bang_program)), content="#(1 9 8 4)")
+  let copy_overlap_program =
+    "(let ((v (vector 1 2 3 4))) (vector-copy! v 1 v 0 3) v)"
+  inspect(value_to_string(eval_program(copy_overlap_program)), content="#(1 1 2 3)")
   inspect(
     value_to_string(eval_program("(vector-map (lambda (x) (+ x 1)) #(1 2 3))")),
     content="#(2 3 4)",
@@ -91,6 +97,12 @@ test "r6rs vectors/bytevectors: errors" {
   match bad_fill {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid fill range")
+  }
+
+  let bad_copy_bang = try? eval_program("(vector-copy! #(1 2) 1 #(3 4) 0 2)")
+  match bad_copy_bang {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for invalid vector-copy! range")
   }
 
   let bad_byte_copy = try? eval_program("(bytevector-copy #vu8(1 2 3) 2 1)")

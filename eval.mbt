@@ -164,6 +164,7 @@ fn init_env() -> Env {
   env_define(env, "vector-set!", Value::Primitive(Primitive::VectorSet))
   env_define(env, "vector-fill!", Value::Primitive(Primitive::VectorFill))
   env_define(env, "vector-copy", Value::Primitive(Primitive::VectorCopy))
+  env_define(env, "vector-copy!", Value::Primitive(Primitive::VectorCopyBang))
   env_define(env, "vector-map", Value::Primitive(Primitive::VectorMap))
   env_define(env, "vector-for-each", Value::Primitive(Primitive::VectorForEach))
   env_define(env, "vector->list", Value::Primitive(Primitive::VectorToList))
