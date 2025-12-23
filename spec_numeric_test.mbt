@@ -43,6 +43,8 @@ test "r6rs numeric: conversions and fractions" {
   inspect(value_to_string(eval_program("(abs -2.5)")), content="2.5")
   inspect(value_to_string(eval_program("(quotient 5 2)")), content="2")
   inspect(value_to_string(eval_program("(quotient -5 2)")), content="-2")
+  inspect(value_to_string(eval_program("(remainder 5 2)")), content="1")
+  inspect(value_to_string(eval_program("(remainder -5 2)")), content="-1")
 }
 
 ///|
@@ -51,5 +53,11 @@ test "r6rs numeric: quotient errors" {
   match bad_div {
     Err(err) => inspect(err, content="EvalError(\"division by zero\")")
     _ => fail("expected EvalError for quotient by zero")
+  }
+
+  let bad_rem = try? eval_program("(remainder 1 0)")
+  match bad_rem {
+    Err(err) => inspect(err, content="EvalError(\"division by zero\")")
+    _ => fail("expected EvalError for remainder by zero")
   }
 }
