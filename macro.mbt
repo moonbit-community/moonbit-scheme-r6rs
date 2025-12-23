@@ -191,6 +191,7 @@ fn is_core_identifier(name : String) -> Bool {
     "numerator",
     "denominator",
     "abs",
+    "quotient",
     "display",
     "write",
     "newline",

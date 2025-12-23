@@ -59,6 +59,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Numerator, Primitive::Numerator)
     | (Primitive::Denominator, Primitive::Denominator)
     | (Primitive::Abs, Primitive::Abs)
+    | (Primitive::Quotient, Primitive::Quotient)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -774,6 +775,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Quotient => {
+      match args.length() {
+        2 => {
+          let left = value_as_int_index(args[0])
+          let right = value_as_int_index(args[1])
+          if right == 0 {
+            raise EvalError("division by zero")
+          }
+          Value::Datum(Datum::Int(left / right))
+        }
+        n => raise arity_mismatch(2, n)
       }
     }
     Primitive::Eq => {
