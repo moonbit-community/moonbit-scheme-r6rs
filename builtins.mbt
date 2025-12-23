@@ -53,6 +53,9 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::NegativeP, Primitive::NegativeP)
     | (Primitive::OddP, Primitive::OddP)
     | (Primitive::EvenP, Primitive::EvenP)
+    | (Primitive::FiniteP, Primitive::FiniteP)
+    | (Primitive::InfiniteP, Primitive::InfiniteP)
+    | (Primitive::NanP, Primitive::NanP)
     | (Primitive::ProcedureP, Primitive::ProcedureP)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
@@ -452,6 +455,26 @@ fn float_round_int(value : Float) -> Int {
   } else {
     floor_n + 1
   }
+}
+
+///|
+fn float_is_nan(value : Float) -> Bool {
+  value != value
+}
+
+///|
+fn float_is_infinite(value : Float) -> Bool {
+  if float_is_nan(value) {
+    false
+  } else {
+    let diff = value - value
+    diff != diff
+  }
+}
+
+///|
+fn float_is_finite(value : Float) -> Bool {
+  !float_is_nan(value) && !float_is_infinite(value)
 }
 
 ///|
@@ -1631,6 +1654,42 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         1 => {
           let n = value_as_int_index(args[0])
           bool_value(n % 2 == 0)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FiniteP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(f)) => bool_value(float_is_finite(f))
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => bool_value(true)
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::InfiniteP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(f)) => bool_value(float_is_infinite(f))
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => bool_value(false)
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::NanP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Float(f)) => bool_value(float_is_nan(f))
+            Value::Datum(Datum::Int(_)) | Value::Datum(Datum::Rat(_, _)) => bool_value(false)
+            _ => raise EvalError("type error: number expected")
+          }
         }
         n => raise arity_mismatch(1, n)
       }

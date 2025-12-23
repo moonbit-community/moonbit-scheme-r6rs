@@ -112,6 +112,9 @@ pub enum Primitive {
   NegativeP
   OddP
   EvenP
+  FiniteP
+  InfiniteP
+  NanP
   ProcedureP
   Not
   Apply

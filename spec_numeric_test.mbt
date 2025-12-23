@@ -263,6 +263,42 @@ test "r6rs numeric: sign and parity predicates" {
 }
 
 ///|
+test "r6rs numeric: finite/infinite/nan" {
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(finite? 1)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(finite? 1.0)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(infinite? 1.0)
+      )
+    )),
+    content="#f",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(nan? 1.0)
+      )
+    )),
+    content="#f",
+  )
+}
+
+///|
 test "r6rs numeric: conversions and fractions" {
   inspect(
     value_to_string(eval_program(
@@ -834,6 +870,16 @@ test "r6rs numeric: predicate errors" {
   match bad_rationalize {
     Err(err) => inspect(err, content="EvalError(\"type error: nonnegative real expected\")")
     _ => fail("expected EvalError for rationalize on negative tolerance")
+  }
+
+  let bad_finite = try? eval_program(
+    (
+      #|(finite? "a")
+    )
+  )
+  match bad_finite {
+    Err(err) => inspect(err, content="EvalError(\"type error: number expected\")")
+    _ => fail("expected EvalError for finite? on non-number")
   }
 }
 
