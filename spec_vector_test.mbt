@@ -9,6 +9,11 @@ test "r6rs vectors" {
   inspect(value_to_string(eval_program("(vector-ref #(1 2 3) 1)")), content="2")
   let program = "(let ((v (vector 1 2 3))) (vector-set! v 1 9) v)"
   inspect(value_to_string(eval_program(program)), content="#(1 9 3)")
+  let fill_program = "(let ((v (vector 1 2 3))) (vector-fill! v 0) v)"
+  inspect(value_to_string(eval_program(fill_program)), content="#(0 0 0)")
+  let fill_range_program =
+    "(let ((v (vector 1 2 3 4))) (vector-fill! v 9 1 3) v)"
+  inspect(value_to_string(eval_program(fill_range_program)), content="#(1 9 9 4)")
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3))")), content="#(1 2 3)")
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3) 1)")), content="#(2 3)")
   inspect(value_to_string(eval_program("(vector-copy #(1 2 3) 1 2)")), content="#(2)")
@@ -45,6 +50,12 @@ test "r6rs vectors/bytevectors: errors" {
   match bad_copy {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid range")
+  }
+
+  let bad_fill = try? eval_program("(vector-fill! #(1 2 3) 0 3 2)")
+  match bad_fill {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for invalid fill range")
   }
 
   let bad_list = try? eval_program("(list->vector '(1 . 2))")

@@ -30,7 +30,8 @@
 ///   string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
 ///   string-length string-append string-ref string->list list->string
 ///   string-upcase string-downcase string-foldcase
-///   vector make-vector vector? vector-length vector-ref vector-set! vector-copy
+///   vector make-vector vector? vector-length vector-ref vector-set!
+///   vector-copy vector-fill!
 ///   vector->list list->vector
 ///   bytevector bytevector? bytevector-length bytevector-u8-ref bytevector-u8-set!
 ///   display write newline open-output-string get-output-string current-output-port
@@ -172,6 +173,7 @@ pub enum Primitive {
   VectorLength
   VectorRef
   VectorSet
+  VectorFill
   VectorToList
   ListToVector
   VectorCopy

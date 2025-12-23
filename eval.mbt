@@ -135,6 +135,7 @@ fn init_env() -> Env {
   env_define(env, "vector-length", Value::Primitive(Primitive::VectorLength))
   env_define(env, "vector-ref", Value::Primitive(Primitive::VectorRef))
   env_define(env, "vector-set!", Value::Primitive(Primitive::VectorSet))
+  env_define(env, "vector-fill!", Value::Primitive(Primitive::VectorFill))
   env_define(env, "vector-copy", Value::Primitive(Primitive::VectorCopy))
   env_define(env, "vector->list", Value::Primitive(Primitive::VectorToList))
   env_define(env, "list->vector", Value::Primitive(Primitive::ListToVector))
