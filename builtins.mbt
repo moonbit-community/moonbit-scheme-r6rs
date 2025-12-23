@@ -71,6 +71,10 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Lcm, Primitive::Lcm)
     | (Primitive::Max, Primitive::Max)
     | (Primitive::Min, Primitive::Min)
+    | (Primitive::Floor, Primitive::Floor)
+    | (Primitive::Ceiling, Primitive::Ceiling)
+    | (Primitive::Truncate, Primitive::Truncate)
+    | (Primitive::Round, Primitive::Round)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -337,6 +341,96 @@ fn num_less_eq(left : Datum, right : Datum) -> Bool raise EvalError {
 ///|
 fn num_greater_eq(left : Datum, right : Datum) -> Bool raise EvalError {
   num_greater(left, right) || num_equal(left, right)
+}
+
+///|
+fn rat_floor(num : Int, den : Int) -> Int {
+  let q = num / den
+  let r = num % den
+  if r == 0 {
+    q
+  } else if num < 0 {
+    q - 1
+  } else {
+    q
+  }
+}
+
+///|
+fn rat_ceiling(num : Int, den : Int) -> Int {
+  let q = num / den
+  let r = num % den
+  if r == 0 {
+    q
+  } else if num > 0 {
+    q + 1
+  } else {
+    q
+  }
+}
+
+///|
+fn rat_round(num : Int, den : Int) -> Int {
+  let q = num / den
+  let r = num % den
+  if r == 0 {
+    q
+  } else {
+    let abs_r = int_abs(r)
+    let twice = abs_r * 2
+    if twice < den {
+      q
+    } else if twice > den {
+      if num < 0 { q - 1 } else { q + 1 }
+    } else {
+      if q % 2 == 0 {
+        q
+      } else if num < 0 {
+        q - 1
+      } else {
+        q + 1
+      }
+    }
+  }
+}
+
+///|
+fn float_floor_int(value : Float) -> Int {
+  let n = value.to_int()
+  if value == Float::from_int(n) {
+    n
+  } else if value > 0.0 {
+    n
+  } else {
+    n - 1
+  }
+}
+
+///|
+fn float_ceiling_int(value : Float) -> Int {
+  let n = value.to_int()
+  if value == Float::from_int(n) {
+    n
+  } else if value > 0.0 {
+    n + 1
+  } else {
+    n
+  }
+}
+
+///|
+fn float_round_int(value : Float) -> Int {
+  let floor_n = float_floor_int(value)
+  let diff = value - Float::from_int(floor_n)
+  if diff < 0.5 {
+    floor_n
+  } else if diff > 0.5 {
+    floor_n + 1
+  } else if floor_n % 2 == 0 {
+    floor_n
+  } else {
+    floor_n + 1
+  }
 }
 
 ///|
@@ -901,6 +995,74 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         Value::Datum(Datum::Float(number_to_float(best)))
       } else {
         Value::Datum(best)
+      }
+    }
+    Primitive::Floor => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          match value {
+            Datum::Int(n) => Value::Datum(Datum::Int(n))
+            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_floor(n, d)))
+            Datum::Float(f) => {
+              let n = float_floor_int(f)
+              Value::Datum(Datum::Float(Float::from_int(n)))
+            }
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Ceiling => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          match value {
+            Datum::Int(n) => Value::Datum(Datum::Int(n))
+            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_ceiling(n, d)))
+            Datum::Float(f) => {
+              let n = float_ceiling_int(f)
+              Value::Datum(Datum::Float(Float::from_int(n)))
+            }
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Truncate => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          match value {
+            Datum::Int(n) => Value::Datum(Datum::Int(n))
+            Datum::Rat(n, d) => Value::Datum(Datum::Int(n / d))
+            Datum::Float(f) => {
+              let n = f.to_int()
+              Value::Datum(Datum::Float(Float::from_int(n)))
+            }
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Round => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          match value {
+            Datum::Int(n) => Value::Datum(Datum::Int(n))
+            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_round(n, d)))
+            Datum::Float(f) => {
+              let n = float_round_int(f)
+              Value::Datum(Datum::Float(Float::from_int(n)))
+            }
+            _ => raise EvalError("type error: number expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
       }
     }
     Primitive::Eq => {

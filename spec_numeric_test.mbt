@@ -96,6 +96,22 @@ test "r6rs numeric: min/max" {
 }
 
 ///|
+test "r6rs numeric: rounding" {
+  inspect(value_to_string(eval_program("(floor 3/2)")), content="1")
+  inspect(value_to_string(eval_program("(ceiling 3/2)")), content="2")
+  inspect(value_to_string(eval_program("(truncate -3/2)")), content="-1")
+  inspect(value_to_string(eval_program("(round 5/2)")), content="2")
+  inspect(value_to_string(eval_program("(round -5/2)")), content="-2")
+  inspect(value_to_string(eval_program("(floor 1.2)")), content="1")
+  inspect(value_to_string(eval_program("(inexact? (floor 1.2))")), content="#t")
+  inspect(value_to_string(eval_program("(ceiling -1.2)")), content="-1")
+  inspect(value_to_string(eval_program("(inexact? (ceiling -1.2))")), content="#t")
+  inspect(value_to_string(eval_program("(truncate -1.7)")), content="-1")
+  inspect(value_to_string(eval_program("(round 2.5)")), content="2")
+  inspect(value_to_string(eval_program("(inexact? (round 2.5))")), content="#t")
+}
+
+///|
 test "r6rs numeric: predicate errors" {
   let bad_odd = try? eval_program("(odd? 1/2)")
   match bad_odd {
