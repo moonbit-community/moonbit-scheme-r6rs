@@ -172,6 +172,14 @@ test "r6rs char and string primitives" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(substring "hello" 1 4)
+      )
+    )),
+    content="\"ell\"",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(string->list "hi")
       )
     )),
@@ -481,6 +489,16 @@ test "r6rs string-ref: errors" {
   match bad_copy {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid string-copy range")
+  }
+
+  let bad_substring = try? eval_program(
+    (
+      #|(substring "hi" 1 3)
+    )
+  )
+  match bad_substring {
+    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+    _ => fail("expected EvalError for invalid substring range")
   }
 
   let bad_map = try? eval_program(

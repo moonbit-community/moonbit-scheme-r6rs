@@ -196,6 +196,7 @@ pub enum Primitive {
   StringRef
   StringSet
   StringCopy
+  Substring
   StringCopyBang
   StringFill
   StringToList
