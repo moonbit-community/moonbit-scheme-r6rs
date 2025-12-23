@@ -41,6 +41,12 @@ test "r6rs list utilities" {
   inspect(value_to_string(eval_program(set_car_prog)), content="(9 . 2)")
   let set_cdr_prog = "(let ((p (cons 1 2))) (set-cdr! p 9) p)"
   inspect(value_to_string(eval_program(set_cdr_prog)), content="(1 . 9)")
+  let copy_prog =
+    "(let ((xs (list 1 2 3)) (ys (list-copy (list 1 2 3)))) ys)"
+  inspect(value_to_string(eval_program(copy_prog)), content="(1 2 3)")
+  let copy_mutate_prog =
+    "(let* ((xs (list 1 2 3)) (ys (list-copy xs))) (set-car! xs 9) ys)"
+  inspect(value_to_string(eval_program(copy_mutate_prog)), content="(1 2 3)")
   inspect(value_to_string(eval_program("(append)")), content="()")
   inspect(value_to_string(eval_program("(append '(1 2) '(3 4))")), content="(1 2 3 4)")
   inspect(value_to_string(eval_program("(append '(1 2) '(3 . 4))")), content="(1 2 3 . 4)")
@@ -95,5 +101,11 @@ test "r6rs list utilities: errors" {
   match bad_set {
     Err(err) => inspect(err, content="EvalError(\"type error: pair expected\")")
     _ => fail("expected EvalError for set-car! on non-pair")
+  }
+
+  let bad_copy = try? eval_program("(list-copy '(1 . 2))")
+  match bad_copy {
+    Err(err) => inspect(err, content="EvalError(\"type error: proper list expected\")")
+    _ => fail("expected EvalError for improper list in list-copy")
   }
 }

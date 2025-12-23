@@ -52,6 +52,7 @@ fn init_env() -> Env {
   env_define(env, "for-each", Value::Primitive(Primitive::ForEach))
   env_define(env, "set-car!", Value::Primitive(Primitive::SetCar))
   env_define(env, "set-cdr!", Value::Primitive(Primitive::SetCdr))
+  env_define(env, "list-copy", Value::Primitive(Primitive::ListCopy))
   let cxr_chains : Array[String] = [
     "aa",
     "ad",

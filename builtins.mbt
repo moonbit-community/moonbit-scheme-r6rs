@@ -75,6 +75,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::ForEach, Primitive::ForEach)
     | (Primitive::SetCar, Primitive::SetCar)
     | (Primitive::SetCdr, Primitive::SetCdr)
+    | (Primitive::ListCopy, Primitive::ListCopy)
     | (Primitive::CharEq, Primitive::CharEq)
     | (Primitive::CharLess, Primitive::CharLess)
     | (Primitive::CharGreater, Primitive::CharGreater)
@@ -1557,6 +1558,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(list_from_array(items.sub(start=idx).to_array()))
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::ListCopy => {
+      match args.length() {
+        1 => {
+          let datum = value_as_datum(args[0])
+          let items = datum_list_to_array(datum)
+          Value::Datum(list_from_array(items))
+        }
+        n => raise arity_mismatch(1, n)
       }
     }
     Primitive::Member => {

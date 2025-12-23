@@ -20,7 +20,7 @@
 ///   boolean? number? integer? rational? real? exact? inexact? exact->inexact
 ///   inexact->exact numerator denominator procedure? not apply call/cc eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
-///   reverse c[ad]+r member memq memv assoc assq assv map for-each
+///   reverse c[ad]+r member memq memv assoc assq assv map for-each list-copy
 ///   set-car! set-cdr!
 ///   char? char=? char<? char>? char<=? char>=?
 ///   char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
@@ -125,6 +125,7 @@ pub enum Primitive {
   ForEach
   SetCar
   SetCdr
+  ListCopy
   CharEq
   CharLess
   CharGreater

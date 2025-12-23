@@ -97,6 +97,7 @@ fn is_core_identifier(name : String) -> Bool {
     "for-each",
     "set-car!",
     "set-cdr!",
+    "list-copy",
     "caar",
     "cadr",
     "cdar",
