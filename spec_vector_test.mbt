@@ -104,6 +104,22 @@ test "r6rs vectors" {
     )),
     content="#(2)",
   )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(vector-append)
+      )
+    )),
+    content="#()",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(vector-append #(1 2) #(3) (vector 4 5))
+      )
+    )),
+    content="#(1 2 3 4 5)",
+  )
   let copy_bang_program = (
     (
       #|(let ((to (vector 1 2 3 4))
@@ -334,6 +350,16 @@ test "r6rs vectors/bytevectors: errors" {
   match bad_copy {
     Err(err) => inspect(err, content="EvalError(\"index out of range\")")
     _ => fail("expected EvalError for invalid range")
+  }
+
+  let bad_append = try? eval_program(
+    (
+      #|(vector-append #(1 2) 3)
+    )
+  )
+  match bad_append {
+    Err(err) => inspect(err, content="EvalError(\"type error: vector expected\")")
+    _ => fail("expected EvalError for invalid vector-append argument")
   }
 
   let bad_vector_map = try? eval_program(

@@ -155,6 +155,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::VectorFill, Primitive::VectorFill)
     | (Primitive::VectorCopy, Primitive::VectorCopy)
     | (Primitive::VectorCopyBang, Primitive::VectorCopyBang)
+    | (Primitive::VectorAppend, Primitive::VectorAppend)
     | (Primitive::VectorMap, Primitive::VectorMap)
     | (Primitive::VectorForEach, Primitive::VectorForEach)
     | (Primitive::VectorToList, Primitive::VectorToList)
@@ -2084,6 +2085,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
+    }
+    Primitive::VectorAppend => {
+      let items : Array[Datum] = []
+      for arg in args {
+        let vec = value_as_vector(arg)
+        for item in vec {
+          items.push(item)
+        }
+      }
+      Value::Datum(Datum::Vector(items))
     }
     Primitive::VectorToList => {
       match args.length() {

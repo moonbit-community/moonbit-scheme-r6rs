@@ -217,6 +217,7 @@ pub enum Primitive {
   ListToVector
   VectorCopy
   VectorCopyBang
+  VectorAppend
   VectorMap
   VectorForEach
   ByteVector

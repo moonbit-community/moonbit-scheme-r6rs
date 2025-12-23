@@ -194,6 +194,7 @@ fn is_core_identifier(name : String) -> Bool {
     "vector-fill!",
     "vector-copy",
     "vector-copy!",
+    "vector-append",
     "vector-map",
     "vector-for-each",
     "vector->list",
