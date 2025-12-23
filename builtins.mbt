@@ -39,8 +39,11 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::NullP, Primitive::NullP)
     | (Primitive::PairP, Primitive::PairP)
     | (Primitive::SymbolP, Primitive::SymbolP)
+    | (Primitive::IdentifierP, Primitive::IdentifierP)
     | (Primitive::SymbolToString, Primitive::SymbolToString)
     | (Primitive::StringToSymbol, Primitive::StringToSymbol)
+    | (Primitive::SyntaxToDatum, Primitive::SyntaxToDatum)
+    | (Primitive::DatumToSyntax, Primitive::DatumToSyntax)
     | (Primitive::BooleanP, Primitive::BooleanP)
     | (Primitive::NumberP, Primitive::NumberP)
     | (Primitive::IntegerP, Primitive::IntegerP)
@@ -2024,6 +2027,17 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         n => raise arity_mismatch(1, n)
       }
     }
+    Primitive::IdentifierP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(Datum::Symbol(_)) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
     Primitive::SymbolToString => {
       match args.length() {
         1 => {
@@ -2044,6 +2058,25 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         }
         n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::SyntaxToDatum => {
+      match args.length() {
+        1 => {
+          let datum = value_as_datum(args[0])
+          Value::Datum(datum)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::DatumToSyntax => {
+      match args.length() {
+        2 => {
+          let _ = value_as_datum(args[0])
+          let datum = value_as_datum(args[1])
+          Value::Datum(datum)
+        }
+        n => raise arity_mismatch(2, n)
       }
     }
     Primitive::BooleanP => {

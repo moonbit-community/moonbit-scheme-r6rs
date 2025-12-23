@@ -17,7 +17,7 @@
 /// - define-record-type (simple record types, no inheritance)
 /// - library and import (minimal library support)
 /// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
-///   symbol->string string->symbol
+///   identifier? symbol->string string->symbol syntax syntax->datum datum->syntax
 ///   boolean? number? integer? rational? real? exact? inexact? zero? positive?
 ///   negative? odd? even? exact->inexact
 ///   inexact->exact number->string string->number
@@ -99,8 +99,11 @@ pub enum Primitive {
   NullP
   PairP
   SymbolP
+  IdentifierP
   SymbolToString
   StringToSymbol
+  SyntaxToDatum
+  DatumToSyntax
   BooleanP
   NumberP
   IntegerP
