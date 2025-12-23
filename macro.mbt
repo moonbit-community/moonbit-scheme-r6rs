@@ -194,6 +194,7 @@ fn is_core_identifier(name : String) -> Bool {
     "quotient",
     "remainder",
     "modulo",
+    "gcd",
     "display",
     "write",
     "newline",

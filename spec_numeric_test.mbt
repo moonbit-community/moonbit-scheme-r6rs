@@ -51,6 +51,16 @@ test "r6rs numeric: conversions and fractions" {
 }
 
 ///|
+test "r6rs numeric: gcd" {
+  inspect(value_to_string(eval_program("(gcd)")), content="0")
+  inspect(value_to_string(eval_program("(gcd 5)")), content="5")
+  inspect(value_to_string(eval_program("(gcd 54 24)")), content="6")
+  inspect(value_to_string(eval_program("(gcd -54 24)")), content="6")
+  inspect(value_to_string(eval_program("(gcd 0 10)")), content="10")
+  inspect(value_to_string(eval_program("(gcd 48 18 30)")), content="6")
+}
+
+///|
 test "r6rs numeric: quotient errors" {
   let bad_div = try? eval_program("(quotient 1 0)")
   match bad_div {

@@ -62,6 +62,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Quotient, Primitive::Quotient)
     | (Primitive::Remainder, Primitive::Remainder)
     | (Primitive::Modulo, Primitive::Modulo)
+    | (Primitive::Gcd, Primitive::Gcd)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -824,6 +825,13 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
+    }
+    Primitive::Gcd => {
+      let mut acc = 0
+      for arg in args {
+        acc = gcd(acc, value_as_int_index(arg))
+      }
+      Value::Datum(Datum::Int(acc))
     }
     Primitive::Eq => {
       match args.length() {
