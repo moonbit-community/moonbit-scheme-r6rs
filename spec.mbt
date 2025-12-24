@@ -70,7 +70,8 @@ pub(all) suberror EvalError String derive(Show, Eq)
 
 ///|
 /// Datum is the reader-level data representation used by quote.
-/// It contains only pure data (no procedures).
+/// It is also used to store list/vector elements, so it includes runtime-only
+/// variants for records/conditions even though the reader never produces them.
 ///|
 pub enum Datum {
   Nil
@@ -85,6 +86,8 @@ pub enum Datum {
   Pair(Ref[Datum], Ref[Datum])
   Vector(Array[Datum])
   ByteVector(Array[Int])
+  Record(Record)
+  Condition(Condition)
 }
 
 ///|
@@ -154,6 +157,11 @@ pub enum Primitive {
   RecordMutator
   MakeRecordTypeDescriptor
   MakeRecordConstructorDescriptor
+  Condition
+  ConditionP
+  SimpleConditions
+  ConditionPredicate
+  ConditionAccessor
   Not
   Apply
   CallCC
@@ -382,6 +390,7 @@ pub enum Value {
   Port(Port)
   Record(Record)
   RecordProc(RecordProc)
+  ConditionProc(ConditionProc)
   RecordTypeDescriptor(RecordTypeDescriptor)
   RecordConstructorDescriptor(RecordConstructorDescriptor)
   Macro(SyntaxRules)

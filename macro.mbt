@@ -41,6 +41,7 @@ fn is_core_identifier(name : String) -> Bool {
     "let-syntax",
     "letrec-syntax",
     "define-record-type",
+    "define-condition-type",
     "and",
     "or",
     "cond",
@@ -113,6 +114,12 @@ fn is_core_identifier(name : String) -> Bool {
     "record-mutator",
     "make-record-type-descriptor",
     "make-record-constructor-descriptor",
+    "&condition",
+    "condition",
+    "condition?",
+    "simple-conditions",
+    "condition-predicate",
+    "condition-accessor",
     "not",
     "apply",
     "call/cc",
@@ -676,6 +683,18 @@ fn match_pattern(
         _ => false
       }
     }
+    Datum::Record(rec) => {
+      match input {
+        Datum::Record(other) => rec.id == other.id
+        _ => false
+      }
+    }
+    Datum::Condition(cond) => {
+      match input {
+        Datum::Condition(other) => cond.id == other.id
+        _ => false
+      }
+    }
     Datum::Pair(pa, pb) => {
       match (datum_list_to_array_opt(pattern), datum_list_to_array_opt(input)) {
         (Some(pats), Some(inputs)) => match_pattern_list(pats, inputs, literals, bindings)
@@ -904,6 +923,8 @@ fn datum_equal(a : Datum, b : Datum) -> Bool {
       datum_equal(ax.val, bx.val) && datum_equal(ay.val, by.val)
     (Datum::Vector(ax), Datum::Vector(bx)) => array_datum_equal(ax, bx)
     (Datum::ByteVector(ax), Datum::ByteVector(bx)) => array_int_equal(ax, bx)
+    (Datum::Record(ax), Datum::Record(bx)) => ax.id == bx.id
+    (Datum::Condition(ax), Datum::Condition(bx)) => ax.id == bx.id
     _ => false
   }
 }

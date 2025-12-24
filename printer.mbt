@@ -45,6 +45,8 @@ fn datum_to_string(datum : Datum) -> String {
     Datum::Pair(_, _) => datum_list_to_string(datum)
     Datum::Vector(items) => vector_to_string(items)
     Datum::ByteVector(items) => bytevector_to_string(items)
+    Datum::Record(_) => "#<record>"
+    Datum::Condition(_) => "#<condition>"
   }
 }
 
@@ -139,6 +141,7 @@ pub fn value_to_string(value : Value) -> String {
     Value::Port(_) => "#<port>"
     Value::Record(_) => "#<record>"
     Value::RecordProc(_) => "#<procedure>"
+    Value::ConditionProc(_) => "#<procedure>"
     Value::RecordTypeDescriptor(_) => "#<record-type-descriptor>"
     Value::RecordConstructorDescriptor(_) => "#<record-constructor-descriptor>"
     Value::Macro(_) => "#<syntax>"

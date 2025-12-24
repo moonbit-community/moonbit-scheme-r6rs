@@ -83,6 +83,11 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::RecordMutator, Primitive::RecordMutator)
     | (Primitive::MakeRecordTypeDescriptor, Primitive::MakeRecordTypeDescriptor)
     | (Primitive::MakeRecordConstructorDescriptor, Primitive::MakeRecordConstructorDescriptor)
+    | (Primitive::Condition, Primitive::Condition)
+    | (Primitive::ConditionP, Primitive::ConditionP)
+    | (Primitive::SimpleConditions, Primitive::SimpleConditions)
+    | (Primitive::ConditionPredicate, Primitive::ConditionPredicate)
+    | (Primitive::ConditionAccessor, Primitive::ConditionAccessor)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
@@ -265,6 +270,7 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::Port(a), Value::Port(b)) => a.id == b.id
     (Value::Record(a), Value::Record(b)) => a.id == b.id
     (Value::RecordProc(a), Value::RecordProc(b)) => a.id == b.id
+    (Value::ConditionProc(a), Value::ConditionProc(b)) => a.id == b.id
     (Value::RecordTypeDescriptor(a), Value::RecordTypeDescriptor(b)) => a.id == b.id
     (Value::RecordConstructorDescriptor(a), Value::RecordConstructorDescriptor(b)) => a.id == b.id
     (Value::Void, Value::Void) => true
@@ -1079,7 +1085,7 @@ fn list_member(
     match cur {
       Datum::Nil => return bool_value(false)
       Datum::Pair(car, cdr) => {
-        if equality_match(mode, item, Value::Datum(car.val)) {
+        if equality_match(mode, item, value_from_datum(car.val)) {
           return Value::Datum(cur)
         }
         cur = cdr.val
@@ -1104,7 +1110,7 @@ fn list_assoc(
         let entry_val = entry.val
         match entry_val {
           Datum::Pair(car, _) => {
-            if equality_match(mode, key, Value::Datum(car.val)) {
+            if equality_match(mode, key, value_from_datum(car.val)) {
               return Value::Datum(entry_val)
             }
           }
@@ -1211,6 +1217,28 @@ fn value_as_record_constructor_descriptor(value : Value) -> RecordConstructorDes
   match value {
     Value::RecordConstructorDescriptor(desc) => desc
     _ => raise EvalError("type error: record constructor descriptor expected")
+  }
+}
+
+///|
+fn value_as_condition_type_descriptor(value : Value) -> RecordTypeDescriptor raise EvalError {
+  let desc = value_as_record_type_descriptor(value)
+  let base = condition_base_type()
+  if !record_type_is_a(desc.record_type, base) {
+    raise EvalError("type error: condition type expected")
+  }
+  desc
+}
+
+///|
+fn record_accessor_info(value : Value) -> (RecordType, Int) raise EvalError {
+  match value {
+    Value::RecordProc(proc) =>
+      match proc.kind {
+        RecordProcKind::Accessor(record_type, idx) => (record_type, idx)
+        _ => raise EvalError("type error: record accessor expected")
+      }
+    _ => raise EvalError("type error: record accessor expected")
   }
 }
 
@@ -2114,7 +2142,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let (car, _) = value_as_pair(args[0])
-          Value::Datum(car)
+          value_from_datum(car)
         }
         n => raise arity_mismatch(1, n)
       }
@@ -2123,7 +2151,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let (_, cdr) = value_as_pair(args[0])
-          Value::Datum(cdr)
+          value_from_datum(cdr)
         }
         n => raise arity_mismatch(1, n)
       }
@@ -2150,7 +2178,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               _ => raise EvalError("type error: pair expected")
             }
           }
-          Value::Datum(cur)
+          value_from_datum(cur)
         }
         n => raise arity_mismatch(1, n)
       }
@@ -2577,7 +2605,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::GuardHandler(_)
             | Value::Parameter(_)
             | Value::Continuation(_)
-            | Value::RecordProc(_) => bool_value(true)
+            | Value::RecordProc(_)
+            | Value::ConditionProc(_) => bool_value(true)
             _ => bool_value(false)
           }
         }
@@ -2921,6 +2950,74 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           )
         }
         n => raise arity_mismatch(3, n)
+      }
+    }
+    Primitive::Condition => {
+      if args.length() == 0 {
+        raise arity_mismatch(1, 0)
+      }
+      let base = condition_base_type()
+      let components : Array[Record] = []
+      for arg in args {
+        let parts = condition_components(arg, base)
+        for record in parts {
+          components.push(record)
+        }
+      }
+      if components.length() == 1 {
+        Value::Record(components[0])
+      } else {
+        Value::Datum(Datum::Condition(make_condition(components)))
+      }
+    }
+    Primitive::ConditionP => {
+      match args.length() {
+        1 => {
+          let base = condition_base_type()
+          let ok = condition_components_opt(args[0], base) is Some(_)
+          bool_value(ok)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::SimpleConditions => {
+      match args.length() {
+        1 => {
+          let base = condition_base_type()
+          let components = condition_components(args[0], base)
+          let items : Array[Datum] = []
+          for record in components {
+            items.push(Datum::Record(record))
+          }
+          Value::Datum(list_from_array(items))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::ConditionPredicate => {
+      match args.length() {
+        1 => {
+          let desc = value_as_condition_type_descriptor(args[0])
+          Value::ConditionProc(
+            make_condition_proc(ConditionProcKind::Predicate(desc.record_type)),
+          )
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::ConditionAccessor => {
+      match args.length() {
+        2 => {
+          let desc = value_as_condition_type_descriptor(args[0])
+          let (accessor_type, idx) = record_accessor_info(args[1])
+          if accessor_type.id != desc.record_type.id {
+            raise EvalError("type error: record accessor expected")
+          }
+          Value::ConditionProc(
+            make_condition_proc(ConditionProcKind::Accessor(desc.record_type, idx)),
+          )
+        }
+        n => raise arity_mismatch(2, n)
       }
     }
     Primitive::CharEq => bool_value(compare_chain_char(args, CompareMode::Eq, false))
@@ -3362,7 +3459,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let items = value_as_vector(args[0])
           let idx = value_as_int_index(args[1])
           check_index(idx, items.length())
-          Value::Datum(items[idx])
+          value_from_datum(items[idx])
         }
         n => raise arity_mismatch(2, n)
       }
@@ -3886,7 +3983,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let idx = value_as_int_index(args[1])
           let items = datum_list_to_array(datum)
           check_index(idx, items.length())
-          Value::Datum(items[idx])
+          value_from_datum(items[idx])
         }
         n => raise arity_mismatch(2, n)
       }

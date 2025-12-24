@@ -39,6 +39,12 @@ struct Record {
 }
 
 ///|
+struct Condition {
+  id : Int
+  components : Array[Record]
+}
+
+///|
 priv enum RecordProcKind {
   Constructor(RecordType)
   Predicate(RecordType)
@@ -52,6 +58,18 @@ priv enum RecordProcKind {
 struct RecordProc {
   id : Int
   kind : RecordProcKind
+}
+
+///|
+priv enum ConditionProcKind {
+  Predicate(RecordType)
+  Accessor(RecordType, Int)
+}
+
+///|
+struct ConditionProc {
+  id : Int
+  kind : ConditionProcKind
 }
 
 ///|
@@ -81,6 +99,8 @@ let record_counter : Ref[Int] = Ref::new(0)
 let record_proc_counter : Ref[Int] = Ref::new(0)
 let record_type_desc_counter : Ref[Int] = Ref::new(0)
 let record_ctor_desc_counter : Ref[Int] = Ref::new(0)
+let condition_counter : Ref[Int] = Ref::new(0)
+let condition_proc_counter : Ref[Int] = Ref::new(0)
 let library_registry : Ref[Map[String, Library]] = Ref::new({})
 let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
 let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
@@ -129,6 +149,20 @@ fn next_record_ctor_desc_id() -> Int {
 }
 
 ///|
+fn next_condition_id() -> Int {
+  let id = condition_counter.val
+  condition_counter.val = id + 1
+  id
+}
+
+///|
+fn next_condition_proc_id() -> Int {
+  let id = condition_proc_counter.val
+  condition_proc_counter.val = id + 1
+  id
+}
+
+///|
 fn make_record_type(
   name : String,
   parent : RecordType?,
@@ -143,6 +177,11 @@ fn make_record_type(
 ///|
 fn make_record_proc(kind : RecordProcKind) -> RecordProc {
   RecordProc::{ id: next_record_proc_id(), kind }
+}
+
+///|
+fn make_condition_proc(kind : ConditionProcKind) -> ConditionProc {
+  ConditionProc::{ id: next_condition_proc_id(), kind }
 }
 
 ///|
@@ -178,6 +217,11 @@ fn make_record_instance(record_type : RecordType, values : Array[Value]) -> Reco
     fields.push(Ref::new(value))
   }
   Record::{ id: next_record_id(), record_type, fields }
+}
+
+///|
+fn make_condition(components : Array[Record]) -> Condition {
+  Condition::{ id: next_condition_id(), components }
 }
 
 ///|
@@ -246,7 +290,8 @@ fn is_procedure_value(value : Value) -> Bool {
     | Value::CaseClosure(_)
     | Value::Parameter(_)
     | Value::Continuation(_)
-    | Value::RecordProc(_) => true
+    | Value::RecordProc(_)
+    | Value::ConditionProc(_) => true
     _ => false
   }
 }
@@ -289,6 +334,23 @@ fn record_type_matches(
     idx = idx + 1
   }
   true
+}
+
+///|
+fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
+  let mut cur : RecordType? = Some(actual)
+  while true {
+    match cur {
+      Some(rt) => {
+        if rt.id == target.id {
+          return true
+        }
+        cur = rt.parent
+      }
+      None => return false
+    }
+  }
+  false
 }
 
 ///|
@@ -346,7 +408,55 @@ fn is_false(value : Value) -> Bool {
 fn value_as_datum(value : Value) -> Datum raise EvalError {
   match value {
     Value::Datum(d) => d
+    Value::Record(record) => Datum::Record(record)
     _ => raise EvalError("type error: datum expected")
+  }
+}
+
+///|
+fn value_from_datum(datum : Datum) -> Value {
+  match datum {
+    Datum::Record(record) => Value::Record(record)
+    _ => Value::Datum(datum)
+  }
+}
+
+///|
+fn condition_base_type() -> RecordType raise EvalError {
+  match lookup_record_type_descriptor("&condition") {
+    Some(desc) => desc.record_type
+    None => raise EvalError("internal error: missing &condition")
+  }
+}
+
+///|
+fn value_as_condition_record(value : Value, base : RecordType) -> Record? {
+  match value {
+    Value::Record(record) =>
+      if record_type_is_a(record.record_type, base) { Some(record) } else { None }
+    Value::Datum(Datum::Record(record)) =>
+      if record_type_is_a(record.record_type, base) { Some(record) } else { None }
+    _ => None
+  }
+}
+
+///|
+fn condition_components_opt(value : Value, base : RecordType) -> Array[Record]? {
+  match value {
+    Value::Datum(Datum::Condition(cond)) => Some(cond.components)
+    _ =>
+      match value_as_condition_record(value, base) {
+        Some(record) => Some([record])
+        None => None
+      }
+  }
+}
+
+///|
+fn condition_components(value : Value, base : RecordType) -> Array[Record] raise EvalError {
+  match condition_components_opt(value, base) {
+    Some(items) => items
+    None => raise EvalError("type error: condition expected")
   }
 }
 
@@ -438,7 +548,7 @@ fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
     match cur {
       Datum::Nil => break
       Datum::Pair(a, b) => {
-        items.push(Value::Datum(a.val))
+        items.push(value_from_datum(a.val))
         cur = b.val
       }
       _ => raise EvalError("type error: list expected")

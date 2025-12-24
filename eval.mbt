@@ -1,6 +1,11 @@
 ///|
 fn init_env() -> Env {
   let env = env_new()
+  let condition_type = make_record_type("&condition", None, false, false, None, [])
+  let condition_ctor_desc = make_record_constructor_descriptor(condition_type, None, None)
+  let condition_rtd = make_record_type_descriptor(condition_type, condition_ctor_desc)
+  let _ = register_record_type("&condition", condition_rtd)
+  env_define(env, "&condition", Value::RecordTypeDescriptor(condition_rtd))
   env_define(env, "+", Value::Primitive(Primitive::Add))
   env_define(env, "-", Value::Primitive(Primitive::Sub))
   env_define(env, "*", Value::Primitive(Primitive::Mul))
@@ -66,6 +71,11 @@ fn init_env() -> Env {
     "make-record-constructor-descriptor",
     Value::Primitive(Primitive::MakeRecordConstructorDescriptor),
   )
+  env_define(env, "condition", Value::Primitive(Primitive::Condition))
+  env_define(env, "condition?", Value::Primitive(Primitive::ConditionP))
+  env_define(env, "simple-conditions", Value::Primitive(Primitive::SimpleConditions))
+  env_define(env, "condition-predicate", Value::Primitive(Primitive::ConditionPredicate))
+  env_define(env, "condition-accessor", Value::Primitive(Primitive::ConditionAccessor))
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
   env_define(env, "values", Value::Primitive(Primitive::Values))
@@ -401,6 +411,7 @@ priv enum Kont {
   RecordProtocolNApply(RecordType, Array[Value], Kont)
   RecordProtocolNResult(RecordType, Kont)
   DefineRecordType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
+  DefineConditionType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
   MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
   VectorMapFinalize(Kont)
   StringMapFinalize(Kont)
@@ -658,8 +669,10 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           | Datum::Char(_)
           | Datum::String(_)
           | Datum::Vector(_)
-          | Datum::ByteVector(_) =>
-            state = MachineState::Apply(Value::Datum(current_expr), kont, handlers)
+          | Datum::ByteVector(_)
+          | Datum::Record(_)
+          | Datum::Condition(_) =>
+            state = MachineState::Apply(value_from_datum(current_expr), kont, handlers)
           Datum::Symbol(name) => {
             match env_get_macro(current_env, name) {
               Some(rules) => {
@@ -1136,6 +1149,32 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 }
                 None => ()
               }
+            }
+            state = MachineState::Apply(Value::Void, next, handlers)
+          }
+          Kont::DefineConditionType(ctor_name, pred_name, record_type, bindings, env, next) => {
+            let ctor_value = expect_single(value)
+            if !is_procedure_value(ctor_value) {
+              raise EvalError("type error: procedure expected")
+            }
+            env_define(env, ctor_name, ctor_value)
+            env_define(
+              env,
+              pred_name,
+              Value::ConditionProc(
+                make_condition_proc(ConditionProcKind::Predicate(record_type)),
+              ),
+            )
+            for binding in bindings {
+              env_define(
+                env,
+                binding.accessor,
+                Value::ConditionProc(
+                  make_condition_proc(
+                    ConditionProcKind::Accessor(record_type, binding.index),
+                  ),
+                ),
+              )
             }
             state = MachineState::Apply(Value::Void, next, handlers)
           }
@@ -2320,22 +2359,98 @@ fn eval_define_record_type_state(
 }
 
 ///|
-fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
-  let mut cur : RecordType? = Some(actual)
-  while true {
-    match cur {
-      Some(rt) => {
-        if rt.id == target.id {
-          return true
-        }
-        cur = rt.parent
-      }
-      None => return false
-    }
+fn eval_define_condition_type_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() < 4 {
+    raise EvalError("invalid define-condition-type")
   }
-  false
+  let record_name = parse_symbol(args[0])
+  let parent_name = parse_symbol(args[1])
+  let ctor_name = parse_symbol(args[2])
+  let pred_name = parse_symbol(args[3])
+  let field_specs = args.sub(start=4).to_array()
+  match lookup_record_type_descriptor(record_name) {
+    Some(_) => raise EvalError("invalid define-condition-type")
+    None => ()
+  }
+  let parent_desc = match lookup_record_type_descriptor(parent_name) {
+    Some(desc) => desc
+    None => raise EvalError("invalid define-condition-type")
+  }
+  let parent_type = parent_desc.record_type
+  if parent_type.is_sealed || parent_type.is_opaque {
+    raise EvalError("invalid define-condition-type")
+  }
+  let base_type = condition_base_type()
+  if !record_type_is_a(parent_type, base_type) {
+    raise EvalError("invalid define-condition-type")
+  }
+  let parent_fields = parent_type.fields
+  let parent_field_names : Array[String] = []
+  for field in parent_fields {
+    parent_field_names.push(field.name)
+  }
+  let accessors : Map[String, String] = {}
+  let new_field_names : Array[String] = []
+  for spec in field_specs {
+    let parts = datum_list_to_array(spec)
+    if parts.length() != 2 {
+      raise EvalError("invalid define-condition-type")
+    }
+    let field_name = parse_symbol(parts[0])
+    if array_contains_name(parent_field_names, field_name) {
+      raise EvalError("invalid define-condition-type")
+    }
+    if accessors.contains(field_name) {
+      raise EvalError("invalid define-condition-type")
+    }
+    let accessor = parse_symbol(parts[1])
+    accessors[field_name] = accessor
+    new_field_names.push(field_name)
+  }
+  let fields : Array[RecordField] = []
+  for field in parent_fields {
+    fields.push(field)
+  }
+  for field_name in new_field_names {
+    fields.push(RecordField::{ name: field_name, mutable: false })
+  }
+  let bindings : Array[RecordFieldBinding] = []
+  let parent_count = parent_fields.length()
+  let mut i = 0
+  while i < new_field_names.length() {
+    let field_name = new_field_names[i]
+    let accessor_name = match accessors.get(field_name) {
+      Some(name) => name
+      None => raise EvalError("invalid define-condition-type")
+    }
+    bindings.push(
+      RecordFieldBinding::{ accessor: accessor_name, index: parent_count + i, mutator: None },
+    )
+    i = i + 1
+  }
+  let record_type = make_record_type(
+    record_name,
+    Some(parent_type),
+    false,
+    false,
+    None,
+    fields,
+  )
+  let ctor_desc =
+    make_record_constructor_descriptor(record_type, Some(parent_desc.constructor_desc), None)
+  let rtd = make_record_type_descriptor(record_type, ctor_desc)
+  let _ = register_record_type(record_name, rtd)
+  let next_kont =
+    Kont::DefineConditionType(ctor_name, pred_name, record_type, bindings, env, kont)
+  record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
 }
 
+///|
 ///|
 ///|
 fn array_contains_name(items : Array[String], name : String) -> Bool {
@@ -2490,6 +2605,58 @@ fn apply_record_proc(
       }
       let record = make_record_instance(record_type, values)
       MachineState::Apply(Value::Record(record), kont, handlers)
+    }
+  }
+}
+
+///|
+fn apply_condition_proc(
+  proc : ConditionProc,
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  match proc.kind {
+    ConditionProcKind::Predicate(record_type) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let base = condition_base_type()
+        let mut ok = false
+        match condition_components_opt(args[0], base) {
+          Some(components) => {
+            for record in components {
+              if record_type_is_a(record.record_type, record_type) {
+                ok = true
+                break
+              }
+            }
+          }
+          None => ()
+        }
+        MachineState::Apply(bool_value(ok), kont, handlers)
+      }
+    }
+    ConditionProcKind::Accessor(record_type, idx) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let base = condition_base_type()
+        let components = condition_components(args[0], base)
+        let mut found : Record? = None
+        for record in components {
+          if record_type_is_a(record.record_type, record_type) {
+            found = Some(record)
+            break
+          }
+        }
+        match found {
+          Some(record) => MachineState::Apply(record.fields[idx].val, kont, handlers)
+          None => raise EvalError(
+            "type error: condition type mismatch: expected \{record_type.name}",
+          )
+        }
+      }
     }
   }
 }
@@ -2727,6 +2894,7 @@ fn eval_pair(
       Some("library") => eval_library_state(args, env, kont, handlers)
       Some("import") => eval_import_state(args, env, kont, handlers)
       Some("define-record-type") => eval_define_record_type_state(args, env, kont, handlers)
+      Some("define-condition-type") => eval_define_condition_type_state(args, env, kont, handlers)
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
       Some("syntax") => MachineState::Apply(eval_quote(args), kont, handlers)
@@ -2789,7 +2957,7 @@ fn map_step(
         return MachineState::Apply(Value::Datum(list_from_array(results)), kont, handlers)
       }
       Datum::Pair(car, cdr) => {
-        args.push(Value::Datum(car.val))
+        args.push(value_from_datum(car.val))
         next_lists.push(cdr.val)
       }
       _ => raise EvalError("type error: proper list expected")
@@ -3123,6 +3291,7 @@ fn apply_proc(
       run_wind_actions(actions, resume_value, cont.kont, cont.handlers, handlers)
     }
     Value::RecordProc(proc) => apply_record_proc(proc, args, kont, handlers)
+    Value::ConditionProc(proc) => apply_condition_proc(proc, args, kont, handlers)
     _ => raise EvalError("type error: procedure expected")
   }
 }
