@@ -28,6 +28,7 @@
 ///   max min floor ceiling truncate round
 ///   procedure? record? record-rtd record-type-descriptor?
 ///   record-constructor-descriptor? record-type-name record-type-parent
+///   record-type-uid record-type-generative?
 ///   record-type-sealed? record-type-opaque? record-type-field-names
 ///   record-type-field-mutable?
 ///   record-constructor-descriptor record-constructor
@@ -139,6 +140,8 @@ pub enum Primitive {
   RecordConstructorDescriptorP
   RecordTypeName
   RecordTypeParent
+  RecordTypeUid
+  RecordTypeGenerativeP
   RecordTypeSealedP
   RecordTypeOpaqueP
   RecordTypeFieldNames

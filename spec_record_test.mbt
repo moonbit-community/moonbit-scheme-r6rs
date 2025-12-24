@@ -161,3 +161,35 @@ test "r6rs records: procedural accessors and mutators" {
     content="(#t #t #t #f blue #f #t)",
   )
 }
+
+///|
+test "r6rs records: uid and generative" {
+  let program = (
+    (
+      #|(define-record-type point
+      #|  (make-point x y)
+      #|  point?
+      #|  (x point-x)
+      #|  (y point-y))
+      #|(define-record-type color-point
+      #|  (make-color-point x y color)
+      #|  color-point?
+      #|  (nongenerative color-uid)
+      #|  (x color-point-x)
+      #|  (y color-point-y)
+      #|  (color color-point-color))
+      #|(let* ((p (make-point 1 2))
+      #|       (cp (make-color-point 3 4 'red))
+      #|       (rtd-p (record-rtd p))
+      #|       (rtd-c (record-rtd cp)))
+      #|  (list (record-type-generative? rtd-p)
+      #|        (record-type-uid rtd-p)
+      #|        (record-type-generative? rtd-c)
+      #|        (record-type-uid rtd-c)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(#t #f #f color-uid)",
+  )
+}

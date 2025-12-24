@@ -49,6 +49,8 @@ fn init_env() -> Env {
   env_define(env, "record-constructor-descriptor?", Value::Primitive(Primitive::RecordConstructorDescriptorP))
   env_define(env, "record-type-name", Value::Primitive(Primitive::RecordTypeName))
   env_define(env, "record-type-parent", Value::Primitive(Primitive::RecordTypeParent))
+  env_define(env, "record-type-uid", Value::Primitive(Primitive::RecordTypeUid))
+  env_define(env, "record-type-generative?", Value::Primitive(Primitive::RecordTypeGenerativeP))
   env_define(env, "record-type-sealed?", Value::Primitive(Primitive::RecordTypeSealedP))
   env_define(env, "record-type-opaque?", Value::Primitive(Primitive::RecordTypeOpaqueP))
   env_define(env, "record-type-field-names", Value::Primitive(Primitive::RecordTypeFieldNames))
@@ -2062,6 +2064,7 @@ fn eval_define_record_type_state(
   let mut protocol_expr : Datum? = None
   let mut is_sealed = false
   let mut is_opaque = false
+  let mut uid : String? = None
   let field_specs : Array[Datum] = []
   for spec in raw_specs {
     let parts = datum_list_to_array(spec)
@@ -2087,6 +2090,17 @@ fn eval_define_record_type_state(
         }
         Some("opaque") => {
           is_opaque = if parts.length() == 1 { true } else { parse_bool(parts[1]) }
+          continue
+        }
+        Some("nongenerative") => {
+          if uid is Some(_) {
+            raise EvalError("invalid define-record-type")
+          }
+          if parts.length() == 1 {
+            uid = Some(record_name)
+          } else {
+            uid = Some(parse_symbol(parts[1]))
+          }
           continue
         }
         _ => ()
@@ -2171,13 +2185,32 @@ fn eval_define_record_type_state(
     field_index[field_name] = i
     i = i + 1
   }
-  let record_type = make_record_type(record_name, parent_type, is_sealed, is_opaque, fields)
-  let base_ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(record_type)))
-  let ctor_value = match protocol_expr {
-    Some(expr) => apply_protocol(expr, base_ctor, env)
-    None => base_ctor
+  let existing_desc = match uid {
+    Some(uid_name) => lookup_record_type_descriptor_by_uid(uid_name)
+    None => None
   }
-  register_record_type(record_name, record_type, ctor_value)
+  let (record_type, ctor_value) = match existing_desc {
+    Some(desc) => {
+      if !record_type_matches(desc.record_type, record_name, parent_type, is_sealed, is_opaque, fields) {
+        raise EvalError("invalid define-record-type")
+      }
+      if protocol_expr is Some(_) {
+        raise EvalError("invalid define-record-type")
+      }
+      register_record_type_alias(record_name, desc)
+      (desc.record_type, desc.constructor_desc.ctor)
+    }
+    None => {
+      let record_type = make_record_type(record_name, parent_type, is_sealed, is_opaque, uid, fields)
+      let base_ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(record_type)))
+      let ctor_value = match protocol_expr {
+        Some(expr) => apply_protocol(expr, base_ctor, env)
+        None => base_ctor
+      }
+      let _ = register_record_type(record_name, record_type, ctor_value)
+      (record_type, ctor_value)
+    }
+  }
   env_define(env, ctor_name, ctor_value)
   env_define(
     env,
@@ -2227,6 +2260,38 @@ fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
     }
   }
   false
+}
+
+///|
+fn record_type_matches(
+  existing : RecordType,
+  name : String,
+  parent : RecordType?,
+  is_sealed : Bool,
+  is_opaque : Bool,
+  fields : Array[RecordField],
+) -> Bool {
+  if existing.name != name || existing.is_sealed != is_sealed || existing.is_opaque != is_opaque {
+    return false
+  }
+  match (existing.parent, parent) {
+    (None, None) => ()
+    (Some(a), Some(b)) => if a.id != b.id { return false }
+    _ => return false
+  }
+  if existing.fields.length() != fields.length() {
+    return false
+  }
+  let mut idx = 0
+  while idx < fields.length() {
+    let expected = fields[idx]
+    let actual = existing.fields[idx]
+    if expected.name != actual.name || expected.mutable != actual.mutable {
+      return false
+    }
+    idx = idx + 1
+  }
+  true
 }
 
 ///|

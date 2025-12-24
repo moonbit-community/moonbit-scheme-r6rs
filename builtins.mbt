@@ -70,6 +70,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::RecordConstructorDescriptorP, Primitive::RecordConstructorDescriptorP)
     | (Primitive::RecordTypeName, Primitive::RecordTypeName)
     | (Primitive::RecordTypeParent, Primitive::RecordTypeParent)
+    | (Primitive::RecordTypeUid, Primitive::RecordTypeUid)
+    | (Primitive::RecordTypeGenerativeP, Primitive::RecordTypeGenerativeP)
     | (Primitive::RecordTypeSealedP, Primitive::RecordTypeSealedP)
     | (Primitive::RecordTypeOpaqueP, Primitive::RecordTypeOpaqueP)
     | (Primitive::RecordTypeFieldNames, Primitive::RecordTypeFieldNames)
@@ -2553,7 +2555,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         1 => {
           match args[0] {
             Value::Record(record) => {
-              match lookup_record_type_descriptor(record.record_type.name) {
+              match lookup_record_type_descriptor_by_id(record.record_type.id) {
                 Some(desc) => Value::RecordTypeDescriptor(desc)
                 None => raise EvalError("invalid record type descriptor")
               }
@@ -2608,6 +2610,27 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             }
             None => Value::Datum(Datum::Bool(false))
           }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeUid => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          match desc.record_type.uid {
+            Some(uid) => Value::Datum(Datum::Symbol(uid))
+            None => Value::Datum(Datum::Bool(false))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeGenerativeP => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          bool_value(desc.record_type.uid is None)
         }
         n => raise arity_mismatch(1, n)
       }

@@ -100,6 +100,8 @@ fn is_core_identifier(name : String) -> Bool {
     "record-constructor-descriptor?",
     "record-type-name",
     "record-type-parent",
+    "record-type-uid",
+    "record-type-generative?",
     "record-type-sealed?",
     "record-type-opaque?",
     "record-type-field-names",

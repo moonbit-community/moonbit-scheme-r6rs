@@ -27,6 +27,7 @@ priv struct RecordType {
   parent : RecordType?
   is_sealed : Bool
   is_opaque : Bool
+  uid : String?
   fields : Array[RecordField]
 }
 
@@ -78,6 +79,8 @@ let record_type_desc_counter : Ref[Int] = Ref::new(0)
 let record_ctor_desc_counter : Ref[Int] = Ref::new(0)
 let library_registry : Ref[Map[String, Library]] = Ref::new({})
 let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
+let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
+let record_type_id_registry : Ref[Map[Int, RecordTypeDescriptor]] = Ref::new({})
 
 ///|
 fn next_port_id() -> Int {
@@ -127,9 +130,10 @@ fn make_record_type(
   parent : RecordType?,
   is_sealed : Bool,
   is_opaque : Bool,
+  uid : String?,
   fields : Array[RecordField]
 ) -> RecordType {
-  RecordType::{ id: next_record_type_id(), name, parent, is_sealed, is_opaque, fields }
+  RecordType::{ id: next_record_type_id(), name, parent, is_sealed, is_opaque, uid, fields }
 }
 
 ///|
@@ -170,11 +174,30 @@ fn reset_library_registry() -> Unit {
 ///|
 fn reset_record_type_registry() -> Unit {
   record_type_registry.val = {}
+  record_type_uid_registry.val = {}
+  record_type_id_registry.val = {}
 }
 
 ///|
-fn register_record_type(name : String, record_type : RecordType, ctor : Value) -> Unit {
-  record_type_registry.val[name] = make_record_type_descriptor(record_type, ctor)
+fn register_record_type(name : String, record_type : RecordType, ctor : Value) -> RecordTypeDescriptor {
+  let desc = make_record_type_descriptor(record_type, ctor)
+  record_type_registry.val[name] = desc
+  record_type_id_registry.val[record_type.id] = desc
+  match record_type.uid {
+    Some(uid) => record_type_uid_registry.val[uid] = desc
+    None => ()
+  }
+  desc
+}
+
+///|
+fn register_record_type_alias(name : String, desc : RecordTypeDescriptor) -> Unit {
+  record_type_registry.val[name] = desc
+  record_type_id_registry.val[desc.record_type.id] = desc
+  match desc.record_type.uid {
+    Some(uid) => record_type_uid_registry.val[uid] = desc
+    None => ()
+  }
 }
 
 ///|
@@ -188,6 +211,16 @@ fn lookup_record_type(name : String) -> RecordType? {
 ///|
 fn lookup_record_type_descriptor(name : String) -> RecordTypeDescriptor? {
   record_type_registry.val.get(name)
+}
+
+///|
+fn lookup_record_type_descriptor_by_uid(uid : String) -> RecordTypeDescriptor? {
+  record_type_uid_registry.val.get(uid)
+}
+
+///|
+fn lookup_record_type_descriptor_by_id(id : Int) -> RecordTypeDescriptor? {
+  record_type_id_registry.val.get(id)
 }
 
 ///|
