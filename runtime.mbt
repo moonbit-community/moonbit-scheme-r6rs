@@ -44,6 +44,8 @@ priv enum RecordProcKind {
   Predicate(RecordType)
   Accessor(RecordType, Int)
   Mutator(RecordType, Int)
+  ProtocolN(RecordType, RecordConstructorDescriptor)
+  ProtocolP(RecordType, Array[Value])
 }
 
 ///|
@@ -55,7 +57,9 @@ struct RecordProc {
 ///|
 struct RecordConstructorDescriptor {
   id : Int
-  ctor : Value
+  record_type : RecordType
+  parent_desc : RecordConstructorDescriptor?
+  protocol : Value?
 }
 
 ///|
@@ -143,18 +147,28 @@ fn make_record_proc(kind : RecordProcKind) -> RecordProc {
 
 ///|
 fn make_record_constructor_descriptor(
-  ctor : Value
+  record_type : RecordType,
+  parent_desc : RecordConstructorDescriptor?,
+  protocol : Value?
 ) -> RecordConstructorDescriptor {
-  RecordConstructorDescriptor::{ id: next_record_ctor_desc_id(), ctor }
+  RecordConstructorDescriptor::{
+    id: next_record_ctor_desc_id(),
+    record_type,
+    parent_desc,
+    protocol,
+  }
 }
 
 ///|
 fn make_record_type_descriptor(
   record_type : RecordType,
-  ctor : Value
+  constructor_desc : RecordConstructorDescriptor
 ) -> RecordTypeDescriptor {
-  let ctor_desc = make_record_constructor_descriptor(ctor)
-  RecordTypeDescriptor::{ id: next_record_type_desc_id(), record_type, constructor_desc: ctor_desc }
+  RecordTypeDescriptor::{
+    id: next_record_type_desc_id(),
+    record_type,
+    constructor_desc,
+  }
 }
 
 ///|
@@ -179,11 +193,10 @@ fn reset_record_type_registry() -> Unit {
 }
 
 ///|
-fn register_record_type(name : String, record_type : RecordType, ctor : Value) -> RecordTypeDescriptor {
-  let desc = make_record_type_descriptor(record_type, ctor)
+fn register_record_type(name : String, desc : RecordTypeDescriptor) -> RecordTypeDescriptor {
   record_type_registry.val[name] = desc
-  record_type_id_registry.val[record_type.id] = desc
-  match record_type.uid {
+  record_type_id_registry.val[desc.record_type.id] = desc
+  match desc.record_type.uid {
     Some(uid) => record_type_uid_registry.val[uid] = desc
     None => ()
   }
@@ -201,13 +214,6 @@ fn register_record_type_alias(name : String, desc : RecordTypeDescriptor) -> Uni
 }
 
 ///|
-fn lookup_record_type(name : String) -> RecordType? {
-  match record_type_registry.val.get(name) {
-    Some(desc) => Some(desc.record_type)
-    None => None
-  }
-}
-
 ///|
 fn lookup_record_type_descriptor(name : String) -> RecordTypeDescriptor? {
   record_type_registry.val.get(name)
@@ -221,6 +227,68 @@ fn lookup_record_type_descriptor_by_uid(uid : String) -> RecordTypeDescriptor? {
 ///|
 fn lookup_record_type_descriptor_by_id(id : Int) -> RecordTypeDescriptor? {
   record_type_id_registry.val.get(id)
+}
+
+///|
+fn default_constructor_descriptor(record_type : RecordType) -> RecordConstructorDescriptor {
+  let parent_desc = match record_type.parent {
+    Some(parent) => Some(default_constructor_descriptor(parent))
+    None => None
+  }
+  make_record_constructor_descriptor(record_type, parent_desc, None)
+}
+
+///|
+fn is_procedure_value(value : Value) -> Bool {
+  match value {
+    Value::Primitive(_)
+    | Value::Closure(_)
+    | Value::CaseClosure(_)
+    | Value::Parameter(_)
+    | Value::Continuation(_)
+    | Value::RecordProc(_) => true
+    _ => false
+  }
+}
+
+///|
+fn record_type_matches(
+  existing : RecordType,
+  parent : RecordType?,
+  is_sealed : Bool,
+  is_opaque : Bool,
+  fields : Array[RecordField],
+) -> Bool {
+  if existing.is_sealed != is_sealed {
+    return false
+  }
+  match (existing.parent, parent) {
+    (None, None) => ()
+    (Some(a), Some(b)) => if a.id != b.id { return false }
+    _ => return false
+  }
+  let parent_is_opaque = match parent {
+    Some(p) => p.is_opaque
+    None => false
+  }
+  if !parent_is_opaque {
+    if existing.is_opaque != is_opaque {
+      return false
+    }
+  }
+  if existing.fields.length() != fields.length() {
+    return false
+  }
+  let mut idx = 0
+  while idx < fields.length() {
+    let expected = fields[idx]
+    let actual = existing.fields[idx]
+    if expected.name != actual.name || expected.mutable != actual.mutable {
+      return false
+    }
+    idx = idx + 1
+  }
+  true
 }
 
 ///|

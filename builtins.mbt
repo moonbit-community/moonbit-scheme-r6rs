@@ -81,6 +81,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::RecordPredicate, Primitive::RecordPredicate)
     | (Primitive::RecordAccessor, Primitive::RecordAccessor)
     | (Primitive::RecordMutator, Primitive::RecordMutator)
+    | (Primitive::MakeRecordTypeDescriptor, Primitive::MakeRecordTypeDescriptor)
+    | (Primitive::MakeRecordConstructorDescriptor, Primitive::MakeRecordConstructorDescriptor)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
@@ -1122,6 +1124,49 @@ fn value_as_vector(value : Value) -> Array[Datum] raise EvalError {
     Value::Datum(Datum::Vector(items)) => items
     _ => raise EvalError("type error: vector expected")
   }
+}
+
+///|
+fn value_as_bool(value : Value) -> Bool raise EvalError {
+  match value {
+    Value::Datum(Datum::Bool(flag)) => flag
+    _ => raise EvalError("type error: boolean expected")
+  }
+}
+
+///|
+fn value_as_symbol(value : Value) -> String raise EvalError {
+  match value {
+    Value::Datum(Datum::Symbol(name)) => name
+    _ => raise EvalError("type error: symbol expected")
+  }
+}
+
+///|
+fn parse_field_spec(item : Datum) -> RecordField raise EvalError {
+  let parts = datum_list_to_array(item)
+  if parts.length() != 2 {
+    raise EvalError("invalid record field spec")
+  }
+  let mut_flag = match symbol_name(parts[0]) {
+    Some("mutable") => true
+    Some("immutable") => false
+    _ => raise EvalError("invalid record field spec")
+  }
+  let name = match symbol_name(parts[1]) {
+    Some(field_name) => field_name
+    None => raise EvalError("invalid record field spec")
+  }
+  RecordField::{ name, mutable: mut_flag }
+}
+
+///|
+fn parse_field_specs(items : Array[Datum]) -> Array[RecordField] raise EvalError {
+  let fields : Array[RecordField] = []
+  for item in items {
+    fields.push(parse_field_spec(item))
+  }
+  fields
 }
 
 ///|
@@ -2676,13 +2721,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
     }
     Primitive::RecordConstructor => {
-      match args.length() {
-        1 => {
-          let desc = value_as_record_constructor_descriptor(args[0])
-          desc.ctor
-        }
-        n => raise arity_mismatch(1, n)
-      }
+      raise EvalError("record-constructor requires evaluation context")
     }
     Primitive::RecordTypeFieldMutableP => {
       match args.length() {
@@ -2729,6 +2768,156 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::RecordProc(make_record_proc(RecordProcKind::Mutator(desc.record_type, idx)))
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::MakeRecordTypeDescriptor => {
+      match args.length() {
+        6 => {
+          let name = value_as_symbol(args[0])
+          let parent_desc = match args[1] {
+            Value::Datum(Datum::Bool(false)) => None
+            Value::RecordTypeDescriptor(desc) => Some(desc)
+            _ => raise EvalError("type error: record type descriptor expected")
+          }
+          let parent_type = match parent_desc {
+            Some(desc) => Some(desc.record_type)
+            None => None
+          }
+          match parent_type {
+            Some(parent) => {
+              if parent.is_sealed {
+                raise EvalError("record type is sealed")
+              }
+            }
+            None => ()
+          }
+          let uid = match args[2] {
+            Value::Datum(Datum::Bool(false)) => None
+            Value::Datum(Datum::Symbol(uid_name)) => Some(uid_name)
+            _ => raise EvalError("type error: symbol expected")
+          }
+          let is_sealed = value_as_bool(args[3])
+          let is_opaque = value_as_bool(args[4])
+          let new_fields = parse_field_specs(value_as_vector(args[5]))
+          let fields : Array[RecordField] = []
+          match parent_type {
+            Some(parent) => {
+              for field in parent.fields {
+                fields.push(field)
+              }
+            }
+            None => ()
+          }
+          for field in new_fields {
+            fields.push(field)
+          }
+          let effective_opaque = match parent_type {
+            Some(parent) => parent.is_opaque || is_opaque
+            None => is_opaque
+          }
+          match uid {
+            Some(uid_name) => {
+              match lookup_record_type_descriptor_by_uid(uid_name) {
+                Some(existing_desc) => {
+                  if !record_type_matches(
+                    existing_desc.record_type,
+                    parent_type,
+                    is_sealed,
+                    is_opaque,
+                    fields,
+                  ) {
+                    raise EvalError("invalid record type descriptor")
+                  }
+                  register_record_type_alias(name, existing_desc)
+                  Value::RecordTypeDescriptor(existing_desc)
+                }
+                None => {
+                  let record_type = make_record_type(
+                    name,
+                    parent_type,
+                    is_sealed,
+                    effective_opaque,
+                    uid,
+                    fields,
+                  )
+                  let ctor_desc = default_constructor_descriptor(record_type)
+                  let rtd = make_record_type_descriptor(record_type, ctor_desc)
+                  let _ = register_record_type(name, rtd)
+                  Value::RecordTypeDescriptor(rtd)
+                }
+              }
+            }
+            None => {
+              let record_type = make_record_type(
+                name,
+                parent_type,
+                is_sealed,
+                effective_opaque,
+                uid,
+                fields,
+              )
+              let ctor_desc = default_constructor_descriptor(record_type)
+              let rtd = make_record_type_descriptor(record_type, ctor_desc)
+              let _ = register_record_type(name, rtd)
+              Value::RecordTypeDescriptor(rtd)
+            }
+          }
+        }
+        n => raise arity_mismatch(6, n)
+      }
+    }
+    Primitive::MakeRecordConstructorDescriptor => {
+      match args.length() {
+        3 => {
+          let rtd = value_as_record_type_descriptor(args[0])
+          let record_type = rtd.record_type
+          let parent_desc = match args[1] {
+            Value::Datum(Datum::Bool(false)) => {
+              match record_type.parent {
+                Some(parent) => Some(default_constructor_descriptor(parent))
+                None => None
+              }
+            }
+            _ => Some(value_as_record_constructor_descriptor(args[1]))
+          }
+          match record_type.parent {
+            Some(parent) =>
+              match parent_desc {
+                Some(desc) => {
+                  if desc.record_type.id != parent.id {
+                    raise EvalError("invalid record constructor descriptor")
+                  }
+                }
+                None => raise EvalError("invalid record constructor descriptor")
+              }
+            None =>
+              match parent_desc {
+                Some(_) => raise EvalError("invalid record constructor descriptor")
+                None => ()
+              }
+          }
+          let protocol = match args[2] {
+            Value::Datum(Datum::Bool(false)) => None
+            value => {
+              if !is_procedure_value(value) {
+                raise EvalError("type error: procedure expected")
+              }
+              Some(value)
+            }
+          }
+          match (protocol, parent_desc) {
+            (None, Some(desc)) =>
+              match desc.protocol {
+                Some(_) => raise EvalError("invalid record constructor descriptor")
+                None => ()
+              }
+            _ => ()
+          }
+          Value::RecordConstructorDescriptor(
+            make_record_constructor_descriptor(record_type, parent_desc, protocol),
+          )
+        }
+        n => raise arity_mismatch(3, n)
       }
     }
     Primitive::CharEq => bool_value(compare_chain_char(args, CompareMode::Eq, false))

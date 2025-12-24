@@ -80,7 +80,11 @@ test "r6rs records: protocol" {
       #|  (make-color-point x y color)
       #|  color-point?
       #|  (parent point)
-      #|  (protocol (lambda (p) (lambda (x y) (p x y 'blue))))
+      #|  (protocol
+      #|    (lambda (n)
+      #|      (lambda (x y)
+      #|        (let ((p (n x y)))
+      #|          (p 'blue)))))
       #|  (color color-point-color))
       #|(let ((p (make-color-point 1 2)))
       #|  (color-point-color p))
@@ -191,5 +195,86 @@ test "r6rs records: uid and generative" {
   inspect(
     value_to_string(eval_program(program)),
     content="(#t #f #f color-uid)",
+  )
+}
+
+///|
+test "r6rs records: procedural descriptors" {
+  let program = (
+    (
+      #|(define rtd
+      #|  (make-record-type-descriptor 'point #f #f #f #f
+      #|    '#((mutable x) (immutable y))))
+      #|(define rcd (make-record-constructor-descriptor rtd #f #f))
+      #|(define make-point (record-constructor rcd))
+      #|(define acc-x (record-accessor rtd 0))
+      #|(define acc-y (record-accessor rtd 1))
+      #|(let ((p (make-point 1 2)))
+      #|  (list (record? p)
+      #|        (record-type-name (record-rtd p))
+      #|        (acc-x p)
+      #|        (acc-y p)
+      #|        (record-type-field-mutable? rtd 0)
+      #|        (record-type-field-mutable? rtd 1)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(#t point 1 2 #t #f)",
+  )
+}
+
+///|
+test "r6rs records: procedural protocol with parent" {
+  let program = (
+    (
+      #|(define rtd1
+      #|  (make-record-type-descriptor 'r1 #f #f #f #f
+      #|    '#((immutable x) (immutable y))))
+      #|(define rtd2
+      #|  (make-record-type-descriptor 'r2 rtd1 #f #f #f
+      #|    '#((immutable z))))
+      #|(define cd1
+      #|  (make-record-constructor-descriptor
+      #|    rtd1 #f
+      #|    (lambda (p)
+      #|      (lambda (a b) (p (+ a 1) (+ b 1))))))
+      #|(define cd2
+      #|  (make-record-constructor-descriptor
+      #|    rtd2 cd1
+      #|    (lambda (n)
+      #|      (lambda (a b c)
+      #|        (let ((p (n a b)))
+      #|          (p (+ c 1)))))))
+      #|(define make-r2 (record-constructor cd2))
+      #|(define acc0 (record-accessor rtd2 0))
+      #|(define acc1 (record-accessor rtd2 1))
+      #|(define acc2 (record-accessor rtd2 2))
+      #|(let ((r (make-r2 1 2 3)))
+      #|  (list (acc0 r) (acc1 r) (acc2 r)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(2 3 4)",
+  )
+}
+
+///|
+test "r6rs records: procedural nongenerative uid" {
+  let program = (
+    (
+      #|(define rtd1
+      #|  (make-record-type-descriptor 'a #f 'u #f #f
+      #|    '#((immutable x))))
+      #|(define rtd2
+      #|  (make-record-type-descriptor 'b #f 'u #f #f
+      #|    '#((immutable x))))
+      #|(eqv? rtd1 rtd2)
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="#t",
   )
 }

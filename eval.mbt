@@ -60,6 +60,12 @@ fn init_env() -> Env {
   env_define(env, "record-predicate", Value::Primitive(Primitive::RecordPredicate))
   env_define(env, "record-accessor", Value::Primitive(Primitive::RecordAccessor))
   env_define(env, "record-mutator", Value::Primitive(Primitive::RecordMutator))
+  env_define(env, "make-record-type-descriptor", Value::Primitive(Primitive::MakeRecordTypeDescriptor))
+  env_define(
+    env,
+    "make-record-constructor-descriptor",
+    Value::Primitive(Primitive::MakeRecordConstructorDescriptor),
+  )
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
   env_define(env, "values", Value::Primitive(Primitive::Values))
@@ -391,6 +397,10 @@ priv enum Kont {
   Case(Array[Datum], Env, Kont)
   CaseArrow(Value, Kont)
   CallWithValues(Value, Kont)
+  RecordConstructorDone(Kont)
+  RecordProtocolNApply(RecordType, Array[Value], Kont)
+  RecordProtocolNResult(RecordType, Kont)
+  DefineRecordType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
   MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
   VectorMapFinalize(Kont)
   StringMapFinalize(Kont)
@@ -416,6 +426,13 @@ priv struct ParamBinding {
   param : Parameter
   old_value : Value
   new_value : Value
+}
+
+///|
+priv struct RecordFieldBinding {
+  accessor : String
+  index : Int
+  mutator : String?
 }
 
 ///|
@@ -504,36 +521,6 @@ fn next_do_name() -> String {
 }
 
 ///|
-let protocol_counter : Ref[Int] = Ref::new(0)
-
-///|
-fn next_protocol_symbol(prefix : String) -> String {
-  let id = protocol_counter.val
-  protocol_counter.val = id + 1
-  "\{prefix}\{id}"
-}
-
-///|
-fn apply_protocol(protocol_expr : Datum, base_ctor : Value, env : Env) -> Value raise EvalError {
-  let protocol_proc = eval_expr(protocol_expr, env)
-  let proc_name = next_protocol_symbol("__protocol_proc__")
-  let ctor_name = next_protocol_symbol("__protocol_ctor__")
-  let protocol_env = env_extend(env)
-  env_define(protocol_env, proc_name, protocol_proc)
-  env_define(protocol_env, ctor_name, base_ctor)
-  let app = list_from_array([Datum::Symbol(proc_name), Datum::Symbol(ctor_name)])
-  let ctor_value = eval_expr(app, protocol_env)
-  match ctor_value {
-    Value::Primitive(_)
-    | Value::Closure(_)
-    | Value::CaseClosure(_)
-    | Value::Parameter(_)
-    | Value::Continuation(_)
-    | Value::RecordProc(_) => ctor_value
-    _ => raise EvalError("type error: procedure expected")
-  }
-}
-
 ///|
 pub fn eval_program(src : String) -> Value raise {
   let results = eval_program_all(src)
@@ -1084,6 +1071,73 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           Kont::CallWithValues(consumer, next) => {
             let values = value_to_values(value)
             state = apply_proc(consumer, values, next, handlers)
+          }
+          Kont::RecordConstructorDone(next) => {
+            let ctor_value = expect_single(value)
+            if !is_procedure_value(ctor_value) {
+              raise EvalError("type error: procedure expected")
+            }
+            state = MachineState::Apply(ctor_value, next, handlers)
+          }
+          Kont::RecordProtocolNApply(record_type, parent_args, next) => {
+            let ctor_value = expect_single(value)
+            state = apply_proc(
+              ctor_value,
+              parent_args,
+              Kont::RecordProtocolNResult(record_type, next),
+              handlers,
+            )
+          }
+          Kont::RecordProtocolNResult(record_type, next) => {
+            let record_value = expect_single(value)
+            let record = value_as_record(record_value)
+            let parent_type = match record_type.parent {
+              Some(parent) => parent
+              None => raise EvalError("invalid record constructor descriptor")
+            }
+            if !record_type_is_a(record.record_type, parent_type) {
+              raise EvalError("type error: record type mismatch: expected \{parent_type.name}")
+            }
+            let parent_values : Array[Value] = []
+            for field in record.fields {
+              parent_values.push(field.val)
+            }
+            let proc = Value::RecordProc(
+              make_record_proc(RecordProcKind::ProtocolP(record_type, parent_values)),
+            )
+            state = MachineState::Apply(proc, next, handlers)
+          }
+          Kont::DefineRecordType(ctor_name, pred_name, record_type, bindings, env, next) => {
+            let ctor_value = expect_single(value)
+            if !is_procedure_value(ctor_value) {
+              raise EvalError("type error: procedure expected")
+            }
+            env_define(env, ctor_name, ctor_value)
+            env_define(
+              env,
+              pred_name,
+              Value::RecordProc(make_record_proc(RecordProcKind::Predicate(record_type))),
+            )
+            for binding in bindings {
+              env_define(
+                env,
+                binding.accessor,
+                Value::RecordProc(make_record_proc(RecordProcKind::Accessor(record_type, binding.index))),
+              )
+              match binding.mutator {
+                Some(mut_name) => {
+                  env_define(
+                    env,
+                    mut_name,
+                    Value::RecordProc(
+                      make_record_proc(RecordProcKind::Mutator(record_type, binding.index)),
+                    ),
+                  )
+                }
+                None => ()
+              }
+            }
+            state = MachineState::Apply(Value::Void, next, handlers)
           }
           Kont::MapStep(proc, lists, results, for_each, next) => {
             let single = expect_single(value)
@@ -2108,13 +2162,25 @@ fn eval_define_record_type_state(
     }
     field_specs.push(spec)
   }
-  let parent_type = match parent_name {
+  let parent_desc = match parent_name {
     Some(name) =>
-      match lookup_record_type(name) {
-        Some(record_type) => Some(record_type)
+      match lookup_record_type_descriptor(name) {
+        Some(desc) => Some(desc)
         None => raise EvalError("invalid define-record-type")
       }
     None => None
+  }
+  let parent_type = match parent_desc {
+    Some(desc) => Some(desc.record_type)
+    None => None
+  }
+  match parent_type {
+    Some(parent) => {
+      if parent.is_sealed {
+        raise EvalError("invalid define-record-type")
+      }
+    }
+    None => ()
   }
   let parent_fields = match parent_type {
     Some(record_type) => record_type.fields
@@ -2185,38 +2251,7 @@ fn eval_define_record_type_state(
     field_index[field_name] = i
     i = i + 1
   }
-  let existing_desc = match uid {
-    Some(uid_name) => lookup_record_type_descriptor_by_uid(uid_name)
-    None => None
-  }
-  let (record_type, ctor_value) = match existing_desc {
-    Some(desc) => {
-      if !record_type_matches(desc.record_type, record_name, parent_type, is_sealed, is_opaque, fields) {
-        raise EvalError("invalid define-record-type")
-      }
-      if protocol_expr is Some(_) {
-        raise EvalError("invalid define-record-type")
-      }
-      register_record_type_alias(record_name, desc)
-      (desc.record_type, desc.constructor_desc.ctor)
-    }
-    None => {
-      let record_type = make_record_type(record_name, parent_type, is_sealed, is_opaque, uid, fields)
-      let base_ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(record_type)))
-      let ctor_value = match protocol_expr {
-        Some(expr) => apply_protocol(expr, base_ctor, env)
-        None => base_ctor
-      }
-      let _ = register_record_type(record_name, record_type, ctor_value)
-      (record_type, ctor_value)
-    }
-  }
-  env_define(env, ctor_name, ctor_value)
-  env_define(
-    env,
-    pred_name,
-    Value::RecordProc(make_record_proc(RecordProcKind::Predicate(record_type))),
-  )
+  let bindings : Array[RecordFieldBinding] = []
   for field_name in new_field_names {
     let idx = match field_index.get(field_name) {
       Some(value) => value
@@ -2226,23 +2261,62 @@ fn eval_define_record_type_state(
       Some(name) => name
       None => raise EvalError("invalid define-record-type")
     }
-    env_define(
-      env,
-      accessor_name,
-      Value::RecordProc(make_record_proc(RecordProcKind::Accessor(record_type, idx))),
+    let mutator_name = mutators.get(field_name)
+    bindings.push(
+      RecordFieldBinding::{ accessor: accessor_name, index: idx, mutator: mutator_name },
     )
-    match mutators.get(field_name) {
-      Some(mut_name) => {
-        env_define(
-          env,
-          mut_name,
-          Value::RecordProc(make_record_proc(RecordProcKind::Mutator(record_type, idx))),
-        )
+  }
+  let existing_desc = match uid {
+    Some(uid_name) => lookup_record_type_descriptor_by_uid(uid_name)
+    None => None
+  }
+  let (record_type, ctor_desc) = match existing_desc {
+    Some(desc) => {
+      if !record_type_matches(desc.record_type, parent_type, is_sealed, is_opaque, fields) {
+        raise EvalError("invalid define-record-type")
       }
-      None => ()
+      if protocol_expr is Some(_) {
+        raise EvalError("invalid define-record-type")
+      }
+      register_record_type_alias(record_name, desc)
+      (desc.record_type, desc.constructor_desc)
+    }
+    None => {
+      let effective_opaque = match parent_type {
+        Some(parent) => parent.is_opaque || is_opaque
+        None => is_opaque
+      }
+      let record_type = make_record_type(
+        record_name,
+        parent_type,
+        is_sealed,
+        effective_opaque,
+        uid,
+        fields,
+      )
+      let protocol_value = match protocol_expr {
+        Some(expr) => {
+          let proc = eval_expr(expr, env)
+          if !is_procedure_value(proc) {
+            raise EvalError("type error: procedure expected")
+          }
+          Some(proc)
+        }
+        None => None
+      }
+      let parent_ctor_desc = match parent_desc {
+        Some(desc) => Some(desc.constructor_desc)
+        None => None
+      }
+      let ctor_desc = make_record_constructor_descriptor(record_type, parent_ctor_desc, protocol_value)
+      let rtd = make_record_type_descriptor(record_type, ctor_desc)
+      let _ = register_record_type(record_name, rtd)
+      (record_type, ctor_desc)
     }
   }
-  MachineState::Apply(Value::Void, kont, handlers)
+  let next_kont =
+    Kont::DefineRecordType(ctor_name, pred_name, record_type, bindings, env, kont)
+  record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
 }
 
 ///|
@@ -2263,37 +2337,6 @@ fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
 }
 
 ///|
-fn record_type_matches(
-  existing : RecordType,
-  name : String,
-  parent : RecordType?,
-  is_sealed : Bool,
-  is_opaque : Bool,
-  fields : Array[RecordField],
-) -> Bool {
-  if existing.name != name || existing.is_sealed != is_sealed || existing.is_opaque != is_opaque {
-    return false
-  }
-  match (existing.parent, parent) {
-    (None, None) => ()
-    (Some(a), Some(b)) => if a.id != b.id { return false }
-    _ => return false
-  }
-  if existing.fields.length() != fields.length() {
-    return false
-  }
-  let mut idx = 0
-  while idx < fields.length() {
-    let expected = fields[idx]
-    let actual = existing.fields[idx]
-    if expected.name != actual.name || expected.mutable != actual.mutable {
-      return false
-    }
-    idx = idx + 1
-  }
-  true
-}
-
 ///|
 fn array_contains_name(items : Array[String], name : String) -> Bool {
   for item in items {
@@ -2309,6 +2352,36 @@ fn value_as_record(value : Value) -> Record raise EvalError {
   match value {
     Value::Record(record) => record
     _ => raise EvalError("type error: record expected")
+  }
+}
+
+///|
+fn record_constructor_from_descriptor(
+  desc : RecordConstructorDescriptor,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  match desc.protocol {
+    None => {
+      let ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(desc.record_type)))
+      MachineState::Apply(ctor, kont, handlers)
+    }
+    Some(protocol) => {
+      if !is_procedure_value(protocol) {
+        raise EvalError("type error: procedure expected")
+      }
+      let arg = match desc.record_type.parent {
+        None => Value::RecordProc(make_record_proc(RecordProcKind::Constructor(desc.record_type)))
+        Some(parent) => {
+          let parent_desc = match desc.parent_desc {
+            Some(p) => p
+            None => default_constructor_descriptor(parent)
+          }
+          Value::RecordProc(make_record_proc(RecordProcKind::ProtocolN(desc.record_type, parent_desc)))
+        }
+      }
+      apply_proc(protocol, [arg], Kont::RecordConstructorDone(kont), handlers)
+    }
   }
 }
 
@@ -2366,6 +2439,57 @@ fn apply_record_proc(
         record.fields[idx].val = args[1]
         MachineState::Apply(Value::Void, kont, handlers)
       }
+    }
+    RecordProcKind::ProtocolN(record_type, parent_desc) => {
+      let parent_type = match record_type.parent {
+        Some(parent) => parent
+        None => raise EvalError("invalid record constructor descriptor")
+      }
+      match parent_desc.protocol {
+        None => {
+          if args.length() != parent_type.fields.length() {
+            raise arity_mismatch(parent_type.fields.length(), args.length())
+          }
+          let parent_values : Array[Value] = []
+          for arg in args {
+            parent_values.push(arg)
+          }
+          let proc = Value::RecordProc(
+            make_record_proc(RecordProcKind::ProtocolP(record_type, parent_values)),
+          )
+          MachineState::Apply(proc, kont, handlers)
+        }
+        Some(_) => {
+          let parent_args : Array[Value] = []
+          for arg in args {
+            parent_args.push(arg)
+          }
+          record_constructor_from_descriptor(
+            parent_desc,
+            Kont::RecordProtocolNApply(record_type, parent_args, kont),
+            handlers,
+          )
+        }
+      }
+    }
+    RecordProcKind::ProtocolP(record_type, parent_values) => {
+      let total_fields = record_type.fields.length()
+      if parent_values.length() > total_fields {
+        raise EvalError("invalid record constructor descriptor")
+      }
+      let child_count = total_fields - parent_values.length()
+      if args.length() != child_count {
+        raise arity_mismatch(child_count, args.length())
+      }
+      let values : Array[Value] = []
+      for value in parent_values {
+        values.push(value)
+      }
+      for arg in args {
+        values.push(arg)
+      }
+      let record = make_record_instance(record_type, values)
+      MachineState::Apply(Value::Record(record), kont, handlers)
     }
   }
 }
@@ -2704,6 +2828,14 @@ fn apply_proc(
         let producer = args[0]
         let consumer = args[1]
         apply_proc(producer, [], Kont::CallWithValues(consumer, kont), handlers)
+      }
+    }
+    Value::Primitive(Primitive::RecordConstructor) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let desc = value_as_record_constructor_descriptor(args[0])
+        record_constructor_from_descriptor(desc, kont, handlers)
       }
     }
     Value::Primitive(Primitive::MakeParameter) => {

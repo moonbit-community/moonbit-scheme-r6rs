@@ -33,6 +33,7 @@
 ///   record-type-field-mutable?
 ///   record-constructor-descriptor record-constructor
 ///   record-predicate record-accessor record-mutator
+///   make-record-type-descriptor make-record-constructor-descriptor
 ///   not apply call/cc call-with-current-continuation eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
 ///   reverse c[ad]+r member memq memv assoc assq assv map for-each list-copy
@@ -151,6 +152,8 @@ pub enum Primitive {
   RecordPredicate
   RecordAccessor
   RecordMutator
+  MakeRecordTypeDescriptor
+  MakeRecordConstructorDescriptor
   Not
   Apply
   CallCC

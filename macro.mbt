@@ -111,6 +111,8 @@ fn is_core_identifier(name : String) -> Bool {
     "record-predicate",
     "record-accessor",
     "record-mutator",
+    "make-record-type-descriptor",
+    "make-record-constructor-descriptor",
     "not",
     "apply",
     "call/cc",
