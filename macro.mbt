@@ -687,9 +687,21 @@ fn match_pattern(
         _ => false
       }
     }
+    Datum::BigInt(n) => {
+      match input {
+        Datum::BigInt(other) => other == n
+        _ => false
+      }
+    }
     Datum::Rat(n, d) => {
       match input {
         Datum::Rat(on, od) => on == n && od == d
+        _ => false
+      }
+    }
+    Datum::BigRat(n, d) => {
+      match input {
+        Datum::BigRat(on, od) => on == n && od == d
         _ => false
       }
     }
@@ -961,7 +973,9 @@ fn datum_equal(a : Datum, b : Datum) -> Bool {
     (Datum::Nil, Datum::Nil) => true
     (Datum::Bool(x), Datum::Bool(y)) => x == y
     (Datum::Int(x), Datum::Int(y)) => x == y
+    (Datum::BigInt(x), Datum::BigInt(y)) => x == y
     (Datum::Rat(ax, ay), Datum::Rat(bx, by)) => ax == bx && ay == by
+    (Datum::BigRat(ax, ay), Datum::BigRat(bx, by)) => ax == bx && ay == by
     (Datum::Float(x), Datum::Float(y)) => x == y
     (Datum::Complex(ar, ai), Datum::Complex(br, bi)) =>
       datum_equal(ar.val, br.val) && datum_equal(ai.val, bi.val)

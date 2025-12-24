@@ -165,12 +165,13 @@ fn digit_value(ch : Char) -> Int? {
 }
 
 ///|
-fn parse_int_token_radix(tok : String, radix : Int) -> Int? {
+///|
+fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
   if radix < 2 || radix > 36 {
     return None
   }
   let mut sign = 1
-  let mut acc = 0
+  let mut acc = bigint_from_int(0)
   let mut i = 0
   let mut has_digit = false
   for ch in tok {
@@ -184,7 +185,7 @@ fn parse_int_token_radix(tok : String, radix : Int) -> Int? {
         if digit >= radix {
           return None
         }
-        acc = acc * radix + digit
+        acc = acc * bigint_from_int(radix) + bigint_from_int(digit)
         has_digit = true
         i = i + 1
       }
@@ -192,9 +193,33 @@ fn parse_int_token_radix(tok : String, radix : Int) -> Int? {
     }
   }
   if has_digit {
-    Some(sign * acc)
+    Some(if sign < 0 { -acc } else { acc })
   } else {
     None
+  }
+}
+
+///|
+fn integer_datum_from_bigint(value : @bigint.BigInt) -> Datum {
+  match bigint_to_int_option(value) {
+    Some(v) => Datum::Int(v)
+    None => Datum::BigInt(value)
+  }
+}
+
+///|
+fn parse_integer_token(tok : String) -> Datum? {
+  match parse_bigint_token_radix(tok, 10) {
+    Some(value) => Some(integer_datum_from_bigint(value))
+    None => None
+  }
+}
+
+///|
+fn parse_integer_token_radix(tok : String, radix : Int) -> Datum? {
+  match parse_bigint_token_radix(tok, radix) {
+    Some(value) => Some(integer_datum_from_bigint(value))
+    None => None
   }
 }
 
@@ -220,8 +245,8 @@ fn parse_rat_token(tok : String) -> Datum? {
   } else {
     let num_str = String::from_array(chars.sub(end=slash).to_array())
     let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
-    match (parse_int_token(num_str), parse_int_token(den_str)) {
-      (Some(num), Some(den)) => normalize_rat(num, den)
+    match (parse_integer_token(num_str), parse_integer_token(den_str)) {
+      (Some(num), Some(den)) => normalize_rat_datum(num, den)
       _ => None
     }
   }
@@ -276,11 +301,12 @@ fn parse_float_token(tok : String) -> Float? {
 }
 
 ///|
-fn pow10_int(exp : Int) -> Int {
-  let mut result = 1
+///|
+fn pow10_bigint(exp : Int) -> @bigint.BigInt {
+  let mut result = bigint_from_int(1)
   let mut i = 0
   while i < exp {
-    result = result * 10
+    result = result * bigint_from_int(10)
     i = i + 1
   }
   result
@@ -401,18 +427,18 @@ fn parse_exact_decimal(tok : String) -> Datum? {
   if digits.is_empty() {
     return None
   }
-  let mut acc = 0
+  let mut acc = bigint_from_int(0)
   for ch in digits {
-    acc = acc * 10 + (ch.to_int() - '0'.to_int())
+    acc = acc * bigint_from_int(10) + bigint_from_int(ch.to_int() - '0'.to_int())
   }
-  let mut num = sign * acc
-  let mut den = pow10_int(frac_len)
+  let mut num = if sign < 0 { -acc } else { acc }
+  let mut den = pow10_bigint(frac_len)
   if exp >= 0 {
-    num = num * pow10_int(exp)
+    num = num * pow10_bigint(exp)
   } else {
-    den = den * pow10_int(-exp)
+    den = den * pow10_bigint(-exp)
   }
-  normalize_rat(num, den)
+  normalize_big_rat(num, den)
 }
 
 ///|
@@ -437,10 +463,21 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> Datum? {
   } else {
     let num_str = String::from_array(chars.sub(end=slash).to_array())
     let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
-    match (parse_int_token_radix(num_str, radix), parse_int_token_radix(den_str, radix)) {
-      (Some(num), Some(den)) => normalize_rat(num, den)
+    match (parse_integer_token_radix(num_str, radix), parse_integer_token_radix(den_str, radix)) {
+      (Some(num), Some(den)) => normalize_rat_datum(num, den)
       _ => None
     }
+  }
+}
+
+///|
+fn normalize_rat_datum(num : Datum, den : Datum) -> Datum? {
+  match (num, den) {
+    (Datum::Int(n), Datum::Int(d)) => normalize_rat(n, d)
+    (Datum::BigInt(n), Datum::BigInt(d)) => normalize_big_rat(n, d)
+    (Datum::Int(n), Datum::BigInt(d)) => normalize_big_rat(bigint_from_int(n), d)
+    (Datum::BigInt(n), Datum::Int(d)) => normalize_big_rat(n, bigint_from_int(d))
+    _ => None
   }
 }
 
@@ -448,7 +485,18 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> Datum? {
 fn datum_to_float(value : Datum) -> Float? {
   match value {
     Datum::Int(n) => Some(Float::from_int(n))
+    Datum::BigInt(n) =>
+      try @strconv.parse_double(n.to_string()) catch {
+        _ => None
+      } noraise {
+        v => Some(Float::from_double(v))
+      }
     Datum::Rat(n, d) => Some(Float::from_int(n) / Float::from_int(d))
+    Datum::BigRat(n, d) =>
+      match (try? @strconv.parse_double(n.to_string()), try? @strconv.parse_double(d.to_string())) {
+        (Ok(nn), Ok(dd)) => Some(Float::from_double(nn / dd))
+        _ => None
+      }
     Datum::Float(f) => Some(f)
     _ => None
   }
@@ -458,7 +506,9 @@ fn datum_to_float(value : Datum) -> Float? {
 fn reader_datum_is_zero(value : Datum) -> Bool {
   match value {
     Datum::Int(n) => n == 0
+    Datum::BigInt(n) => n.is_zero()
     Datum::Rat(n, _) => n == 0
+    Datum::BigRat(n, _) => n.is_zero()
     Datum::Float(f) => f == 0.0
     _ => false
   }
@@ -545,10 +595,7 @@ fn parse_real_token_with_settings(
     let parsed = if has_slash {
       parse_rat_token_radix(tok, radix)
     } else {
-      match parse_int_token_radix(tok, radix) {
-        Some(n) => Some(Datum::Int(n))
-        None => None
-      }
+      parse_integer_token_radix(tok, radix)
     }
     match parsed {
       Some(datum) => {
@@ -592,11 +639,15 @@ fn parse_real_token_with_settings(
         }
       }
     } else {
-      match parse_int_token(tok) {
-        Some(n) => {
+      match parse_integer_token(tok) {
+        Some(datum) => {
           match exactness {
-            Some('i') | Some('I') => Some(Datum::Float(Float::from_int(n)))
-            _ => Some(Datum::Int(n))
+            Some('i') | Some('I') =>
+              match datum_to_float(datum) {
+                Some(f) => Some(Datum::Float(f))
+                None => None
+              }
+            _ => Some(datum)
           }
         }
         None => None

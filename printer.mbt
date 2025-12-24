@@ -36,7 +36,9 @@ fn datum_to_string(datum : Datum) -> String {
     Datum::Bool(true) => "#t"
     Datum::Bool(false) => "#f"
     Datum::Int(n) => n.to_string()
+    Datum::BigInt(n) => n.to_string()
     Datum::Rat(n, d) => "\{n}/\{d}"
+    Datum::BigRat(n, d) => "\{n.to_string()}/\{d.to_string()}"
     Datum::Float(f) => f.to_string()
     Datum::Complex(real, imag) => complex_to_string(real.val, imag.val)
     Datum::Char(ch) => char_to_string(ch)
@@ -55,7 +57,9 @@ fn datum_to_string(datum : Datum) -> String {
 fn datum_is_negative(value : Datum) -> Bool {
   match value {
     Datum::Int(n) => n < 0
+    Datum::BigInt(n) => n.compare_int(0) < 0
     Datum::Rat(n, _) => n < 0
+    Datum::BigRat(n, _) => n.compare_int(0) < 0
     Datum::Float(f) => f < 0.0
     _ => false
   }
@@ -66,6 +70,20 @@ fn datum_abs(value : Datum) -> Datum {
   match value {
     Datum::Int(n) => Datum::Int(if n < 0 { -n } else { n })
     Datum::Rat(n, d) => Datum::Rat(if n < 0 { -n } else { n }, d)
+    Datum::BigInt(n) => {
+      if n.compare_int(0) < 0 {
+        Datum::BigInt(-n)
+      } else {
+        Datum::BigInt(n)
+      }
+    }
+    Datum::BigRat(n, d) => {
+      if n.compare_int(0) < 0 {
+        Datum::BigRat(-n, d)
+      } else {
+        Datum::BigRat(n, d)
+      }
+    }
     Datum::Float(f) => Datum::Float(if f < 0.0 { -f } else { f })
     _ => value
   }

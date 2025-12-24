@@ -77,7 +77,9 @@ pub enum Datum {
   Nil
   Bool(Bool)
   Int(Int)
+  BigInt(@bigint.BigInt)
   Rat(Int, Int)
+  BigRat(@bigint.BigInt, @bigint.BigInt)
   Float(Float)
   Complex(Ref[Datum], Ref[Datum])
   Char(Char)

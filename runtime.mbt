@@ -672,6 +672,74 @@ fn normalize_rat(num : Int, den : Int) -> Datum? {
 }
 
 ///|
+fn bigint_from_int(value : Int) -> @bigint.BigInt {
+  @bigint.BigInt::from_int(value)
+}
+
+///|
+fn bigint_is_zero(value : @bigint.BigInt) -> Bool {
+  value.is_zero()
+}
+
+///|
+fn bigint_abs(value : @bigint.BigInt) -> @bigint.BigInt {
+  if value.compare_int(0) < 0 { -value } else { value }
+}
+
+///|
+fn bigint_to_int_option(value : @bigint.BigInt) -> Int? {
+  let int_max = 2147483647
+  let int_min = -2147483648
+  if value.compare_int(int_max) > 0 || value.compare_int(int_min) < 0 {
+    None
+  } else {
+    Some(value.to_int())
+  }
+}
+
+///|
+fn bigint_gcd(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
+  let mut x = bigint_abs(a)
+  let mut y = bigint_abs(b)
+  while !bigint_is_zero(y) {
+    let temp = x % y
+    x = y
+    y = temp
+  }
+  x
+}
+
+///|
+fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
+  if bigint_is_zero(den) {
+    None
+  } else if bigint_is_zero(num) {
+    Some(Datum::Int(0))
+  } else {
+    let mut n = num
+    let mut d = den
+    if d.compare_int(0) < 0 {
+      n = -n
+      d = -d
+    }
+    let g = bigint_gcd(n, d)
+    let nn = n / g
+    let dd = d / g
+    if dd.compare_int(1) == 0 {
+      Some(match bigint_to_int_option(nn) {
+        Some(v) => Datum::Int(v)
+        None => Datum::BigInt(nn)
+      })
+    } else {
+      match (bigint_to_int_option(nn), bigint_to_int_option(dd)) {
+        (Some(nv), Some(dv)) => Some(Datum::Rat(nv, dv))
+        _ => Some(Datum::BigRat(nn, dd))
+      }
+    }
+  }
+}
+
+///|
 fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
   match value {
     Value::Datum(Datum::Pair(a, b)) => (a.val, b.val)

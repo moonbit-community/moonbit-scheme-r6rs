@@ -915,7 +915,9 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           Datum::Nil
           | Datum::Bool(_)
           | Datum::Int(_)
+          | Datum::BigInt(_)
           | Datum::Rat(_, _)
+          | Datum::BigRat(_, _)
           | Datum::Float(_)
           | Datum::Complex(_, _)
           | Datum::Char(_)
