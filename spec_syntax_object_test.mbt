@@ -41,3 +41,39 @@ test "r6rs syntax: helpers" {
     content="x",
   )
 }
+
+///|
+test "r6rs syntax: predicates and identifier equality" {
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(syntax? 1)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(syntax? (lambda (x) x))
+      )
+    )),
+    content="#f",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(free-identifier=? 'a 'a)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(bound-identifier=? 'a 'b)
+      )
+    )),
+    content="#f",
+  )
+}

@@ -88,3 +88,38 @@ test "r6rs records: protocol" {
   )
   inspect(value_to_string(eval_program(program)), content="blue")
 }
+
+///|
+test "r6rs records: descriptors and flags" {
+  let program = (
+    (
+      #|(define-record-type point
+      #|  (make-point x y)
+      #|  point?
+      #|  (x point-x)
+      #|  (y point-y))
+      #|(define-record-type color-point
+      #|  (make-color-point x y color)
+      #|  color-point?
+      #|  (parent point)
+      #|  (sealed #t)
+      #|  (opaque #t)
+      #|  (color color-point-color))
+      #|(let* ((p (make-color-point 1 2 'red))
+      #|       (rtd (record-rtd p))
+      #|       (parent (record-type-parent rtd))
+      #|       (ctor (record-constructor (record-constructor-descriptor rtd))))
+      #|  (list (record? p)
+      #|        (record-type-name rtd)
+      #|        (record-type-name parent)
+      #|        (record-type-sealed? rtd)
+      #|        (record-type-opaque? rtd)
+      #|        (record-type-field-names rtd)
+      #|        (color-point-color (ctor 3 4 'blue))))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(#t color-point point #t #t (x y color) blue)",
+  )
+}

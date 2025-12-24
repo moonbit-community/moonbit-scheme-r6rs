@@ -17,13 +17,20 @@
 /// - define-record-type (records with inheritance and protocol)
 /// - library and import (minimal library support)
 /// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
-///   identifier? symbol->string string->symbol syntax syntax->datum datum->syntax
-///   boolean? number? integer? rational? real? exact? inexact? zero? positive?
-///   negative? odd? even? exact->inexact
-///   inexact->exact number->string string->number
+///   identifier? syntax? free-identifier=? bound-identifier=?
+///   symbol->string string->symbol syntax syntax->datum datum->syntax
+///   boolean? number? integer? rational? real? complex? exact? inexact?
+///   zero? positive? negative? odd? even? finite? infinite? nan?
+///   exact->inexact inexact->exact number->string string->number
+///   make-rectangular make-polar real-part imag-part magnitude angle
+///   sqrt exp log expt sin cos tan asin acos atan
 ///   numerator denominator abs quotient remainder modulo gcd lcm
 ///   max min floor ceiling truncate round
-///   procedure? not apply call/cc call-with-current-continuation eq? eqv?
+///   procedure? record? record-rtd record-type-descriptor?
+///   record-constructor-descriptor? record-type-name record-type-parent
+///   record-type-sealed? record-type-opaque? record-type-field-names
+///   record-constructor-descriptor record-constructor
+///   not apply call/cc call-with-current-continuation eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
 ///   reverse c[ad]+r member memq memv assoc assq assv map for-each list-copy
 ///   set-car! set-cdr!
@@ -100,6 +107,9 @@ pub enum Primitive {
   PairP
   SymbolP
   IdentifierP
+  SyntaxP
+  FreeIdentifierEq
+  BoundIdentifierEq
   SymbolToString
   StringToSymbol
   SyntaxToDatum
@@ -121,6 +131,17 @@ pub enum Primitive {
   InfiniteP
   NanP
   ProcedureP
+  RecordP
+  RecordRtd
+  RecordTypeDescriptorP
+  RecordConstructorDescriptorP
+  RecordTypeName
+  RecordTypeParent
+  RecordTypeSealedP
+  RecordTypeOpaqueP
+  RecordTypeFieldNames
+  RecordConstructorDescriptor
+  RecordConstructor
   Not
   Apply
   CallCC
@@ -147,6 +168,9 @@ pub enum Primitive {
   Sin
   Cos
   Tan
+  Asin
+  Acos
+  Atan
   Numerator
   Denominator
   Abs
@@ -346,6 +370,8 @@ pub enum Value {
   Port(Port)
   Record(Record)
   RecordProc(RecordProc)
+  RecordTypeDescriptor(RecordTypeDescriptor)
+  RecordConstructorDescriptor(RecordConstructorDescriptor)
   Macro(SyntaxRules)
 }
 

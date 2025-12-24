@@ -25,6 +25,8 @@ priv struct RecordType {
   id : Int
   name : String
   parent : RecordType?
+  is_sealed : Bool
+  is_opaque : Bool
   fields : Array[RecordField]
 }
 
@@ -50,6 +52,19 @@ struct RecordProc {
 }
 
 ///|
+struct RecordConstructorDescriptor {
+  id : Int
+  ctor : Value
+}
+
+///|
+struct RecordTypeDescriptor {
+  id : Int
+  record_type : RecordType
+  constructor_desc : RecordConstructorDescriptor
+}
+
+///|
 priv struct Library {
   exports : Map[String, Value]
 }
@@ -59,8 +74,10 @@ let port_counter : Ref[Int] = Ref::new(0)
 let record_type_counter : Ref[Int] = Ref::new(0)
 let record_counter : Ref[Int] = Ref::new(0)
 let record_proc_counter : Ref[Int] = Ref::new(0)
+let record_type_desc_counter : Ref[Int] = Ref::new(0)
+let record_ctor_desc_counter : Ref[Int] = Ref::new(0)
 let library_registry : Ref[Map[String, Library]] = Ref::new({})
-let record_type_registry : Ref[Map[String, RecordType]] = Ref::new({})
+let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
 
 ///|
 fn next_port_id() -> Int {
@@ -91,13 +108,49 @@ fn next_record_proc_id() -> Int {
 }
 
 ///|
-fn make_record_type(name : String, parent : RecordType?, fields : Array[RecordField]) -> RecordType {
-  RecordType::{ id: next_record_type_id(), name, parent, fields }
+fn next_record_type_desc_id() -> Int {
+  let id = record_type_desc_counter.val
+  record_type_desc_counter.val = id + 1
+  id
+}
+
+///|
+fn next_record_ctor_desc_id() -> Int {
+  let id = record_ctor_desc_counter.val
+  record_ctor_desc_counter.val = id + 1
+  id
+}
+
+///|
+fn make_record_type(
+  name : String,
+  parent : RecordType?,
+  is_sealed : Bool,
+  is_opaque : Bool,
+  fields : Array[RecordField]
+) -> RecordType {
+  RecordType::{ id: next_record_type_id(), name, parent, is_sealed, is_opaque, fields }
 }
 
 ///|
 fn make_record_proc(kind : RecordProcKind) -> RecordProc {
   RecordProc::{ id: next_record_proc_id(), kind }
+}
+
+///|
+fn make_record_constructor_descriptor(
+  ctor : Value
+) -> RecordConstructorDescriptor {
+  RecordConstructorDescriptor::{ id: next_record_ctor_desc_id(), ctor }
+}
+
+///|
+fn make_record_type_descriptor(
+  record_type : RecordType,
+  ctor : Value
+) -> RecordTypeDescriptor {
+  let ctor_desc = make_record_constructor_descriptor(ctor)
+  RecordTypeDescriptor::{ id: next_record_type_desc_id(), record_type, constructor_desc: ctor_desc }
 }
 
 ///|
@@ -120,12 +173,20 @@ fn reset_record_type_registry() -> Unit {
 }
 
 ///|
-fn register_record_type(name : String, record_type : RecordType) -> Unit {
-  record_type_registry.val[name] = record_type
+fn register_record_type(name : String, record_type : RecordType, ctor : Value) -> Unit {
+  record_type_registry.val[name] = make_record_type_descriptor(record_type, ctor)
 }
 
 ///|
 fn lookup_record_type(name : String) -> RecordType? {
+  match record_type_registry.val.get(name) {
+    Some(desc) => Some(desc.record_type)
+    None => None
+  }
+}
+
+///|
+fn lookup_record_type_descriptor(name : String) -> RecordTypeDescriptor? {
   record_type_registry.val.get(name)
 }
 

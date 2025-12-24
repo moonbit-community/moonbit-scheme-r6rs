@@ -19,6 +19,9 @@ fn init_env() -> Env {
   env_define(env, "pair?", Value::Primitive(Primitive::PairP))
   env_define(env, "symbol?", Value::Primitive(Primitive::SymbolP))
   env_define(env, "identifier?", Value::Primitive(Primitive::IdentifierP))
+  env_define(env, "syntax?", Value::Primitive(Primitive::SyntaxP))
+  env_define(env, "free-identifier=?", Value::Primitive(Primitive::FreeIdentifierEq))
+  env_define(env, "bound-identifier=?", Value::Primitive(Primitive::BoundIdentifierEq))
   env_define(env, "symbol->string", Value::Primitive(Primitive::SymbolToString))
   env_define(env, "string->symbol", Value::Primitive(Primitive::StringToSymbol))
   env_define(env, "syntax->datum", Value::Primitive(Primitive::SyntaxToDatum))
@@ -40,6 +43,17 @@ fn init_env() -> Env {
   env_define(env, "infinite?", Value::Primitive(Primitive::InfiniteP))
   env_define(env, "nan?", Value::Primitive(Primitive::NanP))
   env_define(env, "procedure?", Value::Primitive(Primitive::ProcedureP))
+  env_define(env, "record?", Value::Primitive(Primitive::RecordP))
+  env_define(env, "record-rtd", Value::Primitive(Primitive::RecordRtd))
+  env_define(env, "record-type-descriptor?", Value::Primitive(Primitive::RecordTypeDescriptorP))
+  env_define(env, "record-constructor-descriptor?", Value::Primitive(Primitive::RecordConstructorDescriptorP))
+  env_define(env, "record-type-name", Value::Primitive(Primitive::RecordTypeName))
+  env_define(env, "record-type-parent", Value::Primitive(Primitive::RecordTypeParent))
+  env_define(env, "record-type-sealed?", Value::Primitive(Primitive::RecordTypeSealedP))
+  env_define(env, "record-type-opaque?", Value::Primitive(Primitive::RecordTypeOpaqueP))
+  env_define(env, "record-type-field-names", Value::Primitive(Primitive::RecordTypeFieldNames))
+  env_define(env, "record-constructor-descriptor", Value::Primitive(Primitive::RecordConstructorDescriptor))
+  env_define(env, "record-constructor", Value::Primitive(Primitive::RecordConstructor))
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
   env_define(env, "values", Value::Primitive(Primitive::Values))
@@ -65,6 +79,9 @@ fn init_env() -> Env {
   env_define(env, "sin", Value::Primitive(Primitive::Sin))
   env_define(env, "cos", Value::Primitive(Primitive::Cos))
   env_define(env, "tan", Value::Primitive(Primitive::Tan))
+  env_define(env, "asin", Value::Primitive(Primitive::Asin))
+  env_define(env, "acos", Value::Primitive(Primitive::Acos))
+  env_define(env, "atan", Value::Primitive(Primitive::Atan))
   env_define(env, "numerator", Value::Primitive(Primitive::Numerator))
   env_define(env, "denominator", Value::Primitive(Primitive::Denominator))
   env_define(env, "abs", Value::Primitive(Primitive::Abs))
@@ -1347,6 +1364,14 @@ fn parse_symbol(expr : Datum) -> String raise EvalError {
 }
 
 ///|
+fn parse_bool(expr : Datum) -> Bool raise EvalError {
+  match expr {
+    Datum::Bool(value) => value
+    _ => raise EvalError("invalid define-record-type")
+  }
+}
+
+///|
 fn parse_symbol_list(items : Array[Datum]) -> Array[String] raise EvalError {
   let names : Array[String] = []
   for item in items {
@@ -2031,23 +2056,33 @@ fn eval_define_record_type_state(
   let raw_specs = args.sub(start=3).to_array()
   let mut parent_name : String? = None
   let mut protocol_expr : Datum? = None
+  let mut is_sealed = false
+  let mut is_opaque = false
   let field_specs : Array[Datum] = []
   for spec in raw_specs {
     let parts = datum_list_to_array(spec)
-    if parts.length() == 2 {
+    if parts.length() >= 1 && parts.length() <= 2 {
       match symbol_name(parts[0]) {
-        Some("parent") => {
+        Some("parent") if parts.length() == 2 => {
           if parent_name is Some(_) {
             raise EvalError("invalid define-record-type")
           }
           parent_name = Some(parse_symbol(parts[1]))
           continue
         }
-        Some("protocol") => {
+        Some("protocol") if parts.length() == 2 => {
           if protocol_expr is Some(_) {
             raise EvalError("invalid define-record-type")
           }
           protocol_expr = Some(parts[1])
+          continue
+        }
+        Some("sealed") => {
+          is_sealed = if parts.length() == 1 { true } else { parse_bool(parts[1]) }
+          continue
+        }
+        Some("opaque") => {
+          is_opaque = if parts.length() == 1 { true } else { parse_bool(parts[1]) }
           continue
         }
         _ => ()
@@ -2132,13 +2167,13 @@ fn eval_define_record_type_state(
     field_index[field_name] = i
     i = i + 1
   }
-  let record_type = make_record_type(record_name, parent_type, fields)
-  register_record_type(record_name, record_type)
+  let record_type = make_record_type(record_name, parent_type, is_sealed, is_opaque, fields)
   let base_ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(record_type)))
   let ctor_value = match protocol_expr {
     Some(expr) => apply_protocol(expr, base_ctor, env)
     None => base_ctor
   }
+  register_record_type(record_name, record_type, ctor_value)
   env_define(env, ctor_name, ctor_value)
   env_define(
     env,

@@ -139,6 +139,8 @@ pub fn value_to_string(value : Value) -> String {
     Value::Port(_) => "#<port>"
     Value::Record(_) => "#<record>"
     Value::RecordProc(_) => "#<procedure>"
+    Value::RecordTypeDescriptor(_) => "#<record-type-descriptor>"
+    Value::RecordConstructorDescriptor(_) => "#<record-constructor-descriptor>"
     Value::Macro(_) => "#<syntax>"
   }
 }

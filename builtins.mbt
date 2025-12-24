@@ -40,6 +40,9 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::PairP, Primitive::PairP)
     | (Primitive::SymbolP, Primitive::SymbolP)
     | (Primitive::IdentifierP, Primitive::IdentifierP)
+    | (Primitive::SyntaxP, Primitive::SyntaxP)
+    | (Primitive::FreeIdentifierEq, Primitive::FreeIdentifierEq)
+    | (Primitive::BoundIdentifierEq, Primitive::BoundIdentifierEq)
     | (Primitive::SymbolToString, Primitive::SymbolToString)
     | (Primitive::StringToSymbol, Primitive::StringToSymbol)
     | (Primitive::SyntaxToDatum, Primitive::SyntaxToDatum)
@@ -61,6 +64,17 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::InfiniteP, Primitive::InfiniteP)
     | (Primitive::NanP, Primitive::NanP)
     | (Primitive::ProcedureP, Primitive::ProcedureP)
+    | (Primitive::RecordP, Primitive::RecordP)
+    | (Primitive::RecordRtd, Primitive::RecordRtd)
+    | (Primitive::RecordTypeDescriptorP, Primitive::RecordTypeDescriptorP)
+    | (Primitive::RecordConstructorDescriptorP, Primitive::RecordConstructorDescriptorP)
+    | (Primitive::RecordTypeName, Primitive::RecordTypeName)
+    | (Primitive::RecordTypeParent, Primitive::RecordTypeParent)
+    | (Primitive::RecordTypeSealedP, Primitive::RecordTypeSealedP)
+    | (Primitive::RecordTypeOpaqueP, Primitive::RecordTypeOpaqueP)
+    | (Primitive::RecordTypeFieldNames, Primitive::RecordTypeFieldNames)
+    | (Primitive::RecordConstructorDescriptor, Primitive::RecordConstructorDescriptor)
+    | (Primitive::RecordConstructor, Primitive::RecordConstructor)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
@@ -87,6 +101,9 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::Sin, Primitive::Sin)
     | (Primitive::Cos, Primitive::Cos)
     | (Primitive::Tan, Primitive::Tan)
+    | (Primitive::Asin, Primitive::Asin)
+    | (Primitive::Acos, Primitive::Acos)
+    | (Primitive::Atan, Primitive::Atan)
     | (Primitive::Numerator, Primitive::Numerator)
     | (Primitive::Denominator, Primitive::Denominator)
     | (Primitive::Abs, Primitive::Abs)
@@ -240,6 +257,8 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::Port(a), Value::Port(b)) => a.id == b.id
     (Value::Record(a), Value::Record(b)) => a.id == b.id
     (Value::RecordProc(a), Value::RecordProc(b)) => a.id == b.id
+    (Value::RecordTypeDescriptor(a), Value::RecordTypeDescriptor(b)) => a.id == b.id
+    (Value::RecordConstructorDescriptor(a), Value::RecordConstructorDescriptor(b)) => a.id == b.id
     (Value::Void, Value::Void) => true
     _ => false
   }
@@ -421,6 +440,16 @@ fn pow_float_int(base : Float, exp : Int) -> Float {
 }
 
 ///|
+fn complex_add_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
+  (ar + br, ai + bi)
+}
+
+///|
+fn complex_sub_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
+  (ar - br, ai - bi)
+}
+
+///|
 fn complex_mul_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
   (ar * br - ai * bi, ar * bi + ai * br)
 }
@@ -482,6 +511,36 @@ fn complex_tan_f(ar : Float, ai : Float) -> (Float, Float) raise EvalError {
   let (sr, si) = complex_sin_f(ar, ai)
   let (cr, ci) = complex_cos_f(ar, ai)
   complex_div_f(sr, si, cr, ci)
+}
+
+///|
+fn complex_asin_f(ar : Float, ai : Float) -> (Float, Float) {
+  let (zr, zi) = (ar, ai)
+  let (z2r, z2i) = complex_mul_f(zr, zi, zr, zi)
+  let (one_minus_r, one_minus_i) = complex_sub_f(1.0, 0.0, z2r, z2i)
+  let (sqrt_r, sqrt_i) = complex_sqrt_f(one_minus_r, one_minus_i)
+  let (iz_r, iz_i) = (-zi, zr)
+  let (inside_r, inside_i) = complex_add_f(iz_r, iz_i, sqrt_r, sqrt_i)
+  let (log_r, log_i) = complex_log_f(inside_r, inside_i)
+  (log_i, -log_r)
+}
+
+///|
+fn complex_acos_f(ar : Float, ai : Float) -> (Float, Float) {
+  let (asin_r, asin_i) = complex_asin_f(ar, ai)
+  let pi_over_2 = Float::from_double(@math.PI / 2.0)
+  (pi_over_2 - asin_r, -asin_i)
+}
+
+///|
+fn complex_atan_f(ar : Float, ai : Float) -> (Float, Float) {
+  let (iz_r, iz_i) = (-ai, ar)
+  let (one_minus_r, one_minus_i) = complex_sub_f(1.0, 0.0, iz_r, iz_i)
+  let (one_plus_r, one_plus_i) = complex_add_f(1.0, 0.0, iz_r, iz_i)
+  let (log1_r, log1_i) = complex_log_f(one_minus_r, one_minus_i)
+  let (log2_r, log2_i) = complex_log_f(one_plus_r, one_plus_i)
+  let (diff_r, diff_i) = complex_sub_f(log1_r, log1_i, log2_r, log2_i)
+  (-diff_i / 2.0, diff_r / 2.0)
 }
 
 ///|
@@ -1089,6 +1148,22 @@ fn value_as_port(value : Value) -> Port raise EvalError {
 }
 
 ///|
+fn value_as_record_type_descriptor(value : Value) -> RecordTypeDescriptor raise EvalError {
+  match value {
+    Value::RecordTypeDescriptor(desc) => desc
+    _ => raise EvalError("type error: record type descriptor expected")
+  }
+}
+
+///|
+fn value_as_record_constructor_descriptor(value : Value) -> RecordConstructorDescriptor raise EvalError {
+  match value {
+    Value::RecordConstructorDescriptor(desc) => desc
+    _ => raise EvalError("type error: record constructor descriptor expected")
+  }
+}
+
+///|
 fn char_to_raw_string(ch : Char) -> String {
   let buf = @buffer.new()
   buf.write_char(ch)
@@ -1662,6 +1737,51 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         n => raise arity_mismatch(1, n)
       }
     }
+    Primitive::Asin => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          let (real_f, imag_f) = datum_to_complex_float(value)
+          if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
+            Value::Datum(Datum::Float(@math.asinf(real_f)))
+          } else {
+            let (ar, ai) = complex_asin_f(real_f, imag_f)
+            Value::Datum(complex_from_float(ar, ai))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Acos => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          let (real_f, imag_f) = datum_to_complex_float(value)
+          if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
+            Value::Datum(Datum::Float(@math.acosf(real_f)))
+          } else {
+            let (ar, ai) = complex_acos_f(real_f, imag_f)
+            Value::Datum(complex_from_float(ar, ai))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::Atan => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          let (real_f, imag_f) = datum_to_complex_float(value)
+          if imag_f == 0.0 {
+            Value::Datum(Datum::Float(@math.atanf(real_f)))
+          } else {
+            let (ar, ai) = complex_atan_f(real_f, imag_f)
+            Value::Datum(complex_from_float(ar, ai))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
     Primitive::Numerator => {
       match args.length() {
         1 => {
@@ -2055,6 +2175,39 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         n => raise arity_mismatch(1, n)
       }
     }
+    Primitive::SyntaxP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Datum(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FreeIdentifierEq => {
+      match args.length() {
+        2 => {
+          match (args[0], args[1]) {
+            (Value::Datum(Datum::Symbol(a)), Value::Datum(Datum::Symbol(b))) => bool_value(a == b)
+            _ => raise EvalError("type error: identifier expected")
+          }
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::BoundIdentifierEq => {
+      match args.length() {
+        2 => {
+          match (args[0], args[1]) {
+            (Value::Datum(Datum::Symbol(a)), Value::Datum(Datum::Symbol(b))) => bool_value(a == b)
+            _ => raise EvalError("type error: identifier expected")
+          }
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
     Primitive::SymbolToString => {
       match args.length() {
         1 => {
@@ -2376,6 +2529,130 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::RecordProc(_) => bool_value(true)
             _ => bool_value(false)
           }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Record(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordRtd => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::Record(record) => {
+              match lookup_record_type_descriptor(record.record_type.name) {
+                Some(desc) => Value::RecordTypeDescriptor(desc)
+                None => raise EvalError("invalid record type descriptor")
+              }
+            }
+            _ => raise EvalError("type error: record expected")
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeDescriptorP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::RecordTypeDescriptor(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordConstructorDescriptorP => {
+      match args.length() {
+        1 => {
+          match args[0] {
+            Value::RecordConstructorDescriptor(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeName => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          Value::Datum(Datum::Symbol(desc.record_type.name))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeParent => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          match desc.record_type.parent {
+            Some(parent) => {
+              match lookup_record_type_descriptor(parent.name) {
+                Some(parent_desc) => Value::RecordTypeDescriptor(parent_desc)
+                None => Value::Datum(Datum::Bool(false))
+              }
+            }
+            None => Value::Datum(Datum::Bool(false))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeSealedP => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          bool_value(desc.record_type.is_sealed)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeOpaqueP => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          bool_value(desc.record_type.is_opaque)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeFieldNames => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          let items : Array[Datum] = []
+          for field in desc.record_type.fields {
+            items.push(Datum::Symbol(field.name))
+          }
+          Value::Datum(list_from_array(items))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordConstructorDescriptor => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          Value::RecordConstructorDescriptor(desc.constructor_desc)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordConstructor => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_constructor_descriptor(args[0])
+          desc.ctor
         }
         n => raise arity_mismatch(1, n)
       }
