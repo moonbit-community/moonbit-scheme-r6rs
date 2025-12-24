@@ -138,6 +138,7 @@ pub fn value_to_string(value : Value) -> String {
     Value::Values(_) => "#<values>"
     Value::GuardHandler(_) => "#<procedure>"
     Value::Parameter(_) => "#<procedure>"
+    Value::Promise(_) => "#<promise>"
     Value::Continuation(_) => "#<procedure>"
     Value::Port(_) => "#<port>"
     Value::Record(_) => "#<record>"

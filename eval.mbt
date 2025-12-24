@@ -121,6 +121,9 @@ fn init_env() -> Env {
   env_define(env, "call-with-values", Value::Primitive(Primitive::CallWithValues))
   env_define(env, "make-parameter", Value::Primitive(Primitive::MakeParameter))
   env_define(env, "dynamic-wind", Value::Primitive(Primitive::DynamicWind))
+  env_define(env, "promise?", Value::Primitive(Primitive::PromiseP))
+  env_define(env, "make-promise", Value::Primitive(Primitive::MakePromise))
+  env_define(env, "force", Value::Primitive(Primitive::Force))
   env_define(env, "exact->inexact", Value::Primitive(Primitive::ExactToInexact))
   env_define(env, "inexact->exact", Value::Primitive(Primitive::InexactToExact))
   env_define(env, "exact-integer-sqrt", Value::Primitive(Primitive::ExactIntegerSqrt))
@@ -375,6 +378,21 @@ fn parameter_with_converter(value : Value, converter : Value) -> Parameter {
 }
 
 ///|
+let promise_counter : Ref[Int] = Ref::new(0)
+
+///|
+fn next_promise_id() -> Int {
+  let id = promise_counter.val
+  promise_counter.val = id + 1
+  id
+}
+
+///|
+fn make_promise(thunk : Value) -> Promise {
+  { id: next_promise_id(), state: Ref::new(PromiseState::Thunk(thunk)) }
+}
+
+///|
 fn make_case_closure(clauses : Array[CaseClause], env : Env) -> CaseClosure {
   { id: next_closure_id(), clauses, env }
 }
@@ -480,6 +498,7 @@ priv enum Kont {
   WindExit(Winder, Kont)
   WindActions(Array[WindAction], Value, Kont, Array[Value])
   WindPush(Winder, Array[WindAction], Value, Kont, Array[Value])
+  ForcePromise(Promise, Kont)
   RaiseNonCont
   RaiseCont(Kont)
   RestoreHandlers(Array[Value], Kont)
@@ -1332,6 +1351,10 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
             wind_push(winder)
             state = run_wind_actions(actions, resume_value, final_kont, final_handlers, handlers)
           }
+          Kont::ForcePromise(promise, next) => {
+            promise.state.val = PromiseState::Value(value)
+            state = MachineState::Apply(value, next, handlers)
+          }
           Kont::RaiseNonCont => raise EvalError("non-continuable exception")
           Kont::RaiseCont(next) => state = MachineState::Apply(value, next, handlers)
           Kont::RestoreHandlers(prev_handlers, next) =>
@@ -1356,6 +1379,17 @@ fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
 fn eval_quasiquote(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     1 => Value::Datum(quasiquote_expand(args[0], env, 1))
+    n => raise arity_mismatch(1, n)
+  }
+}
+
+///|
+fn eval_delay(args : Array[Datum], env : Env) -> Value raise EvalError {
+  match args.length() {
+    1 => {
+      let thunk = Value::Closure(make_closure([], None, [args[0]], env))
+      Value::Promise(make_promise(thunk))
+    }
     n => raise arity_mismatch(1, n)
   }
 }
@@ -3535,6 +3569,7 @@ fn eval_pair(
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
       Some("syntax") => MachineState::Apply(eval_quote(args), kont, handlers)
+      Some("delay") => MachineState::Apply(eval_delay(args, env), kont, handlers)
       Some("if") => eval_if_state(args, env, kont, handlers)
       Some("begin") => eval_sequence_state(args, env, kont, handlers)
       Some("lambda") => MachineState::Apply(eval_lambda(args, env), kont, handlers)
@@ -3672,6 +3707,32 @@ fn apply_proc(
         let after = args[2]
         let winder = make_proc_winder(before, after)
         apply_winder_before(winder, Kont::WindEnter(thunk, winder, kont), handlers)
+      }
+    }
+    Value::Primitive(Primitive::MakePromise) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        let thunk = args[0]
+        if !is_procedure_value(thunk) {
+          raise EvalError("type error: procedure expected")
+        }
+        MachineState::Apply(Value::Promise(make_promise(thunk)), kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::Force) => {
+      if args.length() != 1 {
+        raise arity_mismatch(1, args.length())
+      } else {
+        match args[0] {
+          Value::Promise(promise) =>
+            match promise.state.val {
+              PromiseState::Value(result) => MachineState::Apply(result, kont, handlers)
+              PromiseState::Thunk(thunk) =>
+                apply_proc(thunk, [], Kont::ForcePromise(promise, kont), handlers)
+            }
+          _ => raise EvalError("type error: promise expected")
+        }
       }
     }
     Value::Primitive(Primitive::WithExceptionHandler) => {

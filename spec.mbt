@@ -201,6 +201,9 @@ pub enum Primitive {
   CallWithValues
   MakeParameter
   DynamicWind
+  PromiseP
+  MakePromise
+  Force
   ExactToInexact
   InexactToExact
   ExactIntegerSqrt
@@ -414,6 +417,18 @@ pub struct Parameter {
 }
 
 ///|
+pub enum PromiseState {
+  Thunk(Value)
+  Value(Value)
+}
+
+///|
+pub struct Promise {
+  id : Int
+  state : Ref[PromiseState]
+}
+
+///|
 /// Runtime values produced by evaluation.
 ///|
 pub enum Value {
@@ -425,6 +440,7 @@ pub enum Value {
   Values(Array[Value])
   GuardHandler(GuardHandler)
   Parameter(Parameter)
+  Promise(Promise)
   Continuation(Continuation)
   Port(Port)
   Record(Record)

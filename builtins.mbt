@@ -126,6 +126,9 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::CallWithValues, Primitive::CallWithValues)
     | (Primitive::MakeParameter, Primitive::MakeParameter)
     | (Primitive::DynamicWind, Primitive::DynamicWind)
+    | (Primitive::PromiseP, Primitive::PromiseP)
+    | (Primitive::MakePromise, Primitive::MakePromise)
+    | (Primitive::Force, Primitive::Force)
     | (Primitive::ExactToInexact, Primitive::ExactToInexact)
     | (Primitive::InexactToExact, Primitive::InexactToExact)
     | (Primitive::ExactIntegerSqrt, Primitive::ExactIntegerSqrt)
@@ -302,6 +305,7 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::CaseClosure(a), Value::CaseClosure(b)) => a.id == b.id
     (Value::GuardHandler(a), Value::GuardHandler(b)) => a.id == b.id
     (Value::Parameter(a), Value::Parameter(b)) => a.id == b.id
+    (Value::Promise(a), Value::Promise(b)) => a.id == b.id
     (Value::Continuation(a), Value::Continuation(b)) => a.id == b.id
     (Value::Port(a), Value::Port(b)) => a.id == b.id
     (Value::Record(a), Value::Record(b)) => a.id == b.id
@@ -4406,6 +4410,22 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::DynamicWind => {
       raise EvalError("internal error: dynamic-wind should be handled in apply_proc")
+    }
+    Primitive::PromiseP => {
+      match args.length() {
+        1 =>
+          match args[0] {
+            Value::Promise(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::MakePromise => {
+      raise EvalError("internal error: make-promise should be handled in apply_proc")
+    }
+    Primitive::Force => {
+      raise EvalError("internal error: force should be handled in apply_proc")
     }
     Primitive::ListP => {
       match args.length() {
