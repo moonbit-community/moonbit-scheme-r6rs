@@ -298,6 +298,15 @@ fn init_env() -> Env {
   )
   env_define(env, "raise", Value::Primitive(Primitive::Raise))
   env_define(env, "raise-continuable", Value::Primitive(Primitive::RaiseContinuable))
+  env_define(env, "error", Value::Primitive(Primitive::Error))
+  env_define(env, "assertion-violation", Value::Primitive(Primitive::AssertionViolation))
+  env_define(
+    env,
+    "implementation-restriction-violation",
+    Value::Primitive(Primitive::ImplementationRestrictionViolation),
+  )
+  env_define(env, "undefined-violation", Value::Primitive(Primitive::UndefinedViolation))
+  env_define(env, "syntax-violation", Value::Primitive(Primitive::SyntaxViolation))
   env_define(env, "call/cc", Value::Primitive(Primitive::CallCC))
   env_define(
     env,
@@ -690,6 +699,38 @@ fn stdlib_source() -> String {
     "    (if (>= idx n)",
     "        (reverse acc)",
     "        (loop (+ idx 1) (cons (f idx) acc)))))",
+    "(define-condition-type &message &condition",
+    "  make-message-condition message-condition?",
+    "  (message condition-message))",
+    "(define-condition-type &warning &condition",
+    "  make-warning warning?)",
+    "(define-condition-type &serious &condition",
+    "  make-serious-condition serious-condition?)",
+    "(define-condition-type &error &serious",
+    "  make-error error?)",
+    "(define-condition-type &violation &serious",
+    "  make-violation violation?)",
+    "(define-condition-type &assertion &violation",
+    "  make-assertion-violation assertion-violation?)",
+    "(define-condition-type &irritants &condition",
+    "  make-irritants-condition irritants-condition?",
+    "  (irritants condition-irritants))",
+    "(define-condition-type &who &condition",
+    "  make-who-condition who-condition?",
+    "  (who condition-who))",
+    "(define-condition-type &non-continuable &violation",
+    "  make-non-continuable-violation non-continuable-violation?)",
+    "(define-condition-type &implementation-restriction &violation",
+    "  make-implementation-restriction-violation",
+    "  implementation-restriction-violation?)",
+    "(define-condition-type &lexical &violation",
+    "  make-lexical-violation lexical-violation?)",
+    "(define-condition-type &syntax &violation",
+    "  make-syntax-violation syntax-violation?",
+    "  (form syntax-violation-form)",
+    "  (subform syntax-violation-subform))",
+    "(define-condition-type &undefined &violation",
+    "  make-undefined-violation undefined-violation?)",
   ]
   lines.join("\n")
 }
@@ -2518,6 +2559,7 @@ fn eval_define_condition_type_state(
     make_record_constructor_descriptor(record_type, Some(parent_desc.constructor_desc), None)
   let rtd = make_record_type_descriptor(record_type, ctor_desc)
   let _ = register_record_type(record_name, rtd)
+  env_define(env, record_name, Value::RecordTypeDescriptor(rtd))
   let next_kont =
     Kont::DefineConditionType(ctor_name, pred_name, record_type, bindings, env, kont)
   record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
@@ -2788,6 +2830,51 @@ fn apply_enum_set_proc(
       MachineState::Apply(Value::EnumSet(subset), kont, handlers)
     }
   }
+}
+
+///|
+fn make_condition_value(components : Array[Record]) -> Value {
+  if components.length() == 1 {
+    Value::Record(components[0])
+  } else {
+    Value::Datum(Datum::Condition(make_condition(components)))
+  }
+}
+
+///|
+fn lookup_condition_record_type(name : String) -> RecordType raise EvalError {
+  match lookup_record_type_descriptor(name) {
+    Some(desc) => desc.record_type
+    None => raise EvalError("type error: condition type expected")
+  }
+}
+
+///|
+fn make_condition_record(name : String, values : Array[Value]) -> Record raise EvalError {
+  let record_type = lookup_condition_record_type(name)
+  if record_type.fields.length() != values.length() {
+    raise EvalError("type error: condition field count mismatch")
+  }
+  make_record_instance(record_type, values)
+}
+
+///|
+fn irritants_list_value(values : Array[Value]) -> Value raise EvalError {
+  let items : Array[Datum] = []
+  for value in values {
+    items.push(value_as_datum(value))
+  }
+  Value::Datum(list_from_array(items))
+}
+
+///|
+fn raise_condition(
+  components : Array[Record],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  let cond_value = make_condition_value(components)
+  apply_proc(Value::Primitive(Primitive::Raise), [cond_value], kont, handlers)
 }
 
 ///|
@@ -3389,6 +3476,83 @@ fn apply_proc(
         next_handlers.push(handler)
         let restore = Kont::RestoreHandlers(handlers, kont)
         apply_proc(thunk, [], restore, next_handlers)
+      }
+    }
+    Value::Primitive(Primitive::Error) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let who = args[0]
+        let message = args[1]
+        let irritants = args.sub(start=2).to_array()
+        let components : Array[Record] = []
+        components.push(make_condition_record("&error", []))
+        components.push(make_condition_record("&message", [message]))
+        components.push(make_condition_record("&who", [who]))
+        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        raise_condition(components, kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::AssertionViolation) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let who = args[0]
+        let message = args[1]
+        let irritants = args.sub(start=2).to_array()
+        let components : Array[Record] = []
+        components.push(make_condition_record("&assertion", []))
+        components.push(make_condition_record("&message", [message]))
+        components.push(make_condition_record("&who", [who]))
+        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        raise_condition(components, kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::ImplementationRestrictionViolation) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let who = args[0]
+        let message = args[1]
+        let irritants = args.sub(start=2).to_array()
+        let components : Array[Record] = []
+        components.push(make_condition_record("&implementation-restriction", []))
+        components.push(make_condition_record("&message", [message]))
+        components.push(make_condition_record("&who", [who]))
+        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        raise_condition(components, kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::UndefinedViolation) => {
+      if args.length() < 2 {
+        raise arity_mismatch(2, args.length())
+      } else {
+        let who = args[0]
+        let message = args[1]
+        let irritants = args.sub(start=2).to_array()
+        let components : Array[Record] = []
+        components.push(make_condition_record("&undefined", []))
+        components.push(make_condition_record("&message", [message]))
+        components.push(make_condition_record("&who", [who]))
+        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        raise_condition(components, kont, handlers)
+      }
+    }
+    Value::Primitive(Primitive::SyntaxViolation) => {
+      if args.length() < 4 {
+        raise arity_mismatch(4, args.length())
+      } else {
+        let who = args[0]
+        let message = args[1]
+        let form = args[2]
+        let subform = args[3]
+        let irritants = args.sub(start=4).to_array()
+        let components : Array[Record] = []
+        components.push(make_condition_record("&syntax", [form, subform]))
+        components.push(make_condition_record("&message", [message]))
+        components.push(make_condition_record("&who", [who]))
+        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        raise_condition(components, kont, handlers)
       }
     }
     Value::Primitive(Primitive::Raise) => {

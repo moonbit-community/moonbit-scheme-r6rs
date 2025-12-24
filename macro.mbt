@@ -325,6 +325,11 @@ fn is_core_identifier(name : String) -> Bool {
     "with-exception-handler",
     "raise",
     "raise-continuable",
+    "error",
+    "assertion-violation",
+    "implementation-restriction-violation",
+    "undefined-violation",
+    "syntax-violation",
   ]
   let mut i = 0
   while i < core.length() {

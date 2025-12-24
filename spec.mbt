@@ -339,6 +339,11 @@ pub enum Primitive {
   WithExceptionHandler
   Raise
   RaiseContinuable
+  Error
+  AssertionViolation
+  ImplementationRestrictionViolation
+  UndefinedViolation
+  SyntaxViolation
 }
 
 ///|

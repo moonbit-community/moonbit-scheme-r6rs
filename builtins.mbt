@@ -263,7 +263,12 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::CurrentOutputPort, Primitive::CurrentOutputPort)
     | (Primitive::WithExceptionHandler, Primitive::WithExceptionHandler)
     | (Primitive::Raise, Primitive::Raise)
-    | (Primitive::RaiseContinuable, Primitive::RaiseContinuable) => true
+    | (Primitive::RaiseContinuable, Primitive::RaiseContinuable)
+    | (Primitive::Error, Primitive::Error)
+    | (Primitive::AssertionViolation, Primitive::AssertionViolation)
+    | (Primitive::ImplementationRestrictionViolation, Primitive::ImplementationRestrictionViolation)
+    | (Primitive::UndefinedViolation, Primitive::UndefinedViolation)
+    | (Primitive::SyntaxViolation, Primitive::SyntaxViolation) => true
     _ => false
   }
 }
@@ -4343,6 +4348,23 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::RaiseContinuable => {
       raise EvalError("internal error: raise-continuable should be handled in apply_proc")
+    }
+    Primitive::Error => {
+      raise EvalError("internal error: error should be handled in apply_proc")
+    }
+    Primitive::AssertionViolation => {
+      raise EvalError("internal error: assertion-violation should be handled in apply_proc")
+    }
+    Primitive::ImplementationRestrictionViolation => {
+      raise EvalError(
+        "internal error: implementation-restriction-violation should be handled in apply_proc",
+      )
+    }
+    Primitive::UndefinedViolation => {
+      raise EvalError("internal error: undefined-violation should be handled in apply_proc")
+    }
+    Primitive::SyntaxViolation => {
+      raise EvalError("internal error: syntax-violation should be handled in apply_proc")
     }
     Primitive::Not => {
       match args.length() {
