@@ -3171,37 +3171,187 @@ fn parse_export_clause(expr : Datum) -> Array[String] raise EvalError {
 }
 
 ///|
-fn parse_import_clause(expr : Datum) -> Array[String] raise EvalError {
+fn parse_import_clause(expr : Datum) -> Array[Datum] raise EvalError {
   let items = datum_list_to_array(expr)
   if items.is_empty() {
     raise EvalError("invalid library")
   }
   match items[0] {
-    Datum::Symbol("import") => {
-      let names : Array[String] = []
-      let mut i = 1
-      while i < items.length() {
-        names.push(parse_library_name(items[i]))
-        i = i + 1
-      }
-      names
-    }
+    Datum::Symbol("import") => items.sub(start=1).to_array()
     _ => raise EvalError("invalid library")
   }
 }
 
 ///|
-fn import_library_into_env(name : String, env : Env) -> Unit raise EvalError {
+fn library_exports(name : String) -> Map[String, Value] raise EvalError {
   match lookup_library(name) {
     Some(lib) => {
+      let exports : Map[String, Value] = {}
       for key in lib.exports.keys() {
         match lib.exports.get(key) {
-          Some(value) => env_define(env, key, value)
+          Some(value) => exports[key] = value
           None => ()
         }
       }
+      exports
     }
     None => raise EvalError("unknown library: \{name}")
+  }
+}
+
+///|
+fn import_set_only(
+  exports : Map[String, Value],
+  names : Array[String],
+) -> Map[String, Value] raise EvalError {
+  let result : Map[String, Value] = {}
+  for name in names {
+    match exports.get(name) {
+      Some(value) => result[name] = value
+      None => raise EvalError("unknown import: \{name}")
+    }
+  }
+  result
+}
+
+///|
+fn import_set_except(
+  exports : Map[String, Value],
+  names : Array[String],
+) -> Map[String, Value] raise EvalError {
+  let excluded : Map[String, Bool] = {}
+  for name in names {
+    if !exports.contains(name) {
+      raise EvalError("unknown import: \{name}")
+    }
+    excluded[name] = true
+  }
+  let result : Map[String, Value] = {}
+  for key in exports.keys() {
+    if !excluded.contains(key) {
+      match exports.get(key) {
+        Some(value) => result[key] = value
+        None => ()
+      }
+    }
+  }
+  result
+}
+
+///|
+fn import_set_rename(
+  exports : Map[String, Value],
+  renames : Array[(String, String)],
+) -> Map[String, Value] raise EvalError {
+  let rename_map : Map[String, String] = {}
+  for rename in renames {
+    let (old_name, new_name) = rename
+    if !exports.contains(old_name) {
+      raise EvalError("unknown import: \{old_name}")
+    }
+    if rename_map.contains(old_name) {
+      raise EvalError("invalid import set")
+    }
+    rename_map[old_name] = new_name
+  }
+  let result : Map[String, Value] = {}
+  for key in exports.keys() {
+    let target = match rename_map.get(key) {
+      Some(name) => name
+      None => key
+    }
+    if result.contains(target) {
+      raise EvalError("invalid import set")
+    }
+    match exports.get(key) {
+      Some(value) => result[target] = value
+      None => ()
+    }
+  }
+  result
+}
+
+///|
+fn import_set_prefix(exports : Map[String, Value], prefix : String) -> Map[String, Value] {
+  let result : Map[String, Value] = {}
+  for key in exports.keys() {
+    match exports.get(key) {
+      Some(value) => result["\{prefix}\{key}"] = value
+      None => ()
+    }
+  }
+  result
+}
+
+///|
+fn parse_rename_specs(items : Array[Datum]) -> Array[(String, String)] raise EvalError {
+  let renames : Array[(String, String)] = []
+  for item in items {
+    let parts = datum_list_to_array(item)
+    if parts.length() != 2 {
+      raise EvalError("invalid import set")
+    }
+    let old_name = parse_symbol(parts[0])
+    let new_name = parse_symbol(parts[1])
+    renames.push((old_name, new_name))
+  }
+  renames
+}
+
+///|
+fn import_set_exports(expr : Datum) -> Map[String, Value] raise EvalError {
+  let items = datum_list_to_array(expr)
+  if items.is_empty() {
+    raise EvalError("invalid import set")
+  }
+  match items[0] {
+    Datum::Symbol("only") => {
+      if items.length() < 3 {
+        raise EvalError("invalid import set")
+      }
+      let base = import_set_exports(items[1])
+      let names = parse_symbol_list(items.sub(start=2).to_array())
+      import_set_only(base, names)
+    }
+    Datum::Symbol("except") => {
+      if items.length() < 3 {
+        raise EvalError("invalid import set")
+      }
+      let base = import_set_exports(items[1])
+      let names = parse_symbol_list(items.sub(start=2).to_array())
+      import_set_except(base, names)
+    }
+    Datum::Symbol("rename") => {
+      if items.length() < 3 {
+        raise EvalError("invalid import set")
+      }
+      let base = import_set_exports(items[1])
+      let renames = parse_rename_specs(items.sub(start=2).to_array())
+      import_set_rename(base, renames)
+    }
+    Datum::Symbol("prefix") => {
+      if items.length() != 3 {
+        raise EvalError("invalid import set")
+      }
+      let base = import_set_exports(items[1])
+      let prefix = parse_symbol(items[2])
+      import_set_prefix(base, prefix)
+    }
+    _ => {
+      let name = parse_library_name(expr)
+      library_exports(name)
+    }
+  }
+}
+
+///|
+fn import_set_into_env(expr : Datum, env : Env) -> Unit raise EvalError {
+  let exports = import_set_exports(expr)
+  for key in exports.keys() {
+    match exports.get(key) {
+      Some(value) => env_define(env, key, value)
+      None => ()
+    }
   }
 }
 
@@ -3220,8 +3370,8 @@ fn eval_library_state(
   let imports = parse_import_clause(args[2])
   let body = args.sub(start=3).to_array()
   let lib_env = init_env()
-  for lib_name in imports {
-    import_library_into_env(lib_name, lib_env)
+  for import_set in imports {
+    import_set_into_env(import_set, lib_env)
   }
   for form in body {
     let _ = eval_expr(form, lib_env)
@@ -3242,8 +3392,7 @@ fn eval_import_state(
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
   for spec in args {
-    let name = parse_library_name(spec)
-    import_library_into_env(name, env)
+    import_set_into_env(spec, env)
   }
   MachineState::Apply(Value::Void, kont, handlers)
 }
