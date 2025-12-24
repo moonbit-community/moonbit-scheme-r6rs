@@ -1357,13 +1357,13 @@ fn compare_chain_char(
   }
   let mut prev = value_as_char(args[0])
   if case_insensitive {
-    prev = prev.to_ascii_lowercase()
+    prev = unicode_char_foldcase(prev)
   }
   let mut i = 1
   while i < args.length() {
     let mut cur = value_as_char(args[i])
     if case_insensitive {
-      cur = cur.to_ascii_lowercase()
+      cur = unicode_char_foldcase(cur)
     }
     let cmp = prev.to_int().compare(cur.to_int())
     if !compare_ok(mode, cmp) {
@@ -1386,13 +1386,13 @@ fn compare_chain_string(
   }
   let mut prev = value_as_string(args[0])
   if case_insensitive {
-    prev = prev.to_lower()
+    prev = unicode_string_foldcase(prev)
   }
   let mut i = 1
   while i < args.length() {
     let mut cur = value_as_string(args[i])
     if case_insensitive {
-      cur = cur.to_lower()
+      cur = unicode_string_foldcase(cur)
     }
     let cmp = prev.lexical_compare(cur)
     if !compare_ok(mode, cmp) {
@@ -4224,7 +4224,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          bool_value(ch.is_ascii_alphabetic())
+          bool_value(unicode_char_is_alphabetic(ch))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4251,7 +4251,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          bool_value(ch.is_ascii_uppercase())
+          bool_value(unicode_char_is_uppercase(ch))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4260,7 +4260,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          bool_value(ch.is_ascii_lowercase())
+          bool_value(unicode_char_is_lowercase(ch))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4269,7 +4269,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          Value::Datum(Datum::Char(ch.to_ascii_uppercase()))
+          Value::Datum(Datum::Char(unicode_char_upcase(ch)))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4278,7 +4278,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          Value::Datum(Datum::Char(ch.to_ascii_lowercase()))
+          Value::Datum(Datum::Char(unicode_char_downcase(ch)))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4287,7 +4287,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
-          Value::Datum(Datum::Char(ch.to_ascii_lowercase()))
+          Value::Datum(Datum::Char(unicode_char_foldcase(ch)))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4544,7 +4544,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(Ref::new(s.to_upper())))
+          Value::Datum(Datum::String(Ref::new(unicode_string_upcase(s))))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4553,7 +4553,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(Ref::new(s.to_lower())))
+          Value::Datum(Datum::String(Ref::new(unicode_string_downcase(s))))
         }
         n => raise arity_mismatch(1, n)
       }
@@ -4562,7 +4562,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(Ref::new(s.to_lower())))
+          Value::Datum(Datum::String(Ref::new(unicode_string_foldcase(s))))
         }
         n => raise arity_mismatch(1, n)
       }

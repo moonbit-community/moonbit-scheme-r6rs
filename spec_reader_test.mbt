@@ -82,6 +82,20 @@ test "reader: fold-case directives" {
 }
 
 ///|
+test "reader: fold-case unicode identifiers" {
+  let program : String =
+    #|(begin
+    #|  #!fold-case
+    #|  (define \x03A9; 42)
+    #|  \x03C9;)
+    #|
+  inspect(
+    value_to_string(eval_program(program)),
+    content="42",
+  )
+}
+
+///|
 test "reader: identifier hex escapes" {
   let program : String =
     #|(begin

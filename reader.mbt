@@ -170,11 +170,12 @@ fn read_token(r : Reader) -> String raise ParseError {
             if chars.length() == 1 && chars[0] == '#' {
               chars.push(ch)
             } else {
-              chars.push(read_identifier_escape(r))
+              let escaped = read_identifier_escape(r)
+              chars.push(if fold_case { unicode_char_foldcase(escaped) } else { escaped })
             }
           } else {
             let next_char =
-              if fold_case { ch.to_ascii_lowercase() } else { ch }
+              if fold_case { unicode_char_foldcase(ch) } else { ch }
             chars.push(next_char)
           }
         }

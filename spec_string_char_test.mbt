@@ -380,6 +380,110 @@ test "r6rs char and string primitives" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(char-alphabetic? #\x4E2D)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char-numeric? #\x0661)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char-whitespace? #\x00A0)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char-upper-case? #\x00C5)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char-lower-case? #\x00E5)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char-ci=? #\x00C5 #\x00E5)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char->integer (char-upcase #\x00E5))
+      )
+    )),
+    content="197",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char->integer (char-downcase #\x00C5))
+      )
+    )),
+    content="229",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(char->integer (char-foldcase #\x00C5))
+      )
+    )),
+    content="229",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(string-ci=? "\x00C5;" "\x00E5;")
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(map char->integer (string->list (string-upcase "\x00E5;")))
+      )
+    )),
+    content="(197)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(map char->integer (string->list (string-downcase "\x00C5;")))
+      )
+    )),
+    content="(229)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(map char->integer (string->list (string-foldcase "\x00C5;")))
+      )
+    )),
+    content="(229)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(string=? "hi" "hi")
       )
     )),
