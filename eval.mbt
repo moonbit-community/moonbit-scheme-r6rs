@@ -76,6 +76,31 @@ fn init_env() -> Env {
   env_define(env, "simple-conditions", Value::Primitive(Primitive::SimpleConditions))
   env_define(env, "condition-predicate", Value::Primitive(Primitive::ConditionPredicate))
   env_define(env, "condition-accessor", Value::Primitive(Primitive::ConditionAccessor))
+  env_define(env, "make-eq-hashtable", Value::Primitive(Primitive::MakeEqHashtable))
+  env_define(env, "make-eqv-hashtable", Value::Primitive(Primitive::MakeEqvHashtable))
+  env_define(env, "make-hashtable", Value::Primitive(Primitive::MakeHashtable))
+  env_define(env, "hashtable?", Value::Primitive(Primitive::HashtableP))
+  env_define(env, "hashtable-size", Value::Primitive(Primitive::HashtableSize))
+  env_define(env, "hashtable-ref", Value::Primitive(Primitive::HashtableRef))
+  env_define(env, "hashtable-set!", Value::Primitive(Primitive::HashtableSet))
+  env_define(env, "hashtable-delete!", Value::Primitive(Primitive::HashtableDelete))
+  env_define(env, "hashtable-contains?", Value::Primitive(Primitive::HashtableContainsP))
+  env_define(env, "hashtable-update!", Value::Primitive(Primitive::HashtableUpdate))
+  env_define(env, "hashtable-copy", Value::Primitive(Primitive::HashtableCopy))
+  env_define(env, "hashtable-clear!", Value::Primitive(Primitive::HashtableClear))
+  env_define(env, "hashtable-keys", Value::Primitive(Primitive::HashtableKeys))
+  env_define(env, "hashtable-entries", Value::Primitive(Primitive::HashtableEntries))
+  env_define(
+    env,
+    "hashtable-equivalence-function",
+    Value::Primitive(Primitive::HashtableEquivalenceFunction),
+  )
+  env_define(
+    env,
+    "hashtable-hash-function",
+    Value::Primitive(Primitive::HashtableHashFunction),
+  )
+  env_define(env, "hashtable-mutable?", Value::Primitive(Primitive::HashtableMutableP))
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
   env_define(env, "values", Value::Primitive(Primitive::Values))
@@ -412,6 +437,8 @@ priv enum Kont {
   RecordProtocolNResult(RecordType, Kont)
   DefineRecordType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
   DefineConditionType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
+  HashtableFindResult(Hashtable, Value, Int, HashtableOp, Kont)
+  HashtableUpdateApply(Hashtable, Value, Int, Bool, Kont)
   MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
   VectorMapFinalize(Kont)
   StringMapFinalize(Kont)
@@ -444,6 +471,15 @@ priv struct RecordFieldBinding {
   accessor : String
   index : Int
   mutator : String?
+}
+
+///|
+priv enum HashtableOp {
+  Ref(Value)
+  Contains
+  Set(Value)
+  Delete
+  Update(Value, Value)
 }
 
 ///|
@@ -1175,6 +1211,29 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                   ),
                 ),
               )
+            }
+            state = MachineState::Apply(Value::Void, next, handlers)
+          }
+          Kont::HashtableFindResult(table, key, idx, op, next) => {
+            let result_value = expect_single(value)
+            if is_false(result_value) {
+              state = hashtable_find_state(table, key, idx + 1, op, next, handlers)
+            } else {
+              state = hashtable_found_state(table, key, idx, op, next, handlers)
+            }
+          }
+          Kont::HashtableUpdateApply(table, key, idx, found, next) => {
+            let next_value = expect_single(value)
+            if !table.mutable {
+              raise EvalError("hashtable is immutable")
+            }
+            if found {
+              let entries = table.entries.val
+              let entry = entries[idx]
+              entry.value.val = next_value
+            } else {
+              let entries = table.entries.val
+              entries.push(HashtableEntry::{ key, value: Ref::new(next_value) })
             }
             state = MachineState::Apply(Value::Void, next, handlers)
           }
@@ -2662,6 +2721,215 @@ fn apply_condition_proc(
 }
 
 ///|
+fn hashtable_key_equal(equiv : HashtableEquiv, left : Value, right : Value) -> Bool {
+  match equiv {
+    HashtableEquiv::Eq => value_eqv(left, right)
+    HashtableEquiv::Eqv => value_eqv(left, right)
+    HashtableEquiv::Equal => value_equal(left, right)
+    HashtableEquiv::Proc(_) => false
+  }
+}
+
+///|
+fn hashtable_find_state(
+  table : Hashtable,
+  key : Value,
+  idx : Int,
+  op : HashtableOp,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  let entries = table.entries.val
+  if idx >= entries.length() {
+    return hashtable_not_found_state(table, key, op, kont, handlers)
+  }
+  let entry = entries[idx]
+  match table.equiv {
+    HashtableEquiv::Proc(proc) =>
+      apply_proc(proc, [key, entry.key], Kont::HashtableFindResult(table, key, idx, op, kont), handlers)
+    _ =>
+      if hashtable_key_equal(table.equiv, key, entry.key) {
+        hashtable_found_state(table, key, idx, op, kont, handlers)
+      } else {
+        hashtable_find_state(table, key, idx + 1, op, kont, handlers)
+      }
+  }
+}
+
+///|
+fn hashtable_found_state(
+  table : Hashtable,
+  key : Value,
+  idx : Int,
+  op : HashtableOp,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  let entries = table.entries.val
+  let entry = entries[idx]
+  match op {
+    HashtableOp::Ref(_) => MachineState::Apply(entry.value.val, kont, handlers)
+    HashtableOp::Contains => MachineState::Apply(bool_value(true), kont, handlers)
+    HashtableOp::Set(value) => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      entry.value.val = value
+      MachineState::Apply(Value::Void, kont, handlers)
+    }
+    HashtableOp::Delete => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      let next_entries : Array[HashtableEntry] = []
+      let mut i = 0
+      while i < entries.length() {
+        if i != idx {
+          next_entries.push(entries[i])
+        }
+        i = i + 1
+      }
+      table.entries.val = next_entries
+      MachineState::Apply(Value::Void, kont, handlers)
+    }
+    HashtableOp::Update(proc, _) => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      apply_proc(
+        proc,
+        [entry.value.val],
+        Kont::HashtableUpdateApply(table, key, idx, true, kont),
+        handlers,
+      )
+    }
+  }
+}
+
+///|
+fn hashtable_not_found_state(
+  table : Hashtable,
+  key : Value,
+  op : HashtableOp,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  match op {
+    HashtableOp::Ref(default_value) => MachineState::Apply(default_value, kont, handlers)
+    HashtableOp::Contains => MachineState::Apply(bool_value(false), kont, handlers)
+    HashtableOp::Set(value) => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      let entries = table.entries.val
+      entries.push(HashtableEntry::{ key, value: Ref::new(value) })
+      MachineState::Apply(Value::Void, kont, handlers)
+    }
+    HashtableOp::Delete => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      MachineState::Apply(Value::Void, kont, handlers)
+    }
+    HashtableOp::Update(proc, default_value) => {
+      if !table.mutable {
+        raise EvalError("hashtable is immutable")
+      }
+      apply_proc(
+        proc,
+        [default_value],
+        Kont::HashtableUpdateApply(table, key, -1, false, kont),
+        handlers,
+      )
+    }
+  }
+}
+
+///|
+fn apply_hashtable_ref(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() != 3 {
+    raise arity_mismatch(3, args.length())
+  }
+  let table = value_as_hashtable(args[0])
+  let key = args[1]
+  let default_value = args[2]
+  hashtable_find_state(table, key, 0, HashtableOp::Ref(default_value), kont, handlers)
+}
+
+///|
+fn apply_hashtable_set(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() != 3 {
+    raise arity_mismatch(3, args.length())
+  }
+  let table = value_as_hashtable(args[0])
+  let key = args[1]
+  let value = args[2]
+  hashtable_find_state(table, key, 0, HashtableOp::Set(value), kont, handlers)
+}
+
+///|
+fn apply_hashtable_delete(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() != 2 {
+    raise arity_mismatch(2, args.length())
+  }
+  let table = value_as_hashtable(args[0])
+  let key = args[1]
+  hashtable_find_state(table, key, 0, HashtableOp::Delete, kont, handlers)
+}
+
+///|
+fn apply_hashtable_contains(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() != 2 {
+    raise arity_mismatch(2, args.length())
+  }
+  let table = value_as_hashtable(args[0])
+  let key = args[1]
+  hashtable_find_state(table, key, 0, HashtableOp::Contains, kont, handlers)
+}
+
+///|
+fn apply_hashtable_update(
+  args : Array[Value],
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() != 4 {
+    raise arity_mismatch(4, args.length())
+  }
+  let table = value_as_hashtable(args[0])
+  let key = args[1]
+  let proc = args[2]
+  let default_value = args[3]
+  if !is_procedure_value(proc) {
+    raise EvalError("type error: procedure expected")
+  }
+  hashtable_find_state(
+    table,
+    key,
+    0,
+    HashtableOp::Update(proc, default_value),
+    kont,
+    handlers,
+  )
+}
+
+///|
 fn parse_library_name(expr : Datum) -> String raise EvalError {
   let parts = datum_list_to_array(expr)
   if parts.is_empty() {
@@ -3006,6 +3274,16 @@ fn apply_proc(
         record_constructor_from_descriptor(desc, kont, handlers)
       }
     }
+    Value::Primitive(Primitive::HashtableRef) =>
+      apply_hashtable_ref(args, kont, handlers)
+    Value::Primitive(Primitive::HashtableSet) =>
+      apply_hashtable_set(args, kont, handlers)
+    Value::Primitive(Primitive::HashtableDelete) =>
+      apply_hashtable_delete(args, kont, handlers)
+    Value::Primitive(Primitive::HashtableContainsP) =>
+      apply_hashtable_contains(args, kont, handlers)
+    Value::Primitive(Primitive::HashtableUpdate) =>
+      apply_hashtable_update(args, kont, handlers)
     Value::Primitive(Primitive::MakeParameter) => {
       match args.length() {
         1 => MachineState::Apply(Value::Parameter(make_parameter(args[0])), kont, handlers)

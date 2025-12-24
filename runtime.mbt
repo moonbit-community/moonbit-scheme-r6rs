@@ -45,6 +45,29 @@ struct Condition {
 }
 
 ///|
+priv enum HashtableEquiv {
+  Eq
+  Eqv
+  Equal
+  Proc(Value)
+}
+
+///|
+priv struct HashtableEntry {
+  key : Value
+  value : Ref[Value]
+}
+
+///|
+struct Hashtable {
+  id : Int
+  mutable : Bool
+  equiv : HashtableEquiv
+  hash : Value?
+  entries : Ref[Array[HashtableEntry]]
+}
+
+///|
 priv enum RecordProcKind {
   Constructor(RecordType)
   Predicate(RecordType)
@@ -101,6 +124,7 @@ let record_type_desc_counter : Ref[Int] = Ref::new(0)
 let record_ctor_desc_counter : Ref[Int] = Ref::new(0)
 let condition_counter : Ref[Int] = Ref::new(0)
 let condition_proc_counter : Ref[Int] = Ref::new(0)
+let hashtable_counter : Ref[Int] = Ref::new(0)
 let library_registry : Ref[Map[String, Library]] = Ref::new({})
 let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
 let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
@@ -159,6 +183,13 @@ fn next_condition_id() -> Int {
 fn next_condition_proc_id() -> Int {
   let id = condition_proc_counter.val
   condition_proc_counter.val = id + 1
+  id
+}
+
+///|
+fn next_hashtable_id() -> Int {
+  let id = hashtable_counter.val
+  hashtable_counter.val = id + 1
   id
 }
 
@@ -222,6 +253,21 @@ fn make_record_instance(record_type : RecordType, values : Array[Value]) -> Reco
 ///|
 fn make_condition(components : Array[Record]) -> Condition {
   Condition::{ id: next_condition_id(), components }
+}
+
+///|
+fn make_hashtable(
+  equiv : HashtableEquiv,
+  hash : Value?,
+  mutable : Bool,
+) -> Hashtable {
+  Hashtable::{
+    id: next_hashtable_id(),
+    mutable,
+    equiv,
+    hash,
+    entries: Ref::new([]),
+  }
 }
 
 ///|

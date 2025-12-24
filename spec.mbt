@@ -162,6 +162,23 @@ pub enum Primitive {
   SimpleConditions
   ConditionPredicate
   ConditionAccessor
+  MakeEqHashtable
+  MakeEqvHashtable
+  MakeHashtable
+  HashtableP
+  HashtableSize
+  HashtableRef
+  HashtableSet
+  HashtableDelete
+  HashtableContainsP
+  HashtableUpdate
+  HashtableCopy
+  HashtableClear
+  HashtableKeys
+  HashtableEntries
+  HashtableEquivalenceFunction
+  HashtableHashFunction
+  HashtableMutableP
   Not
   Apply
   CallCC
@@ -391,6 +408,7 @@ pub enum Value {
   Record(Record)
   RecordProc(RecordProc)
   ConditionProc(ConditionProc)
+  Hashtable(Hashtable)
   RecordTypeDescriptor(RecordTypeDescriptor)
   RecordConstructorDescriptor(RecordConstructorDescriptor)
   Macro(SyntaxRules)

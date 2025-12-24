@@ -88,6 +88,23 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::SimpleConditions, Primitive::SimpleConditions)
     | (Primitive::ConditionPredicate, Primitive::ConditionPredicate)
     | (Primitive::ConditionAccessor, Primitive::ConditionAccessor)
+    | (Primitive::MakeEqHashtable, Primitive::MakeEqHashtable)
+    | (Primitive::MakeEqvHashtable, Primitive::MakeEqvHashtable)
+    | (Primitive::MakeHashtable, Primitive::MakeHashtable)
+    | (Primitive::HashtableP, Primitive::HashtableP)
+    | (Primitive::HashtableSize, Primitive::HashtableSize)
+    | (Primitive::HashtableRef, Primitive::HashtableRef)
+    | (Primitive::HashtableSet, Primitive::HashtableSet)
+    | (Primitive::HashtableDelete, Primitive::HashtableDelete)
+    | (Primitive::HashtableContainsP, Primitive::HashtableContainsP)
+    | (Primitive::HashtableUpdate, Primitive::HashtableUpdate)
+    | (Primitive::HashtableCopy, Primitive::HashtableCopy)
+    | (Primitive::HashtableClear, Primitive::HashtableClear)
+    | (Primitive::HashtableKeys, Primitive::HashtableKeys)
+    | (Primitive::HashtableEntries, Primitive::HashtableEntries)
+    | (Primitive::HashtableEquivalenceFunction, Primitive::HashtableEquivalenceFunction)
+    | (Primitive::HashtableHashFunction, Primitive::HashtableHashFunction)
+    | (Primitive::HashtableMutableP, Primitive::HashtableMutableP)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
@@ -271,6 +288,7 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::Record(a), Value::Record(b)) => a.id == b.id
     (Value::RecordProc(a), Value::RecordProc(b)) => a.id == b.id
     (Value::ConditionProc(a), Value::ConditionProc(b)) => a.id == b.id
+    (Value::Hashtable(a), Value::Hashtable(b)) => a.id == b.id
     (Value::RecordTypeDescriptor(a), Value::RecordTypeDescriptor(b)) => a.id == b.id
     (Value::RecordConstructorDescriptor(a), Value::RecordConstructorDescriptor(b)) => a.id == b.id
     (Value::Void, Value::Void) => true
@@ -1217,6 +1235,47 @@ fn value_as_record_constructor_descriptor(value : Value) -> RecordConstructorDes
   match value {
     Value::RecordConstructorDescriptor(desc) => desc
     _ => raise EvalError("type error: record constructor descriptor expected")
+  }
+}
+
+///|
+fn value_as_hashtable(value : Value) -> Hashtable raise EvalError {
+  match value {
+    Value::Hashtable(table) => table
+    _ => raise EvalError("type error: hashtable expected")
+  }
+}
+
+///|
+fn hashtable_equiv_from_value(value : Value) -> HashtableEquiv raise EvalError {
+  match value {
+    Value::Primitive(Primitive::Eq) => HashtableEquiv::Eq
+    Value::Primitive(Primitive::Eqv) => HashtableEquiv::Eqv
+    Value::Primitive(Primitive::Equal) => HashtableEquiv::Equal
+    _ => {
+      if !is_procedure_value(value) {
+        raise EvalError("type error: procedure expected")
+      }
+      HashtableEquiv::Proc(value)
+    }
+  }
+}
+
+///|
+fn hashtable_equiv_to_value(equiv : HashtableEquiv) -> Value {
+  match equiv {
+    HashtableEquiv::Eq => Value::Primitive(Primitive::Eq)
+    HashtableEquiv::Eqv => Value::Primitive(Primitive::Eqv)
+    HashtableEquiv::Equal => Value::Primitive(Primitive::Equal)
+    HashtableEquiv::Proc(proc) => proc
+  }
+}
+
+///|
+fn validate_hashtable_size_arg(value : Value) -> Unit raise EvalError {
+  let n = value_as_int_index(value)
+  if n < 0 {
+    raise EvalError("type error: non-negative integer expected")
   }
 }
 
@@ -3018,6 +3077,175 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           )
         }
         n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::MakeEqHashtable => {
+      match args.length() {
+        0 => Value::Hashtable(make_hashtable(HashtableEquiv::Eq, None, true))
+        1 => {
+          validate_hashtable_size_arg(args[0])
+          Value::Hashtable(make_hashtable(HashtableEquiv::Eq, None, true))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::MakeEqvHashtable => {
+      match args.length() {
+        0 => Value::Hashtable(make_hashtable(HashtableEquiv::Eqv, None, true))
+        1 => {
+          validate_hashtable_size_arg(args[0])
+          Value::Hashtable(make_hashtable(HashtableEquiv::Eqv, None, true))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::MakeHashtable => {
+      match args.length() {
+        2 | 3 => {
+          let hash = args[0]
+          if !is_procedure_value(hash) {
+            raise EvalError("type error: procedure expected")
+          }
+          let equiv = hashtable_equiv_from_value(args[1])
+          if args.length() == 3 {
+            validate_hashtable_size_arg(args[2])
+          }
+          Value::Hashtable(make_hashtable(equiv, Some(hash), true))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::HashtableP => {
+      match args.length() {
+        1 =>
+          match args[0] {
+            Value::Hashtable(_) => bool_value(true)
+            _ => bool_value(false)
+          }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableSize => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          Value::Datum(Datum::Int(table.entries.val.length()))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableRef => {
+      raise EvalError("internal error: hashtable-ref should be handled in apply_proc")
+    }
+    Primitive::HashtableSet => {
+      raise EvalError("internal error: hashtable-set! should be handled in apply_proc")
+    }
+    Primitive::HashtableDelete => {
+      raise EvalError("internal error: hashtable-delete! should be handled in apply_proc")
+    }
+    Primitive::HashtableContainsP => {
+      raise EvalError("internal error: hashtable-contains? should be handled in apply_proc")
+    }
+    Primitive::HashtableUpdate => {
+      raise EvalError("internal error: hashtable-update! should be handled in apply_proc")
+    }
+    Primitive::HashtableCopy => {
+      match args.length() {
+        1 | 2 => {
+          let table = value_as_hashtable(args[0])
+          let mutable = if args.length() == 2 { value_as_bool(args[1]) } else { table.mutable }
+          let entries : Array[HashtableEntry] = []
+          for entry in table.entries.val {
+            entries.push(HashtableEntry::{ key: entry.key, value: Ref::new(entry.value.val) })
+          }
+          Value::Hashtable(
+            Hashtable::{
+              id: next_hashtable_id(),
+              mutable,
+              equiv: table.equiv,
+              hash: table.hash,
+              entries: Ref::new(entries),
+            },
+          )
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableClear => {
+      match args.length() {
+        1 | 2 => {
+          let table = value_as_hashtable(args[0])
+          if !table.mutable {
+            raise EvalError("hashtable is immutable")
+          }
+          if args.length() == 2 {
+            validate_hashtable_size_arg(args[1])
+          }
+          table.entries.val = []
+          Value::Void
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableKeys => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          let items : Array[Datum] = []
+          for entry in table.entries.val {
+            items.push(value_as_datum(entry.key))
+          }
+          Value::Datum(Datum::Vector(items))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableEntries => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          let key_items : Array[Datum] = []
+          let value_items : Array[Datum] = []
+          for entry in table.entries.val {
+            key_items.push(value_as_datum(entry.key))
+            value_items.push(value_as_datum(entry.value.val))
+          }
+          Value::Values([
+            Value::Datum(Datum::Vector(key_items)),
+            Value::Datum(Datum::Vector(value_items)),
+          ])
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableEquivalenceFunction => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          hashtable_equiv_to_value(table.equiv)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableHashFunction => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          match table.hash {
+            Some(hash) => hash
+            None => Value::Datum(Datum::Bool(false))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::HashtableMutableP => {
+      match args.length() {
+        1 => {
+          let table = value_as_hashtable(args[0])
+          bool_value(table.mutable)
+        }
+        n => raise arity_mismatch(1, n)
       }
     }
     Primitive::CharEq => bool_value(compare_chain_char(args, CompareMode::Eq, false))
