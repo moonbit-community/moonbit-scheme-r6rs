@@ -80,3 +80,28 @@ test "reader: fold-case directives" {
     content="(\"abc\" \"AbC\" \"AbC\")",
   )
 }
+
+///|
+test "reader: identifier hex escapes" {
+  let program : String =
+    #|(begin
+    #|  (symbol->string '|a\x41;|))
+    #|
+  inspect(
+    value_to_string(eval_program(program)),
+    content="\"aA\"",
+  )
+}
+
+///|
+test "reader: string line continuation" {
+  let program : String =
+    #|(begin
+    #|  (map char->integer (string->list "a\
+    #|    b")))
+    #|
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(97 98)",
+  )
+}

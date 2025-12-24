@@ -158,10 +158,7 @@ fn read_token(r : Reader) -> String raise ParseError {
           if ch == '|' {
             in_bar = false
           } else if ch == '\\' {
-            match reader_next(r) {
-              Some(esc) => chars.push(esc)
-              None => raise ParseError("unterminated identifier")
-            }
+            chars.push(read_identifier_escape(r))
           } else {
             chars.push(ch)
           }
@@ -172,10 +169,7 @@ fn read_token(r : Reader) -> String raise ParseError {
             if chars.length() == 1 && chars[0] == '#' {
               chars.push(ch)
             } else {
-              match reader_next(r) {
-                Some(esc) => chars.push(esc)
-                None => raise ParseError("unterminated identifier")
-              }
+              chars.push(read_identifier_escape(r))
             }
           } else {
             let next_char =
@@ -195,6 +189,15 @@ fn read_token(r : Reader) -> String raise ParseError {
     raise ParseError("expected token")
   }
   String::from_array(chars)
+}
+
+///|
+fn read_identifier_escape(r : Reader) -> Char raise ParseError {
+  match reader_next(r) {
+    Some('x') | Some('X') => read_hex_escape(r)
+    Some(ch) => ch
+    None => raise ParseError("unterminated identifier")
+  }
 }
 
 ///|
@@ -981,6 +984,13 @@ fn read_string(r : Reader) -> String raise ParseError {
       Some('"') => break
       Some('\\') => {
         match reader_next(r) {
+          Some('\n') => skip_string_line_continuation(r)
+          Some('\r') => {
+            if reader_peek(r) == Some('\n') {
+              r.pos = r.pos + 1
+            }
+            skip_string_line_continuation(r)
+          }
           Some('n') => chars.push('\n')
           Some('t') => chars.push('\t')
           Some('r') => chars.push('\r')
@@ -999,6 +1009,19 @@ fn read_string(r : Reader) -> String raise ParseError {
     }
   }
   String::from_array(chars)
+}
+
+///|
+fn skip_string_line_continuation(r : Reader) -> Unit {
+  while true {
+    match reader_peek(r) {
+      Some(ch) if ch.is_ascii_whitespace() => {
+        r.pos = r.pos + 1
+        continue
+      }
+      _ => break
+    }
+  }
 }
 
 ///|
