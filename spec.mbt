@@ -29,7 +29,9 @@
 ///   procedure? record? record-rtd record-type-descriptor?
 ///   record-constructor-descriptor? record-type-name record-type-parent
 ///   record-type-sealed? record-type-opaque? record-type-field-names
+///   record-type-field-mutable?
 ///   record-constructor-descriptor record-constructor
+///   record-predicate record-accessor record-mutator
 ///   not apply call/cc call-with-current-continuation eq? eqv?
 ///   equal? list? make-list list-ref list-tail length append
 ///   reverse c[ad]+r member memq memv assoc assq assv map for-each list-copy
@@ -140,8 +142,12 @@ pub enum Primitive {
   RecordTypeSealedP
   RecordTypeOpaqueP
   RecordTypeFieldNames
+  RecordTypeFieldMutableP
   RecordConstructorDescriptor
   RecordConstructor
+  RecordPredicate
+  RecordAccessor
+  RecordMutator
   Not
   Apply
   CallCC

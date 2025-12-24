@@ -73,8 +73,12 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::RecordTypeSealedP, Primitive::RecordTypeSealedP)
     | (Primitive::RecordTypeOpaqueP, Primitive::RecordTypeOpaqueP)
     | (Primitive::RecordTypeFieldNames, Primitive::RecordTypeFieldNames)
+    | (Primitive::RecordTypeFieldMutableP, Primitive::RecordTypeFieldMutableP)
     | (Primitive::RecordConstructorDescriptor, Primitive::RecordConstructorDescriptor)
     | (Primitive::RecordConstructor, Primitive::RecordConstructor)
+    | (Primitive::RecordPredicate, Primitive::RecordPredicate)
+    | (Primitive::RecordAccessor, Primitive::RecordAccessor)
+    | (Primitive::RecordMutator, Primitive::RecordMutator)
     | (Primitive::Not, Primitive::Not)
     | (Primitive::Apply, Primitive::Apply)
     | (Primitive::CallCC, Primitive::CallCC)
@@ -2655,6 +2659,53 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           desc.ctor
         }
         n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordTypeFieldMutableP => {
+      match args.length() {
+        2 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          let idx = value_as_int_index(args[1])
+          check_index(idx, desc.record_type.fields.length())
+          let field = desc.record_type.fields[idx]
+          bool_value(field.mutable)
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::RecordPredicate => {
+      match args.length() {
+        1 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          Value::RecordProc(make_record_proc(RecordProcKind::Predicate(desc.record_type)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RecordAccessor => {
+      match args.length() {
+        2 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          let idx = value_as_int_index(args[1])
+          check_index(idx, desc.record_type.fields.length())
+          Value::RecordProc(make_record_proc(RecordProcKind::Accessor(desc.record_type, idx)))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::RecordMutator => {
+      match args.length() {
+        2 => {
+          let desc = value_as_record_type_descriptor(args[0])
+          let idx = value_as_int_index(args[1])
+          check_index(idx, desc.record_type.fields.length())
+          let field = desc.record_type.fields[idx]
+          if !field.mutable {
+            raise EvalError("record field is immutable: \{field.name}")
+          }
+          Value::RecordProc(make_record_proc(RecordProcKind::Mutator(desc.record_type, idx)))
+        }
+        n => raise arity_mismatch(2, n)
       }
     }
     Primitive::CharEq => bool_value(compare_chain_char(args, CompareMode::Eq, false))

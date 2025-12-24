@@ -123,3 +123,41 @@ test "r6rs records: descriptors and flags" {
     content="(#t color-point point #t #t (x y color) blue)",
   )
 }
+
+///|
+test "r6rs records: procedural accessors and mutators" {
+  let program = (
+    (
+      #|(define-record-type point
+      #|  (make-point x y)
+      #|  point?
+      #|  (x point-x)
+      #|  (y point-y))
+      #|(define-record-type color-point
+      #|  (make-color-point x y color)
+      #|  color-point?
+      #|  (parent point)
+      #|  (color color-point-color set-color-point-color!))
+      #|(let* ((p (make-point 1 2))
+      #|       (cp (make-color-point 3 4 'red))
+      #|       (rtd-point (record-rtd p))
+      #|       (rtd-color (record-rtd cp))
+      #|       (pred-point (record-predicate rtd-point))
+      #|       (pred-color (record-predicate rtd-color))
+      #|       (acc-color (record-accessor rtd-color 2))
+      #|       (mut-color (record-mutator rtd-color 2)))
+      #|  (mut-color cp 'blue)
+      #|  (list (pred-point p)
+      #|        (pred-point cp)
+      #|        (pred-color cp)
+      #|        (pred-color p)
+      #|        (acc-color cp)
+      #|        (record-type-field-mutable? rtd-color 0)
+      #|        (record-type-field-mutable? rtd-color 2)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(#t #t #t #f blue #f #t)",
+  )
+}
