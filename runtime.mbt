@@ -573,9 +573,19 @@ fn value_as_datum(value : Value) -> Datum raise EvalError {
 }
 
 ///|
+fn value_to_datum_element(value : Value) -> Datum {
+  match value {
+    Value::Datum(d) => d
+    Value::Record(record) => Datum::Record(record)
+    _ => Datum::Value(value)
+  }
+}
+
+///|
 fn value_from_datum(datum : Datum) -> Value {
   match datum {
     Datum::Record(record) => Value::Record(record)
+    Datum::Value(value) => value
     _ => Value::Datum(datum)
   }
 }

@@ -88,6 +88,7 @@ pub enum Datum {
   ByteVector(Array[Int])
   Record(Record)
   Condition(Condition)
+  Value(Value)
 }
 
 ///|

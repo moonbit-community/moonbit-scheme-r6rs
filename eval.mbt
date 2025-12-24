@@ -762,7 +762,8 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           | Datum::Vector(_)
           | Datum::ByteVector(_)
           | Datum::Record(_)
-          | Datum::Condition(_) =>
+          | Datum::Condition(_)
+          | Datum::Value(_) =>
             state = MachineState::Apply(value_from_datum(current_expr), kont, handlers)
           Datum::Symbol(name) => {
             match env_get_macro(current_env, name) {
@@ -1296,7 +1297,7 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
             let single = expect_single(value)
             let next_results = results
             if !for_each {
-              next_results.push(value_as_datum(single))
+              next_results.push(value_to_datum_element(single))
             }
             state = map_step(proc, lists, next_results, for_each, next, handlers)
           }
@@ -1388,7 +1389,7 @@ fn quasiquote_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalEr
   match unwrap_form(expr, "unquote") {
     Some(arg) => {
       if depth == 1 {
-        return value_as_datum(eval_expr(arg, env))
+        return value_to_datum_element(eval_expr(arg, env))
       } else {
         return list_from_array([Datum::Symbol("unquote"), quasiquote_expand(arg, env, depth - 1)])
       }
@@ -2859,10 +2860,10 @@ fn make_condition_record(name : String, values : Array[Value]) -> Record raise E
 }
 
 ///|
-fn irritants_list_value(values : Array[Value]) -> Value raise EvalError {
+fn irritants_list_value(values : Array[Value]) -> Value {
   let items : Array[Datum] = []
   for value in values {
-    items.push(value_as_datum(value))
+    items.push(value_to_datum_element(value))
   }
   Value::Datum(list_from_array(items))
 }

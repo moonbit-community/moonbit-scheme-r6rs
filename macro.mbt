@@ -732,6 +732,7 @@ fn match_pattern(
         _ => false
       }
     }
+    Datum::Value(value) => value_eqv(value, value_from_datum(input))
     Datum::Pair(pa, pb) => {
       match (datum_list_to_array_opt(pattern), datum_list_to_array_opt(input)) {
         (Some(pats), Some(inputs)) => match_pattern_list(pats, inputs, literals, bindings)
@@ -962,6 +963,8 @@ fn datum_equal(a : Datum, b : Datum) -> Bool {
     (Datum::ByteVector(ax), Datum::ByteVector(bx)) => array_int_equal(ax, bx)
     (Datum::Record(ax), Datum::Record(bx)) => ax.id == bx.id
     (Datum::Condition(ax), Datum::Condition(bx)) => ax.id == bx.id
+    (Datum::Value(ax), _) => value_eqv(ax, value_from_datum(b))
+    (_, Datum::Value(bx)) => value_eqv(value_from_datum(a), bx)
     _ => false
   }
 }

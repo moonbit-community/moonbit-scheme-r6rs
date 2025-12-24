@@ -47,6 +47,7 @@ fn datum_to_string(datum : Datum) -> String {
     Datum::ByteVector(items) => bytevector_to_string(items)
     Datum::Record(_) => "#<record>"
     Datum::Condition(_) => "#<condition>"
+    Datum::Value(value) => value_to_string(value)
   }
 }
 

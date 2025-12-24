@@ -56,6 +56,15 @@ test "r6rs vectors" {
     )),
     content="2",
   )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x)))
+        #|  (procedure? (vector-ref (vector p) 0)))
+      )
+    )),
+    content="#t",
+  )
   let program = (
     (
       #|(let ((v (vector 1 2 3)))
@@ -64,6 +73,27 @@ test "r6rs vectors" {
     )
   )
   inspect(value_to_string(eval_program(program)), content="#(1 9 3)")
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x))
+        #|      (v (make-vector 2)))
+        #|  (vector-set! v 1 p)
+        #|  (procedure? (vector-ref v 1)))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x)))
+        #|  (let ((v (make-vector 2 p)))
+        #|    (eq? p (vector-ref v 0))))
+      )
+    )),
+    content="#t",
+  )
   let fill_program = (
     (
       #|(let ((v (vector 1 2 3)))

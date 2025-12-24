@@ -288,6 +288,46 @@ test "r6rs list utilities" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(let ((p (lambda (x) x)))
+        #|  (eq? p (car (list p))))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x))
+        #|      (cell (cons 1 2)))
+        #|  (set-car! cell p)
+        #|  (procedure? (car cell)))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x))
+        #|      (cell (cons 1 2)))
+        #|  (set-cdr! cell p)
+        #|  (procedure? (cdr cell)))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((p (lambda (x) x)))
+        #|  (append '(1) p))
+      )
+    )),
+    content="(1 . #<procedure>)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(reverse '(1 2 3))
       )
     )),

@@ -2224,8 +2224,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::Cons => {
       match args.length() {
         2 => {
-          let car = value_as_datum(args[0])
-          let cdr = value_as_datum(args[1])
+          let car = value_to_datum_element(args[0])
+          let cdr = value_to_datum_element(args[1])
           Value::Datum(pair_new(car, cdr))
         }
         n => raise arity_mismatch(2, n)
@@ -2235,7 +2235,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         2 => {
           let (car_cell, _) = value_as_pair_cells(args[0])
-          car_cell.val = value_as_datum(args[1])
+          car_cell.val = value_to_datum_element(args[1])
           Value::Void
         }
         n => raise arity_mismatch(2, n)
@@ -2245,7 +2245,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         2 => {
           let (_, cdr_cell) = value_as_pair_cells(args[0])
-          cdr_cell.val = value_as_datum(args[1])
+          cdr_cell.val = value_to_datum_element(args[1])
           Value::Void
         }
         n => raise arity_mismatch(2, n)
@@ -2299,7 +2299,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::List => {
       let items : Array[Datum] = []
       for arg in args {
-        items.push(value_as_datum(arg))
+        items.push(value_to_datum_element(arg))
       }
       Value::Datum(list_from_array(items))
     }
@@ -2308,7 +2308,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
           let fill = if args.length() == 2 {
-            value_as_datum(args[1])
+            value_to_datum_element(args[1])
           } else {
             Datum::Nil
           }
@@ -3248,7 +3248,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let table = value_as_hashtable(args[0])
           let items : Array[Datum] = []
           for entry in table.entries.val {
-            items.push(value_as_datum(entry.key))
+            items.push(value_to_datum_element(entry.key))
           }
           Value::Datum(Datum::Vector(items))
         }
@@ -3262,8 +3262,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let key_items : Array[Datum] = []
           let value_items : Array[Datum] = []
           for entry in table.entries.val {
-            key_items.push(value_as_datum(entry.key))
-            value_items.push(value_as_datum(entry.value.val))
+            key_items.push(value_to_datum_element(entry.key))
+            value_items.push(value_to_datum_element(entry.value.val))
           }
           Value::Values([
             Value::Datum(Datum::Vector(key_items)),
@@ -3887,7 +3887,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::Vector => {
       let items : Array[Datum] = []
       for arg in args {
-        items.push(value_as_datum(arg))
+        items.push(value_to_datum_element(arg))
       }
       Value::Datum(Datum::Vector(items))
     }
@@ -3896,7 +3896,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
           let fill = if args.length() == 2 {
-            value_as_datum(args[1])
+            value_to_datum_element(args[1])
           } else {
             Datum::Nil
           }
@@ -3948,7 +3948,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let items = value_as_vector(args[0])
           let idx = value_as_int_index(args[1])
           check_index(idx, items.length())
-          items[idx] = value_as_datum(args[2])
+          items[idx] = value_to_datum_element(args[2])
           Value::Void
         }
         n => raise arity_mismatch(3, n)
@@ -3958,7 +3958,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         2 | 3 | 4 => {
           let items = value_as_vector(args[0])
-          let fill = value_as_datum(args[1])
+          let fill = value_to_datum_element(args[1])
           let start = if args.length() >= 3 {
             value_as_int_index(args[2])
           } else {
@@ -4449,7 +4449,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             }
             i = i + 1
           }
-          let tail = value_as_datum(args[args.length() - 1])
+          let tail = value_to_datum_element(args[args.length() - 1])
           Value::Datum(list_with_tail(items, tail))
         }
       }
