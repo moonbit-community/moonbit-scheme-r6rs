@@ -42,7 +42,7 @@ fn is_delim(ch : Char) -> Bool {
 }
 
 ///|
-fn skip_ws_and_comments(r : Reader) -> Unit {
+fn skip_ws_and_comments(r : Reader) -> Unit raise ParseError {
   while true {
     match reader_peek(r) {
       Some(ch) if ch.is_ascii_whitespace() => {
@@ -67,8 +67,37 @@ fn skip_ws_and_comments(r : Reader) -> Unit {
         }
         continue
       }
+      Some('#') =>
+        if r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '|' {
+          skip_block_comment(r)
+          continue
+        } else {
+          break
+        }
       _ => break
     }
+  }
+}
+
+///|
+fn skip_block_comment(r : Reader) -> Unit raise ParseError {
+  r.pos = r.pos + 2
+  let mut depth = 1
+  while depth > 0 {
+    if r.pos >= r.chars.length() {
+      raise ParseError("unterminated block comment")
+    }
+    if r.chars[r.pos] == '#' && r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '|' {
+      depth = depth + 1
+      r.pos = r.pos + 2
+      continue
+    }
+    if r.chars[r.pos] == '|' && r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '#' {
+      depth = depth - 1
+      r.pos = r.pos + 2
+      continue
+    }
+    r.pos = r.pos + 1
   }
 }
 
@@ -108,17 +137,52 @@ fn is_bytevector_start(r : Reader) -> Bool {
 ///|
 fn read_token(r : Reader) -> String raise ParseError {
   let chars : Array[Char] = []
+  let mut in_bar = false
+  let mut started = false
   while true {
     match reader_peek(r) {
-      Some(ch) if !is_delim(ch) => {
-        chars.push(ch)
+      Some(ch) => {
+        if !in_bar && is_delim(ch) {
+          break
+        }
+        started = true
         r.pos = r.pos + 1
+        if in_bar {
+          if ch == '|' {
+            in_bar = false
+          } else if ch == '\\' {
+            match reader_next(r) {
+              Some(esc) => chars.push(esc)
+              None => raise ParseError("unterminated identifier")
+            }
+          } else {
+            chars.push(ch)
+          }
+        } else {
+          if ch == '|' {
+            in_bar = true
+          } else if ch == '\\' {
+            if chars.length() == 1 && chars[0] == '#' {
+              chars.push(ch)
+            } else {
+              match reader_next(r) {
+                Some(esc) => chars.push(esc)
+                None => raise ParseError("unterminated identifier")
+              }
+            }
+          } else {
+            chars.push(ch)
+          }
+        }
         continue
       }
       _ => break
     }
   }
-  if chars.is_empty() {
+  if in_bar {
+    raise ParseError("unterminated identifier")
+  }
+  if !started {
     raise ParseError("expected token")
   }
   String::from_array(chars)
@@ -848,14 +912,55 @@ fn parse_char_token(tok : String) -> Char? {
       Some(rest[0])
     } else {
       let name = String::from_array(rest)
-      match name {
+      let lower = ascii_lower_string(name)
+      if lower.length() >= 2 {
+        match lower.get_char(0) {
+          Some('x') => {
+            let hex_chars = rest.sub(start=1).to_array()
+            if hex_chars.is_empty() {
+              return None
+            }
+            let mut acc = 0
+            for ch in hex_chars {
+              match digit_value(ch) {
+                Some(digit) =>
+                  if digit < 16 {
+                    acc = acc * 16 + digit
+                  } else {
+                    return None
+                  }
+                None => return None
+              }
+            }
+            return acc.to_char()
+          }
+          _ => ()
+        }
+      }
+      match lower {
         "space" => Some(' ')
         "newline" => Some('\n')
+        "linefeed" => Some('\n')
         "tab" => Some('\t')
+        "return" => Some('\r')
+        "alarm" => Some('\u{7}')
+        "backspace" => Some('\u{8}')
+        "escape" => Some('\u{1b}')
+        "delete" => Some('\u{7f}')
+        "null" => Some('\u{0}')
         _ => None
       }
     }
   }
+}
+
+///|
+fn ascii_lower_string(value : String) -> String {
+  let chars : Array[Char] = []
+  for ch in value {
+    chars.push(ch.to_ascii_lowercase())
+  }
+  String::from_array(chars)
 }
 
 ///|
@@ -870,6 +975,11 @@ fn read_string(r : Reader) -> String raise ParseError {
           Some('n') => chars.push('\n')
           Some('t') => chars.push('\t')
           Some('r') => chars.push('\r')
+          Some('a') => chars.push('\u{7}')
+          Some('b') => chars.push('\u{8}')
+          Some('v') => chars.push('\u{0b}')
+          Some('f') => chars.push('\u{0c}')
+          Some('x') | Some('X') => chars.push(read_hex_escape(r))
           Some('"') => chars.push('"')
           Some('\\') => chars.push('\\')
           Some(ch) => chars.push(ch)
@@ -880,6 +990,35 @@ fn read_string(r : Reader) -> String raise ParseError {
     }
   }
   String::from_array(chars)
+}
+
+///|
+fn read_hex_escape(r : Reader) -> Char raise ParseError {
+  let mut acc = 0
+  let mut has_digit = false
+  while true {
+    match reader_next(r) {
+      None => raise ParseError("unterminated string")
+      Some(';') => {
+        if !has_digit {
+          raise ParseError("invalid hex escape")
+        }
+        match acc.to_char() {
+          Some(ch) => return ch
+          None => raise ParseError("invalid hex escape")
+        }
+      }
+      Some(ch) =>
+        match digit_value(ch) {
+          Some(digit) if digit < 16 => {
+            acc = acc * 16 + digit
+            has_digit = true
+          }
+          _ => raise ParseError("invalid hex escape")
+        }
+    }
+  }
+  raise ParseError("invalid hex escape")
 }
 
 ///|
@@ -1073,7 +1212,11 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
       }
     }
     Some('#') => {
-      if r.pos + 1 < r.chars.length() {
+      if r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == ';' {
+        r.pos = r.pos + 2
+        let _ = read_expr(r)
+        read_expr(r)
+      } else if r.pos + 1 < r.chars.length() {
         match r.chars[r.pos + 1] {
           '\'' => {
             r.pos = r.pos + 2
