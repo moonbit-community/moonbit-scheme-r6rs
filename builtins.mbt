@@ -7,7 +7,7 @@ fn arity_mismatch(expected : Int, got : Int) -> EvalError {
 fn is_proper_list(value : Datum) -> Bool {
   let mut cur = value
   while true {
-    match cur {
+    match datum_unlabel(cur) {
       Datum::Nil => return true
       Datum::Pair(_, cdr) => cur = cdr.val
       _ => return false
@@ -333,13 +333,14 @@ fn value_equal(left : Value, right : Value) -> Bool {
 fn value_as_number(value : Value) -> Datum raise EvalError {
   match value {
     Value::Datum(d) => {
-      match d {
+      let unlabel = datum_unlabel(d)
+      match unlabel {
         Datum::Int(_)
         | Datum::BigInt(_)
         | Datum::Rat(_, _)
         | Datum::BigRat(_, _)
         | Datum::Float(_)
-        | Datum::Complex(_, _) => d
+        | Datum::Complex(_, _) => unlabel
         _ => raise EvalError("type error: number expected")
       }
     }
@@ -439,7 +440,7 @@ fn normalize_big_rat_or_error(num : @bigint.BigInt, den : @bigint.BigInt) -> Dat
 
 ///|
 fn datum_is_zero(value : Datum) -> Bool {
-  match value {
+  match datum_unlabel(value) {
     Datum::Int(n) => n == 0
     Datum::BigInt(n) => n.is_zero()
     Datum::Rat(n, _) => n == 0
@@ -451,7 +452,7 @@ fn datum_is_zero(value : Datum) -> Bool {
 
 ///|
 fn datum_is_inexact(value : Datum) -> Bool {
-  match value {
+  match datum_unlabel(value) {
     Datum::Float(_) => true
     _ => false
   }
@@ -459,7 +460,7 @@ fn datum_is_inexact(value : Datum) -> Bool {
 
 ///|
 fn datum_is_big_exact(value : Datum) -> Bool {
-  match value {
+  match datum_unlabel(value) {
     Datum::BigInt(_) | Datum::BigRat(_, _) => true
     _ => false
   }
@@ -467,7 +468,7 @@ fn datum_is_big_exact(value : Datum) -> Bool {
 
 ///|
 fn datum_to_real(value : Datum) -> Datum raise EvalError {
-  match value {
+  match datum_unlabel(value) {
     Datum::Complex(real, imag) => {
       if datum_is_zero(imag.val) {
         real.val
@@ -481,7 +482,7 @@ fn datum_to_real(value : Datum) -> Datum raise EvalError {
 
 ///|
 fn datum_to_complex_parts(value : Datum) -> (Datum, Datum) {
-  match value {
+  match datum_unlabel(value) {
     Datum::Complex(real, imag) => (real.val, imag.val)
     _ => (value, Datum::Int(0))
   }
@@ -489,7 +490,7 @@ fn datum_to_complex_parts(value : Datum) -> (Datum, Datum) {
 
 ///|
 fn datum_to_complex_float(value : Datum) -> (Float, Float) raise EvalError {
-  match value {
+  match datum_unlabel(value) {
     Datum::Complex(real, imag) => (number_to_float(real.val), number_to_float(imag.val))
     _ => (number_to_float(value), 0.0)
   }
@@ -1084,7 +1085,11 @@ fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
 ///|
 fn value_as_string(value : Value) -> String raise EvalError {
   match value {
-    Value::Datum(Datum::String(s)) => s.val
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::String(s) => s.val
+        _ => raise EvalError("type error: string expected")
+      }
     _ => raise EvalError("type error: string expected")
   }
 }
@@ -1092,7 +1097,11 @@ fn value_as_string(value : Value) -> String raise EvalError {
 ///|
 fn value_as_string_ref(value : Value) -> Ref[String] raise EvalError {
   match value {
-    Value::Datum(Datum::String(s)) => s
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::String(s) => s
+        _ => raise EvalError("type error: string expected")
+      }
     _ => raise EvalError("type error: string expected")
   }
 }
@@ -1124,7 +1133,11 @@ fn string_replace_range(s : String, start : Int, end : Int, fill : Char) -> Stri
 ///|
 fn value_as_char(value : Value) -> Char raise EvalError {
   match value {
-    Value::Datum(Datum::Char(ch)) => ch
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Char(ch) => ch
+        _ => raise EvalError("type error: char expected")
+      }
     _ => raise EvalError("type error: char expected")
   }
 }
@@ -1248,27 +1261,31 @@ fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
 ///|
 fn value_as_int_index(value : Value) -> Int raise EvalError {
   match value {
-    Value::Datum(Datum::Int(n)) => n
-    Value::Datum(Datum::BigInt(n)) =>
-      match bigint_to_int_option(n) {
-        Some(v) => v
-        None => raise EvalError("index out of range")
-      }
-    Value::Datum(Datum::Complex(real, imag)) => {
-      if datum_is_zero(imag.val) {
-        match real.val {
-          Datum::Int(n) => n
-          Datum::BigInt(n) =>
-            match bigint_to_int_option(n) {
-              Some(v) => v
-              None => raise EvalError("index out of range")
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Int(n) => n
+        Datum::BigInt(n) =>
+          match bigint_to_int_option(n) {
+            Some(v) => v
+            None => raise EvalError("index out of range")
+          }
+        Datum::Complex(real, imag) => {
+          if datum_is_zero(imag.val) {
+            match datum_unlabel(real.val) {
+              Datum::Int(n) => n
+              Datum::BigInt(n) =>
+                match bigint_to_int_option(n) {
+                  Some(v) => v
+                  None => raise EvalError("index out of range")
+                }
+              _ => raise EvalError("type error: exact integer expected")
             }
-          _ => raise EvalError("type error: exact integer expected")
+          } else {
+            raise EvalError("type error: exact integer expected")
+          }
         }
-      } else {
-        raise EvalError("type error: exact integer expected")
+        _ => raise EvalError("type error: exact integer expected")
       }
-    }
     _ => raise EvalError("type error: exact integer expected")
   }
 }
@@ -1276,17 +1293,21 @@ fn value_as_int_index(value : Value) -> Int raise EvalError {
 ///|
 fn value_as_exact_integer(value : Value) -> Datum raise EvalError {
   match value {
-    Value::Datum(Datum::Int(n)) => Datum::Int(n)
-    Value::Datum(Datum::BigInt(n)) => Datum::BigInt(n)
-    Value::Datum(Datum::Complex(real, imag)) =>
-      if datum_is_zero(imag.val) {
-        match real.val {
-          Datum::Int(n) => Datum::Int(n)
-          Datum::BigInt(n) => Datum::BigInt(n)
-          _ => raise EvalError("type error: integer expected")
-        }
-      } else {
-        raise EvalError("type error: integer expected")
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Int(n) => Datum::Int(n)
+        Datum::BigInt(n) => Datum::BigInt(n)
+        Datum::Complex(real, imag) =>
+          if datum_is_zero(imag.val) {
+            match datum_unlabel(real.val) {
+              Datum::Int(n) => Datum::Int(n)
+              Datum::BigInt(n) => Datum::BigInt(n)
+              _ => raise EvalError("type error: integer expected")
+            }
+          } else {
+            raise EvalError("type error: integer expected")
+          }
+        _ => raise EvalError("type error: integer expected")
       }
     _ => raise EvalError("type error: integer expected")
   }
@@ -1294,7 +1315,7 @@ fn value_as_exact_integer(value : Value) -> Datum raise EvalError {
 
 ///|
 fn datum_to_bigint(value : Datum) -> @bigint.BigInt raise EvalError {
-  match value {
+  match datum_unlabel(value) {
     Datum::Int(n) => bigint_from_int(n)
     Datum::BigInt(n) => n
     _ => raise EvalError("type error: integer expected")
@@ -1450,7 +1471,11 @@ fn list_assoc(
 ///|
 fn value_as_vector(value : Value) -> Array[Datum] raise EvalError {
   match value {
-    Value::Datum(Datum::Vector(items)) => items
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Vector(items) => items
+        _ => raise EvalError("type error: vector expected")
+      }
     _ => raise EvalError("type error: vector expected")
   }
 }
@@ -1466,7 +1491,11 @@ fn value_as_bool(value : Value) -> Bool raise EvalError {
 ///|
 fn value_as_symbol(value : Value) -> String raise EvalError {
   match value {
-    Value::Datum(Datum::Symbol(name)) => name
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Symbol(name) => name
+        _ => raise EvalError("type error: symbol expected")
+      }
     _ => raise EvalError("type error: symbol expected")
   }
 }
@@ -1501,7 +1530,11 @@ fn parse_field_specs(items : Array[Datum]) -> Array[RecordField] raise EvalError
 ///|
 fn value_as_bytevector(value : Value) -> Array[Int] raise EvalError {
   match value {
-    Value::Datum(Datum::ByteVector(items)) => items
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::ByteVector(items) => items
+        _ => raise EvalError("type error: bytevector expected")
+      }
     _ => raise EvalError("type error: bytevector expected")
   }
 }

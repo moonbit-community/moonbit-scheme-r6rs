@@ -15,6 +15,11 @@ fn escape_string(s : String) -> String {
 }
 
 ///|
+priv struct PrinterState {
+  labels : Map[Int, Int]
+}
+
+///|
 fn char_to_string(ch : Char) -> String {
   match ch {
     ' ' => "#\\space"
@@ -30,8 +35,23 @@ fn char_to_string(ch : Char) -> String {
 }
 
 ///|
-fn datum_to_string(datum : Datum) -> String {
+fn datum_to_string_state(datum : Datum, state : PrinterState) -> String {
   match datum {
+    Datum::Label(id, cell) => {
+      let flags = match state.labels.get(id) {
+        Some(value) => value
+        None => 0
+      }
+      let defined = (flags & 1) != 0
+      let active = (flags & 2) != 0
+      if defined || active {
+        return "#\{id}#"
+      }
+      state.labels[id] = 3
+      let body = datum_to_string_state(cell.val, state)
+      state.labels[id] = 1
+      "#\{id}=\{body}"
+    }
     Datum::Nil => "()"
     Datum::Bool(true) => "#t"
     Datum::Bool(false) => "#f"
@@ -40,12 +60,12 @@ fn datum_to_string(datum : Datum) -> String {
     Datum::Rat(n, d) => "\{n}/\{d}"
     Datum::BigRat(n, d) => "\{n.to_string()}/\{d.to_string()}"
     Datum::Float(f) => f.to_string()
-    Datum::Complex(real, imag) => complex_to_string(real.val, imag.val)
+    Datum::Complex(real, imag) => complex_to_string_state(real.val, imag.val, state)
     Datum::Char(ch) => char_to_string(ch)
     Datum::String(s) => "\"\{escape_string(s.val)}\""
     Datum::Symbol(name) => name
-    Datum::Pair(_, _) => datum_list_to_string(datum)
-    Datum::Vector(items) => vector_to_string(items)
+    Datum::Pair(_, _) => datum_list_to_string_state(datum, state)
+    Datum::Vector(items) => vector_to_string_state(items, state)
     Datum::ByteVector(items) => bytevector_to_string(items)
     Datum::Record(_) => "#<record>"
     Datum::Condition(_) => "#<condition>"
@@ -54,8 +74,14 @@ fn datum_to_string(datum : Datum) -> String {
 }
 
 ///|
+fn datum_to_string(datum : Datum) -> String {
+  let state : PrinterState = { labels: {} }
+  datum_to_string_state(datum, state)
+}
+
+///|
 fn datum_is_negative(value : Datum) -> Bool {
-  match value {
+  match datum_unlabel(value) {
     Datum::Int(n) => n < 0
     Datum::BigInt(n) => n.compare_int(0) < 0
     Datum::Rat(n, _) => n < 0
@@ -67,7 +93,7 @@ fn datum_is_negative(value : Datum) -> Bool {
 
 ///|
 fn datum_abs(value : Datum) -> Datum {
-  match value {
+  match datum_unlabel(value) {
     Datum::Int(n) => Datum::Int(if n < 0 { -n } else { n })
     Datum::Rat(n, d) => Datum::Rat(if n < 0 { -n } else { n }, d)
     Datum::BigInt(n) => {
@@ -90,20 +116,20 @@ fn datum_abs(value : Datum) -> Datum {
 }
 
 ///|
-fn complex_to_string(real : Datum, imag : Datum) -> String {
-  let real_str = datum_to_string(real)
+fn complex_to_string_state(real : Datum, imag : Datum, state : PrinterState) -> String {
+  let real_str = datum_to_string_state(real, state)
   let negative = datum_is_negative(imag)
   let imag_abs = if negative { datum_abs(imag) } else { imag }
-  let imag_str = datum_to_string(imag_abs)
+  let imag_str = datum_to_string_state(imag_abs, state)
   let sign = if negative { "-" } else { "+" }
   "\{real_str}\{sign}\{imag_str}i"
 }
 
 ///|
-fn vector_to_string(items : Array[Datum]) -> String {
+fn vector_to_string_state(items : Array[Datum], state : PrinterState) -> String {
   let parts : Array[String] = []
   for item in items {
-    parts.push(datum_to_string(item))
+    parts.push(datum_to_string_state(item, state))
   }
   let joined = parts.join(" ")
   "#(\{joined})"
@@ -120,7 +146,7 @@ fn bytevector_to_string(items : Array[Int]) -> String {
 }
 
 ///|
-fn datum_list_to_string(list : Datum) -> String {
+fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
   let parts : Array[String] = []
   let mut cur = list
   let mut result = ""
@@ -132,12 +158,13 @@ fn datum_list_to_string(list : Datum) -> String {
         break
       }
       Datum::Pair(a, b) => {
-        parts.push(datum_to_string(a.val))
+        parts.push(datum_to_string_state(a.val, state))
         cur = b.val
       }
       _ => {
         let prefix = parts.join(" ")
-        result = "(\{prefix} . \{datum_to_string(cur)})"
+        let tail = datum_to_string_state(cur, state)
+        result = "(\{prefix} . \{tail})"
         break
       }
     }

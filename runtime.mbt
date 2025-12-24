@@ -740,9 +740,39 @@ fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
 }
 
 ///|
+fn datum_unlabel(value : Datum) -> Datum {
+  let mut cur = value
+  let seen : Array[Int] = []
+  while true {
+    match cur {
+      Datum::Label(id, cell) => {
+        let mut dup = false
+        for item in seen {
+          if item == id {
+            dup = true
+            break
+          }
+        }
+        if dup {
+          return cur
+        }
+        seen.push(id)
+        cur = cell.val
+      }
+      _ => return cur
+    }
+  }
+  cur
+}
+
+///|
 fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
   match value {
-    Value::Datum(Datum::Pair(a, b)) => (a.val, b.val)
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Pair(a, b) => (a.val, b.val)
+        _ => raise EvalError("type error: pair expected")
+      }
     _ => raise EvalError("type error: pair expected")
   }
 }
@@ -750,7 +780,11 @@ fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
 ///|
 fn value_as_pair_cells(value : Value) -> (Ref[Datum], Ref[Datum]) raise EvalError {
   match value {
-    Value::Datum(Datum::Pair(a, b)) => (a, b)
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Pair(a, b) => (a, b)
+        _ => raise EvalError("type error: pair expected")
+      }
     _ => raise EvalError("type error: pair expected")
   }
 }
@@ -765,7 +799,7 @@ fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
   let items : Array[Datum] = []
   let mut cur = list
   while true {
-    match cur {
+    match datum_unlabel(cur) {
       Datum::Nil => break
       Datum::Pair(a, b) => {
         items.push(a.val)
@@ -782,7 +816,7 @@ fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
   let items : Array[Value] = []
   let mut cur = list
   while true {
-    match cur {
+    match datum_unlabel(cur) {
       Datum::Nil => break
       Datum::Pair(a, b) => {
         items.push(value_from_datum(a.val))

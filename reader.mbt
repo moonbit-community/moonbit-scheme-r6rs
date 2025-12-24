@@ -3,7 +3,7 @@ priv struct Reader {
   chars : Array[Char]
   mut pos : Int
   mut fold_case : Bool
-  labels : Map[Int, Datum]
+  labels : Map[Int, Ref[Datum]]
 }
 
 ///|
@@ -1288,13 +1288,15 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
               Some(_) => raise ParseError("duplicate label")
               None => ()
             }
+            let cell = Ref::new(Datum::Nil)
+            r.labels[label] = cell
             let datum = read_expr(r)
-            r.labels[label] = datum
-            datum
+            cell.val = datum
+            Datum::Label(label, cell)
           }
           Some((false, label)) =>
             match r.labels.get(label) {
-              Some(value) => value
+              Some(cell) => Datum::Label(label, cell)
               None => raise ParseError("undefined label")
             }
           None => token_to_datum(tok)

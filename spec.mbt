@@ -82,6 +82,7 @@ pub enum Datum {
   BigRat(@bigint.BigInt, @bigint.BigInt)
   Float(Float)
   Complex(Ref[Datum], Ref[Datum])
+  Label(Int, Ref[Datum])
   Char(Char)
   String(Ref[String])
   Symbol(String)

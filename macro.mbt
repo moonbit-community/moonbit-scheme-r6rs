@@ -661,106 +661,109 @@ fn match_pattern(
   literals : Array[String],
   bindings : Map[String, BindingVal],
 ) -> Bool {
-  match pattern {
+  let pat = datum_unlabel(pattern)
+  let inp = datum_unlabel(input)
+  match pat {
+    Datum::Label(_, _) => false
     Datum::Symbol(name) => {
       if name == "_" {
         true
       } else if is_literal(literals, name) {
-        match input {
+        match inp {
           Datum::Symbol(other) => other == name
           _ => false
         }
       } else {
-        bind_var(name, input, bindings)
+        bind_var(name, inp, bindings)
       }
     }
-    Datum::Nil => input is Datum::Nil
+    Datum::Nil => inp is Datum::Nil
     Datum::Bool(b) => {
-      match input {
+      match inp {
         Datum::Bool(other) => other == b
         _ => false
       }
     }
     Datum::Int(n) => {
-      match input {
+      match inp {
         Datum::Int(other) => other == n
         _ => false
       }
     }
     Datum::BigInt(n) => {
-      match input {
+      match inp {
         Datum::BigInt(other) => other == n
         _ => false
       }
     }
     Datum::Rat(n, d) => {
-      match input {
+      match inp {
         Datum::Rat(on, od) => on == n && od == d
         _ => false
       }
     }
     Datum::BigRat(n, d) => {
-      match input {
+      match inp {
         Datum::BigRat(on, od) => on == n && od == d
         _ => false
       }
     }
     Datum::Complex(real, imag) => {
-      match input {
+      match inp {
         Datum::Complex(other_real, other_imag) =>
           datum_equal(real.val, other_real.val) && datum_equal(imag.val, other_imag.val)
         _ => false
       }
     }
     Datum::Float(f) => {
-      match input {
+      match inp {
         Datum::Float(of) => of == f
         _ => false
       }
     }
     Datum::Char(ch) => {
-      match input {
+      match inp {
         Datum::Char(other) => other == ch
         _ => false
       }
     }
     Datum::String(s) => {
-      match input {
+      match inp {
         Datum::String(other) => other.val == s.val
         _ => false
       }
     }
     Datum::Vector(items) => {
-      match input {
+      match inp {
         Datum::Vector(other) =>
           match_pattern_list(items, other, literals, bindings)
         _ => false
       }
     }
     Datum::ByteVector(items) => {
-      match input {
+      match inp {
         Datum::ByteVector(other) => array_int_equal(items, other)
         _ => false
       }
     }
     Datum::Record(rec) => {
-      match input {
+      match inp {
         Datum::Record(other) => rec.id == other.id
         _ => false
       }
     }
     Datum::Condition(cond) => {
-      match input {
+      match inp {
         Datum::Condition(other) => cond.id == other.id
         _ => false
       }
     }
-    Datum::Value(value) => value_eqv(value, value_from_datum(input))
+    Datum::Value(value) => value_eqv(value, value_from_datum(inp))
     Datum::Pair(pa, pb) => {
-      match (datum_list_to_array_opt(pattern), datum_list_to_array_opt(input)) {
+      match (datum_list_to_array_opt(pat), datum_list_to_array_opt(inp)) {
         (Some(pats), Some(inputs)) => match_pattern_list(pats, inputs, literals, bindings)
         _ => {
-          match input {
+          match inp {
             Datum::Pair(ia, ib) =>
               if match_pattern(pa.val, ia.val, literals, bindings) {
                 match_pattern(pb.val, ib.val, literals, bindings)
@@ -923,7 +926,7 @@ fn datum_list_to_array_opt(list : Datum) -> Array[Datum]? {
   let items : Array[Datum] = []
   let mut cur = list
   while true {
-    match cur {
+    match datum_unlabel(cur) {
       Datum::Nil => break
       Datum::Pair(a, b) => {
         items.push(a.val)
@@ -970,6 +973,8 @@ fn array_int_equal(left : Array[Int], right : Array[Int]) -> Bool {
 ///|
 fn datum_equal(a : Datum, b : Datum) -> Bool {
   match (a, b) {
+    (Datum::Label(_, x), _) => datum_equal(x.val, b)
+    (_, Datum::Label(_, y)) => datum_equal(a, y.val)
     (Datum::Nil, Datum::Nil) => true
     (Datum::Bool(x), Datum::Bool(y)) => x == y
     (Datum::Int(x), Datum::Int(y)) => x == y

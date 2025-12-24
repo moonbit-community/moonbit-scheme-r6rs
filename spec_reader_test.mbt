@@ -117,6 +117,19 @@ test "reader: datum labels" {
     #|
   inspect(
     value_to_string(eval_program(program)),
-    content="(z b)",
+    content="#1=(z b)",
+  )
+}
+
+///|
+test "reader: datum labels cycle" {
+  let program : String =
+    #|(begin
+    #|  (define x '#1=(a . #1#))
+    #|  x)
+    #|
+  inspect(
+    value_to_string(eval_program(program)),
+    content="#1=(a . #1#)",
   )
 }

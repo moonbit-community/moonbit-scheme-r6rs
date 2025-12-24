@@ -912,6 +912,9 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
     match state {
       MachineState::Eval(current_expr, current_env, kont, handlers) => {
         match current_expr {
+          Datum::Label(_, cell) => {
+            state = MachineState::Eval(cell.val, current_env, kont, handlers)
+          }
           Datum::Nil
           | Datum::Bool(_)
           | Datum::Int(_)
