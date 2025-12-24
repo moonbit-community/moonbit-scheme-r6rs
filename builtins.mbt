@@ -2588,7 +2588,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::Record(_) => bool_value(true)
+            Value::Record(record) => bool_value(!record.record_type.is_opaque)
             _ => bool_value(false)
           }
         }
@@ -2599,12 +2599,15 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::Record(record) => {
-              match lookup_record_type_descriptor_by_id(record.record_type.id) {
-                Some(desc) => Value::RecordTypeDescriptor(desc)
-                None => raise EvalError("invalid record type descriptor")
+            Value::Record(record) =>
+              if record.record_type.is_opaque {
+                raise EvalError("record type is opaque")
+              } else {
+                match lookup_record_type_descriptor_by_id(record.record_type.id) {
+                  Some(desc) => Value::RecordTypeDescriptor(desc)
+                  None => raise EvalError("invalid record type descriptor")
+                }
               }
-            }
             _ => raise EvalError("type error: record expected")
           }
         }

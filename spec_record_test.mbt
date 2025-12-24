@@ -107,7 +107,7 @@ test "r6rs records: descriptors and flags" {
       #|  color-point?
       #|  (parent point)
       #|  (sealed #t)
-      #|  (opaque #t)
+      #|  (opaque #f)
       #|  (color color-point-color))
       #|(let* ((p (make-color-point 1 2 'red))
       #|       (rtd (record-rtd p))
@@ -124,7 +124,7 @@ test "r6rs records: descriptors and flags" {
   )
   inspect(
     value_to_string(eval_program(program)),
-    content="(#t color-point point #t #t (x y color) blue)",
+    content="(#t color-point point #t #f (x y color) blue)",
   )
 }
 
@@ -196,6 +196,74 @@ test "r6rs records: uid and generative" {
     value_to_string(eval_program(program)),
     content="(#t #f #f color-uid)",
   )
+}
+
+///|
+test "r6rs records: opaque behavior" {
+  let program = (
+    (
+      #|(define-record-type secret
+      #|  (make-secret x)
+      #|  secret?
+      #|  (opaque #t)
+      #|  (x secret-x))
+      #|(define-record-type child
+      #|  (make-child x y)
+      #|  child?
+      #|  (parent secret)
+      #|  (y child-y))
+      #|(let ((s (make-secret 1))
+      #|      (c (make-child 2 3)))
+      #|  (list (record? s) (record? c)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="(#f #f)",
+  )
+}
+
+///|
+test "r6rs records: opaque record-rtd error" {
+  let program = (
+    (
+      #|(define-record-type secret
+      #|  (make-secret x)
+      #|  secret?
+      #|  (opaque #t)
+      #|  (x secret-x))
+      #|(let ((s (make-secret 1)))
+      #|  (record-rtd s))
+    )
+  )
+  let result = try? eval_program(program)
+  match result {
+    Err(err) => inspect(err, content="EvalError(\"record type is opaque\")")
+    _ => fail("expected record type is opaque")
+  }
+}
+
+///|
+test "r6rs records: sealed parent error" {
+  let program = (
+    (
+      #|(define-record-type base
+      #|  (make-base x)
+      #|  base?
+      #|  (sealed #t)
+      #|  (x base-x))
+      #|(define-record-type child
+      #|  (make-child x y)
+      #|  child?
+      #|  (parent base)
+      #|  (y child-y))
+    )
+  )
+  let result = try? eval_program(program)
+  match result {
+    Err(err) => inspect(err, content="EvalError(\"invalid define-record-type\")")
+    _ => fail("expected invalid define-record-type")
+  }
 }
 
 ///|
