@@ -3294,12 +3294,41 @@ fn apply_hashtable_update(
 }
 
 ///|
+fn parse_version_list(expr : Datum) -> String raise EvalError {
+  let parts = datum_list_to_array(expr)
+  if parts.is_empty() {
+    raise EvalError("invalid library name")
+  }
+  let versions : Array[String] = []
+  for part in parts {
+    match part {
+      Datum::Int(n) =>
+        if n < 0 {
+          raise EvalError("invalid library name")
+        } else {
+          versions.push(n.to_string())
+        }
+      _ => raise EvalError("invalid library name")
+    }
+  }
+  let joined = versions.join(".")
+  "v\{joined}"
+}
+
+///|
 fn parse_library_name(expr : Datum) -> String raise EvalError {
   let parts = datum_list_to_array(expr)
   if parts.is_empty() {
     raise EvalError("invalid library name")
   }
-  let names = parse_symbol_list(parts)
+  let names : Array[String] = []
+  for part in parts {
+    match part {
+      Datum::Symbol(name) => names.push(name)
+      Datum::Pair(_, _) | Datum::Nil => names.push(parse_version_list(part))
+      _ => raise EvalError("invalid library name")
+    }
+  }
   names.join(".")
 }
 

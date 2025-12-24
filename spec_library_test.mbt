@@ -136,3 +136,18 @@ test "r6rs libraries: export rename" {
   )
   inspect(value_to_string(eval_program(program)), content="5")
 }
+
+///|
+test "r6rs libraries: versioned names" {
+  let program = (
+    (
+      #|(library (ver-lib (1 0))
+      #|  (export val)
+      #|  (import)
+      #|  (define val 99))
+      #|(import (ver-lib (1 0)))
+      #|val
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="99")
+}
