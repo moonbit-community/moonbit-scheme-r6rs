@@ -62,3 +62,28 @@ test "r6rs letrec*: sequential init" {
   )
   inspect(value_to_string(eval_program(program)), content="3")
 }
+
+///|
+test "r6rs letrec: mutual recursion" {
+  let program = (
+    (
+      #|(letrec ((even? (lambda (n) (if (zero? n) #t (odd? (- n 1)))))
+      #|         (odd? (lambda (n) (if (zero? n) #f (even? (- n 1))))))
+      #|  (even? 4))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#t")
+}
+
+///|
+test "r6rs letrec: uninitialized use" {
+  let bad = try? eval_program(
+    (
+      #|(letrec ((x 1) (y (+ x 2))) y)
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"type error: number expected\")")
+    _ => fail("expected EvalError for letrec uninitialized access")
+  }
+}

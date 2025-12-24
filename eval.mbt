@@ -439,6 +439,7 @@ priv enum Kont {
   Let(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
   LetStar(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
   LetRec(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
+  LetRecInit(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
   LetValues(
     Array[(Formals, Datum)],
     Int,
@@ -973,6 +974,32 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
                 handlers,
               )
             } else {
+              state = eval_sequence_state(body, env, next, handlers)
+            }
+          }
+          Kont::LetRecInit(bindings, index, collected, env, body, next) => {
+            let single = expect_single(value)
+            let next_values : Array[Value] = []
+            for item in collected {
+              next_values.push(item)
+            }
+            next_values.push(single)
+            let next_index = index + 1
+            if next_index < bindings.length() {
+              let (_, expr) = bindings[next_index]
+              state = MachineState::Eval(
+                expr,
+                env,
+                Kont::LetRecInit(bindings, next_index, next_values, env, body, next),
+                handlers,
+              )
+            } else {
+              let mut i = 0
+              while i < bindings.length() {
+                let (name, _) = bindings[i]
+                env_set(env, name, next_values[i])
+                i = i + 1
+              }
               state = eval_sequence_state(body, env, next, handlers)
             }
           }
@@ -2154,6 +2181,37 @@ fn eval_let_star_state(
 
 ///|
 fn eval_letrec_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() < 2 {
+    raise arity_mismatch(2, args.length())
+  } else {
+    let bindings = parse_bindings(args[0])
+    let body = args.sub(start=1).to_array()
+    let new_env = env_extend(env)
+    for binding in bindings {
+      let (name, _) = binding
+      env_define(new_env, name, Value::Void)
+    }
+    if bindings.is_empty() {
+      eval_sequence_state(body, new_env, kont, handlers)
+    } else {
+      let (_, expr) = bindings[0]
+      MachineState::Eval(
+        expr,
+        new_env,
+        Kont::LetRecInit(bindings, 0, [], new_env, body, kont),
+        handlers,
+      )
+    }
+  }
+}
+
+///|
+fn eval_letrec_star_state(
   args : Array[Datum],
   env : Env,
   kont : Kont,
@@ -3582,7 +3640,7 @@ fn eval_pair(
       Some("let*-values") => eval_let_star_values_state(args, env, kont, handlers)
       Some("let*") => eval_let_star_state(args, env, kont, handlers)
       Some("letrec") => eval_letrec_state(args, env, kont, handlers)
-      Some("letrec*") => eval_letrec_state(args, env, kont, handlers)
+      Some("letrec*") => eval_letrec_star_state(args, env, kont, handlers)
       Some("parameterize") => eval_parameterize_state(args, env, kont, handlers)
       Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
       Some("letrec-syntax") => eval_letrec_syntax_state(args, env, kont, handlers)
