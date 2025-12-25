@@ -303,6 +303,52 @@ pub(all) enum Primitive {
   FxArithmeticShift
   FxArithmeticShiftLeft
   FxArithmeticShiftRight
+  FlonumP
+  RealToFlonum
+  FixnumToFlonum
+  FlEq
+  FlLess
+  FlGreater
+  FlLessEq
+  FlGreaterEq
+  FlIntegerP
+  FlZeroP
+  FlPositiveP
+  FlNegativeP
+  FlOddP
+  FlEvenP
+  FlFiniteP
+  FlInfiniteP
+  FlNanP
+  FlMax
+  FlMin
+  FlAdd
+  FlMul
+  FlSub
+  FlDiv
+  FlAbs
+  FlDivAndMod
+  FlDivInt
+  FlMod
+  FlDiv0AndMod0
+  FlDiv0
+  FlMod0
+  FlNumerator
+  FlDenominator
+  FlFloor
+  FlCeiling
+  FlTruncate
+  FlRound
+  FlExp
+  FlLog
+  FlSin
+  FlCos
+  FlTan
+  FlAsin
+  FlAcos
+  FlAtan
+  FlSqrt
+  FlExpt
   ListP
   MakeList
   Length

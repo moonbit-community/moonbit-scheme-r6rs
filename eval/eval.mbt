@@ -224,6 +224,52 @@ fn init_env() -> Env {
   env_define(env, "fxarithmetic-shift", Value::Primitive(Primitive::FxArithmeticShift))
   env_define(env, "fxarithmetic-shift-left", Value::Primitive(Primitive::FxArithmeticShiftLeft))
   env_define(env, "fxarithmetic-shift-right", Value::Primitive(Primitive::FxArithmeticShiftRight))
+  env_define(env, "flonum?", Value::Primitive(Primitive::FlonumP))
+  env_define(env, "real->flonum", Value::Primitive(Primitive::RealToFlonum))
+  env_define(env, "fixnum->flonum", Value::Primitive(Primitive::FixnumToFlonum))
+  env_define(env, "fl=?", Value::Primitive(Primitive::FlEq))
+  env_define(env, "fl<?", Value::Primitive(Primitive::FlLess))
+  env_define(env, "fl>?", Value::Primitive(Primitive::FlGreater))
+  env_define(env, "fl<=?", Value::Primitive(Primitive::FlLessEq))
+  env_define(env, "fl>=?", Value::Primitive(Primitive::FlGreaterEq))
+  env_define(env, "flinteger?", Value::Primitive(Primitive::FlIntegerP))
+  env_define(env, "flzero?", Value::Primitive(Primitive::FlZeroP))
+  env_define(env, "flpositive?", Value::Primitive(Primitive::FlPositiveP))
+  env_define(env, "flnegative?", Value::Primitive(Primitive::FlNegativeP))
+  env_define(env, "flodd?", Value::Primitive(Primitive::FlOddP))
+  env_define(env, "fleven?", Value::Primitive(Primitive::FlEvenP))
+  env_define(env, "flfinite?", Value::Primitive(Primitive::FlFiniteP))
+  env_define(env, "flinfinite?", Value::Primitive(Primitive::FlInfiniteP))
+  env_define(env, "flnan?", Value::Primitive(Primitive::FlNanP))
+  env_define(env, "flmax", Value::Primitive(Primitive::FlMax))
+  env_define(env, "flmin", Value::Primitive(Primitive::FlMin))
+  env_define(env, "fl+", Value::Primitive(Primitive::FlAdd))
+  env_define(env, "fl*", Value::Primitive(Primitive::FlMul))
+  env_define(env, "fl-", Value::Primitive(Primitive::FlSub))
+  env_define(env, "fl/", Value::Primitive(Primitive::FlDiv))
+  env_define(env, "flabs", Value::Primitive(Primitive::FlAbs))
+  env_define(env, "fldiv-and-mod", Value::Primitive(Primitive::FlDivAndMod))
+  env_define(env, "fldiv", Value::Primitive(Primitive::FlDivInt))
+  env_define(env, "flmod", Value::Primitive(Primitive::FlMod))
+  env_define(env, "fldiv0-and-mod0", Value::Primitive(Primitive::FlDiv0AndMod0))
+  env_define(env, "fldiv0", Value::Primitive(Primitive::FlDiv0))
+  env_define(env, "flmod0", Value::Primitive(Primitive::FlMod0))
+  env_define(env, "flnumerator", Value::Primitive(Primitive::FlNumerator))
+  env_define(env, "fldenominator", Value::Primitive(Primitive::FlDenominator))
+  env_define(env, "flfloor", Value::Primitive(Primitive::FlFloor))
+  env_define(env, "flceiling", Value::Primitive(Primitive::FlCeiling))
+  env_define(env, "fltruncate", Value::Primitive(Primitive::FlTruncate))
+  env_define(env, "flround", Value::Primitive(Primitive::FlRound))
+  env_define(env, "flexp", Value::Primitive(Primitive::FlExp))
+  env_define(env, "fllog", Value::Primitive(Primitive::FlLog))
+  env_define(env, "flsin", Value::Primitive(Primitive::FlSin))
+  env_define(env, "flcos", Value::Primitive(Primitive::FlCos))
+  env_define(env, "fltan", Value::Primitive(Primitive::FlTan))
+  env_define(env, "flasin", Value::Primitive(Primitive::FlAsin))
+  env_define(env, "flacos", Value::Primitive(Primitive::FlAcos))
+  env_define(env, "flatan", Value::Primitive(Primitive::FlAtan))
+  env_define(env, "flsqrt", Value::Primitive(Primitive::FlSqrt))
+  env_define(env, "flexpt", Value::Primitive(Primitive::FlExpt))
   env_define(env, "eq?", Value::Primitive(Primitive::Eq))
   env_define(env, "eqv?", Value::Primitive(Primitive::Eqv))
   env_define(env, "equal?", Value::Primitive(Primitive::Equal))
@@ -467,6 +513,65 @@ fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
     condition_exports[name] = env_lookup(env, name)
   }
   register_library_entry("rnrs.conditions", Some([6]), condition_exports)
+  let flonum_exports : Map[String, Value] = {}
+  let flonum_names : Array[String] = [
+    "flonum?",
+    "real->flonum",
+    "fixnum->flonum",
+    "fl=?",
+    "fl<?",
+    "fl>?",
+    "fl<=?",
+    "fl>=?",
+    "flinteger?",
+    "flzero?",
+    "flpositive?",
+    "flnegative?",
+    "flodd?",
+    "fleven?",
+    "flfinite?",
+    "flinfinite?",
+    "flnan?",
+    "flmax",
+    "flmin",
+    "fl+",
+    "fl*",
+    "fl-",
+    "fl/",
+    "flabs",
+    "fldiv-and-mod",
+    "fldiv",
+    "flmod",
+    "fldiv0-and-mod0",
+    "fldiv0",
+    "flmod0",
+    "flnumerator",
+    "fldenominator",
+    "flfloor",
+    "flceiling",
+    "fltruncate",
+    "flround",
+    "flexp",
+    "fllog",
+    "flsin",
+    "flcos",
+    "fltan",
+    "flasin",
+    "flacos",
+    "flatan",
+    "flsqrt",
+    "flexpt",
+    "&no-infinities",
+    "make-no-infinities-violation",
+    "no-infinities-violation?",
+    "&no-nans",
+    "make-no-nans-violation",
+    "no-nans-violation?",
+  ]
+  for name in flonum_names {
+    flonum_exports[name] = env_lookup(env, name)
+  }
+  register_library_entry("rnrs.arithmetic.flonums", Some([6]), flonum_exports)
 }
 
 ///|
@@ -790,6 +895,10 @@ fn stdlib_source() -> String {
     "  (subform syntax-violation-subform))",
     "(define-condition-type &undefined &violation",
     "  make-undefined-violation undefined-violation?)",
+    "(define-condition-type &no-infinities &implementation-restriction",
+    "  make-no-infinities-violation no-infinities-violation?)",
+    "(define-condition-type &no-nans &implementation-restriction",
+    "  make-no-nans-violation no-nans-violation?)",
     "(library (rnrs arithmetic fixnums (6))",
     "  (export fixnum? fixnum-width least-fixnum greatest-fixnum",
     "          fx=? fx<? fx>? fx<=? fx>=?",

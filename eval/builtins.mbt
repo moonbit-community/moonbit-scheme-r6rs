@@ -225,6 +225,52 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::FxArithmeticShift, Primitive::FxArithmeticShift)
     | (Primitive::FxArithmeticShiftLeft, Primitive::FxArithmeticShiftLeft)
     | (Primitive::FxArithmeticShiftRight, Primitive::FxArithmeticShiftRight)
+    | (Primitive::FlonumP, Primitive::FlonumP)
+    | (Primitive::RealToFlonum, Primitive::RealToFlonum)
+    | (Primitive::FixnumToFlonum, Primitive::FixnumToFlonum)
+    | (Primitive::FlEq, Primitive::FlEq)
+    | (Primitive::FlLess, Primitive::FlLess)
+    | (Primitive::FlGreater, Primitive::FlGreater)
+    | (Primitive::FlLessEq, Primitive::FlLessEq)
+    | (Primitive::FlGreaterEq, Primitive::FlGreaterEq)
+    | (Primitive::FlIntegerP, Primitive::FlIntegerP)
+    | (Primitive::FlZeroP, Primitive::FlZeroP)
+    | (Primitive::FlPositiveP, Primitive::FlPositiveP)
+    | (Primitive::FlNegativeP, Primitive::FlNegativeP)
+    | (Primitive::FlOddP, Primitive::FlOddP)
+    | (Primitive::FlEvenP, Primitive::FlEvenP)
+    | (Primitive::FlFiniteP, Primitive::FlFiniteP)
+    | (Primitive::FlInfiniteP, Primitive::FlInfiniteP)
+    | (Primitive::FlNanP, Primitive::FlNanP)
+    | (Primitive::FlMax, Primitive::FlMax)
+    | (Primitive::FlMin, Primitive::FlMin)
+    | (Primitive::FlAdd, Primitive::FlAdd)
+    | (Primitive::FlMul, Primitive::FlMul)
+    | (Primitive::FlSub, Primitive::FlSub)
+    | (Primitive::FlDiv, Primitive::FlDiv)
+    | (Primitive::FlAbs, Primitive::FlAbs)
+    | (Primitive::FlDivAndMod, Primitive::FlDivAndMod)
+    | (Primitive::FlDivInt, Primitive::FlDivInt)
+    | (Primitive::FlMod, Primitive::FlMod)
+    | (Primitive::FlDiv0AndMod0, Primitive::FlDiv0AndMod0)
+    | (Primitive::FlDiv0, Primitive::FlDiv0)
+    | (Primitive::FlMod0, Primitive::FlMod0)
+    | (Primitive::FlNumerator, Primitive::FlNumerator)
+    | (Primitive::FlDenominator, Primitive::FlDenominator)
+    | (Primitive::FlFloor, Primitive::FlFloor)
+    | (Primitive::FlCeiling, Primitive::FlCeiling)
+    | (Primitive::FlTruncate, Primitive::FlTruncate)
+    | (Primitive::FlRound, Primitive::FlRound)
+    | (Primitive::FlExp, Primitive::FlExp)
+    | (Primitive::FlLog, Primitive::FlLog)
+    | (Primitive::FlSin, Primitive::FlSin)
+    | (Primitive::FlCos, Primitive::FlCos)
+    | (Primitive::FlTan, Primitive::FlTan)
+    | (Primitive::FlAsin, Primitive::FlAsin)
+    | (Primitive::FlAcos, Primitive::FlAcos)
+    | (Primitive::FlAtan, Primitive::FlAtan)
+    | (Primitive::FlSqrt, Primitive::FlSqrt)
+    | (Primitive::FlExpt, Primitive::FlExpt)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -1539,6 +1585,89 @@ fn bigint_floor_div(value : @bigint.BigInt, base : @bigint.BigInt) -> @bigint.Bi
     q - bigint_from_int(1)
   } else {
     q
+  }
+}
+
+///|
+fn value_as_flonum(value : Value) -> Float raise EvalError {
+  match value {
+    Value::Datum(datum) =>
+      match datum_unlabel(datum) {
+        Datum::Float(f) => f
+        _ => raise @core.EvalError("type error: flonum expected")
+      }
+    _ => raise @core.EvalError("type error: flonum expected")
+  }
+}
+
+///|
+fn value_as_integer_flonum(value : Value) -> Int raise EvalError {
+  let f = value_as_flonum(value)
+  if !float_is_finite(f) {
+    raise @core.EvalError("type error: integer-valued flonum expected")
+  }
+  match float_to_int_exact(f) {
+    Some(n) => n
+    None => raise @core.EvalError("type error: integer-valued flonum expected")
+  }
+}
+
+///|
+fn flonum_div_and_mod(left : Float, right : Float) -> (Float, Float) {
+  let quotient = left / right
+  if !float_is_finite(quotient) {
+    return (quotient, left - right * quotient)
+  }
+  let q_int = float_floor_int(quotient)
+  let q = Float::from_int(q_int)
+  (q, left - right * q)
+}
+
+///|
+fn flonum_div0_and_mod0(left : Float, right : Float) -> (Float, Float) {
+  let quotient = left / right
+  if !float_is_finite(quotient) {
+    return (quotient, left - right * quotient)
+  }
+  let q_int = quotient.to_int()
+  let q = Float::from_int(q_int)
+  (q, left - right * q)
+}
+
+///|
+fn flonum_numerator(value : Float) -> Float raise EvalError {
+  if float_is_nan(value) || float_is_infinite(value) {
+    return value
+  }
+  if value == 0.0 {
+    let neg_zero = (Float::from_int(1) / value) < 0.0
+    let zero = Float::from_int(0)
+    return if neg_zero { -zero } else { zero }
+  }
+  let exact = float_to_exact_datum(value)
+  match exact {
+    Datum::Int(n) => Float::from_int(n)
+    Datum::BigInt(n) => bigint_to_float(n)
+    Datum::Rat(n, _) => Float::from_int(n)
+    Datum::BigRat(n, _) => bigint_to_float(n)
+    _ => raise @core.EvalError("type error: number expected")
+  }
+}
+
+///|
+fn flonum_denominator(value : Float) -> Float raise EvalError {
+  if float_is_nan(value) {
+    return value
+  }
+  if float_is_infinite(value) || value == 0.0 {
+    return Float::from_int(1)
+  }
+  let exact = float_to_exact_datum(value)
+  match exact {
+    Datum::Int(_) | Datum::BigInt(_) => Float::from_int(1)
+    Datum::Rat(_, d) => Float::from_int(d)
+    Datum::BigRat(_, d) => bigint_to_float(d)
+    _ => raise @core.EvalError("type error: number expected")
   }
 }
 
@@ -4063,6 +4192,500 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let value = value_as_fixnum_datum(args[0])
           let shift = value_as_nonnegative_fixnum_int(args[1])
           Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, -shift)))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlonumP => {
+      match args.length() {
+        1 =>
+          match args[0] {
+            Value::Datum(datum) =>
+              match datum_unlabel(datum) {
+                Datum::Float(_) => bool_value(true)
+                _ => bool_value(false)
+              }
+            _ => bool_value(false)
+          }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::RealToFlonum => {
+      match args.length() {
+        1 => {
+          let value = value_as_number(args[0])
+          Value::Datum(Datum::Float(number_to_float(value)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FixnumToFlonum => {
+      match args.length() {
+        1 => {
+          let value = value_as_fixnum_int(args[0])
+          Value::Datum(Datum::Float(Float::from_int(value)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlEq => {
+      if args.length() <= 1 {
+        bool_value(true)
+      } else {
+        let first = value_as_flonum(args[0])
+        let mut ok = true
+        let mut i = 1
+        while i < args.length() {
+          if value_as_flonum(args[i]) != first {
+            ok = false
+            break
+          } else {
+            i = i + 1
+          }
+        }
+        bool_value(ok)
+      }
+    }
+    Primitive::FlLess => {
+      if args.length() <= 1 {
+        bool_value(true)
+      } else {
+        let mut ok = true
+        let mut prev = value_as_flonum(args[0])
+        let mut i = 1
+        while i < args.length() {
+          let cur = value_as_flonum(args[i])
+          if prev >= cur {
+            ok = false
+            break
+          } else {
+            prev = cur
+            i = i + 1
+          }
+        }
+        bool_value(ok)
+      }
+    }
+    Primitive::FlGreater => {
+      if args.length() <= 1 {
+        bool_value(true)
+      } else {
+        let mut ok = true
+        let mut prev = value_as_flonum(args[0])
+        let mut i = 1
+        while i < args.length() {
+          let cur = value_as_flonum(args[i])
+          if prev <= cur {
+            ok = false
+            break
+          } else {
+            prev = cur
+            i = i + 1
+          }
+        }
+        bool_value(ok)
+      }
+    }
+    Primitive::FlLessEq => {
+      if args.length() <= 1 {
+        bool_value(true)
+      } else {
+        let mut ok = true
+        let mut prev = value_as_flonum(args[0])
+        let mut i = 1
+        while i < args.length() {
+          let cur = value_as_flonum(args[i])
+          if prev > cur {
+            ok = false
+            break
+          } else {
+            prev = cur
+            i = i + 1
+          }
+        }
+        bool_value(ok)
+      }
+    }
+    Primitive::FlGreaterEq => {
+      if args.length() <= 1 {
+        bool_value(true)
+      } else {
+        let mut ok = true
+        let mut prev = value_as_flonum(args[0])
+        let mut i = 1
+        while i < args.length() {
+          let cur = value_as_flonum(args[i])
+          if prev < cur {
+            ok = false
+            break
+          } else {
+            prev = cur
+            i = i + 1
+          }
+        }
+        bool_value(ok)
+      }
+    }
+    Primitive::FlIntegerP => {
+      match args.length() {
+        1 => {
+          let f = value_as_flonum(args[0])
+          let ok = float_is_finite(f) && float_to_int_exact(f) is Some(_)
+          bool_value(ok)
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlZeroP => {
+      match args.length() {
+        1 => bool_value(value_as_flonum(args[0]) == 0.0)
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlPositiveP => {
+      match args.length() {
+        1 => bool_value(value_as_flonum(args[0]) > 0.0)
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlNegativeP => {
+      match args.length() {
+        1 => bool_value(value_as_flonum(args[0]) < 0.0)
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlOddP => {
+      match args.length() {
+        1 => bool_value(value_as_integer_flonum(args[0]) % 2 != 0)
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlEvenP => {
+      match args.length() {
+        1 => bool_value(value_as_integer_flonum(args[0]) % 2 == 0)
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlFiniteP => {
+      match args.length() {
+        1 => bool_value(float_is_finite(value_as_flonum(args[0])))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlInfiniteP => {
+      match args.length() {
+        1 => bool_value(float_is_infinite(value_as_flonum(args[0])))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlNanP => {
+      match args.length() {
+        1 => bool_value(float_is_nan(value_as_flonum(args[0])))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlMax => {
+      if args.is_empty() {
+        raise arity_mismatch(1, 0)
+      }
+      let mut current = value_as_flonum(args[0])
+      if float_is_nan(current) {
+        return Value::Datum(Datum::Float(current))
+      }
+      let mut i = 1
+      while i < args.length() {
+        let cur = value_as_flonum(args[i])
+        if float_is_nan(cur) {
+          return Value::Datum(Datum::Float(cur))
+        }
+        if cur > current {
+          current = cur
+        }
+        i = i + 1
+      }
+      Value::Datum(Datum::Float(current))
+    }
+    Primitive::FlMin => {
+      if args.is_empty() {
+        raise arity_mismatch(1, 0)
+      }
+      let mut current = value_as_flonum(args[0])
+      if float_is_nan(current) {
+        return Value::Datum(Datum::Float(current))
+      }
+      let mut i = 1
+      while i < args.length() {
+        let cur = value_as_flonum(args[i])
+        if float_is_nan(cur) {
+          return Value::Datum(Datum::Float(cur))
+        }
+        if cur < current {
+          current = cur
+        }
+        i = i + 1
+      }
+      Value::Datum(Datum::Float(current))
+    }
+    Primitive::FlAdd => {
+      let mut acc = Float::from_int(0)
+      for arg in args {
+        acc = acc + value_as_flonum(arg)
+      }
+      Value::Datum(Datum::Float(acc))
+    }
+    Primitive::FlMul => {
+      let mut acc = Float::from_int(1)
+      for arg in args {
+        acc = acc * value_as_flonum(arg)
+      }
+      Value::Datum(Datum::Float(acc))
+    }
+    Primitive::FlSub => {
+      match args.length() {
+        0 => raise arity_mismatch(1, 0)
+        1 => Value::Datum(Datum::Float(-value_as_flonum(args[0])))
+        _ => {
+          let mut result = value_as_flonum(args[0])
+          let mut i = 1
+          while i < args.length() {
+            result = result - value_as_flonum(args[i])
+            i = i + 1
+          }
+          Value::Datum(Datum::Float(result))
+        }
+      }
+    }
+    Primitive::FlDiv => {
+      match args.length() {
+        0 => raise arity_mismatch(1, 0)
+        1 => {
+          let denom = value_as_flonum(args[0])
+          Value::Datum(Datum::Float(Float::from_int(1) / denom))
+        }
+        _ => {
+          let mut result = value_as_flonum(args[0])
+          let mut i = 1
+          while i < args.length() {
+            result = result / value_as_flonum(args[i])
+            i = i + 1
+          }
+          Value::Datum(Datum::Float(result))
+        }
+      }
+    }
+    Primitive::FlAbs => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          Value::Datum(Datum::Float(if value < 0.0 { -value } else { value }))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlDivAndMod => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (q, r) = flonum_div_and_mod(left, right)
+          Value::Values([Value::Datum(Datum::Float(q)), Value::Datum(Datum::Float(r))])
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlDivInt => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (q, _) = flonum_div_and_mod(left, right)
+          Value::Datum(Datum::Float(q))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlMod => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (_, r) = flonum_div_and_mod(left, right)
+          Value::Datum(Datum::Float(r))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlDiv0AndMod0 => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (q, r) = flonum_div0_and_mod0(left, right)
+          Value::Values([Value::Datum(Datum::Float(q)), Value::Datum(Datum::Float(r))])
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlDiv0 => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (q, _) = flonum_div0_and_mod0(left, right)
+          Value::Datum(Datum::Float(q))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlMod0 => {
+      match args.length() {
+        2 => {
+          let left = value_as_flonum(args[0])
+          let right = value_as_flonum(args[1])
+          let (_, r) = flonum_div0_and_mod0(left, right)
+          Value::Datum(Datum::Float(r))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlNumerator => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          Value::Datum(Datum::Float(flonum_numerator(value)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlDenominator => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          Value::Datum(Datum::Float(flonum_denominator(value)))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlFloor => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          if !float_is_finite(value) {
+            Value::Datum(Datum::Float(value))
+          } else {
+            Value::Datum(Datum::Float(Float::from_int(float_floor_int(value))))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlCeiling => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          if !float_is_finite(value) {
+            Value::Datum(Datum::Float(value))
+          } else {
+            Value::Datum(Datum::Float(Float::from_int(float_ceiling_int(value))))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlTruncate => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          if !float_is_finite(value) {
+            Value::Datum(Datum::Float(value))
+          } else {
+            Value::Datum(Datum::Float(Float::from_int(value.to_int())))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlRound => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          if !float_is_finite(value) {
+            Value::Datum(Datum::Float(value))
+          } else {
+            Value::Datum(Datum::Float(Float::from_int(float_round_int(value))))
+          }
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlExp => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.expf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlLog => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.lnf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlSin => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.sinf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlCos => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.cosf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlTan => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.tanf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlAsin => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.asinf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlAcos => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.acosf(value_as_flonum(args[0]))))
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlAtan => {
+      match args.length() {
+        1 => Value::Datum(Datum::Float(@math.atanf(value_as_flonum(args[0]))))
+        2 => {
+          let y = value_as_flonum(args[0])
+          let x = value_as_flonum(args[1])
+          Value::Datum(Datum::Float(@math.atan2f(y, x)))
+        }
+        n => raise arity_mismatch(2, n)
+      }
+    }
+    Primitive::FlSqrt => {
+      match args.length() {
+        1 => {
+          let value = value_as_flonum(args[0])
+          Value::Datum(Datum::Float(value.sqrt()))
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::FlExpt => {
+      match args.length() {
+        2 => {
+          let base = value_as_flonum(args[0])
+          let exp = value_as_flonum(args[1])
+          Value::Datum(Datum::Float(@math.powf(base, exp)))
         }
         n => raise arity_mismatch(2, n)
       }
