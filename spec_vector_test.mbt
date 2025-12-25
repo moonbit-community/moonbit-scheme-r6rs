@@ -318,6 +318,22 @@ test "r6rs bytevectors" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(bytevector->u8-list #vu8(1 2 3 4) 1)
+      )
+    )),
+    content="(2 3 4)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(bytevector->u8-list #vu8(1 2 3 4) 1 3)
+      )
+    )),
+    content="(2 3)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(u8-list->bytevector '(1 2 3))
       )
     )),

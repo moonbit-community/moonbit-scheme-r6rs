@@ -4973,15 +4973,30 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::ByteVectorToU8List => {
       match args.length() {
-        1 => {
+        1 | 2 | 3 => {
           let items = value_as_bytevector(args[0])
+          let start = if args.length() >= 2 {
+            value_as_int_index(args[1])
+          } else {
+            0
+          }
+          let end = if args.length() == 3 {
+            value_as_int_index(args[2])
+          } else {
+            items.length()
+          }
+          if start < 0 || end < start || end > items.length() {
+            raise @core.EvalError("index out of range")
+          }
           let datums : Array[Datum] = []
-          for byte in items {
-            datums.push(Datum::Int(byte))
+          let mut i = start
+          while i < end {
+            datums.push(Datum::Int(items[i]))
+            i = i + 1
           }
           Value::Datum(list_from_array(datums))
         }
-        n => raise arity_mismatch(1, n)
+        n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
     }
     Primitive::U8ListToByteVector => {
