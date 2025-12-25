@@ -52,3 +52,17 @@ test "r6rs macro: custom ellipsis identifier" {
   )
   inspect(value_to_string(eval_program(program)), content="(1 2 3)")
 }
+
+///|
+test "r6rs macro: custom ellipsis leaves ... as literal" {
+  let program = (
+    (
+      #|(define-syntax dot
+      #|  (syntax-rules ::: (... )
+      #|    ((dot ...) 'ok)
+      #|    ((dot x) x)))
+      #|(dot ...)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="ok")
+}
