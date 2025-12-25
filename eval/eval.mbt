@@ -360,13 +360,70 @@ fn env_export_map(env : Env) -> Map[String, Value] {
 }
 
 ///|
-fn register_builtin_libraries(env : Env) -> Unit {
+fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   let exports = env_export_map(env)
   register_library_entry("rnrs.base", Some([6]), exports)
   let eval_exports : Map[String, Value] = {}
   eval_exports["eval"] = Value::Primitive(Primitive::Eval)
   eval_exports["environment"] = Value::Primitive(Primitive::Environment)
   register_library_entry("rnrs.eval", Some([6]), eval_exports)
+  let condition_exports : Map[String, Value] = {}
+  let condition_names : Array[String] = [
+    "condition",
+    "condition?",
+    "simple-conditions",
+    "condition-predicate",
+    "condition-accessor",
+    "&condition",
+    "&message",
+    "make-message-condition",
+    "message-condition?",
+    "condition-message",
+    "&warning",
+    "make-warning",
+    "warning?",
+    "&serious",
+    "make-serious-condition",
+    "serious-condition?",
+    "&error",
+    "make-error",
+    "error?",
+    "&violation",
+    "make-violation",
+    "violation?",
+    "&assertion",
+    "make-assertion-violation",
+    "assertion-violation?",
+    "&irritants",
+    "make-irritants-condition",
+    "irritants-condition?",
+    "condition-irritants",
+    "&who",
+    "make-who-condition",
+    "who-condition?",
+    "condition-who",
+    "&non-continuable",
+    "make-non-continuable-violation",
+    "non-continuable-violation?",
+    "&implementation-restriction",
+    "make-implementation-restriction-violation",
+    "implementation-restriction-violation?",
+    "&lexical",
+    "make-lexical-violation",
+    "lexical-violation?",
+    "&syntax",
+    "make-syntax-violation",
+    "syntax-violation?",
+    "syntax-violation-form",
+    "syntax-violation-subform",
+    "&undefined",
+    "make-undefined-violation",
+    "undefined-violation?",
+  ]
+  for name in condition_names {
+    condition_exports[name] = env_lookup(env, name)
+  }
+  register_library_entry("rnrs.conditions", Some([6]), condition_exports)
 }
 
 ///|
