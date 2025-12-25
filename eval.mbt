@@ -3991,9 +3991,14 @@ fn parse_for_phases(items : Array[Datum]) -> ImportPhases raise EvalError {
         match parts[0] {
           Datum::Symbol("meta") => {
             match parts[1] {
-              Datum::Int(0) => run = true
-              Datum::Int(1) => expand = true
-              Datum::Int(_) => raise EvalError("unsupported import phase")
+              Datum::Int(n) =>
+                if n == 0 {
+                  run = true
+                } else if n > 0 {
+                  expand = true
+                } else {
+                  raise EvalError("invalid import set")
+                }
               _ => raise EvalError("invalid import set")
             }
           }

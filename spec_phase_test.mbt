@@ -85,3 +85,34 @@ test "import for expand filters values" {
     _ => fail("expected EvalError for expand-only value")
   }
 }
+
+///|
+test "import for meta 2 behaves like expand" {
+  let program = (
+    (
+      #|(library (phase-lib2)
+      #|  (export val m)
+      #|  (import)
+      #|  (define val 5)
+      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+      #|(import (for (phase-lib2) (meta 2)))
+      #|(m)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="42")
+  let bad = try? eval_program(
+    (
+      #|(library (phase-lib2)
+      #|  (export val m)
+      #|  (import)
+      #|  (define val 5)
+      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+      #|(import (for (phase-lib2) (meta 2)))
+      #|val
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"unbound variable: val\")")
+    _ => fail("expected EvalError for meta-only value")
+  }
+}
