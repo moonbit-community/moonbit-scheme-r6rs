@@ -4530,11 +4530,24 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::StringToList => {
       match args.length() {
-        1 => {
+        1 | 2 | 3 => {
           let s = value_as_string(args[0])
+          let start = if args.length() >= 2 {
+            value_as_int_index(args[1])
+          } else {
+            0
+          }
+          let end = if args.length() == 3 {
+            value_as_int_index(args[2])
+          } else {
+            s.length()
+          }
+          if start < 0 || end < start || end > s.length() {
+            raise @core.EvalError("index out of range")
+          }
           let items : Array[Datum] = []
-          let mut i = 0
-          while i < s.length() {
+          let mut i = start
+          while i < end {
             match s.get_char(i) {
               Some(ch) => items.push(Datum::Char(ch))
               None => raise @core.EvalError("index out of range")
@@ -4543,7 +4556,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           Value::Datum(list_from_array(items))
         }
-        n => raise arity_mismatch(1, n)
+        n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
     }
     Primitive::ListToString => {

@@ -188,6 +188,22 @@ test "r6rs char and string primitives" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(string->list "hello" 1)
+      )
+    )),
+    content="(#\\e #\\l #\\l #\\o)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(string->list "hello" 1 4)
+      )
+    )),
+    content="(#\\e #\\l #\\l)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(list->string '(#\h #\i))
       )
     )),
