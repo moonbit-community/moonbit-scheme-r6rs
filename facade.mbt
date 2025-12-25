@@ -6,6 +6,7 @@ pub using @core {
   type Primitive,
   type Value,
 }
+pub using @parser {parse_number_token, parse_number_token_with_radix, parse_program}
 
 ///|
 pub fn eval_program(src : String) -> Value raise {
