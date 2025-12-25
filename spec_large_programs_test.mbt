@@ -166,3 +166,111 @@ test "large program: call/cc early exit" {
   )
   inspect(value_to_string(eval_program(program)), content="-5")
 }
+
+///|
+test "large program: mergesort" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define (merge xs ys)
+      #|    (cond ((null? xs) ys)
+      #|          ((null? ys) xs)
+      #|          ((<= (car xs) (car ys))
+      #|           (cons (car xs) (merge (cdr xs) ys)))
+      #|          (else
+      #|           (cons (car ys) (merge xs (cdr ys))))))
+      #|  (define (split lst)
+      #|    (let loop ((slow lst) (fast lst) (acc '()))
+      #|      (if (or (null? fast) (null? (cdr fast)))
+      #|          (list (reverse acc) slow)
+      #|          (loop (cdr slow) (cddr fast) (cons (car slow) acc)))))
+      #|  (define (mergesort lst)
+      #|    (if (or (null? lst) (null? (cdr lst)))
+      #|        lst
+      #|        (let* ((parts (split lst))
+      #|               (left (car parts))
+      #|               (right (cadr parts)))
+      #|          (merge (mergesort left) (mergesort right)))))
+      #|  (mergesort '(8 3 7 4 9 2 6 5 1)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(1 2 3 4 5 6 7 8 9)")
+}
+
+///|
+test "large program: symbolic differentiation" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define (make-sum a b)
+      #|    (cond ((and (number? a) (= a 0)) b)
+      #|          ((and (number? b) (= b 0)) a)
+      #|          ((and (number? a) (number? b)) (+ a b))
+      #|          (else (list '+ a b))))
+      #|  (define (make-product a b)
+      #|    (cond ((or (and (number? a) (= a 0))
+      #|               (and (number? b) (= b 0))) 0)
+      #|          ((and (number? a) (= a 1)) b)
+      #|          ((and (number? b) (= b 1)) a)
+      #|          ((and (number? a) (number? b)) (* a b))
+      #|          (else (list '* a b))))
+      #|  (define (sum? x) (and (pair? x) (eq? (car x) '+)))
+      #|  (define (product? x) (and (pair? x) (eq? (car x) '*)))
+      #|  (define (deriv expr var)
+      #|    (cond ((number? expr) 0)
+      #|          ((symbol? expr) (if (eq? expr var) 1 0))
+      #|          ((sum? expr)
+      #|           (make-sum (deriv (cadr expr) var)
+      #|                     (deriv (caddr expr) var)))
+      #|          ((product? expr)
+      #|           (make-sum
+      #|             (make-product (cadr expr) (deriv (caddr expr) var))
+      #|             (make-product (deriv (cadr expr) var) (caddr expr))))
+      #|          (else 'unknown)))
+      #|  (deriv '(* x (+ x 3)) 'x))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(+ x (+ x 3))")
+}
+
+///|
+test "large program: permutations count" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define (remove-one x lst)
+      #|    (cond ((null? lst) '())
+      #|          ((equal? x (car lst)) (cdr lst))
+      #|          (else (cons (car lst) (remove-one x (cdr lst))))))
+      #|  (define (perms lst)
+      #|    (if (null? lst)
+      #|        (list '())
+      #|        (apply append
+      #|               (map (lambda (x)
+      #|                      (map (lambda (p) (cons x p))
+      #|                           (perms (remove-one x lst))))
+      #|                    lst))))
+      #|  (length (perms '(1 2 3 4))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="24")
+}
+
+///|
+test "large program: memoized fibonacci" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define table (make-eqv-hashtable))
+      #|  (define (fib n)
+      #|    (let ((hit (hashtable-ref table n #f)))
+      #|      (if hit
+      #|          hit
+      #|          (let ((value (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2))))))
+      #|            (hashtable-set! table n value)
+      #|            value))))
+      #|  (fib 20))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="6765")
+}
