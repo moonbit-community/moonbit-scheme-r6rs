@@ -1,5 +1,11 @@
 ///|
-using @core {type Value}
+pub using @core {
+  type Datum,
+  type EvalError,
+  type ParseError,
+  type Primitive,
+  type Value,
+}
 
 ///|
 pub fn eval_program(src : String) -> Value raise {
