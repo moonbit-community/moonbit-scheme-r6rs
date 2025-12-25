@@ -371,3 +371,29 @@ test "large program: binary search tree" {
   )
   inspect(value_to_string(eval_program(program)), content="(1 2 3 4 5 6 7 8)")
 }
+
+///|
+test "large program: graph path dfs" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define graph '((a b c) (b d) (c d e) (d f) (e f) (f)))
+      #|  (define (neighbors v)
+      #|    (let ((row (assq v graph)))
+      #|      (if row (cdr row) '())))
+      #|  (define (dfs start goal)
+      #|    (define (walk v visited)
+      #|      (cond ((eq? v goal) (list v))
+      #|            ((memq v visited) #f)
+      #|            (else
+      #|              (let loop ((ns (neighbors v)))
+      #|                (cond ((null? ns) #f)
+      #|                      (else
+      #|                        (let ((path (walk (car ns) (cons v visited))))
+      #|                          (if path (cons v path) (loop (cdr ns))))))))))
+      #|    (walk start '()))
+      #|  (dfs 'a 'f))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(a b d f)")
+}
