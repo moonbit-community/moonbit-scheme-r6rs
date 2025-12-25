@@ -292,3 +292,53 @@ test "large program: towers of hanoi" {
   )
   inspect(value_to_string(eval_program(program)), content="(31 (a b) (a b))")
 }
+
+///|
+test "large program: meta-circular evaluator" {
+  let program = (
+    (
+      #|(let ()
+      #|  (define (lookup var env)
+      #|    (let ((pair (assq var env)))
+      #|      (if pair (cdr pair) (error "unbound"))))
+      #|  (define (extend vars vals env)
+      #|    (if (null? vars)
+      #|        env
+      #|        (cons (cons (car vars) (car vals))
+      #|              (extend (cdr vars) (cdr vals) env))))
+      #|  (define (eval-seq body env)
+      #|    (if (null? (cdr body))
+      #|        (m-eval (car body) env)
+      #|        (begin (m-eval (car body) env)
+      #|               (eval-seq (cdr body) env))))
+      #|  (define (apply-proc proc args)
+      #|    (if (and (pair? proc) (eq? (car proc) 'closure))
+      #|        (let ((params (cadr proc))
+      #|              (body (caddr proc))
+      #|              (env (cadddr proc)))
+      #|          (eval-seq body (extend params args env)))
+      #|        (apply proc args)))
+      #|  (define (m-eval exp env)
+      #|    (cond ((number? exp) exp)
+      #|          ((symbol? exp) (lookup exp env))
+      #|          ((pair? exp)
+      #|           (case (car exp)
+      #|             ((quote) (cadr exp))
+      #|             ((if) (if (m-eval (cadr exp) env)
+      #|                      (m-eval (caddr exp) env)
+      #|                      (m-eval (cadddr exp) env)))
+      #|             ((lambda) (list 'closure (cadr exp) (cddr exp) env))
+      #|             (else
+      #|              (apply-proc (m-eval (car exp) env)
+      #|                          (map (lambda (arg) (m-eval arg env)) (cdr exp))))))
+      #|          (else exp)))
+      #|  (define base-env
+      #|    (list (cons '+ +) (cons '- -) (cons '* *) (cons '< <) (cons '= =)
+      #|          (cons 'cons cons) (cons 'car car) (cons 'cdr cdr) (cons 'list list)))
+      #|  (list
+      #|    (m-eval '((lambda (x) (if (< x 10) (+ x 1) (* x 2))) 7) base-env)
+      #|    (m-eval '((lambda (x) ((lambda (y) (+ x y)) 5)) 3) base-env)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(8 8)")
+}
