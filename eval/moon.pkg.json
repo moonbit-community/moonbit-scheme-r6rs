@@ -1,0 +1,3 @@
+{
+  "import": ["dii/scheme-r6rs/core", "dii/scheme-r6rs/reader"]
+}
