@@ -53,4 +53,4 @@ using @core {
   unicode_string_foldcase,
   unicode_string_upcase,
 }
-using @reader {parse_program, parse_number_token, parse_number_token_with_radix}
+using @parser {parse_program, parse_number_token, parse_number_token_with_radix}
