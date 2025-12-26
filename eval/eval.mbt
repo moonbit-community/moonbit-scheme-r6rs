@@ -1095,7 +1095,30 @@ fn load_stdlib(env : Env) -> Unit raise {
 }
 
 ///|
-fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
+fn strip_syntax_datum(datum : Datum) -> Datum {
+  match datum {
+    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
+    Datum::Pair(a, b) => pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
+    Datum::Vector(items) => {
+      let stripped : Array[Datum] = []
+      for item in items {
+        stripped.push(strip_syntax_datum(item))
+      }
+      Datum::Vector(stripped)
+    }
+    Datum::Complex(real, imag) =>
+      Datum::Complex(Ref::new(strip_syntax_datum(real.val)), Ref::new(strip_syntax_datum(imag.val)))
+    _ => datum
+  }
+}
+
+///|
+fn eval_expr_impl(
+  expr : Datum,
+  env : Env,
+  unwrap_syntax : Bool,
+  strip_literals : Bool,
+) -> Value raise EvalError {
   let handlers : Array[Value] = []
   let mut state = MachineState::Eval(expr, env, Kont::Halt, handlers)
   while true {
@@ -1104,6 +1127,18 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
         match current_expr {
           Datum::Label(_, cell) => {
             state = MachineState::Eval(cell.val, current_env, kont, handlers)
+          }
+          Datum::Value(Value::SyntaxObject(obj)) => {
+            if unwrap_syntax {
+              state = MachineState::Eval(obj.datum, current_env, kont, handlers)
+            } else {
+              let literal = if strip_literals {
+                strip_syntax_datum(current_expr)
+              } else {
+                current_expr
+              }
+              state = MachineState::Apply(value_from_datum(literal), kont, handlers)
+            }
           }
           Datum::Nil
           | Datum::Bool(_)
@@ -1119,8 +1154,14 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
           | Datum::ByteVector(_)
           | Datum::Record(_)
           | Datum::Condition(_)
-          | Datum::Value(_) =>
-            state = MachineState::Apply(value_from_datum(current_expr), kont, handlers)
+          | Datum::Value(_) => {
+            let literal = if strip_literals {
+              strip_syntax_datum(current_expr)
+            } else {
+              current_expr
+            }
+            state = MachineState::Apply(value_from_datum(literal), kont, handlers)
+          }
           Datum::Symbol(name) => {
             match env_get_macro(current_env, name) {
               Some(rules) => {
@@ -1719,6 +1760,16 @@ fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
 }
 
 ///|
+fn eval_expr(expr : Datum, env : Env) -> Value raise EvalError {
+  eval_expr_impl(expr, env, true, true)
+}
+
+///|
+fn eval_expr_transformer(expr : Datum, env : Env) -> Value raise EvalError {
+  eval_expr_impl(expr, env, false, false)
+}
+
+///|
 ///|
 fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
   match args.length() {
@@ -1766,9 +1817,9 @@ fn eval_delay(args : Array[Datum], env : Env) -> Value raise EvalError {
 
 ///|
 fn unwrap_form(expr : Datum, name : String) -> Datum? {
-  match expr {
+  match datum_unwrap_syntax(expr) {
     Datum::Pair(head, tail) =>
-      match head.val {
+      match datum_unwrap_syntax(head.val) {
         Datum::Symbol(head_name) if head_name == name =>
           match tail.val {
             Datum::Pair(arg, rest) =>
@@ -1906,14 +1957,12 @@ fn parse_formals(expr : Datum) -> Formals raise EvalError {
   let names : Array[String] = []
   let mut cur = expr
   while true {
-    match cur {
+    match datum_unwrap_syntax(cur) {
       Datum::Nil => return Formals::{ params: names, rest: None }
       Datum::Symbol(name) => return Formals::{ params: names, rest: Some(name) }
       Datum::Pair(car, cdr) => {
-        match car.val {
-          Datum::Symbol(name) => names.push(name)
-          _ => raise @core.EvalError("type error: symbol expected")
-        }
+        let name = parse_symbol(car.val)
+        names.push(name)
         cur = cdr.val
       }
       _ => raise @core.EvalError("type error: symbol expected")
@@ -2020,14 +2069,10 @@ fn eval_case_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
 fn eval_define_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     2 => {
-      match args[0] {
-        Datum::Symbol(name) => {
-          let rules = parse_transformer(args[1], name)
-          env_define(env, name, Value::Macro(rules))
-          Value::Void
-        }
-        _ => raise @core.EvalError("type error: symbol expected")
-      }
+      let name = parse_symbol(args[0])
+      let rules = parse_transformer(args[1], name)
+      env_define(env, name, Value::Macro(rules))
+      Value::Void
     }
     n => raise arity_mismatch(2, n)
   }
@@ -2042,13 +2087,9 @@ fn parse_syntax_bindings(expr : Datum) -> Array[(String, SyntaxRules)] raise Eva
     if parts.length() != 2 {
       raise @core.EvalError("type error: syntax binding expected")
     } else {
-      match parts[0] {
-        Datum::Symbol(name) => {
-          let rules = parse_transformer(parts[1], name)
-          parsed.push((name, rules))
-        }
-        _ => raise @core.EvalError("type error: symbol expected")
-      }
+      let name = parse_symbol(parts[0])
+      let rules = parse_transformer(parts[1], name)
+      parsed.push((name, rules))
     }
   }
   parsed
@@ -2063,10 +2104,8 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
     if parts.length() != 2 {
       raise @core.EvalError("type error: binding expected")
     } else {
-      match parts[0] {
-        Datum::Symbol(name) => parsed.push((name, parts[1]))
-        _ => raise @core.EvalError("type error: symbol expected")
-      }
+      let name = parse_symbol(parts[0])
+      parsed.push((name, parts[1]))
     }
   }
   parsed
@@ -2104,10 +2143,11 @@ fn parse_parameterize_bindings(expr : Datum) -> Array[(Datum, Datum)] raise Eval
 }
 
 ///|
+///|
 fn parse_symbol(expr : Datum) -> String raise EvalError {
-  match expr {
-    Datum::Symbol(name) => name
-    _ => raise @core.EvalError("type error: symbol expected")
+  match symbol_name(datum_unwrap_syntax(expr)) {
+    Some(name) => name
+    None => raise @core.EvalError("type error: symbol expected")
   }
 }
 
@@ -2377,8 +2417,9 @@ fn eval_define_state(
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
-    match args[0] {
-      Datum::Symbol(name) => {
+    match datum_unwrap_syntax(args[0]) {
+      Datum::Symbol(_) => {
+        let name = parse_symbol(args[0])
         match args.length() {
           2 => MachineState::Eval(args[1], env, Kont::Define(name, env, kont), handlers)
           n => raise arity_mismatch(2, n)
@@ -2481,21 +2522,17 @@ fn eval_set_state(
 ) -> MachineState raise EvalError {
   match args.length() {
     2 => {
-      match args[0] {
-        Datum::Symbol(name) => {
-          match env_get_macro(env, name) {
-            Some(rules) => {
-              let expanded = expand_macro(
-                rules,
-                list_from_array([Datum::Symbol("set!"), Datum::Symbol(name), args[1]]),
-                env,
-              )
-              MachineState::Eval(expanded, env, kont, handlers)
-            }
-            None => MachineState::Eval(args[1], env, Kont::Set(name, env, kont), handlers)
-          }
+      let name = parse_symbol(args[0])
+      match env_get_macro(env, name) {
+        Some(rules) => {
+          let expanded = expand_macro(
+            rules,
+            list_from_array([Datum::Symbol("set!"), Datum::Symbol(name), args[1]]),
+            env,
+          )
+          MachineState::Eval(expanded, env, kont, handlers)
         }
-        _ => raise @core.EvalError("type error: symbol expected")
+        None => MachineState::Eval(args[1], env, Kont::Set(name, env, kont), handlers)
       }
     }
     n => raise arity_mismatch(2, n)
@@ -2536,6 +2573,7 @@ fn eval_let_state(
   }
 }
 
+///|
 ///|
 fn eval_let_values_state(
   args : Array[Datum],
@@ -4692,13 +4730,14 @@ fn eval_pair(
   kont : Kont,
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
-  let items = datum_list_to_array(expr)
+  let expr_unwrapped = datum_unwrap_syntax(expr)
+  let items = datum_list_to_array(expr_unwrapped)
   if items.is_empty() {
     MachineState::Apply(Value::Datum(Datum::Nil), kont, handlers)
   } else {
     let head = items[0]
     let args = items.sub(start=1).to_array()
-    match symbol_name(head) {
+    match symbol_name(datum_unwrap_syntax(head)) {
       Some("define-syntax") => MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
       Some("library") => eval_library_state(args, env, kont, handlers)
       Some("import") => eval_import_state(args, env, kont, handlers)
@@ -4737,7 +4776,7 @@ fn eval_pair(
       Some(name) => {
         match env_get_macro(env, name) {
           Some(rules) => {
-            let expanded = expand_macro(rules, expr, env)
+            let expanded = expand_macro(rules, expr_unwrapped, env)
             MachineState::Eval(expanded, env, kont, handlers)
           }
           None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)

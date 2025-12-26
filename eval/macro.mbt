@@ -723,11 +723,11 @@ fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise Eva
                 rules.ellipsis,
                 env,
               )
-              let value = eval_expr(rewritten, fenv)
+              let value = eval_expr_transformer(rewritten, fenv)
               value_to_syntax_datum(value)
             }
           }
-          return strip_syntax_datum(expanded)
+          return expanded
         }
       }
     }
@@ -741,23 +741,6 @@ fn wrap_pattern_datum(value : Datum) -> Datum {
   match value {
     Datum::Value(Value::SyntaxObject(_)) => value
     _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, context: 0 }))
-  }
-}
-
-///|
-fn strip_syntax_datum(value : Datum) -> Datum {
-  match value {
-    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
-    Datum::Pair(a, b) => pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
-    Datum::Vector(items) => {
-      let stripped : Array[Datum] = []
-      for item in items {
-        stripped.push(strip_syntax_datum(item))
-      }
-      Datum::Vector(stripped)
-    }
-    Datum::Label(tag, cell) => Datum::Label(tag, Ref::new(strip_syntax_datum(cell.val)))
-    _ => value
   }
 }
 

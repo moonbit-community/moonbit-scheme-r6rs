@@ -731,6 +731,7 @@ pub fn list_from_array(items : Array[Datum]) -> Datum {
 pub fn symbol_name(expr : Datum) -> String? {
   match expr {
     Datum::Symbol(name) => Some(name)
+    Datum::Value(Value::SyntaxObject(obj)) => symbol_name(obj.datum)
     _ => None
   }
 }
