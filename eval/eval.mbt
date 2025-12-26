@@ -461,6 +461,9 @@ fn env_export_map(env : Env) -> Map[String, Value] {
 ///|
 fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   let exports = env_export_map(env)
+  for name in syntax_keyword_names() {
+    exports[name] = Value::SyntaxKeyword(name)
+  }
   register_library_entry("rnrs.base", Some([6]), exports)
   let eval_exports : Map[String, Value] = {}
   eval_exports["eval"] = Value::Primitive(Primitive::Eval)
@@ -4020,14 +4023,56 @@ fn parse_export_clause(expr : Datum) -> Array[(String, String)] raise EvalError 
 }
 
 ///|
-fn is_syntax_keyword(name : String) -> Bool {
-  let keywords : Array[String] = [
+fn syntax_keyword_names() -> Array[String] {
+  [
+    "quote",
+    "quasiquote",
+    "unquote",
+    "unquote-splicing",
+    "syntax",
+    "quasisyntax",
+    "unsyntax",
+    "unsyntax-splicing",
+    "if",
+    "begin",
+    "begin-for-syntax",
+    "lambda",
+    "case-lambda",
+    "define",
+    "define-syntax",
+    "define-values",
+    "set!",
+    "let",
+    "let*",
+    "letrec",
+    "letrec*",
+    "let-values",
+    "let*-values",
+    "let-syntax",
+    "letrec-syntax",
+    "define-record-type",
+    "define-condition-type",
+    "define-enumeration",
+    "and",
+    "or",
+    "cond",
+    "cond-expand",
+    "case",
+    "do",
+    "guard",
+    "parameterize",
+    "delay",
     "syntax-rules",
     "syntax-case",
     "identifier-syntax",
-    "syntax",
-    "quasisyntax",
+    "else",
+    "=>",
   ]
+}
+
+///|
+fn is_syntax_keyword(name : String) -> Bool {
+  let keywords = syntax_keyword_names()
   let mut i = 0
   while i < keywords.length() {
     if keywords[i] == name {

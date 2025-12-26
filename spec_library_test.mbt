@@ -185,3 +185,15 @@ test "r6rs libraries: version references" {
   )
   inspect(value_to_string(eval_program(program2)), content="100")
 }
+
+///|
+test "r6rs libraries: base syntax keyword import" {
+  let program = (
+    (
+      #|(import (only (rnrs base) define lambda if set! begin))
+      #|(define x 0)
+      #|((lambda (v) (if v (begin (set! x 2) x) x)) #t)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="2")
+}
