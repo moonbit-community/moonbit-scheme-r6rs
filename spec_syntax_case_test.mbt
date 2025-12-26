@@ -98,3 +98,48 @@ test "r6rs syntax-case: evaluated transformer expression" {
   )
   inspect(value_to_string(eval_program(program)), content="3")
 }
+
+///|
+test "r6rs syntax-case: vector pattern and template" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax swap-vec
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ #(a b)) #'#(b a)))))
+      #|  (swap-vec #(1 2)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#(2 1)")
+}
+
+///|
+test "r6rs syntax-case: dotted list pattern" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax split-dot
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ (a . b)) #'(list a b)))))
+      #|  (split-dot (1 . 2)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(1 2)")
+}
+
+///|
+test "r6rs syntax-case: wildcard with ellipsis" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax drop-first
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ _ rest ...) #'(list rest ...)))))
+      #|  (drop-first a 1 2 3))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(1 2 3)")
+}

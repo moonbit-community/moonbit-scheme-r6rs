@@ -76,3 +76,32 @@ test "r6rs macro: hygiene with internal bindings" {
   )
   inspect(value_to_string(eval_program(program)), content="1")
 }
+
+///|
+test "r6rs macro: dotted list pattern" {
+  let program = (
+    (
+      #|(define-syntax split-dot
+      #|  (syntax-rules ()
+      #|    ((split-dot (a . b)) (list a b))))
+      #|(split-dot (1 . 2))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(1 2)")
+}
+
+///|
+test "r6rs macro: chained expansions" {
+  let program = (
+    (
+      #|(define-syntax add1
+      #|  (syntax-rules ()
+      #|    ((add1 x) (+ x 1))))
+      #|(define-syntax add2
+      #|  (syntax-rules ()
+      #|    ((add2 x) (add1 (add1 x)))))
+      #|(add2 3)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="5")
+}
