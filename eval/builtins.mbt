@@ -7077,10 +7077,18 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let items = datum_list_to_array(datum)
           let results : Array[Datum] = []
           for item in items {
-            match datum_unlabel(item) {
-              Datum::Symbol(name) => results.push(Datum::Symbol(gensym(name)))
+            let (name, ctx) = match datum_unlabel(item) {
+              Datum::Symbol(name) => (name, next_syntax_context())
+              Datum::Value(Value::SyntaxObject(obj)) =>
+                match datum_unlabel(obj.datum) {
+                  Datum::Symbol(name) => (name, next_syntax_context())
+                  _ => raise @core.EvalError("type error: identifier expected")
+                }
               _ => raise @core.EvalError("type error: identifier expected")
             }
+            let datum = Datum::Symbol(gensym(name))
+            let temp = Value::SyntaxObject(SyntaxObject::{ datum, context: ctx })
+            results.push(value_to_datum_element(temp))
           }
           Value::Datum(list_from_array(results))
         }

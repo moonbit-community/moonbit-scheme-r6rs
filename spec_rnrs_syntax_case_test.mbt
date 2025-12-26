@@ -25,12 +25,17 @@ test "r6rs libraries: syntax-case generate-temporaries" {
       #|(begin
       #|  (import (rnrs syntax-case))
       #|  (define temps (generate-temporaries '(a a)))
-      #|  (list (symbol? (car temps))
-      #|        (symbol? (cadr temps))
-      #|        (eq? (car temps) (cadr temps))))
+      #|  (list (identifier? (car temps))
+      #|        (identifier? (cadr temps))
+      #|        (syntax? (car temps))
+      #|        (syntax? (cadr temps))
+      #|        (free-identifier=? (car temps) (cadr temps))
+      #|        (bound-identifier=? (car temps) (cadr temps))
+      #|        (eq? (syntax->datum (car temps))
+      #|             (syntax->datum (cadr temps)))))
     )
   )
-  inspect(value_to_string(eval_program(program)), content="(#t #t #f)")
+  inspect(value_to_string(eval_program(program)), content="(#t #t #t #t #f #f #f)")
 }
 
 ///|
