@@ -1,14 +1,4 @@
 ///|
-let gensym_counter : Ref[Int] = Ref::new(0)
-
-///|
-fn gensym(base : String) -> String {
-  let idx = gensym_counter.val
-  gensym_counter.val = idx + 1
-  "\{base}__gs\{idx}"
-}
-
-///|
 fn is_core_identifier(name : String) -> Bool {
   let core : Array[String] = [
     "quote",

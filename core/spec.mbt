@@ -350,6 +350,7 @@ pub(all) enum Primitive {
   FlSqrt
   FlExpt
   MakeVariableTransformer
+  GenerateTemporaries
   ListP
   MakeList
   Length

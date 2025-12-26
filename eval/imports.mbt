@@ -79,6 +79,7 @@ using @runtime {
   env_new,
   env_set,
   gcd,
+  gensym,
   get_current_output_port,
   int_abs,
   is_false,

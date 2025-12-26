@@ -42,6 +42,11 @@ fn init_env() -> Env {
     "make-variable-transformer",
     Value::Primitive(Primitive::MakeVariableTransformer),
   )
+  env_define(
+    env,
+    "generate-temporaries",
+    Value::Primitive(Primitive::GenerateTemporaries),
+  )
   env_define(env, "boolean?", Value::Primitive(Primitive::BooleanP))
   env_define(env, "number?", Value::Primitive(Primitive::NumberP))
   env_define(env, "integer?", Value::Primitive(Primitive::IntegerP))
@@ -915,7 +920,7 @@ fn stdlib_source() -> String {
     "      ((_ test body ...) (if (not test) (begin body ...) (begin)))))",
     ")",
     "(library (rnrs syntax-case (6))",
-    "  (export make-variable-transformer)",
+    "  (export make-variable-transformer generate-temporaries)",
     "  (import)",
     ")",
     "(library (rnrs arithmetic fixnums (6))",

@@ -17,3 +17,18 @@ test "r6rs libraries: syntax-case make-variable-transformer" {
   )
   inspect(value_to_string(eval_program(program)), content="(1 5 #t)")
 }
+
+///|
+test "r6rs libraries: syntax-case generate-temporaries" {
+  let program = (
+    (
+      #|(begin
+      #|  (import (rnrs syntax-case))
+      #|  (define temps (generate-temporaries '(a a)))
+      #|  (list (symbol? (car temps))
+      #|        (symbol? (cadr temps))
+      #|        (eq? (car temps) (cadr temps))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(#t #t #f)")
+}

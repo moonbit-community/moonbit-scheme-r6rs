@@ -10,6 +10,7 @@ pub(all) struct Library {
 
 ///|
 let port_counter : Ref[Int] = Ref::new(0)
+let gensym_counter : Ref[Int] = Ref::new(0)
 let record_type_counter : Ref[Int] = Ref::new(0)
 let record_counter : Ref[Int] = Ref::new(0)
 let record_proc_counter : Ref[Int] = Ref::new(0)
@@ -24,6 +25,13 @@ let library_registry : Ref[Map[String, Library]] = Ref::new({})
 let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
 let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
 let record_type_id_registry : Ref[Map[Int, RecordTypeDescriptor]] = Ref::new({})
+
+///|
+pub fn gensym(base : String) -> String {
+  let idx = gensym_counter.val
+  gensym_counter.val = idx + 1
+  "\{base}__gs\{idx}"
+}
 
 ///|
 fn next_port_id() -> Int {

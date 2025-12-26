@@ -272,6 +272,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::FlSqrt, Primitive::FlSqrt)
     | (Primitive::FlExpt, Primitive::FlExpt)
     | (Primitive::MakeVariableTransformer, Primitive::MakeVariableTransformer)
+    | (Primitive::GenerateTemporaries, Primitive::GenerateTemporaries)
     | (Primitive::ListP, Primitive::ListP)
     | (Primitive::MakeList, Primitive::MakeList)
     | (Primitive::Length, Primitive::Length)
@@ -7009,6 +7010,23 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             raise @core.EvalError("type error: procedure expected")
           }
           args[0]
+        }
+        n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::GenerateTemporaries => {
+      match args.length() {
+        1 => {
+          let datum = value_as_datum(args[0])
+          let items = datum_list_to_array(datum)
+          let results : Array[Datum] = []
+          for item in items {
+            match datum_unlabel(item) {
+              Datum::Symbol(name) => results.push(Datum::Symbol(gensym(name)))
+              _ => raise @core.EvalError("type error: identifier expected")
+            }
+          }
+          Value::Datum(list_from_array(results))
         }
         n => raise arity_mismatch(1, n)
       }
