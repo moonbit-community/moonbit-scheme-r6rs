@@ -105,3 +105,31 @@ test "r6rs macro: chained expansions" {
   )
   inspect(value_to_string(eval_program(program)), content="5")
 }
+
+///|
+test "r6rs macro: procedural transformer expression" {
+  let program = (
+    (
+      #|(define-syntax const-ok
+      #|  (let ((d '(quote ok)))
+      #|    (lambda (stx) (datum->syntax stx d))))
+      #|(const-ok)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="ok")
+}
+
+///|
+test "r6rs macro: procedural transformer with syntax-case" {
+  let program = (
+    (
+      #|(define-syntax addk
+      #|  (let ((k 2))
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ x) #`(+ x #,k))))))
+      #|(addk 3)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="5")
+}

@@ -421,6 +421,32 @@ fn parse_identifier_syntax(expr : Datum, name : String) -> SyntaxRules raise Eva
 }
 
 ///|
+fn parse_syntax_case_rules(
+  literals_expr : Datum,
+  clauses : Array[Datum],
+) -> SyntaxRules raise EvalError {
+  let literals = parse_literal_list(literals_expr)
+  let rules : Array[SyntaxRule] = []
+  let mut i = 0
+  while i < clauses.length() {
+    let rule_parts = datum_list_to_array(clauses[i])
+    if rule_parts.length() == 2 {
+      rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
+    } else if rule_parts.length() == 3 {
+      rules.push({
+        pattern: rule_parts[0],
+        template: rule_parts[2],
+        fender: Some(rule_parts[1]),
+      })
+    } else {
+      raise @core.EvalError("invalid syntax-case clause")
+    }
+    i = i + 1
+  }
+  { literals, rules, ellipsis: "...", kind: SyntaxRulesKind::SyntaxCase }
+}
+
+///|
 fn parse_syntax_case_transformer(expr : Datum) -> SyntaxRules raise EvalError {
   let parts = datum_list_to_array(expr)
   if parts.length() < 3 {
@@ -447,44 +473,69 @@ fn parse_syntax_case_transformer(expr : Datum) -> SyntaxRules raise EvalError {
     Datum::Symbol("syntax-case") => ()
     _ => raise @core.EvalError("invalid syntax-case")
   }
-  let literals = parse_literal_list(sc_parts[2])
-  let rules : Array[SyntaxRule] = []
-  let mut i = 3
-  while i < sc_parts.length() {
-    let rule_parts = datum_list_to_array(sc_parts[i])
-    if rule_parts.length() == 2 {
-      rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
-    } else if rule_parts.length() == 3 {
-      rules.push({
-        pattern: rule_parts[0],
-        template: rule_parts[2],
-        fender: Some(rule_parts[1]),
-      })
-    } else {
-      raise @core.EvalError("invalid syntax-case clause")
-    }
-    i = i + 1
-  }
-  { literals, rules, ellipsis: "...", kind: SyntaxRulesKind::SyntaxCase }
+  let literals_expr = sc_parts[2]
+  let clauses = sc_parts.sub(start=3).to_array()
+  parse_syntax_case_rules(literals_expr, clauses)
 }
 
 ///|
-fn parse_transformer(expr : Datum, name : String) -> SyntaxRules raise EvalError {
+fn is_syntax_case_transformer_expr(expr : Datum) -> Bool {
+  match datum_list_to_array_opt(expr) {
+    Some(parts) => {
+      if parts.length() != 3 {
+        return false
+      }
+      if !datum_is_symbol(parts[0], "lambda") {
+        return false
+      }
+      let params = match datum_list_to_array_opt(parts[1]) {
+        Some(items) => items
+        None => return false
+      }
+      if params.length() != 1 {
+        return false
+      }
+      match datum_list_to_array_opt(parts[2]) {
+        Some(body_parts) =>
+          body_parts.length() >= 4 && datum_is_symbol(body_parts[0], "syntax-case")
+        None => false
+      }
+    }
+    None => false
+  }
+}
+
+///|
+fn eval_transformer_expr(expr : Datum, env : Env) -> Value raise EvalError {
+  let eval_env = env_clone(env)
+  eval_expr_transformer(expr, eval_env)
+}
+
+///|
+fn parse_transformer(expr : Datum, name : String, env : Env) -> MacroTransformer raise EvalError {
   let parts = datum_list_to_array(expr)
   if parts.is_empty() {
     raise @core.EvalError("invalid syntax transformer")
   }
   match parts[0] {
-    Datum::Symbol("syntax-rules") => parse_syntax_rules(expr)
-    Datum::Symbol("identifier-syntax") => parse_identifier_syntax(expr, name)
-    Datum::Symbol("lambda") => parse_syntax_case_transformer(expr)
+    Datum::Symbol("syntax-rules") => MacroTransformer::Rules(parse_syntax_rules(expr))
+    Datum::Symbol("identifier-syntax") =>
+      MacroTransformer::Rules(parse_identifier_syntax(expr, name))
     Datum::Symbol("make-variable-transformer") => {
       if parts.length() != 2 {
         raise @core.EvalError("invalid syntax transformer")
       }
-      parse_transformer(parts[1], name)
+      parse_transformer(parts[1], name, env)
     }
-    _ => raise @core.EvalError("invalid syntax transformer")
+    Datum::Symbol("lambda") if is_syntax_case_transformer_expr(expr) =>
+      MacroTransformer::Rules(parse_syntax_case_transformer(expr))
+    _ => {
+      let value = eval_transformer_expr(expr, env)
+      if !is_procedure_value(value) {
+        raise @core.EvalError("type error: procedure expected")
+      }
+      MacroTransformer::Procedure(value)
+    }
   }
 }
 
@@ -691,7 +742,7 @@ fn value_to_syntax_datum(value : Value) -> Datum raise EvalError {
 }
 
 ///|
-fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise EvalError {
+fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise EvalError {
   let mut i = 0
   while i < rules.rules.length() {
     let rule = rules.rules[i]
@@ -734,6 +785,28 @@ fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise Eva
     i = i + 1
   }
   raise @core.EvalError("no matching syntax-rules pattern")
+}
+
+///|
+fn expand_macro_proc(proc : Value, call : Datum, env : Env) -> Datum raise EvalError {
+  if !is_procedure_value(proc) {
+    raise @core.EvalError("type error: procedure expected")
+  }
+  let temp_name = gensym("macro_proc")
+  let fenv = env_extend(env)
+  env_define(fenv, temp_name, proc)
+  let stx = Value::SyntaxObject(SyntaxObject::{ datum: call, context: next_syntax_context() })
+  let call_expr = list_from_array([Datum::Symbol(temp_name), Datum::Value(stx)])
+  let value = eval_expr_transformer(call_expr, fenv)
+  value_to_syntax_datum(value)
+}
+
+///|
+fn expand_macro(transformer : MacroTransformer, call : Datum, env : Env) -> Datum raise EvalError {
+  match transformer {
+    MacroTransformer::Rules(rules) => expand_macro_rules(rules, call, env)
+    MacroTransformer::Procedure(proc) => expand_macro_proc(proc, call, env)
+  }
 }
 
 ///|
@@ -1411,7 +1484,9 @@ fn expand_template_indexed(
             expand_template_indexed(items[1], bindings, renames, ellipsis, indices, env)
           } else if items.length() == 2 && datum_is_symbol(items[0], "quasisyntax") {
             let fenv = template_env_with_bindings(env, bindings)
-            let expanded = quasisyntax_expand(items[1], fenv, 1)
+            let expanded_template =
+              expand_template_quasisyntax(items[1], bindings, renames, ellipsis, indices, env)
+            let expanded = quasisyntax_expand(expanded_template, fenv, 1)
             rename_datum(expanded, renames)
           } else if items.length() >= 3 && datum_is_symbol(items[0], "with-syntax") {
             expand_with_syntax(items, bindings, renames, ellipsis, indices, env)
@@ -1431,6 +1506,47 @@ fn expand_template_indexed(
       }
     }
     Datum::Vector(items) => expand_template_vector(items, bindings, renames, ellipsis, indices, env)
+    _ => template
+  }
+}
+
+///|
+fn expand_template_quasisyntax(
+  template : Datum,
+  bindings : Map[String, BindingVal],
+  renames : Map[String, String],
+  ellipsis : String,
+  indices : Array[Int],
+  env : Env,
+) -> Datum raise EvalError {
+  match template {
+    Datum::Symbol(name) => expand_symbol(name, bindings, renames, indices)
+    Datum::Pair(_, _) => {
+      match datum_list_to_array_opt(template) {
+        Some(items) => {
+          if is_quote_form(items) {
+            template
+          } else if items.length() == 2 && datum_is_symbol(items[0], "unsyntax") {
+            template
+          } else if items.length() == 2 && datum_is_symbol(items[0], "unsyntax-splicing") {
+            template
+          } else {
+            expand_template_list_quasisyntax(items, bindings, renames, ellipsis, indices, env)
+          }
+        }
+        None => {
+          match template {
+            Datum::Pair(a, b) => pair_new(
+              expand_template_quasisyntax(a.val, bindings, renames, ellipsis, indices, env),
+              expand_template_quasisyntax(b.val, bindings, renames, ellipsis, indices, env),
+            )
+            _ => template
+          }
+        }
+      }
+    }
+    Datum::Vector(items) =>
+      expand_template_vector_quasisyntax(items, bindings, renames, ellipsis, indices, env)
     _ => template
   }
 }
@@ -1495,6 +1611,51 @@ fn expand_template_list(
 }
 
 ///|
+fn expand_template_list_quasisyntax(
+  items : Array[Datum],
+  bindings : Map[String, BindingVal],
+  renames : Map[String, String],
+  ellipsis : String,
+  indices : Array[Int],
+  env : Env,
+) -> Datum raise EvalError {
+  let expanded : Array[Datum] = []
+  let mut i = 0
+  while i < items.length() {
+    if i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
+      let repeat_template = items[i]
+      let count = max_binding_len(repeat_template, bindings, indices)
+      let mut j = 0
+      while j < count {
+        let next_indices : Array[Int] = []
+        for idx in indices {
+          next_indices.push(idx)
+        }
+        next_indices.push(j)
+        expanded.push(
+          expand_template_quasisyntax(
+            repeat_template,
+            bindings,
+            renames,
+            ellipsis,
+            next_indices,
+            env,
+          ),
+        )
+        j = j + 1
+      }
+      i = i + 2
+    } else {
+      expanded.push(
+        expand_template_quasisyntax(items[i], bindings, renames, ellipsis, indices, env),
+      )
+      i = i + 1
+    }
+  }
+  list_from_array(expanded)
+}
+
+///|
 fn expand_template_vector(
   items : Array[Datum],
   bindings : Map[String, BindingVal],
@@ -1524,6 +1685,51 @@ fn expand_template_vector(
       i = i + 2
     } else {
       expanded.push(expand_template_indexed(items[i], bindings, renames, ellipsis, indices, env))
+      i = i + 1
+    }
+  }
+  Datum::Vector(expanded)
+}
+
+///|
+fn expand_template_vector_quasisyntax(
+  items : Array[Datum],
+  bindings : Map[String, BindingVal],
+  renames : Map[String, String],
+  ellipsis : String,
+  indices : Array[Int],
+  env : Env,
+) -> Datum raise EvalError {
+  let expanded : Array[Datum] = []
+  let mut i = 0
+  while i < items.length() {
+    if i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
+      let repeat_template = items[i]
+      let count = max_binding_len(repeat_template, bindings, indices)
+      let mut j = 0
+      while j < count {
+        let next_indices : Array[Int] = []
+        for idx in indices {
+          next_indices.push(idx)
+        }
+        next_indices.push(j)
+        expanded.push(
+          expand_template_quasisyntax(
+            repeat_template,
+            bindings,
+            renames,
+            ellipsis,
+            next_indices,
+            env,
+          ),
+        )
+        j = j + 1
+      }
+      i = i + 2
+    } else {
+      expanded.push(
+        expand_template_quasisyntax(items[i], bindings, renames, ellipsis, indices, env),
+      )
       i = i + 1
     }
   }

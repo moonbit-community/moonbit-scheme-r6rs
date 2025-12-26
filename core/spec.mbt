@@ -493,6 +493,12 @@ pub(all) struct SyntaxRules {
 }
 
 ///|
+pub(all) enum MacroTransformer {
+  Rules(SyntaxRules)
+  Procedure(Value)
+}
+
+///|
 /// Closure is an opaque procedure value produced by lambda.
 /// The interpreter may store extra data internally; tests treat it as opaque.
 ///|
@@ -585,5 +591,5 @@ pub(all) enum Value {
   RecordConstructorDescriptor(RecordConstructorDescriptor)
   SyntaxObject(SyntaxObject)
   SyntaxKeyword(String)
-  Macro(SyntaxRules)
+  Macro(MacroTransformer)
 }

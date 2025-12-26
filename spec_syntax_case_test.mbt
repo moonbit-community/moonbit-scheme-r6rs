@@ -175,3 +175,17 @@ test "r6rs syntax-case: hygienic internal binding" {
   )
   inspect(value_to_string(eval_program(program)), content="1")
 }
+
+///|
+test "r6rs syntax-case: expression form" {
+  let program = (
+    (
+      #|(begin
+      #|  (define stx (syntax (a b)))
+      #|  (syntax?
+      #|    (syntax-case stx ()
+      #|      ((a b) #'ok))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#t")
+}

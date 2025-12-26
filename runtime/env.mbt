@@ -49,9 +49,9 @@ fn env_get(env : Env, name : String) -> Value? {
 }
 
 ///|
-pub fn env_get_macro(env : Env, name : String) -> SyntaxRules? {
+pub fn env_get_macro(env : Env, name : String) -> MacroTransformer? {
   match env_get(env, name) {
-    Some(Value::Macro(rules)) => Some(rules)
+    Some(Value::Macro(transformer)) => Some(transformer)
     _ => None
   }
 }

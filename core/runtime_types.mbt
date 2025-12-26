@@ -208,6 +208,7 @@ pub(all) enum Kont {
   )
   LetStarValues(Array[(Formals, Datum)], Int, Env, Array[Datum], Kont)
   DefineValues(Formals, Env, Kont)
+  SyntaxCase(Array[Datum], Env, Kont)
   ParameterizeParam(
     Array[(Datum, Datum)],
     Int,

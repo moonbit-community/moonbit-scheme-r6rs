@@ -1164,8 +1164,8 @@ fn eval_expr_impl(
           }
           Datum::Symbol(name) => {
             match env_get_macro(current_env, name) {
-              Some(rules) => {
-                let expanded = expand_macro(rules, Datum::Symbol(name), current_env)
+              Some(transformer) => {
+                let expanded = expand_macro(transformer, Datum::Symbol(name), current_env)
                 state = MachineState::Eval(expanded, current_env, kont, handlers)
               }
               None => {
@@ -1431,6 +1431,22 @@ fn eval_expr_impl(
               env_define(env, name, bound_value)
             }
             state = MachineState::Apply(Value::Void, next, handlers)
+          }
+          Kont::SyntaxCase(rest, env, next) => {
+            if rest.length() < 2 {
+              raise @core.EvalError("invalid syntax-case")
+            }
+            let input = expect_single(value)
+            let literals_expr = rest[0]
+            let clauses = rest.sub(start=1).to_array()
+            let rules = parse_syntax_case_rules(literals_expr, clauses)
+            let call = value_to_syntax_datum(input)
+            let expanded = expand_macro(MacroTransformer::Rules(rules), call, env)
+            let result = match expanded {
+              Datum::Value(Value::SyntaxObject(obj)) => Value::SyntaxObject(obj)
+              _ => Value::Datum(expanded)
+            }
+            state = MachineState::Apply(result, next, handlers)
           }
           Kont::ParameterizeParam(bindings, index, params, values, env, body, next) => {
             let param_value = expect_single(value)
@@ -1805,6 +1821,21 @@ fn eval_quasisyntax(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
+fn eval_syntax_case_state(
+  args : Array[Datum],
+  env : Env,
+  kont : Kont,
+  handlers : Array[Value],
+) -> MachineState raise EvalError {
+  if args.length() < 3 {
+    raise arity_mismatch(3, args.length())
+  } else {
+    let rest = args.sub(start=1).to_array()
+    MachineState::Eval(args[0], env, Kont::SyntaxCase(rest, env, kont), handlers)
+  }
+}
+
+///|
 fn eval_delay(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     1 => {
@@ -2070,8 +2101,8 @@ fn eval_define_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     2 => {
       let name = parse_symbol(args[0])
-      let rules = parse_transformer(args[1], name)
-      env_define(env, name, Value::Macro(rules))
+      let transformer = parse_transformer(args[1], name, env)
+      env_define(env, name, Value::Macro(transformer))
       Value::Void
     }
     n => raise arity_mismatch(2, n)
@@ -2079,17 +2110,20 @@ fn eval_define_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
 }
 
 ///|
-fn parse_syntax_bindings(expr : Datum) -> Array[(String, SyntaxRules)] raise EvalError {
+fn parse_syntax_bindings(
+  expr : Datum,
+  env : Env,
+) -> Array[(String, MacroTransformer)] raise EvalError {
   let bindings = datum_list_to_array(expr)
-  let parsed : Array[(String, SyntaxRules)] = []
+  let parsed : Array[(String, MacroTransformer)] = []
   for binding in bindings {
     let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("type error: syntax binding expected")
     } else {
       let name = parse_symbol(parts[0])
-      let rules = parse_transformer(parts[1], name)
-      parsed.push((name, rules))
+      let transformer = parse_transformer(parts[1], name, env)
+      parsed.push((name, transformer))
     }
   }
   parsed
@@ -2524,9 +2558,9 @@ fn eval_set_state(
     2 => {
       let name = parse_symbol(args[0])
       match env_get_macro(env, name) {
-        Some(rules) => {
+        Some(transformer) => {
           let expanded = expand_macro(
-            rules,
+            transformer,
             list_from_array([Datum::Symbol("set!"), Datum::Symbol(name), args[1]]),
             env,
           )
@@ -2736,12 +2770,12 @@ fn eval_let_syntax_state(
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
-    let bindings = parse_syntax_bindings(args[0])
+    let bindings = parse_syntax_bindings(args[0], env)
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
-      let (name, rules) = binding
-      env_define(new_env, name, Value::Macro(rules))
+      let (name, transformer) = binding
+      env_define(new_env, name, Value::Macro(transformer))
     }
     eval_sequence_state(body, new_env, kont, handlers)
   }
@@ -2757,12 +2791,26 @@ fn eval_letrec_syntax_state(
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
-    let bindings = parse_syntax_bindings(args[0])
-    let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
+    let binding_specs = datum_list_to_array(args[0])
+    let mut i = 0
+    while i < binding_specs.length() {
+      let parts = datum_list_to_array(binding_specs[i])
+      if parts.length() != 2 {
+        raise @core.EvalError("type error: syntax binding expected")
+      }
+      let name = parse_symbol(parts[0])
+      let placeholder = MacroTransformer::Rules(
+        SyntaxRules::{ literals: [], rules: [], ellipsis: "...", kind: SyntaxRulesKind::SyntaxRules },
+      )
+      env_define(new_env, name, Value::Macro(placeholder))
+      i = i + 1
+    }
+    let bindings = parse_syntax_bindings(args[0], new_env)
+    let body = args.sub(start=1).to_array()
     for binding in bindings {
-      let (name, rules) = binding
-      env_define(new_env, name, Value::Macro(rules))
+      let (name, transformer) = binding
+      env_define(new_env, name, Value::Macro(transformer))
     }
     eval_sequence_state(body, new_env, kont, handlers)
   }
@@ -4748,6 +4796,7 @@ fn eval_pair(
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
       Some("syntax") => MachineState::Apply(eval_syntax(args), kont, handlers)
       Some("quasisyntax") => MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
+      Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
       Some("delay") => MachineState::Apply(eval_delay(args, env), kont, handlers)
       Some("if") => eval_if_state(args, env, kont, handlers)
       Some("begin") => eval_sequence_state(args, env, kont, handlers)
@@ -4775,8 +4824,8 @@ fn eval_pair(
       Some("case") => eval_case_state(args, env, kont, handlers)
       Some(name) => {
         match env_get_macro(env, name) {
-          Some(rules) => {
-            let expanded = expand_macro(rules, expr_unwrapped, env)
+          Some(transformer) => {
+            let expanded = expand_macro(transformer, expr_unwrapped, env)
             MachineState::Eval(expanded, env, kont, handlers)
           }
           None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)

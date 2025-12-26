@@ -21,5 +21,6 @@ using @core {
   type RecordType,
   type RecordTypeDescriptor,
   type SyntaxRules,
+  type MacroTransformer,
   type Value,
 }
