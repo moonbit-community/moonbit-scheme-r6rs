@@ -11,6 +11,7 @@ pub(all) struct Library {
 ///|
 let port_counter : Ref[Int] = Ref::new(0)
 let gensym_counter : Ref[Int] = Ref::new(0)
+let syntax_context_counter : Ref[Int] = Ref::new(0)
 let record_type_counter : Ref[Int] = Ref::new(0)
 let record_counter : Ref[Int] = Ref::new(0)
 let record_proc_counter : Ref[Int] = Ref::new(0)
@@ -31,6 +32,13 @@ pub fn gensym(base : String) -> String {
   let idx = gensym_counter.val
   gensym_counter.val = idx + 1
   "\{base}__gs\{idx}"
+}
+
+///|
+pub fn next_syntax_context() -> Int {
+  let id = syntax_context_counter.val
+  syntax_context_counter.val = id + 1
+  id
 }
 
 ///|

@@ -44,11 +44,11 @@ test "r6rs libraries: syntax-case value exports" {
       #|        (eval '(free-identifier=? 'x 'x) env)
       #|        (eval '(bound-identifier=? 'x 'x) env)
       #|        (eval '(syntax->datum (syntax (a b))) env)
-      #|        (eval '(datum->syntax 'a '(1 2)) env)
+      #|        (eval '(syntax->datum (datum->syntax 'a '(1 2))) env)
       #|        (procedure? (eval 'syntax-violation env))))
     )
   )
-  inspect(value_to_string(eval_program(program)), content="(#t #t #t #t (a b) (1 2) #t)")
+  inspect(value_to_string(eval_program(program)), content="(#t #f #t #t (a b) (1 2) #t)")
 }
 
 ///|

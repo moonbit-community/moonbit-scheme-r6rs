@@ -547,6 +547,12 @@ pub(all) struct EvalEnv {
 }
 
 ///|
+pub(all) struct SyntaxObject {
+  datum : Datum
+  context : Int
+}
+
+///|
 /// Runtime values produced by evaluation.
 ///|
 pub(all) enum Value {
@@ -570,6 +576,7 @@ pub(all) enum Value {
   EnumSetProc(EnumSetProc)
   RecordTypeDescriptor(RecordTypeDescriptor)
   RecordConstructorDescriptor(RecordConstructorDescriptor)
+  SyntaxObject(SyntaxObject)
   SyntaxKeyword(String)
   Macro(SyntaxRules)
 }

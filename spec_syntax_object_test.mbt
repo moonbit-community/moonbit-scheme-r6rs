@@ -27,7 +27,7 @@ test "r6rs syntax: helpers" {
   inspect(
     value_to_string(eval_program(
       (
-        #|(datum->syntax 'a '(1 2))
+        #|(syntax->datum (datum->syntax 'a '(1 2)))
       )
     )),
     content="(1 2)",
@@ -35,7 +35,7 @@ test "r6rs syntax: helpers" {
   inspect(
     value_to_string(eval_program(
       (
-        #|(let ((x 1)) (syntax x))
+        #|(let ((x 1)) (syntax->datum (syntax x)))
       )
     )),
     content="x",
@@ -50,15 +50,15 @@ test "r6rs syntax: predicates and identifier equality" {
         #|(syntax? 1)
       )
     )),
-    content="#t",
+    content="#f",
   )
   inspect(
     value_to_string(eval_program(
       (
-        #|(syntax? (lambda (x) x))
+        #|(syntax? (syntax (a b)))
       )
     )),
-    content="#f",
+    content="#t",
   )
   inspect(
     value_to_string(eval_program(

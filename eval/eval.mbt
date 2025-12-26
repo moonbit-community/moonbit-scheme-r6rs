@@ -1728,6 +1728,14 @@ fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
 }
 
 ///|
+fn eval_syntax(args : Array[Datum]) -> Value raise EvalError {
+  match args.length() {
+    1 => Value::SyntaxObject(SyntaxObject::{ datum: args[0], context: next_syntax_context() })
+    n => raise arity_mismatch(1, n)
+  }
+}
+
+///|
 fn eval_quasiquote(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     1 => Value::Datum(quasiquote_expand(args[0], env, 1))
@@ -1738,7 +1746,9 @@ fn eval_quasiquote(args : Array[Datum], env : Env) -> Value raise EvalError {
 ///|
 fn eval_quasisyntax(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
-    1 => Value::Datum(quasisyntax_expand(args[0], env, 1))
+    1 => Value::SyntaxObject(
+      SyntaxObject::{ datum: quasisyntax_expand(args[0], env, 1), context: next_syntax_context() },
+    )
     n => raise arity_mismatch(1, n)
   }
 }
@@ -4693,7 +4703,7 @@ fn eval_pair(
       Some("define-enumeration") => eval_define_enumeration_state(args, env, kont, handlers)
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
-      Some("syntax") => MachineState::Apply(eval_quote(args), kont, handlers)
+      Some("syntax") => MachineState::Apply(eval_syntax(args), kont, handlers)
       Some("quasisyntax") => MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
       Some("delay") => MachineState::Apply(eval_delay(args, env), kont, handlers)
       Some("if") => eval_if_state(args, env, kont, handlers)

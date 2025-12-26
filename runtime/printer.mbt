@@ -195,6 +195,7 @@ pub fn value_to_string(value : Value) -> String {
     Value::EnumSetProc(_) => "#<procedure>"
     Value::RecordTypeDescriptor(_) => "#<record-type-descriptor>"
     Value::RecordConstructorDescriptor(_) => "#<record-constructor-descriptor>"
+    Value::SyntaxObject(_) => "#<syntax>"
     Value::SyntaxKeyword(_) => "#<syntax-keyword>"
     Value::Macro(_) => "#<syntax>"
   }
