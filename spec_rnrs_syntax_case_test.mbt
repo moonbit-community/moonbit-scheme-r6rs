@@ -32,3 +32,21 @@ test "r6rs libraries: syntax-case generate-temporaries" {
   )
   inspect(value_to_string(eval_program(program)), content="(#t #t #f)")
 }
+
+///|
+test "r6rs libraries: syntax-case value exports" {
+  let program = (
+    (
+      #|(begin
+      #|  (define env (environment '(rnrs syntax-case)))
+      #|  (list (eval '(identifier? 'x) env)
+      #|        (eval '(syntax? 'x) env)
+      #|        (eval '(free-identifier=? 'x 'x) env)
+      #|        (eval '(bound-identifier=? 'x 'x) env)
+      #|        (eval '(syntax->datum (syntax (a b))) env)
+      #|        (eval '(datum->syntax 'a '(1 2)) env)
+      #|        (procedure? (eval 'syntax-violation env))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(#t #t #t #t (a b) (1 2) #t)")
+}
