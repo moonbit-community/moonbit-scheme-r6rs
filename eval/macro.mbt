@@ -375,7 +375,7 @@ fn parse_syntax_rules(expr : Datum) -> SyntaxRules raise EvalError {
     rules.push({ pattern: rule_parts[0], template: rule_parts[1], fender: None })
     i = i + 1
   }
-  { literals, rules, ellipsis }
+  { literals, rules, ellipsis, kind: SyntaxRulesKind::SyntaxRules }
 }
 
 ///|
@@ -417,7 +417,7 @@ fn parse_identifier_syntax(expr : Datum, name : String) -> SyntaxRules raise Eva
       literals.push(key)
     }
   }
-  { literals, rules, ellipsis: "..." }
+  { literals, rules, ellipsis: "...", kind: SyntaxRulesKind::SyntaxRules }
 }
 
 ///|
@@ -465,7 +465,7 @@ fn parse_syntax_case_transformer(expr : Datum) -> SyntaxRules raise EvalError {
     }
     i = i + 1
   }
-  { literals, rules, ellipsis: "..." }
+  { literals, rules, ellipsis: "...", kind: SyntaxRulesKind::SyntaxCase }
 }
 
 ///|
@@ -661,7 +661,7 @@ fn fender_allows(expr : Datum, bindings : Map[String, BindingVal], env : Env) ->
   let fenv = env_extend(env)
   for name in bindings.keys() {
     match bindings.get(name) {
-      Some(value) => env_define(fenv, name, Value::Datum(binding_to_datum(value)))
+      Some(value) => env_define(fenv, name, value_from_datum(binding_to_datum(value)))
       None => ()
     }
   }
@@ -674,7 +674,7 @@ fn template_env_with_bindings(env : Env, bindings : Map[String, BindingVal]) -> 
   let fenv = env_extend(env)
   for name in bindings.keys() {
     match bindings.get(name) {
-      Some(value) => env_define(fenv, name, Value::Datum(binding_to_datum(value)))
+      Some(value) => env_define(fenv, name, value_from_datum(binding_to_datum(value)))
       None => ()
     }
   }
@@ -684,8 +684,9 @@ fn template_env_with_bindings(env : Env, bindings : Map[String, BindingVal]) -> 
 ///|
 fn value_to_syntax_datum(value : Value) -> Datum raise EvalError {
   match value {
-    Value::SyntaxObject(obj) => obj.datum
-    _ => value_as_datum(value)
+    Value::SyntaxObject(_) | Value::Record(_) => value_to_datum_element(value)
+    Value::Datum(d) => d
+    _ => raise @core.EvalError("type error: datum expected")
   }
 }
 
@@ -710,13 +711,110 @@ fn expand_macro(rules : SyntaxRules, call : Datum, env : Env) -> Datum raise Eva
             None => ()
           }
           let renames = build_rename_map(rule.template, bindings, rules.literals, rules.ellipsis, env)
-          return expand_template(rule.template, bindings, renames, rules.ellipsis, env)
+          let expanded = match rules.kind {
+            SyntaxRulesKind::SyntaxRules =>
+              expand_template(rule.template, bindings, renames, rules.ellipsis, env)
+            SyntaxRulesKind::SyntaxCase => {
+              let fenv = template_env_with_bindings(env, bindings)
+              let rewritten = rewrite_template_expr(
+                rule.template,
+                bindings,
+                renames,
+                rules.ellipsis,
+                env,
+              )
+              let value = eval_expr(rewritten, fenv)
+              value_to_syntax_datum(value)
+            }
+          }
+          return strip_syntax_datum(expanded)
         }
       }
     }
     i = i + 1
   }
   raise @core.EvalError("no matching syntax-rules pattern")
+}
+
+///|
+fn wrap_pattern_datum(value : Datum) -> Datum {
+  match value {
+    Datum::Value(Value::SyntaxObject(_)) => value
+    _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, context: 0 }))
+  }
+}
+
+///|
+fn strip_syntax_datum(value : Datum) -> Datum {
+  match value {
+    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
+    Datum::Pair(a, b) => pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
+    Datum::Vector(items) => {
+      let stripped : Array[Datum] = []
+      for item in items {
+        stripped.push(strip_syntax_datum(item))
+      }
+      Datum::Vector(stripped)
+    }
+    Datum::Label(tag, cell) => Datum::Label(tag, Ref::new(strip_syntax_datum(cell.val)))
+    _ => value
+  }
+}
+
+///|
+fn rewrite_template_expr(
+  expr : Datum,
+  bindings : Map[String, BindingVal],
+  renames : Map[String, String],
+  ellipsis : String,
+  env : Env,
+) -> Datum raise EvalError {
+  match expr {
+    Datum::Pair(_, _) => {
+      match datum_list_to_array_opt(expr) {
+        Some(items) => {
+          if !items.is_empty() {
+            let head = items[0]
+            let mut is_template_form = false
+            if datum_is_symbol(head, "syntax") {
+              is_template_form = true
+            } else if datum_is_symbol(head, "quasisyntax") {
+              is_template_form = true
+            } else if datum_is_symbol(head, "with-syntax") {
+              is_template_form = true
+            }
+            if is_template_form {
+              let indices : Array[Int] = []
+              let expanded = expand_template_indexed(expr, bindings, renames, ellipsis, indices, env)
+              let obj = SyntaxObject::{ datum: expanded, context: next_syntax_context() }
+              return Datum::Value(Value::SyntaxObject(obj))
+            }
+          }
+          let rewritten : Array[Datum] = []
+          for item in items {
+            rewritten.push(rewrite_template_expr(item, bindings, renames, ellipsis, env))
+          }
+          list_from_array(rewritten)
+        }
+        None =>
+          match expr {
+            Datum::Pair(a, b) => pair_new(
+              rewrite_template_expr(a.val, bindings, renames, ellipsis, env),
+              rewrite_template_expr(b.val, bindings, renames, ellipsis, env),
+            )
+            _ => expr
+          }
+      }
+    }
+    Datum::Vector(items) => {
+      let rewritten : Array[Datum] = []
+      for item in items {
+        rewritten.push(rewrite_template_expr(item, bindings, renames, ellipsis, env))
+      }
+      Datum::Vector(rewritten)
+    }
+    _ => expr
+  }
 }
 
 ///|
@@ -727,8 +825,8 @@ fn match_pattern(
   ellipsis : String,
   bindings : Map[String, BindingVal],
 ) -> Bool {
-  let pat = datum_unlabel(pattern)
-  let inp = datum_unlabel(input)
+  let pat = datum_unlabel(datum_unwrap_syntax(pattern))
+  let inp = datum_unlabel(datum_unwrap_syntax(input))
   match pat {
     Datum::Label(_, _) => false
     Datum::Symbol(name) => {
@@ -740,7 +838,7 @@ fn match_pattern(
           _ => false
         }
       } else {
-        bind_var(name, inp, bindings)
+        bind_var(name, wrap_pattern_datum(input), bindings)
       }
     }
     Datum::Nil => inp is Datum::Nil
@@ -1031,8 +1129,16 @@ fn datum_list_to_array_opt(list : Datum) -> Array[Datum]? {
 }
 
 ///|
+fn datum_unwrap_syntax(value : Datum) -> Datum {
+  match value {
+    Datum::Value(Value::SyntaxObject(obj)) => obj.datum
+    _ => value
+  }
+}
+
+///|
 fn datum_is_symbol(value : Datum, name : String) -> Bool {
-  match datum_unlabel(value) {
+  match datum_unlabel(datum_unwrap_syntax(value)) {
     Datum::Symbol(sym) => sym == name
     _ => false
   }

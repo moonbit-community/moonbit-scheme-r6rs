@@ -38,6 +38,7 @@ using @core {
   type RecordTypeDescriptor,
   type SyntaxRule,
   type SyntaxRules,
+  type SyntaxRulesKind,
   type Value,
   type WindAction,
   type Winder,

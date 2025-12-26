@@ -479,10 +479,17 @@ pub(all) struct SyntaxRule {
 ///|
 /// A collection of syntax-rules with literal identifiers.
 ///|
+pub(all) enum SyntaxRulesKind {
+  SyntaxRules
+  SyntaxCase
+}
+
+///|
 pub(all) struct SyntaxRules {
   literals : Array[String]
   rules : Array[SyntaxRule]
   ellipsis : String
+  kind : SyntaxRulesKind
 }
 
 ///|

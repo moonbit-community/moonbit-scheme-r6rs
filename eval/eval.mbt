@@ -1873,7 +1873,10 @@ fn quasisyntax_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalE
         match unwrap_form(car.val, "unsyntax-splicing") {
           Some(arg) => {
             let value = eval_expr(arg, env)
-            let datum = value_as_datum(value)
+            let datum = match value {
+              Value::SyntaxObject(obj) => obj.datum
+              _ => value_as_datum(value)
+            }
             let items = datum_list_to_array(datum)
             let tail = quasisyntax_expand(cdr.val, env, depth)
             return list_with_tail(items, tail)

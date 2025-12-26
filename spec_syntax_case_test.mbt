@@ -7,7 +7,7 @@ test "r6rs syntax-case: basic pattern" {
       #|    (lambda (stx)
       #|      (syntax-case stx ()
       #|        ((when test body ...)
-      #|         (if test (begin body ...) (begin))))))
+      #|         #'(if test (begin body ...) (begin))))))
       #|  (when #t 1 2 3))
     )
   )
@@ -22,7 +22,7 @@ test "r6rs syntax-case: fender clauses" {
       #|  (define-syntax pair-form?
       #|    (lambda (stx)
       #|      (syntax-case stx ()
-      #|        ((_ x) (pair? x) #t)
+      #|        ((_ x) (pair? (syntax->datum x)) #t)
       #|        ((_ x) #f))))
       #|  (list (pair-form? (a b)) (pair-form? 1)))
     )
@@ -40,7 +40,7 @@ test "r6rs syntax-case: with-syntax bindings" {
       #|    (lambda (stx)
       #|      (syntax-case stx ()
       #|        ((_ n)
-      #|         (with-syntax ((m (+ n 1)))
+      #|         (with-syntax ((m (datum->syntax n (+ (syntax->datum n) 1))))
       #|           m)))))
       #|  (add1 4))
     )
@@ -80,4 +80,21 @@ test "r6rs syntax-case: quasisyntax template forms" {
     )
   )
   inspect(value_to_string(eval_program(program)), content="((1 2) (1 2 3))")
+}
+
+///|
+test "r6rs syntax-case: evaluated transformer expression" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax add1-const
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ n)
+      #|         (let ((x (syntax->datum n)))
+      #|           (datum->syntax n (+ x 1)))))))
+      #|  (add1-const 2))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="3")
 }
