@@ -190,10 +190,25 @@ test "r6rs libraries: version references" {
 test "r6rs libraries: base syntax keyword import" {
   let program = (
     (
-      #|(import (only (rnrs base) define lambda if set! begin))
+      #|(import (only (rnrs base)
+      #|              define lambda if set! begin syntax-rules identifier-syntax))
       #|(define x 0)
       #|((lambda (v) (if v (begin (set! x 2) x) x)) #t)
     )
   )
   inspect(value_to_string(eval_program(program)), content="2")
+}
+
+///|
+test "r6rs libraries: base excludes syntax-case" {
+  let bad = try? eval_program(
+    (
+      #|(import (only (rnrs base) syntax-case))
+      #|#t
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"unknown import: syntax-case\")")
+    _ => fail("expected import error for syntax-case")
+  }
 }

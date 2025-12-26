@@ -57,15 +57,23 @@ test "r6rs libraries: syntax-case syntactic keyword exports" {
     (
       #|(begin
       #|  (import (only (rnrs syntax-case)
-      #|                syntax-rules syntax-case identifier-syntax syntax quasisyntax))
-      #|  (define env (environment '(only (rnrs syntax-case)
-      #|                             syntax-rules syntax-case identifier-syntax syntax quasisyntax)))
-      #|  (list (procedure? (eval 'syntax-rules env))
-      #|        (procedure? (eval 'syntax-case env))
-      #|        (procedure? (eval 'identifier-syntax env))
-      #|        (procedure? (eval 'syntax env))
-      #|        (procedure? (eval 'quasisyntax env))))
+      #|                syntax-case syntax quasisyntax unsyntax unsyntax-splicing))
+      #|  #t)
     )
   )
-  inspect(value_to_string(eval_program(program)), content="(#f #f #f #f #f)")
+  inspect(value_to_string(eval_program(program)), content="#t")
+}
+
+///|
+test "r6rs libraries: syntax-case excludes syntax-rules" {
+  let bad = try? eval_program(
+    (
+      #|(import (only (rnrs syntax-case) syntax-rules))
+      #|#t
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"unknown import: syntax-rules\")")
+    _ => fail("expected import error for syntax-rules")
+  }
 }

@@ -13,3 +13,14 @@ test "r6rs libraries: control when/unless" {
   )
   inspect(value_to_string(eval_program(program)), content="(2 5)")
 }
+
+///|
+test "r6rs libraries: control syntax keyword exports" {
+  let program = (
+    (
+      #|(import (only (rnrs control) case-lambda do))
+      #|#t
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#t")
+}

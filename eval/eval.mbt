@@ -461,7 +461,7 @@ fn env_export_map(env : Env) -> Map[String, Value] {
 ///|
 fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   let exports = env_export_map(env)
-  for name in syntax_keyword_names() {
+  for name in base_syntax_keywords() {
     exports[name] = Value::SyntaxKeyword(name)
   }
   register_library_entry("rnrs.base", Some([6]), exports)
@@ -525,6 +525,7 @@ fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   for name in condition_names {
     condition_exports[name] = env_lookup(env, name)
   }
+  condition_exports["define-condition-type"] = Value::SyntaxKeyword("define-condition-type")
   register_library_entry("rnrs.conditions", Some([6]), condition_exports)
   let flonum_exports : Map[String, Value] = {}
   let flonum_names : Array[String] = [
@@ -913,7 +914,7 @@ fn stdlib_source() -> String {
     "(define-condition-type &no-nans &implementation-restriction",
     "  make-no-nans-violation no-nans-violation?)",
     "(library (rnrs control (6))",
-    "  (export when unless)",
+    "  (export case-lambda do when unless)",
     "  (import)",
     "  (define-syntax when",
     "    (syntax-rules ()",
@@ -923,7 +924,7 @@ fn stdlib_source() -> String {
     "      ((_ test body ...) (if (not test) (begin body ...) (begin)))))",
     ")",
     "(library (rnrs syntax-case (6))",
-    "  (export syntax-rules syntax-case identifier-syntax syntax quasisyntax",
+    "  (export syntax-case syntax quasisyntax unsyntax unsyntax-splicing ... _",
     "          make-variable-transformer generate-temporaries",
     "          syntax->datum datum->syntax free-identifier=? bound-identifier=?",
     "          identifier? syntax? syntax-violation)",
@@ -972,7 +973,7 @@ fn stdlib_source() -> String {
     "  (import)",
     ")",
     "(library (rnrs enums (6))",
-    "  (export make-enumeration enum-set-universe enum-set-indexer",
+    "  (export define-enumeration make-enumeration enum-set-universe enum-set-indexer",
     "          enum-set-constructor enum-set? enum-set-member? enum-set-subset?",
     "          enum-set=? enum-set-union enum-set-intersection enum-set-difference",
     "          enum-set-complement enum-set-projection enum-set->list)",
@@ -985,9 +986,15 @@ fn stdlib_source() -> String {
     "  (import)",
     ")",
     "(library (rnrs exceptions (6))",
-    "  (export with-exception-handler raise raise-continuable error",
+    "  (export guard with-exception-handler raise raise-continuable error",
     "          assertion-violation implementation-restriction-violation",
     "          undefined-violation syntax-violation)",
+    "  (import)",
+    ")",
+    "(library (rnrs records syntactic (6))",
+    "  (export define-record-type fields immutable mutable nongenerative opaque",
+    "          parent parent-rtd protocol record-constructor-descriptor",
+    "          record-type-descriptor sealed)",
     "  (import)",
     ")",
     "(library (rnrs records procedural (6))",
@@ -4023,60 +4030,110 @@ fn parse_export_clause(expr : Datum) -> Array[(String, String)] raise EvalError 
 }
 
 ///|
-fn syntax_keyword_names() -> Array[String] {
+fn base_syntax_keywords() -> Array[String] {
   [
-    "quote",
-    "quasiquote",
-    "unquote",
-    "unquote-splicing",
-    "syntax",
-    "quasisyntax",
-    "unsyntax",
-    "unsyntax-splicing",
-    "if",
+    "...",
+    "_",
+    "=>",
+    "and",
     "begin",
-    "begin-for-syntax",
-    "lambda",
-    "case-lambda",
+    "case",
+    "cond",
     "define",
     "define-syntax",
-    "define-values",
-    "set!",
+    "else",
+    "identifier-syntax",
+    "if",
+    "lambda",
     "let",
     "let*",
-    "letrec",
-    "letrec*",
-    "let-values",
     "let*-values",
     "let-syntax",
+    "let-values",
+    "letrec",
+    "letrec*",
     "letrec-syntax",
-    "define-record-type",
-    "define-condition-type",
-    "define-enumeration",
-    "and",
     "or",
-    "cond",
-    "cond-expand",
-    "case",
-    "do",
-    "guard",
-    "parameterize",
-    "delay",
+    "quasiquote",
+    "quote",
+    "set!",
     "syntax-rules",
-    "syntax-case",
-    "identifier-syntax",
-    "else",
-    "=>",
+    "unquote",
+    "unquote-splicing",
   ]
 }
 
 ///|
+fn syntax_case_keywords() -> Array[String] {
+  [
+    "...",
+    "_",
+    "syntax",
+    "quasisyntax",
+    "unsyntax",
+    "unsyntax-splicing",
+    "syntax-case",
+  ]
+}
+
+///|
+fn control_syntax_keywords() -> Array[String] {
+  ["case-lambda", "do"]
+}
+
+///|
+fn exceptions_syntax_keywords() -> Array[String] {
+  ["guard"]
+}
+
+///|
+fn enums_syntax_keywords() -> Array[String] {
+  ["define-enumeration"]
+}
+
+///|
+fn records_syntax_keywords() -> Array[String] {
+  [
+    "define-record-type",
+    "fields",
+    "immutable",
+    "mutable",
+    "nongenerative",
+    "opaque",
+    "parent",
+    "parent-rtd",
+    "protocol",
+    "record-constructor-descriptor",
+    "record-type-descriptor",
+    "sealed",
+  ]
+}
+
+///|
+fn conditions_syntax_keywords() -> Array[String] {
+  ["define-condition-type"]
+}
+
+///|
 fn is_syntax_keyword(name : String) -> Bool {
-  let keywords = syntax_keyword_names()
+  let lists : Array[Array[String]] = [
+    base_syntax_keywords(),
+    syntax_case_keywords(),
+    control_syntax_keywords(),
+    exceptions_syntax_keywords(),
+    enums_syntax_keywords(),
+    records_syntax_keywords(),
+    conditions_syntax_keywords(),
+  ]
   let mut i = 0
-  while i < keywords.length() {
-    if keywords[i] == name {
-      return true
+  while i < lists.length() {
+    let keywords = lists[i]
+    let mut j = 0
+    while j < keywords.length() {
+      if keywords[j] == name {
+        return true
+      }
+      j = j + 1
     }
     i = i + 1
   }
