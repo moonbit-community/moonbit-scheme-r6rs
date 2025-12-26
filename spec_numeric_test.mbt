@@ -515,6 +515,38 @@ test "r6rs numeric: elementary functions" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(exact? (sqrt 4))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(= (sqrt 1/4) 1/2)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(exact? (sqrt 1/4))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(inexact? (sqrt 2))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(= (real-part (sqrt -4)) 0.0)
       )
     )),

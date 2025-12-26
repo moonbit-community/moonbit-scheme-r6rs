@@ -1497,6 +1497,55 @@ fn bigint_to_integer_datum(value : @bigint.BigInt) -> Datum {
 }
 
 ///|
+fn exact_sqrt_real(value : Datum) -> Datum? raise EvalError {
+  match datum_unlabel(value) {
+    Datum::Int(n) =>
+      if n < 0 {
+        None
+      } else {
+        let (s, r) = exact_integer_sqrt(n)
+        if r == 0 { Some(Datum::Int(s)) } else { None }
+      }
+    Datum::BigInt(n) =>
+      if n.compare_int(0) < 0 {
+        None
+      } else {
+        let (s, r) = exact_integer_sqrt_bigint(n)
+        if bigint_is_zero(r) { Some(bigint_to_integer_datum(s)) } else { None }
+      }
+    Datum::Rat(n, d) =>
+      if n < 0 {
+        None
+      } else {
+        let (sn, rn) = exact_integer_sqrt(n)
+        if rn != 0 {
+          None
+        } else {
+          let (sd, rd) = exact_integer_sqrt(d)
+          if rd != 0 { None } else { Some(normalize_rat_or_error(sn, sd)) }
+        }
+      }
+    Datum::BigRat(n, d) =>
+      if n.compare_int(0) < 0 {
+        None
+      } else {
+        let (sn, rn) = exact_integer_sqrt_bigint(n)
+        if !bigint_is_zero(rn) {
+          None
+        } else {
+          let (sd, rd) = exact_integer_sqrt_bigint(d)
+          if !bigint_is_zero(rd) {
+            None
+          } else {
+            Some(normalize_big_rat_or_error(sn, sd))
+          }
+        }
+      }
+    _ => None
+  }
+}
+
+///|
 fn value_as_nonnegative_int(value : Value) -> Int raise EvalError {
   let n = value_as_int_index(value)
   if n < 0 {
@@ -2748,12 +2797,29 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
-          let (real_f, imag_f) = datum_to_complex_float(value)
-          if imag_f == 0.0 && real_f >= 0.0 {
-            Value::Datum(Datum::Float(real_f.sqrt()))
-          } else {
-            let (sr, si) = complex_sqrt_f(real_f, imag_f)
-            Value::Datum(complex_from_float(sr, si))
+          let mut real_value = value
+          let mut is_real = true
+          match datum_unlabel(value) {
+            Datum::Complex(real, imag) =>
+              if datum_is_zero(imag.val) {
+                real_value = real.val
+              } else {
+                is_real = false
+              }
+            _ => ()
+          }
+          let exact_opt = if is_real { exact_sqrt_real(real_value) } else { None }
+          match exact_opt {
+            Some(result) => Value::Datum(result)
+            None => {
+              let (real_f, imag_f) = datum_to_complex_float(value)
+              if imag_f == 0.0 && real_f >= 0.0 {
+                Value::Datum(Datum::Float(real_f.sqrt()))
+              } else {
+                let (sr, si) = complex_sqrt_f(real_f, imag_f)
+                Value::Datum(complex_from_float(sr, si))
+              }
+            }
           }
         }
         n => raise arity_mismatch(1, n)
