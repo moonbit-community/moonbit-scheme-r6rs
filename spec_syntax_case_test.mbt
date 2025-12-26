@@ -47,3 +47,37 @@ test "r6rs syntax-case: with-syntax bindings" {
   )
   inspect(value_to_string(eval_program(program)), content="5")
 }
+
+///|
+test "r6rs syntax-case: syntax template shorthand" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax id
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ x) #'x))))
+      #|  (id 42))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="42")
+}
+
+///|
+test "r6rs syntax-case: quasisyntax template forms" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax make-list
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ a b) #`(list #,a #,b)))))
+      #|  (define-syntax splice-list
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ xs) #`(list #,@xs)))))
+      #|  (list (make-list 1 2) (splice-list (1 2 3))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="((1 2) (1 2 3))")
+}

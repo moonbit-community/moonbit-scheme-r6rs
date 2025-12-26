@@ -670,6 +670,18 @@ fn fender_allows(expr : Datum, bindings : Map[String, BindingVal], env : Env) ->
 }
 
 ///|
+fn template_env_with_bindings(env : Env, bindings : Map[String, BindingVal]) -> Env {
+  let fenv = env_extend(env)
+  for name in bindings.keys() {
+    match bindings.get(name) {
+      Some(value) => env_define(fenv, name, Value::Datum(binding_to_datum(value)))
+      None => ()
+    }
+  }
+  fenv
+}
+
+///|
 fn value_to_syntax_datum(value : Value) -> Datum raise EvalError {
   match value {
     Value::SyntaxObject(obj) => obj.datum
@@ -1226,13 +1238,7 @@ fn expand_with_syntax(
   }
   let binding_specs = datum_list_to_array(items[1])
   let expanded = bindings_clone(bindings)
-  let fenv = env_extend(env)
-  for name in bindings.keys() {
-    match bindings.get(name) {
-      Some(value) => env_define(fenv, name, Value::Datum(binding_to_datum(value)))
-      None => ()
-    }
-  }
+  let fenv = template_env_with_bindings(env, bindings)
   for spec in binding_specs {
     let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
@@ -1264,6 +1270,27 @@ fn expand_with_syntax(
 }
 
 ///|
+fn rename_datum(datum : Datum, renames : Map[String, String]) -> Datum {
+  match datum {
+    Datum::Symbol(name) =>
+      match renames.get(name) {
+        Some(rename) => Datum::Symbol(rename)
+        None => datum
+      }
+    Datum::Pair(a, b) => pair_new(rename_datum(a.val, renames), rename_datum(b.val, renames))
+    Datum::Vector(items) => {
+      let renamed : Array[Datum] = []
+      for item in items {
+        renamed.push(rename_datum(item, renames))
+      }
+      Datum::Vector(renamed)
+    }
+    Datum::Label(tag, value) => Datum::Label(tag, Ref::new(rename_datum(value.val, renames)))
+    _ => datum
+  }
+}
+
+///|
 fn expand_template(
   template : Datum,
   bindings : Map[String, BindingVal],
@@ -1291,6 +1318,12 @@ fn expand_template_indexed(
         Some(items) => {
           if is_quote_form(items) {
             template
+          } else if items.length() == 2 && datum_is_symbol(items[0], "syntax") {
+            expand_template_indexed(items[1], bindings, renames, ellipsis, indices, env)
+          } else if items.length() == 2 && datum_is_symbol(items[0], "quasisyntax") {
+            let fenv = template_env_with_bindings(env, bindings)
+            let expanded = quasisyntax_expand(items[1], fenv, 1)
+            rename_datum(expanded, renames)
           } else if items.length() >= 3 && datum_is_symbol(items[0], "with-syntax") {
             expand_with_syntax(items, bindings, renames, ellipsis, indices, env)
           } else {
