@@ -5332,14 +5332,14 @@ fn apply_proc(
       }
     }
     Value::Primitive(Primitive::SyntaxViolation) => {
-      if args.length() < 4 {
-        raise arity_mismatch(4, args.length())
+      if args.length() < 3 {
+        raise arity_mismatch(3, args.length())
       } else {
         let who = args[0]
         let message = args[1]
         let form = args[2]
-        let subform = args[3]
-        let irritants = args.sub(start=4).to_array()
+        let subform = if args.length() >= 4 { args[3] } else { Value::Datum(Datum::Bool(false)) }
+        let irritants = if args.length() >= 4 { args.sub(start=4).to_array() } else { [] }
         let components : Array[Record] = []
         components.push(make_condition_record("&syntax", [form, subform]))
         components.push(make_condition_record("&message", [message]))

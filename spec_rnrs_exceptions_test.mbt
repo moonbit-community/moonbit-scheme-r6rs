@@ -21,3 +21,18 @@ test "r6rs libraries: exceptions guard export" {
   )
   inspect(value_to_string(eval_program(program)), content="#t")
 }
+
+///|
+test "r6rs libraries: syntax-violation optional subform" {
+  let program = (
+    (
+      #|(import (rnrs exceptions) (rnrs conditions))
+      #|(guard (ex ((syntax-violation? ex)
+      #|             (list (syntax-violation-form ex)
+      #|                   (syntax-violation-subform ex)))
+      #|            (else 'bad))
+      #|  (syntax-violation 'who "msg" 'form))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(form #f)")
+}
