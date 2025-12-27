@@ -726,12 +726,18 @@ fn merge_bindings(dest : Map[String, BindingVal], src : Map[String, BindingVal])
 ///|
 fn binding_select(value : BindingVal, indices : Array[Int], depth : Int) -> Datum? {
   match value {
-    BindingVal::Leaf(datum) => Some(datum)
-    BindingVal::Seq(values) => {
-      if values.is_empty() {
+    BindingVal::Leaf(datum) => {
+      if depth < indices.length() {
         None
       } else {
-        let idx = if depth < indices.length() { indices[depth] } else { 0 }
+        Some(datum)
+      }
+    }
+    BindingVal::Seq(values) => {
+      if depth >= indices.length() || values.is_empty() {
+        None
+      } else {
+        let idx = indices[depth]
         let actual = if idx < values.length() { idx } else { values.length() - 1 }
         binding_select(values[actual], indices, depth + 1)
       }
@@ -970,6 +976,7 @@ fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpa
                 renames,
                 rules.ellipsis,
                 ellipsis_active,
+                "invalid syntax-rules",
                 env,
                 false,
               )
@@ -981,6 +988,7 @@ fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpa
                 renames,
                 rules.ellipsis,
                 ellipsis_active,
+                "invalid syntax-case",
                 rules.def_env,
               )
               let value = eval_expr_transformer(rewritten, fenv)
@@ -1135,6 +1143,7 @@ fn rewrite_template_expr(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   env : Env,
 ) -> Datum raise EvalError {
   match expr {
@@ -1160,6 +1169,7 @@ fn rewrite_template_expr(
                   renames,
                   ellipsis,
                   ellipsis_active,
+                  error_message,
                   indices,
                   env,
                   true,
@@ -1179,7 +1189,15 @@ fn rewrite_template_expr(
           let rewritten : Array[Datum] = []
           for item in items {
             rewritten.push(
-              rewrite_template_expr(item, bindings, renames, ellipsis, ellipsis_active, env),
+              rewrite_template_expr(
+                item,
+                bindings,
+                renames,
+                ellipsis,
+                ellipsis_active,
+                error_message,
+                env,
+              ),
             )
           }
           list_from_array(rewritten)
@@ -1187,8 +1205,24 @@ fn rewrite_template_expr(
         None =>
           match expr {
             Datum::Pair(a, b) => pair_new(
-              rewrite_template_expr(a.val, bindings, renames, ellipsis, ellipsis_active, env),
-              rewrite_template_expr(b.val, bindings, renames, ellipsis, ellipsis_active, env),
+              rewrite_template_expr(
+                a.val,
+                bindings,
+                renames,
+                ellipsis,
+                ellipsis_active,
+                error_message,
+                env,
+              ),
+              rewrite_template_expr(
+                b.val,
+                bindings,
+                renames,
+                ellipsis,
+                ellipsis_active,
+                error_message,
+                env,
+              ),
             )
             _ => expr
           }
@@ -1198,7 +1232,15 @@ fn rewrite_template_expr(
       let rewritten : Array[Datum] = []
       for item in items {
         rewritten.push(
-          rewrite_template_expr(item, bindings, renames, ellipsis, ellipsis_active, env),
+          rewrite_template_expr(
+            item,
+            bindings,
+            renames,
+            ellipsis,
+            ellipsis_active,
+            error_message,
+            env,
+          ),
         )
       }
       Datum::Vector(rewritten)
@@ -1831,6 +1873,7 @@ fn expand_with_syntax(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
   template_forms : Bool,
@@ -1865,6 +1908,7 @@ fn expand_with_syntax(
       renames,
       ellipsis,
       ellipsis_active,
+      error_message,
       indices,
       env,
       template_forms,
@@ -1880,6 +1924,7 @@ fn expand_with_syntax(
           renames,
           ellipsis,
           ellipsis_active,
+          error_message,
           indices,
           env,
           template_forms,
@@ -1919,6 +1964,7 @@ fn expand_template(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   env : Env,
   template_forms : Bool,
 ) -> Datum raise EvalError {
@@ -1929,6 +1975,7 @@ fn expand_template(
     renames,
     ellipsis,
     ellipsis_active,
+    error_message,
     indices,
     env,
     template_forms,
@@ -1942,6 +1989,7 @@ fn expand_template_indexed(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
   template_forms : Bool,
@@ -1949,9 +1997,9 @@ fn expand_template_indexed(
   match template {
     Datum::Symbol(name) => {
       if ellipsis_active && name == ellipsis {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
-      expand_symbol(name, bindings, renames, indices)
+      expand_symbol(name, bindings, renames, indices, error_message)
     }
     Datum::Pair(_, _) => {
       match datum_list_to_array_opt(template) {
@@ -1965,6 +2013,7 @@ fn expand_template_indexed(
               renames,
               ellipsis,
               ellipsis_active,
+              error_message,
               indices,
               env,
               template_forms,
@@ -1978,6 +2027,7 @@ fn expand_template_indexed(
                 renames,
                 ellipsis,
                 ellipsis_active,
+                error_message,
                 indices,
                 env,
               )
@@ -1990,6 +2040,7 @@ fn expand_template_indexed(
               renames,
               ellipsis,
               ellipsis_active,
+              error_message,
               indices,
               env,
               template_forms,
@@ -2001,6 +2052,7 @@ fn expand_template_indexed(
               renames,
               ellipsis,
               ellipsis_active,
+              error_message,
               indices,
               env,
               template_forms,
@@ -2016,6 +2068,7 @@ fn expand_template_indexed(
                 renames,
                 ellipsis,
                 ellipsis_active,
+                error_message,
                 indices,
                 env,
                 template_forms,
@@ -2026,6 +2079,7 @@ fn expand_template_indexed(
                 renames,
                 ellipsis,
                 ellipsis_active,
+                error_message,
                 indices,
                 env,
                 template_forms,
@@ -2043,6 +2097,7 @@ fn expand_template_indexed(
         renames,
         ellipsis,
         ellipsis_active,
+        error_message,
         indices,
         env,
         template_forms,
@@ -2058,15 +2113,16 @@ fn expand_template_quasisyntax(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
 ) -> Datum raise EvalError {
   match template {
     Datum::Symbol(name) => {
       if ellipsis_active && name == ellipsis {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
-      expand_symbol(name, bindings, renames, indices)
+      expand_symbol(name, bindings, renames, indices, error_message)
     }
     Datum::Pair(_, _) => {
       match datum_list_to_array_opt(template) {
@@ -2084,6 +2140,7 @@ fn expand_template_quasisyntax(
               renames,
               ellipsis,
               ellipsis_active,
+              error_message,
               indices,
               env,
             )
@@ -2098,6 +2155,7 @@ fn expand_template_quasisyntax(
                 renames,
                 ellipsis,
                 ellipsis_active,
+                error_message,
                 indices,
                 env,
               ),
@@ -2107,6 +2165,7 @@ fn expand_template_quasisyntax(
                 renames,
                 ellipsis,
                 ellipsis_active,
+                error_message,
                 indices,
                 env,
               ),
@@ -2123,6 +2182,7 @@ fn expand_template_quasisyntax(
         renames,
         ellipsis,
         ellipsis_active,
+        error_message,
         indices,
         env,
       )
@@ -2136,12 +2196,13 @@ fn expand_symbol(
   bindings : Map[String, BindingVal],
   renames : Map[String, String],
   indices : Array[Int],
-) -> Datum {
+  error_message : String,
+) -> Datum raise EvalError {
   match bindings.get(name) {
     Some(value) => {
       match binding_select(value, indices, 0) {
         Some(datum) => datum
-        None => Datum::Symbol(name)
+        None => raise @core.EvalError(error_message)
       }
     }
     None => {
@@ -2160,6 +2221,7 @@ fn expand_template_list(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
   template_forms : Bool,
@@ -2168,12 +2230,12 @@ fn expand_template_list(
   let mut i = 0
   while i < items.length() {
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError("invalid syntax-rules")
+      raise @core.EvalError(error_message)
     }
     if ellipsis_active && i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
       let repeat_template = items[i]
       if !template_has_repeat_binding(repeat_template, bindings, ellipsis, indices) {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       let mut j = 0
@@ -2190,6 +2252,7 @@ fn expand_template_list(
             renames,
             ellipsis,
             ellipsis_active,
+            error_message,
             next_indices,
             env,
             template_forms,
@@ -2206,6 +2269,7 @@ fn expand_template_list(
           renames,
           ellipsis,
           ellipsis_active,
+          error_message,
           indices,
           env,
           template_forms,
@@ -2224,6 +2288,7 @@ fn expand_template_list_quasisyntax(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
 ) -> Datum raise EvalError {
@@ -2231,12 +2296,12 @@ fn expand_template_list_quasisyntax(
   let mut i = 0
   while i < items.length() {
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError("invalid syntax-rules")
+      raise @core.EvalError(error_message)
     }
     if ellipsis_active && i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
       let repeat_template = items[i]
       if !template_has_repeat_binding(repeat_template, bindings, ellipsis, indices) {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       let mut j = 0
@@ -2253,6 +2318,7 @@ fn expand_template_list_quasisyntax(
             renames,
             ellipsis,
             ellipsis_active,
+            error_message,
             next_indices,
             env,
           ),
@@ -2268,6 +2334,7 @@ fn expand_template_list_quasisyntax(
           renames,
           ellipsis,
           ellipsis_active,
+          error_message,
           indices,
           env,
         ),
@@ -2285,6 +2352,7 @@ fn expand_template_vector(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
   template_forms : Bool,
@@ -2293,12 +2361,12 @@ fn expand_template_vector(
   let mut i = 0
   while i < items.length() {
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError("invalid syntax-rules")
+      raise @core.EvalError(error_message)
     }
     if ellipsis_active && i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
       let repeat_template = items[i]
       if !template_has_repeat_binding(repeat_template, bindings, ellipsis, indices) {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       let mut j = 0
@@ -2315,6 +2383,7 @@ fn expand_template_vector(
             renames,
             ellipsis,
             ellipsis_active,
+            error_message,
             next_indices,
             env,
             template_forms,
@@ -2331,6 +2400,7 @@ fn expand_template_vector(
           renames,
           ellipsis,
           ellipsis_active,
+          error_message,
           indices,
           env,
           template_forms,
@@ -2349,6 +2419,7 @@ fn expand_template_vector_quasisyntax(
   renames : Map[String, String],
   ellipsis : String,
   ellipsis_active : Bool,
+  error_message : String,
   indices : Array[Int],
   env : Env,
 ) -> Datum raise EvalError {
@@ -2356,12 +2427,12 @@ fn expand_template_vector_quasisyntax(
   let mut i = 0
   while i < items.length() {
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError("invalid syntax-rules")
+      raise @core.EvalError(error_message)
     }
     if ellipsis_active && i + 1 < items.length() && datum_is_symbol(items[i + 1], ellipsis) {
       let repeat_template = items[i]
       if !template_has_repeat_binding(repeat_template, bindings, ellipsis, indices) {
-        raise @core.EvalError("invalid syntax-rules")
+        raise @core.EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       let mut j = 0
@@ -2378,6 +2449,7 @@ fn expand_template_vector_quasisyntax(
             renames,
             ellipsis,
             ellipsis_active,
+            error_message,
             next_indices,
             env,
           ),
@@ -2393,6 +2465,7 @@ fn expand_template_vector_quasisyntax(
           renames,
           ellipsis,
           ellipsis_active,
+          error_message,
           indices,
           env,
         ),

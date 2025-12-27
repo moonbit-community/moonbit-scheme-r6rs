@@ -178,6 +178,42 @@ test "r6rs syntax-case: wildcard with ellipsis" {
 }
 
 ///|
+test "r6rs syntax-case: invalid ellipsis in pattern" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ x ... ...) #'ok))))
+      #|  (bad 1 2))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for invalid ellipsis")
+  }
+}
+
+///|
+test "r6rs syntax-case: invalid ellipsis in template" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ x) #'(list ...)))))
+      #|  (bad 1))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for invalid template ellipsis")
+  }
+}
+
+///|
 test "r6rs syntax-case: literal ellipsis pattern" {
   let program = (
     (
