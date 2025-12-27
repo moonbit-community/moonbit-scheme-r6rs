@@ -409,6 +409,8 @@ fn init_env() -> Env {
   env_define(env, "bytevector-fill!", Value::Primitive(Primitive::ByteVectorFill))
   env_define(env, "bytevector->u8-list", Value::Primitive(Primitive::ByteVectorToU8List))
   env_define(env, "u8-list->bytevector", Value::Primitive(Primitive::U8ListToByteVector))
+  env_define(env, "string->utf8", Value::Primitive(Primitive::StringToUtf8))
+  env_define(env, "utf8->string", Value::Primitive(Primitive::Utf8ToString))
   env_define(env, "native-endianness", Value::Primitive(Primitive::NativeEndianness))
   env_define(env, "bytevector-uint-ref", Value::Primitive(Primitive::ByteVectorUintRef))
   env_define(env, "bytevector-sint-ref", Value::Primitive(Primitive::ByteVectorSintRef))
@@ -971,6 +973,7 @@ fn stdlib_source() -> String {
     "          bytevector=? bytevector-u8-ref bytevector-u8-set! bytevector-copy",
     "          bytevector-copy! bytevector-append bytevector-fill!",
     "          bytevector->u8-list u8-list->bytevector",
+    "          string->utf8 utf8->string",
     "          endianness native-endianness",
     "          bytevector-uint-ref bytevector-sint-ref",
     "          bytevector-uint-set! bytevector-sint-set!",

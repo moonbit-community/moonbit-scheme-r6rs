@@ -54,7 +54,7 @@
 ///   bytevector make-bytevector bytevector? bytevector-length bytevector=?
 ///   bytevector-u8-ref bytevector-u8-set! bytevector-copy bytevector-copy!
 ///   bytevector-fill!
-///   bytevector->u8-list u8-list->bytevector
+///   bytevector->u8-list u8-list->bytevector string->utf8 utf8->string
 ///   endianness native-endianness bytevector-uint-ref bytevector-sint-ref
 ///   bytevector-uint-set! bytevector-sint-set!
 ///   display write newline open-output-string get-output-string current-output-port
@@ -449,6 +449,8 @@ pub(all) enum Primitive {
   ByteVectorFill
   ByteVectorToU8List
   U8ListToByteVector
+  StringToUtf8
+  Utf8ToString
   NativeEndianness
   ByteVectorUintRef
   ByteVectorSintRef

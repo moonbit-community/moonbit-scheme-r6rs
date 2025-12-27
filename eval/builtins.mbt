@@ -360,6 +360,8 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::ByteVectorLength, Primitive::ByteVectorLength)
     | (Primitive::ByteVectorEq, Primitive::ByteVectorEq)
     | (Primitive::ByteVectorU8Ref, Primitive::ByteVectorU8Ref)
+    | (Primitive::StringToUtf8, Primitive::StringToUtf8)
+    | (Primitive::Utf8ToString, Primitive::Utf8ToString)
     | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set)
     | (Primitive::ByteVectorCopy, Primitive::ByteVectorCopy)
     | (Primitive::ByteVectorCopyBang, Primitive::ByteVectorCopyBang)
@@ -2313,6 +2315,137 @@ fn check_bytevector_range(start : Int, size : Int, len : Int) -> Unit raise Eval
   if start < 0 || start + size > len {
     raise @core.EvalError("index out of range")
   }
+}
+
+fn utf8_raise_invalid() -> Unit raise EvalError {
+  raise @core.EvalError("invalid utf8 sequence")
+}
+
+fn utf8_encode_char(codepoint : Int, bytes : Array[Int]) -> Unit raise EvalError {
+  if codepoint < 0 || codepoint > 0x10FFFF {
+    utf8_raise_invalid()
+  }
+  if codepoint >= 0xD800 && codepoint <= 0xDFFF {
+    utf8_raise_invalid()
+  }
+  if codepoint <= 0x7F {
+    bytes.push(codepoint)
+  } else if codepoint <= 0x7FF {
+    bytes.push(0xC0 | (codepoint >> 6))
+    bytes.push(0x80 | (codepoint & 0x3F))
+  } else if codepoint <= 0xFFFF {
+    bytes.push(0xE0 | (codepoint >> 12))
+    bytes.push(0x80 | ((codepoint >> 6) & 0x3F))
+    bytes.push(0x80 | (codepoint & 0x3F))
+  } else {
+    bytes.push(0xF0 | (codepoint >> 18))
+    bytes.push(0x80 | ((codepoint >> 12) & 0x3F))
+    bytes.push(0x80 | ((codepoint >> 6) & 0x3F))
+    bytes.push(0x80 | (codepoint & 0x3F))
+  }
+}
+
+fn string_char_length(s : String) -> Int {
+  let mut len = 0
+  for _ in s {
+    len = len + 1
+  }
+  len
+}
+
+fn string_to_utf8_bytes(s : String, start : Int, end : Int) -> Array[Int] raise EvalError {
+  if start < 0 || end < start {
+    raise @core.EvalError("index out of range")
+  }
+  let bytes : Array[Int] = []
+  let mut idx = 0
+  for ch in s {
+    if idx >= start && idx < end {
+      utf8_encode_char(ch.to_int(), bytes)
+    }
+    idx = idx + 1
+  }
+  if end > idx {
+    raise @core.EvalError("index out of range")
+  }
+  bytes
+}
+
+fn utf8_decode_to_string(items : Array[Int], start : Int, end : Int) -> String raise EvalError {
+  if start < 0 || end < start || end > items.length() {
+    raise @core.EvalError("index out of range")
+  }
+  let buf = @buffer.new()
+  let mut i = start
+  while i < end {
+    let b0 = items[i]
+    if b0 < 0 || b0 > 255 {
+      utf8_raise_invalid()
+    }
+    let (codepoint, size) = if b0 <= 0x7F {
+      (b0, 1)
+    } else if b0 >= 0xC2 && b0 <= 0xDF {
+      if i + 1 >= end {
+        utf8_raise_invalid()
+      }
+      let b1 = items[i + 1]
+      if b1 < 0x80 || b1 > 0xBF {
+        utf8_raise_invalid()
+      }
+      (((b0 & 0x1F) << 6) | (b1 & 0x3F), 2)
+    } else if b0 >= 0xE0 && b0 <= 0xEF {
+      if i + 2 >= end {
+        utf8_raise_invalid()
+      }
+      let b1 = items[i + 1]
+      let b2 = items[i + 2]
+      if b1 < 0x80 || b1 > 0xBF || b2 < 0x80 || b2 > 0xBF {
+        utf8_raise_invalid()
+      }
+      if b0 == 0xE0 && b1 < 0xA0 {
+        utf8_raise_invalid()
+      }
+      if b0 == 0xED && b1 > 0x9F {
+        utf8_raise_invalid()
+      }
+      (
+        ((b0 & 0x0F) << 12) | ((b1 & 0x3F) << 6) | (b2 & 0x3F),
+        3,
+      )
+    } else if b0 >= 0xF0 && b0 <= 0xF4 {
+      if i + 3 >= end {
+        utf8_raise_invalid()
+      }
+      let b1 = items[i + 1]
+      let b2 = items[i + 2]
+      let b3 = items[i + 3]
+      if b1 < 0x80 || b1 > 0xBF || b2 < 0x80 || b2 > 0xBF || b3 < 0x80 || b3 > 0xBF {
+        utf8_raise_invalid()
+      }
+      if b0 == 0xF0 && b1 < 0x90 {
+        utf8_raise_invalid()
+      }
+      if b0 == 0xF4 && b1 > 0x8F {
+        utf8_raise_invalid()
+      }
+      (
+        ((b0 & 0x07) << 18)
+        | ((b1 & 0x3F) << 12)
+        | ((b2 & 0x3F) << 6)
+        | (b3 & 0x3F),
+        4,
+      )
+    } else {
+      utf8_raise_invalid()
+      (0, 1)
+    }
+    match codepoint.to_char() {
+      Some(ch) => buf.write_char(ch)
+      None => utf8_raise_invalid()
+    }
+    i = i + size
+  }
+  buf.to_string()
 }
 
 fn bytevector_uint_ref(items : Array[Int], start : Int, size : Int, endian : Endian) -> @bigint.BigInt {
@@ -7172,6 +7305,46 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(Datum::ByteVector(bytes))
         }
         n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::StringToUtf8 => {
+      match args.length() {
+        1 | 2 | 3 => {
+          let s = value_as_string(args[0])
+          let start = if args.length() >= 2 {
+            value_as_int_index(args[1])
+          } else {
+            0
+          }
+          let end = if args.length() == 3 {
+            value_as_int_index(args[2])
+          } else {
+            string_char_length(s)
+          }
+          let bytes = string_to_utf8_bytes(s, start, end)
+          Value::Datum(Datum::ByteVector(bytes))
+        }
+        n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
+      }
+    }
+    Primitive::Utf8ToString => {
+      match args.length() {
+        1 | 2 | 3 => {
+          let items = value_as_bytevector(args[0])
+          let start = if args.length() >= 2 {
+            value_as_int_index(args[1])
+          } else {
+            0
+          }
+          let end = if args.length() == 3 {
+            value_as_int_index(args[2])
+          } else {
+            items.length()
+          }
+          let text = utf8_decode_to_string(items, start, end)
+          Value::Datum(Datum::String(Ref::new(text)))
+        }
+        n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
     }
     Primitive::NativeEndianness => {
