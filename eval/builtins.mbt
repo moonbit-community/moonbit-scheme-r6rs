@@ -5451,7 +5451,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     }
     Primitive::DatumToSyntax => {
       match args.length() {
-        2 => {
+        2 | 3 => {
           let scopes = match args[0] {
             Value::SyntaxObject(obj) => obj.scopes
             _ => []
@@ -5472,7 +5472,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
         }
-        n => raise arity_mismatch(2, n)
+        n => raise @core.EvalError("arity mismatch: expected 2 or 3 got \{n}")
       }
     }
     Primitive::BooleanP => {

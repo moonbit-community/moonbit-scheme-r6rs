@@ -57,6 +57,18 @@ test "r6rs libraries: syntax-case value exports" {
 }
 
 ///|
+test "r6rs libraries: datum->syntax optional source" {
+  let program = (
+    (
+      #|(begin
+      #|  (import (rnrs syntax-case))
+      #|  (syntax->datum (datum->syntax #'x 'y 'source)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="y")
+}
+
+///|
 test "r6rs libraries: syntax-case syntactic keyword exports" {
   let program = (
     (
