@@ -53,7 +53,8 @@
 ///   vector-copy vector-copy! vector-fill! vector-map vector-for-each
 ///   vector->list list->vector
 ///   bytevector make-bytevector bytevector? bytevector-length bytevector=?
-///   bytevector-u8-ref bytevector-u8-set! bytevector-copy bytevector-copy!
+///   bytevector-u8-ref bytevector-u8-set! bytevector-s8-ref bytevector-s8-set!
+///   bytevector-copy bytevector-copy!
 ///   bytevector-fill!
 ///   bytevector->u8-list u8-list->bytevector string->utf8 utf8->string
 ///   endianness native-endianness bytevector-uint-ref bytevector-sint-ref

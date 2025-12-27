@@ -53,6 +53,29 @@ test "r6rs libraries: bytevector integer set!" {
 }
 
 ///|
+test "r6rs libraries: bytevector s8 ref/set" {
+  let program = (
+    (
+      #|(import (rnrs bytevectors))
+      #|(list
+      #|  (let ((bv (bytevector 0 127 128 255)))
+      #|    (list (bytevector-s8-ref bv 0)
+      #|          (bytevector-s8-ref bv 1)
+      #|          (bytevector-s8-ref bv 2)
+      #|          (bytevector-s8-ref bv 3)))
+      #|  (let ((bv (make-bytevector 2 0)))
+      #|    (bytevector-s8-set! bv 0 -1)
+      #|    (bytevector-s8-set! bv 1 -128)
+      #|    (bytevector->u8-list bv)))
+    )
+  )
+  inspect(
+    value_to_string(eval_program(program)),
+    content="((0 127 -128 -1) (255 128))",
+  )
+}
+
+///|
 test "r6rs libraries: bytevector native endianness" {
   let program = (
     (
