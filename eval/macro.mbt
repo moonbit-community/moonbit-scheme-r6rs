@@ -804,6 +804,10 @@ fn collect_proc_captures_into(
 
 ///|
 fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpansion raise EvalError {
+  let call_scope = match rules.kind {
+    SyntaxRulesKind::SyntaxRules => Some(next_syntax_context())
+    SyntaxRulesKind::SyntaxCase => None
+  }
   let mut i = 0
   while i < rules.rules.length() {
     let rule = rules.rules[i]
@@ -812,7 +816,7 @@ fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpa
       (Datum::Symbol(_), Datum::Pair(_, _)) => ()
       (Datum::Pair(_, _), Datum::Symbol(_)) => ()
       _ => {
-        if match_pattern(rule.pattern, call, rules.literals, rules.ellipsis, bindings) {
+        if match_pattern(rule.pattern, call, rules.literals, rules.ellipsis, bindings, call_scope) {
           match rule.fender {
             Some(fender) => {
               if !fender_allows(fender, bindings, env) {
@@ -894,10 +898,23 @@ fn expand_macro(
 }
 
 ///|
-fn wrap_pattern_datum(value : Datum) -> Datum {
-  match value {
-    Datum::Value(Value::SyntaxObject(_)) => value
-    _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, scopes: [] }))
+fn wrap_pattern_datum(value : Datum, scope : Int?) -> Datum {
+  match scope {
+    Some(call_scope) => {
+      let marked = syntax_add_scope(value, call_scope)
+      match marked {
+        Datum::Value(Value::SyntaxObject(_)) => marked
+        _ =>
+          Datum::Value(
+            Value::SyntaxObject(SyntaxObject::{ datum: marked, scopes: [call_scope] }),
+          )
+      }
+    }
+    None =>
+      match value {
+        Datum::Value(Value::SyntaxObject(_)) => value
+        _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, scopes: [] }))
+      }
   }
 }
 
@@ -972,6 +989,7 @@ fn match_pattern(
   literals : Array[String],
   ellipsis : String,
   bindings : Map[String, BindingVal],
+  scope : Int?,
 ) -> Bool {
   let pat = datum_unlabel(datum_unwrap_syntax(pattern))
   let inp = datum_unlabel(datum_unwrap_syntax(input))
@@ -986,7 +1004,7 @@ fn match_pattern(
           _ => false
         }
       } else {
-        bind_var(name, wrap_pattern_datum(input), bindings)
+        bind_var(name, wrap_pattern_datum(input, scope), bindings)
       }
     }
     Datum::Nil => inp is Datum::Nil
@@ -1048,7 +1066,7 @@ fn match_pattern(
     Datum::Vector(items) => {
       match inp {
         Datum::Vector(other) =>
-          match_pattern_list(items, other, literals, ellipsis, bindings)
+          match_pattern_list(items, other, literals, ellipsis, bindings, scope)
         _ => false
       }
     }
@@ -1073,12 +1091,13 @@ fn match_pattern(
     Datum::Value(value) => value_eqv(value, value_from_datum(inp))
     Datum::Pair(pa, pb) => {
       match (datum_list_to_array_opt(pat), datum_list_to_array_opt(inp)) {
-        (Some(pats), Some(inputs)) => match_pattern_list(pats, inputs, literals, ellipsis, bindings)
+        (Some(pats), Some(inputs)) =>
+          match_pattern_list(pats, inputs, literals, ellipsis, bindings, scope)
         _ => {
           match inp {
             Datum::Pair(ia, ib) =>
-              if match_pattern(pa.val, ia.val, literals, ellipsis, bindings) {
-                match_pattern(pb.val, ib.val, literals, ellipsis, bindings)
+              if match_pattern(pa.val, ia.val, literals, ellipsis, bindings, scope) {
+                match_pattern(pb.val, ib.val, literals, ellipsis, bindings, scope)
               } else {
                 false
               }
@@ -1097,8 +1116,9 @@ fn match_pattern_list(
   literals : Array[String],
   ellipsis : String,
   bindings : Map[String, BindingVal],
+  scope : Int?,
 ) -> Bool {
-  match_pattern_list_from(pats, inputs, 0, 0, literals, ellipsis, bindings)
+  match_pattern_list_from(pats, inputs, 0, 0, literals, ellipsis, bindings, scope)
 }
 
 ///|
@@ -1109,6 +1129,7 @@ fn collect_repeat_bindings(
   count : Int,
   literals : Array[String],
   ellipsis : String,
+  scope : Int?,
 )
  -> Map[String, BindingVal]? {
   let result : Map[String, BindingVal] = {}
@@ -1124,7 +1145,7 @@ fn collect_repeat_bindings(
   let mut i = 0
   while i < count {
     let iter_bindings : Map[String, BindingVal] = {}
-    if !match_pattern(repeat_pat, inputs[start + i], literals, ellipsis, iter_bindings) {
+    if !match_pattern(repeat_pat, inputs[start + i], literals, ellipsis, iter_bindings, scope) {
       return None
     }
     for name in iter_bindings.keys() {
@@ -1162,6 +1183,7 @@ fn match_pattern_list_from(
   literals : Array[String],
   ellipsis : String,
   bindings : Map[String, BindingVal],
+  scope : Int?,
 ) -> Bool {
   if pat_idx >= pats.length() {
     return inp_idx == inputs.length()
@@ -1171,7 +1193,15 @@ fn match_pattern_list_from(
     let mut count = max_count
     while count >= 0 {
       let base = bindings_clone(bindings)
-      match collect_repeat_bindings(pats[pat_idx], inputs, inp_idx, count, literals, ellipsis) {
+      match collect_repeat_bindings(
+        pats[pat_idx],
+        inputs,
+        inp_idx,
+        count,
+        literals,
+        ellipsis,
+        scope,
+      ) {
         Some(repeat_bindings) =>
           if merge_bindings(base, repeat_bindings) {
             if match_pattern_list_from(
@@ -1182,6 +1212,7 @@ fn match_pattern_list_from(
               literals,
               ellipsis,
               base,
+              scope,
             ) {
               bindings_overwrite(bindings, base)
               return true
@@ -1196,10 +1227,19 @@ fn match_pattern_list_from(
     if inp_idx >= inputs.length() {
       return false
     }
-    if !match_pattern(pats[pat_idx], inputs[inp_idx], literals, ellipsis, bindings) {
+    if !match_pattern(pats[pat_idx], inputs[inp_idx], literals, ellipsis, bindings, scope) {
       return false
     }
-    match_pattern_list_from(pats, inputs, pat_idx + 1, inp_idx + 1, literals, ellipsis, bindings)
+    match_pattern_list_from(
+      pats,
+      inputs,
+      pat_idx + 1,
+      inp_idx + 1,
+      literals,
+      ellipsis,
+      bindings,
+      scope,
+    )
   }
 }
 
@@ -1521,7 +1561,7 @@ fn expand_with_syntax(
     let value = eval_expr(expr, fenv)
     let datum = value_to_syntax_datum(value)
     let local_bindings : Map[String, BindingVal] = {}
-    if !match_pattern(pattern, datum, [], ellipsis, local_bindings) {
+    if !match_pattern(pattern, datum, [], ellipsis, local_bindings, None) {
       raise @core.EvalError("invalid with-syntax")
     }
     if !merge_bindings(expanded, local_bindings) {
