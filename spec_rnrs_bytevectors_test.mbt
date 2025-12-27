@@ -65,3 +65,34 @@ test "r6rs libraries: bytevector native endianness" {
   )
   inspect(value_to_string(eval_program(program)), content="(#t #t)")
 }
+
+///|
+test "r6rs libraries: bytevector=?" {
+  let program = (
+    (
+      #|(import (rnrs bytevectors))
+      #|(let ((a (bytevector 1 2 3))
+      #|      (b (bytevector 1 2 3))
+      #|      (c (bytevector 1 2 4))
+      #|      (d (bytevector 1 2 3 4)))
+      #|  (list (bytevector=? a b)
+      #|        (bytevector=? a c)
+      #|        (bytevector=? a d)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
+}
+
+///|
+test "r6rs libraries: bytevector=? errors" {
+  let bad = try? eval_program(
+    (
+      #|(import (rnrs bytevectors))
+      #|(bytevector=? #vu8(1 2) '(1 2))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"type error: bytevector expected\")")
+    _ => fail("expected EvalError for invalid bytevector=? argument")
+  }
+}

@@ -358,6 +358,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::MakeByteVector, Primitive::MakeByteVector)
     | (Primitive::ByteVectorP, Primitive::ByteVectorP)
     | (Primitive::ByteVectorLength, Primitive::ByteVectorLength)
+    | (Primitive::ByteVectorEq, Primitive::ByteVectorEq)
     | (Primitive::ByteVectorU8Ref, Primitive::ByteVectorU8Ref)
     | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set)
     | (Primitive::ByteVectorCopy, Primitive::ByteVectorCopy)
@@ -6977,6 +6978,27 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(Datum::Int(items.length()))
         }
         n => raise arity_mismatch(1, n)
+      }
+    }
+    Primitive::ByteVectorEq => {
+      match args.length() {
+        2 => {
+          let left = value_as_bytevector(args[0])
+          let right = value_as_bytevector(args[1])
+          if left.length() != right.length() {
+            bool_value(false)
+          } else {
+            let mut i = 0
+            while i < left.length() {
+              if left[i] != right[i] {
+                return bool_value(false)
+              }
+              i = i + 1
+            }
+            bool_value(true)
+          }
+        }
+        n => raise arity_mismatch(2, n)
       }
     }
     Primitive::ByteVectorU8Ref => {

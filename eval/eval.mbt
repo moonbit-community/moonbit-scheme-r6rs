@@ -400,6 +400,7 @@ fn init_env() -> Env {
   env_define(env, "make-bytevector", Value::Primitive(Primitive::MakeByteVector))
   env_define(env, "bytevector?", Value::Primitive(Primitive::ByteVectorP))
   env_define(env, "bytevector-length", Value::Primitive(Primitive::ByteVectorLength))
+  env_define(env, "bytevector=?", Value::Primitive(Primitive::ByteVectorEq))
   env_define(env, "bytevector-u8-ref", Value::Primitive(Primitive::ByteVectorU8Ref))
   env_define(env, "bytevector-u8-set!", Value::Primitive(Primitive::ByteVectorU8Set))
   env_define(env, "bytevector-copy", Value::Primitive(Primitive::ByteVectorCopy))
@@ -967,7 +968,7 @@ fn stdlib_source() -> String {
     ")",
     "(library (rnrs bytevectors (6))",
     "  (export bytevector make-bytevector bytevector? bytevector-length",
-    "          bytevector-u8-ref bytevector-u8-set! bytevector-copy",
+    "          bytevector=? bytevector-u8-ref bytevector-u8-set! bytevector-copy",
     "          bytevector-copy! bytevector-append bytevector-fill!",
     "          bytevector->u8-list u8-list->bytevector",
     "          endianness native-endianness",
