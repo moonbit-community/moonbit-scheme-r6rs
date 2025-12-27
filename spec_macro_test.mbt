@@ -207,6 +207,24 @@ test "r6rs macro: procedural identifier equality" {
 }
 
 ///|
+test "r6rs macro: datum->syntax def and use-site contexts" {
+  let program = (
+    (
+      #|(let ((x 'def))
+      #|  (define-syntax pick-x
+      #|    (let ((def-x (syntax x)))
+      #|      (lambda (stx)
+      #|        (let ((use (datum->syntax stx 'x))
+      #|              (def (datum->syntax def-x 'x)))
+      #|          (list 'list use def)))))
+      #|  (let ((x 'use))
+      #|    (pick-x x)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(use def)")
+}
+
+///|
 test "r6rs macro: procedural transformer with syntax-case" {
   let program = (
     (

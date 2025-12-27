@@ -79,3 +79,18 @@ test "r6rs macro: ellipsis in middle of pattern" {
   )
   inspect(value_to_string(eval_program(program)), content="((1 2 3) (1))")
 }
+
+///|
+test "r6rs macro: ellipsis enforces repeated bindings" {
+  let program = (
+    (
+      #|(define-syntax same-seq
+      #|  (syntax-rules ()
+      #|    ((_ (x ...) (x ...)) 'same)
+      #|    ((_ (x ...) (y ...)) 'diff)))
+      #|(list (same-seq (1 2) (1 2))
+      #|      (same-seq (1 2) (1 3)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(same diff)")
+}

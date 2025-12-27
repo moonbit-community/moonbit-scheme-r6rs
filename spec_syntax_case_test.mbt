@@ -147,6 +147,22 @@ test "r6rs syntax-case: dotted list pattern" {
 }
 
 ///|
+test "r6rs syntax-case: repeated identifiers match" {
+  let program = (
+    (
+      #|(begin
+      #|  (define-syntax same?
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ x x) #'#t)
+      #|        ((_ x y) #'#f))))
+      #|  (list (same? 1 1) (same? 1 2)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(#t #f)")
+}
+
+///|
 test "r6rs syntax-case: wildcard with ellipsis" {
   let program = (
     (
