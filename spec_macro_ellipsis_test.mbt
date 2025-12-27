@@ -234,3 +234,35 @@ test "r6rs macro: invalid nested ellipsis depth (vector more in template)" {
     _ => fail("expected syntax-rules error for vector ellipsis mismatch")
   }
 }
+
+///|
+test "r6rs macro: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
+  let bad = try? eval_program(
+    (
+      #|(define-syntax bad
+      #|  (syntax-rules ()
+      #|    ((_ #((x ...) ...)) (quasisyntax #(x ...)))))
+      #|(bad #((1 2) (3 4)))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+    _ => fail("expected syntax-rules error for vector ellipsis mismatch")
+  }
+}
+
+///|
+test "r6rs macro: invalid nested ellipsis depth (vector more in quasisyntax)" {
+  let bad = try? eval_program(
+    (
+      #|(define-syntax bad
+      #|  (syntax-rules ()
+      #|    ((_ #(x ...)) (quasisyntax #((x ...) ...)))))
+      #|(bad #(1 2))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+    _ => fail("expected syntax-rules error for vector ellipsis mismatch")
+  }
+}

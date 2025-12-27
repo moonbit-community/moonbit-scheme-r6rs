@@ -304,6 +304,42 @@ test "r6rs syntax-case: invalid nested ellipsis depth (vector more in template)"
 }
 
 ///|
+test "r6rs syntax-case: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ #((x ...) ...)) (quasisyntax #(x ...))))))
+      #|  (bad #((1 2) (3 4))))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for vector ellipsis mismatch")
+  }
+}
+
+///|
+test "r6rs syntax-case: invalid nested ellipsis depth (vector more in quasisyntax)" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ #(x ...)) (quasisyntax #((x ...) ...))))))
+      #|  (bad #(1 2)))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for vector ellipsis mismatch")
+  }
+}
+
+///|
 test "r6rs syntax-case: literal ellipsis pattern" {
   let program = (
     (
