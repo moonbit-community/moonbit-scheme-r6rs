@@ -576,6 +576,7 @@ pub(all) struct EvalEnv {
 pub(all) struct SyntaxObject {
   datum : Datum
   scopes : Array[Int]
+  binding_id : Int?
 }
 
 ///|

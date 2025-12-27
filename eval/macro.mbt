@@ -828,7 +828,11 @@ fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpa
         ) {
           match rule.fender {
             Some(fender) => {
-              if !fender_allows(fender, bindings, env) {
+              let fender_env = match rules.kind {
+                SyntaxRulesKind::SyntaxCase => rules.def_env
+                SyntaxRulesKind::SyntaxRules => env
+              }
+              if !fender_allows(fender, bindings, fender_env) {
                 i = i + 1
                 continue
               }
@@ -847,13 +851,13 @@ fn expand_macro_rules(rules : SyntaxRules, call : Datum, env : Env) -> MacroExpa
             SyntaxRulesKind::SyntaxRules =>
               expand_template(rule.template, bindings, renames, rules.ellipsis, env, false)
             SyntaxRulesKind::SyntaxCase => {
-              let fenv = template_env_with_bindings(env, bindings)
+              let fenv = template_env_with_bindings(rules.def_env, bindings)
               let rewritten = rewrite_template_expr(
                 rule.template,
                 bindings,
                 renames,
                 rules.ellipsis,
-                env,
+                rules.def_env,
               )
               let value = eval_expr_transformer(rewritten, fenv)
               value_to_syntax_datum(value)
@@ -885,7 +889,10 @@ fn expand_macro_proc(
   let marked_call = syntax_add_scope(call, call_ctx)
   let stx = match marked_call {
     Datum::Value(Value::SyntaxObject(obj)) => Value::SyntaxObject(obj)
-    _ => Value::SyntaxObject(SyntaxObject::{ datum: marked_call, scopes: [call_ctx] })
+    _ =>
+      Value::SyntaxObject(
+        SyntaxObject::{ datum: marked_call, scopes: [call_ctx], binding_id: None },
+      )
   }
   let call_expr = list_from_array([Datum::Symbol(temp_name), Datum::Value(stx)])
   let value = eval_expr_transformer(call_expr, fenv)
@@ -907,22 +914,93 @@ fn expand_macro(
 }
 
 ///|
-fn wrap_pattern_datum(value : Datum, scope : Int?) -> Datum {
+fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
+  let next : Array[Int] = []
+  for item in scopes {
+    next.push(item)
+  }
+  if !scopes_contains(scopes, scope) {
+    next.push(scope)
+  }
+  next
+}
+
+fn syntax_add_scope_with_env(datum : Datum, scope : Int, env : Env) -> Datum {
+  match datum {
+    Datum::Symbol(name) =>
+      Datum::Value(
+        Value::SyntaxObject(
+          SyntaxObject::{
+            datum: Datum::Symbol(name),
+            scopes: [scope],
+            binding_id: env_binding_id_optional(env, name),
+          },
+        ),
+      )
+    Datum::Value(Value::SyntaxObject(obj)) => {
+      let next_scopes = scopes_with_added(obj.scopes, scope)
+      let inner = match obj.datum {
+        Datum::Symbol(_) => obj.datum
+        _ => syntax_add_scope_with_env(obj.datum, scope, env)
+      }
+      let binding_id = match obj.binding_id {
+        Some(_) => obj.binding_id
+        None =>
+          match obj.datum {
+            Datum::Symbol(name) => env_binding_id_optional(env, name)
+            _ => None
+          }
+      }
+      Datum::Value(
+        Value::SyntaxObject(
+          SyntaxObject::{ datum: inner, scopes: next_scopes, binding_id },
+        ),
+      )
+    }
+    Datum::Pair(a, b) =>
+      pair_new(syntax_add_scope_with_env(a.val, scope, env), syntax_add_scope_with_env(b.val, scope, env))
+    Datum::Vector(items) => {
+      let wrapped : Array[Datum] = []
+      for item in items {
+        wrapped.push(syntax_add_scope_with_env(item, scope, env))
+      }
+      Datum::Vector(wrapped)
+    }
+    Datum::Complex(real, imag) =>
+      Datum::Complex(
+        Ref::new(syntax_add_scope_with_env(real.val, scope, env)),
+        Ref::new(syntax_add_scope_with_env(imag.val, scope, env)),
+      )
+    _ => datum
+  }
+}
+
+fn wrap_pattern_datum(value : Datum, scope : Int?, env : Env) -> Datum {
   match scope {
     Some(call_scope) => {
-      let marked = syntax_add_scope(value, call_scope)
+      let marked = syntax_add_scope_with_env(value, call_scope, env)
       match marked {
         Datum::Value(Value::SyntaxObject(_)) => marked
         _ =>
           Datum::Value(
-            Value::SyntaxObject(SyntaxObject::{ datum: marked, scopes: [call_scope] }),
+            Value::SyntaxObject(
+              SyntaxObject::{ datum: marked, scopes: [call_scope], binding_id: None },
+            ),
           )
       }
     }
     None =>
       match value {
         Datum::Value(Value::SyntaxObject(_)) => value
-        _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, scopes: [] }))
+        _ => {
+          let binding_id = match datum_unlabel(value) {
+            Datum::Symbol(name) => env_binding_id_optional(env, name)
+            _ => None
+          }
+          Datum::Value(
+            Value::SyntaxObject(SyntaxObject::{ datum: value, scopes: [], binding_id }),
+          )
+        }
       }
   }
 }
@@ -959,7 +1037,7 @@ fn rewrite_template_expr(
                   let scope = next_syntax_context()
                   let scopes = [scope]
                   let datum = syntax_wrap_root(expanded, scopes)
-                  let obj = SyntaxObject::{ datum, scopes }
+                  let obj = SyntaxObject::{ datum, scopes, binding_id: None }
                   return Datum::Value(Value::SyntaxObject(obj))
                 }
               }
@@ -1013,7 +1091,7 @@ fn match_pattern(
       } else if is_literal(literals, name) {
         literal_matches(name, input, def_env, use_env)
       } else {
-        bind_var(name, wrap_pattern_datum(input, scope), bindings)
+        bind_var(name, wrap_pattern_datum(input, scope, use_env), bindings)
       }
     }
     Datum::Nil => inp is Datum::Nil

@@ -1875,13 +1875,18 @@ fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
 }
 
 ///|
-fn eval_syntax(args : Array[Datum]) -> Value raise EvalError {
+fn eval_syntax(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
     1 => {
       let scope = next_syntax_context()
       let scopes = [scope]
+      let binding_id = match datum_unlabel(args[0]) {
+        Datum::Symbol(name) => env_binding_id_optional(env, name)
+        Datum::Value(Value::SyntaxObject(obj)) => obj.binding_id
+        _ => None
+      }
       let datum = syntax_wrap_root(args[0], scopes)
-      Value::SyntaxObject(SyntaxObject::{ datum, scopes })
+      Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
     }
     n => raise arity_mismatch(1, n)
   }
@@ -1905,8 +1910,12 @@ fn eval_quasisyntax(args : Array[Datum], env : Env) -> Value raise EvalError {
         _ => {
           let scope = next_syntax_context()
           let scopes = [scope]
+          let binding_id = match datum_unlabel(expanded) {
+            Datum::Symbol(name) => env_binding_id_optional(env, name)
+            _ => None
+          }
           let datum = syntax_wrap_root(expanded, scopes)
-          Value::SyntaxObject(SyntaxObject::{ datum, scopes })
+          Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
         }
       }
     }
@@ -4903,7 +4912,7 @@ fn eval_pair(
       Some("define-enumeration") => eval_define_enumeration_state(args, env, kont, handlers)
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
       Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
-      Some("syntax") => MachineState::Apply(eval_syntax(args), kont, handlers)
+      Some("syntax") => MachineState::Apply(eval_syntax(args, env), kont, handlers)
       Some("quasisyntax") => MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
       Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
       Some("delay") => MachineState::Apply(eval_delay(args, env), kont, handlers)

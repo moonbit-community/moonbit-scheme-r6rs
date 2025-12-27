@@ -100,3 +100,33 @@ test "r6rs syntax: datum->syntax context identity" {
   )
   inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
 }
+
+///|
+test "r6rs syntax: identifier equality respects lexical bindings" {
+  let program = (
+    (
+      #|(begin
+      #|  (import (rnrs syntax-case))
+      #|  (let ((x 'outer))
+      #|    (define-syntax same?
+      #|      (lambda (stx)
+      #|        (syntax-case stx ()
+      #|          ((_ id)
+      #|           (free-identifier=? id #'x)
+      #|           #'#t)
+      #|          ((_ id) #'#f))))
+      #|    (define-syntax same-bound?
+      #|      (lambda (stx)
+      #|        (syntax-case stx ()
+      #|          ((_ id)
+      #|           (bound-identifier=? id #'x)
+      #|           #'#t)
+      #|          ((_ id) #'#f))))
+      #|    (list (same? x)
+      #|          (same-bound? x)
+      #|          (let ((x 'inner))
+      #|            (list (same? x) (same-bound? x))))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(#t #t (#f #f))")
+}

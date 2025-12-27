@@ -459,16 +459,16 @@ fn value_equal(left : Value, right : Value) -> Bool {
 }
 
 ///|
-fn identifier_info(value : Value) -> (String, Array[Int]) raise EvalError {
+fn identifier_info(value : Value) -> (String, Array[Int], Int?) raise EvalError {
   match value {
     Value::Datum(d) =>
       match datum_unlabel(d) {
-        Datum::Symbol(name) => (name, [])
+        Datum::Symbol(name) => (name, [], None)
         _ => raise @core.EvalError("type error: identifier expected")
       }
     Value::SyntaxObject(obj) =>
       match datum_unlabel(obj.datum) {
-        Datum::Symbol(name) => (name, obj.scopes)
+        Datum::Symbol(name) => (name, obj.scopes, obj.binding_id)
         _ => raise @core.EvalError("type error: identifier expected")
       }
     _ => raise @core.EvalError("type error: identifier expected")
@@ -5114,10 +5114,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::FreeIdentifierEq => {
       match args.length() {
         2 => {
-          let (a, a_scopes) = identifier_info(args[0])
-          let (b, b_scopes) = identifier_info(args[1])
+          let (a, a_scopes, a_binding) = identifier_info(args[0])
+          let (b, b_scopes, b_binding) = identifier_info(args[1])
           if a != b {
             bool_value(false)
+          } else if a_binding is Some(_) && b_binding is Some(_) {
+            bool_value(a_binding == b_binding)
           } else {
             bool_value(scopes_equal(a_scopes, b_scopes))
           }
@@ -5128,10 +5130,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::BoundIdentifierEq => {
       match args.length() {
         2 => {
-          let (a, a_scopes) = identifier_info(args[0])
-          let (b, b_scopes) = identifier_info(args[1])
+          let (a, a_scopes, a_binding) = identifier_info(args[0])
+          let (b, b_scopes, b_binding) = identifier_info(args[1])
           if a != b {
             bool_value(false)
+          } else if a_binding is Some(_) && b_binding is Some(_) {
+            bool_value(a_binding == b_binding)
           } else {
             bool_value(scopes_equal(a_scopes, b_scopes))
           }
@@ -5180,13 +5184,21 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::SyntaxObject(obj) => obj.scopes
             _ => []
           }
+          let context_binding = match args[0] {
+            Value::SyntaxObject(obj) => obj.binding_id
+            _ => None
+          }
           let base = match args[1] {
             Value::SyntaxObject(obj) => obj.datum
             Value::Datum(d) => d
             _ => raise @core.EvalError("type error: datum expected")
           }
           let datum = syntax_wrap_root(base, scopes)
-          Value::SyntaxObject(SyntaxObject::{ datum, scopes })
+          let binding_id = match datum_unlabel(base) {
+            Datum::Symbol(_) => context_binding
+            _ => None
+          }
+          Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
         }
         n => raise arity_mismatch(2, n)
       }
@@ -7357,7 +7369,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               _ => raise @core.EvalError("type error: identifier expected")
             }
             let datum = Datum::Symbol(gensym(name))
-            let temp = Value::SyntaxObject(SyntaxObject::{ datum, scopes: [scope] })
+            let temp =
+              Value::SyntaxObject(SyntaxObject::{ datum, scopes: [scope], binding_id: None })
             results.push(value_to_datum_element(temp))
           }
           Value::Datum(list_from_array(results))

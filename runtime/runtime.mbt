@@ -791,7 +791,11 @@ pub fn strip_syntax_datum(datum : Datum) -> Datum {
 pub fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
   match datum {
     Datum::Symbol(name) =>
-      Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: Datum::Symbol(name), scopes }))
+      Datum::Value(
+        Value::SyntaxObject(
+          SyntaxObject::{ datum: Datum::Symbol(name), scopes, binding_id: None },
+        ),
+      )
     Datum::Pair(a, b) =>
       pair_new(syntax_wrap_datum(a.val, scopes), syntax_wrap_datum(b.val, scopes))
     Datum::Vector(items) => {
@@ -822,7 +826,9 @@ pub fn syntax_add_scope(datum : Datum, scope : Int) -> Datum {
   match datum {
     Datum::Symbol(name) =>
       Datum::Value(
-        Value::SyntaxObject(SyntaxObject::{ datum: Datum::Symbol(name), scopes: [scope] }),
+        Value::SyntaxObject(
+          SyntaxObject::{ datum: Datum::Symbol(name), scopes: [scope], binding_id: None },
+        ),
       )
     Datum::Value(Value::SyntaxObject(obj)) => {
       let next_scopes = scopes_with_added(obj.scopes, scope)
@@ -830,7 +836,11 @@ pub fn syntax_add_scope(datum : Datum, scope : Int) -> Datum {
         Datum::Symbol(_) => obj.datum
         _ => syntax_add_scope(obj.datum, scope)
       }
-      Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: inner, scopes: next_scopes }))
+      Datum::Value(
+        Value::SyntaxObject(
+          SyntaxObject::{ datum: inner, scopes: next_scopes, binding_id: obj.binding_id },
+        ),
+      )
     }
     Datum::Pair(a, b) => pair_new(syntax_add_scope(a.val, scope), syntax_add_scope(b.val, scope))
     Datum::Vector(items) => {

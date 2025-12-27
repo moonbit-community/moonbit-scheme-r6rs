@@ -10,6 +10,20 @@ test "r6rs macro: let-syntax" {
 }
 
 ///|
+test "r6rs macro: let-syntax literals respect bindings" {
+  let program = (
+    (
+      #|(let ((x 'outer))
+      #|  (let-syntax ((pick (syntax-rules (x)
+      #|                       ((_ x) 'literal)
+      #|                       ((_ y) 'other))))
+      #|    (list (pick x) (let ((x 'inner)) (pick x)))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(literal other)")
+}
+
+///|
 test "r6rs macro: letrec-syntax" {
   let program = (
     (
@@ -32,4 +46,18 @@ test "r6rs macro: letrec-syntax" {
     )
   )
   inspect(value_to_string(eval_program(program2)), content="#f")
+}
+
+///|
+test "r6rs macro: letrec-syntax literals respect bindings" {
+  let program = (
+    (
+      #|(let ((x 'outer))
+      #|  (letrec-syntax ((pick (syntax-rules (x)
+      #|                          ((_ x) 'literal)
+      #|                          ((_ y) 'other))))
+      #|    (list (pick x) (let ((x 'inner)) (pick x)))))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="(literal other)")
 }
