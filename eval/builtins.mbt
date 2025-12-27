@@ -439,6 +439,57 @@ fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
   }
 }
 
+fn strip_gensym_suffix(name : String) -> String? {
+  let len = name.length()
+  if len < 5 {
+    return None
+  }
+  let mut i = len
+  while i > 0 {
+    match name.get_char(i - 1) {
+      Some(ch) =>
+        if ch >= '0' && ch <= '9' {
+          i = i - 1
+        } else {
+          break
+        }
+      None => return None
+    }
+  }
+  if i == len || i < 4 {
+    return None
+  }
+  match (name.get_char(i - 1), name.get_char(i - 2), name.get_char(i - 3), name.get_char(i - 4)) {
+    (Some('s'), Some('g'), Some('_'), Some('_')) => ()
+    _ => return None
+  }
+  let base_len = i - 4
+  if base_len == 0 {
+    return None
+  }
+  let chars : Array[Char] = []
+  let mut j = 0
+  while j < base_len {
+    match name.get_char(j) {
+      Some(ch) => chars.push(ch)
+      None => return None
+    }
+    j = j + 1
+  }
+  Some(String::from_array(chars))
+}
+
+fn strip_all_gensym_suffixes(name : String) -> String {
+  let mut cur = name
+  while true {
+    match strip_gensym_suffix(cur) {
+      Some(next) => cur = next
+      None => break
+    }
+  }
+  cur
+}
+
 ///|
 fn value_eqv(left : Value, right : Value) -> Bool {
   match (left, right) {
@@ -5460,10 +5511,33 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::SyntaxObject(obj) => obj.binding_id
             _ => None
           }
-          let base = match args[1] {
+          let mut base = match args[1] {
             Value::SyntaxObject(obj) => obj.datum
             Value::Datum(d) => d
             _ => raise @core.EvalError("type error: datum expected")
+          }
+          let template_name = match args[0] {
+            Value::SyntaxObject(obj) =>
+              match datum_unlabel(obj.datum) {
+                Datum::Symbol(name) => Some(name)
+                _ => None
+              }
+            _ => None
+          }
+          match (template_name, datum_unlabel(base)) {
+            (Some(template), Datum::Symbol(base_name)) => {
+              match strip_gensym_suffix(template) {
+                Some(immediate) =>
+                  if strip_gensym_suffix(immediate) is Some(_) {
+                    let original = strip_all_gensym_suffixes(template)
+                    if original == base_name {
+                      base = Datum::Symbol(immediate)
+                    }
+                  }
+                None => ()
+              }
+            }
+            _ => ()
           }
           let datum = syntax_wrap_root(base, scopes)
           let binding_id = match datum_unlabel(base) {
@@ -7725,18 +7799,23 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let items = datum_list_to_array(datum)
           let results : Array[Datum] = []
           for item in items {
-            let (name, scope) = match datum_unlabel(item) {
-              Datum::Symbol(name) => (name, next_syntax_context())
+            let (name, scopes, binding_id) = match datum_unlabel(item) {
+              Datum::Symbol(name) => (name, [], None)
               Datum::Value(Value::SyntaxObject(obj)) =>
                 match datum_unlabel(obj.datum) {
-                  Datum::Symbol(name) => (name, next_syntax_context())
+                  Datum::Symbol(name) => {
+                    let copied : Array[Int] = []
+                    for scope in obj.scopes {
+                      copied.push(scope)
+                    }
+                    (name, copied, obj.binding_id)
+                  }
                   _ => raise @core.EvalError("type error: identifier expected")
                 }
               _ => raise @core.EvalError("type error: identifier expected")
             }
             let datum = Datum::Symbol(gensym(name))
-            let temp =
-              Value::SyntaxObject(SyntaxObject::{ datum, scopes: [scope], binding_id: None })
+            let temp = Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
             results.push(value_to_datum_element(temp))
           }
           Value::Datum(list_from_array(results))

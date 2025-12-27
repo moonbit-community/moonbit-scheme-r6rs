@@ -39,6 +39,27 @@ test "r6rs libraries: syntax-case generate-temporaries" {
 }
 
 ///|
+test "r6rs libraries: generate-temporaries preserves context" {
+  let program = (
+    (
+      #|(begin
+      #|  (import (rnrs syntax-case))
+      #|  (let ((x 1))
+      #|    (define-syntax ctx-check
+      #|      (lambda (stx)
+      #|        (syntax-case stx ()
+      #|          ((_ )
+      #|           (let* ((sx #'x)
+      #|                  (t (car (generate-temporaries (list sx))))
+      #|                  (x2 (datum->syntax t 'x)))
+      #|             (if (free-identifier=? x2 sx) #'#t #'#f))))))
+      #|    (ctx-check)))
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#t")
+}
+
+///|
 test "r6rs libraries: syntax-case value exports" {
   let program = (
     (
