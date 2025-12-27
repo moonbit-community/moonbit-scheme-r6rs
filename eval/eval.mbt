@@ -2166,6 +2166,29 @@ fn quasiquote_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalEr
         quasiquote_expand(cdr.val, env, depth),
       )
     }
+    Datum::Vector(items) => {
+      let expanded : Array[Datum] = []
+      if depth == 1 {
+        for item in items {
+          match unwrap_form(item, "unquote-splicing") {
+            Some(arg) => {
+              let value = eval_expr(arg, env)
+              let datum = value_as_datum(value)
+              let list_items = datum_list_to_array(datum)
+              for list_item in list_items {
+                expanded.push(list_item)
+              }
+            }
+            None => expanded.push(quasiquote_expand(item, env, depth))
+          }
+        }
+      } else {
+        for item in items {
+          expanded.push(quasiquote_expand(item, env, depth))
+        }
+      }
+      Datum::Vector(expanded)
+    }
     _ => expr
   }
 }
@@ -2221,6 +2244,32 @@ fn quasisyntax_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalE
         quasisyntax_expand(car.val, env, depth),
         quasisyntax_expand(cdr.val, env, depth),
       )
+    }
+    Datum::Vector(items) => {
+      let expanded : Array[Datum] = []
+      if depth == 1 {
+        for item in items {
+          match unwrap_form(item, "unsyntax-splicing") {
+            Some(arg) => {
+              let value = eval_expr(arg, env)
+              let datum = match value {
+                Value::SyntaxObject(obj) => obj.datum
+                _ => value_as_datum(value)
+              }
+              let list_items = datum_list_to_array(datum)
+              for list_item in list_items {
+                expanded.push(list_item)
+              }
+            }
+            None => expanded.push(quasisyntax_expand(item, env, depth))
+          }
+        }
+      } else {
+        for item in items {
+          expanded.push(quasisyntax_expand(item, env, depth))
+        }
+      }
+      Datum::Vector(expanded)
     }
     _ => expr
   }

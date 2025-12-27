@@ -42,3 +42,13 @@ test "r6rs quasiquote: unquote-splicing and nesting" {
     content="(a (quasiquote (b (unquote x))) 1)",
   )
 }
+
+///|
+test "r6rs quasiquote: vector unquote and splicing" {
+  let program = (
+    (
+      #|`#(1 ,(+ 1 2) ,@(list 4 5) 6)
+    )
+  )
+  inspect(value_to_string(eval_program(program)), content="#(1 3 4 5 6)")
+}
