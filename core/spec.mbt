@@ -570,7 +570,7 @@ pub(all) struct EvalEnv {
 ///|
 pub(all) struct SyntaxObject {
   datum : Datum
-  context : Int
+  scopes : Array[Int]
 }
 
 ///|

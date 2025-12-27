@@ -20,6 +20,7 @@ using @core {
   type RecordProcKind,
   type RecordType,
   type RecordTypeDescriptor,
+  type SyntaxObject,
   type SyntaxRules,
   type MacroTransformer,
   type Value,

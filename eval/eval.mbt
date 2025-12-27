@@ -1167,23 +1167,6 @@ fn load_stdlib(env : Env) -> Unit raise {
 }
 
 ///|
-fn strip_syntax_datum(datum : Datum) -> Datum {
-  match datum {
-    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
-    Datum::Pair(a, b) => pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
-    Datum::Vector(items) => {
-      let stripped : Array[Datum] = []
-      for item in items {
-        stripped.push(strip_syntax_datum(item))
-      }
-      Datum::Vector(stripped)
-    }
-    Datum::Complex(real, imag) =>
-      Datum::Complex(Ref::new(strip_syntax_datum(real.val)), Ref::new(strip_syntax_datum(imag.val)))
-    _ => datum
-  }
-}
-
 fn captures_is_empty(captures : Map[String, Value]) -> Bool {
   for _ in captures.keys() {
     return false
@@ -1891,7 +1874,12 @@ fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
 ///|
 fn eval_syntax(args : Array[Datum]) -> Value raise EvalError {
   match args.length() {
-    1 => Value::SyntaxObject(SyntaxObject::{ datum: args[0], context: next_syntax_context() })
+    1 => {
+      let scope = next_syntax_context()
+      let scopes = [scope]
+      let datum = syntax_wrap_root(args[0], scopes)
+      Value::SyntaxObject(SyntaxObject::{ datum, scopes })
+    }
     n => raise arity_mismatch(1, n)
   }
 }
@@ -1907,9 +1895,18 @@ fn eval_quasiquote(args : Array[Datum], env : Env) -> Value raise EvalError {
 ///|
 fn eval_quasisyntax(args : Array[Datum], env : Env) -> Value raise EvalError {
   match args.length() {
-    1 => Value::SyntaxObject(
-      SyntaxObject::{ datum: quasisyntax_expand(args[0], env, 1), context: next_syntax_context() },
-    )
+    1 => {
+      let expanded = quasisyntax_expand(args[0], env, 1)
+      match expanded {
+        Datum::Value(Value::SyntaxObject(obj)) => Value::SyntaxObject(obj)
+        _ => {
+          let scope = next_syntax_context()
+          let scopes = [scope]
+          let datum = syntax_wrap_root(expanded, scopes)
+          Value::SyntaxObject(SyntaxObject::{ datum, scopes })
+        }
+      }
+    }
     n => raise arity_mismatch(1, n)
   }
 }

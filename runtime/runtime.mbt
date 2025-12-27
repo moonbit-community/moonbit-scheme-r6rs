@@ -735,3 +735,105 @@ pub fn symbol_name(expr : Datum) -> String? {
     _ => None
   }
 }
+
+fn scopes_contains(scopes : Array[Int], scope : Int) -> Bool {
+  for item in scopes {
+    if item == scope {
+      return true
+    }
+  }
+  false
+}
+
+fn scopes_clone(scopes : Array[Int]) -> Array[Int] {
+  let next : Array[Int] = []
+  for item in scopes {
+    next.push(item)
+  }
+  next
+}
+
+fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
+  let next = scopes_clone(scopes)
+  if !scopes_contains(scopes, scope) {
+    next.push(scope)
+  }
+  next
+}
+
+///|
+pub fn strip_syntax_datum(datum : Datum) -> Datum {
+  match datum {
+    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
+    Datum::Pair(a, b) => pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
+    Datum::Vector(items) => {
+      let stripped : Array[Datum] = []
+      for item in items {
+        stripped.push(strip_syntax_datum(item))
+      }
+      Datum::Vector(stripped)
+    }
+    Datum::Complex(real, imag) =>
+      Datum::Complex(Ref::new(strip_syntax_datum(real.val)), Ref::new(strip_syntax_datum(imag.val)))
+    _ => datum
+  }
+}
+
+///|
+pub fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
+  match datum {
+    Datum::Symbol(name) =>
+      Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: Datum::Symbol(name), scopes }))
+    Datum::Pair(a, b) =>
+      pair_new(syntax_wrap_datum(a.val, scopes), syntax_wrap_datum(b.val, scopes))
+    Datum::Vector(items) => {
+      let wrapped : Array[Datum] = []
+      for item in items {
+        wrapped.push(syntax_wrap_datum(item, scopes))
+      }
+      Datum::Vector(wrapped)
+    }
+    Datum::Complex(real, imag) =>
+      Datum::Complex(Ref::new(syntax_wrap_datum(real.val, scopes)), Ref::new(syntax_wrap_datum(imag.val, scopes)))
+    Datum::Value(Value::SyntaxObject(_)) => datum
+    _ => datum
+  }
+}
+
+///|
+pub fn syntax_wrap_root(datum : Datum, scopes : Array[Int]) -> Datum {
+  match datum {
+    Datum::Symbol(_) => datum
+    Datum::Value(Value::SyntaxObject(_)) => datum
+    _ => syntax_wrap_datum(datum, scopes)
+  }
+}
+
+///|
+pub fn syntax_add_scope(datum : Datum, scope : Int) -> Datum {
+  match datum {
+    Datum::Symbol(name) =>
+      Datum::Value(
+        Value::SyntaxObject(SyntaxObject::{ datum: Datum::Symbol(name), scopes: [scope] }),
+      )
+    Datum::Value(Value::SyntaxObject(obj)) => {
+      let next_scopes = scopes_with_added(obj.scopes, scope)
+      let inner = match obj.datum {
+        Datum::Symbol(_) => obj.datum
+        _ => syntax_add_scope(obj.datum, scope)
+      }
+      Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: inner, scopes: next_scopes }))
+    }
+    Datum::Pair(a, b) => pair_new(syntax_add_scope(a.val, scope), syntax_add_scope(b.val, scope))
+    Datum::Vector(items) => {
+      let wrapped : Array[Datum] = []
+      for item in items {
+        wrapped.push(syntax_add_scope(item, scope))
+      }
+      Datum::Vector(wrapped)
+    }
+    Datum::Complex(real, imag) =>
+      Datum::Complex(Ref::new(syntax_add_scope(real.val, scope)), Ref::new(syntax_add_scope(imag.val, scope)))
+    _ => datum
+  }
+}

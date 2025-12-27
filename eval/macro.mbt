@@ -747,6 +747,15 @@ priv struct MacroExpansion {
   captures : Map[String, Value]
 }
 
+fn scopes_contains(scopes : Array[Int], scope : Int) -> Bool {
+  for item in scopes {
+    if item == scope {
+      return true
+    }
+  }
+  false
+}
+
 fn collect_proc_captures(
   datum : Datum,
   def_env : Env,
@@ -786,7 +795,7 @@ fn collect_proc_captures_into(
       collect_proc_captures_into(imag.val, def_env, call_ctx, captures)
     }
     Datum::Value(Value::SyntaxObject(obj)) =>
-      if obj.context != call_ctx {
+      if !scopes_contains(obj.scopes, call_ctx) {
         collect_proc_captures_into(obj.datum, def_env, call_ctx, captures)
       }
     _ => ()
@@ -860,7 +869,11 @@ fn expand_macro_proc(
   let fenv = env_extend(env)
   env_define(fenv, temp_name, proc)
   let call_ctx = next_syntax_context()
-  let stx = Value::SyntaxObject(SyntaxObject::{ datum: call, context: call_ctx })
+  let marked_call = syntax_add_scope(call, call_ctx)
+  let stx = match marked_call {
+    Datum::Value(Value::SyntaxObject(obj)) => Value::SyntaxObject(obj)
+    _ => Value::SyntaxObject(SyntaxObject::{ datum: marked_call, scopes: [call_ctx] })
+  }
   let call_expr = list_from_array([Datum::Symbol(temp_name), Datum::Value(stx)])
   let value = eval_expr_transformer(call_expr, fenv)
   let datum = value_to_syntax_datum(value)
@@ -884,7 +897,7 @@ fn expand_macro(
 fn wrap_pattern_datum(value : Datum) -> Datum {
   match value {
     Datum::Value(Value::SyntaxObject(_)) => value
-    _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, context: 0 }))
+    _ => Datum::Value(Value::SyntaxObject(SyntaxObject::{ datum: value, scopes: [] }))
   }
 }
 
@@ -913,8 +926,16 @@ fn rewrite_template_expr(
             if is_template_form {
               let indices : Array[Int] = []
               let expanded = expand_template_indexed(expr, bindings, renames, ellipsis, indices, env)
-              let obj = SyntaxObject::{ datum: expanded, context: next_syntax_context() }
-              return Datum::Value(Value::SyntaxObject(obj))
+              match expanded {
+                Datum::Value(Value::SyntaxObject(obj)) => return Datum::Value(Value::SyntaxObject(obj))
+                _ => {
+                  let scope = next_syntax_context()
+                  let scopes = [scope]
+                  let datum = syntax_wrap_root(expanded, scopes)
+                  let obj = SyntaxObject::{ datum, scopes }
+                  return Datum::Value(Value::SyntaxObject(obj))
+                }
+              }
             }
           }
           let rewritten : Array[Datum] = []

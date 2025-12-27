@@ -409,6 +409,21 @@ fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
   }
 }
 
+fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
+  if left.length() != right.length() {
+    false
+  } else {
+    let mut i = 0
+    while i < left.length() {
+      if left[i] != right[i] {
+        return false
+      }
+      i = i + 1
+    }
+    true
+  }
+}
+
 ///|
 fn value_eqv(left : Value, right : Value) -> Bool {
   match (left, right) {
@@ -431,7 +446,7 @@ fn value_eqv(left : Value, right : Value) -> Bool {
     (Value::RecordTypeDescriptor(a), Value::RecordTypeDescriptor(b)) => a.id == b.id
     (Value::RecordConstructorDescriptor(a), Value::RecordConstructorDescriptor(b)) => a.id == b.id
     (Value::SyntaxObject(a), Value::SyntaxObject(b)) =>
-      a.context == b.context && datum_equal(a.datum, b.datum)
+      scopes_equal(a.scopes, b.scopes) && datum_equal(a.datum, b.datum)
     (Value::SyntaxKeyword(a), Value::SyntaxKeyword(b)) => a == b
     (Value::Void, Value::Void) => true
     _ => false
@@ -444,16 +459,16 @@ fn value_equal(left : Value, right : Value) -> Bool {
 }
 
 ///|
-fn identifier_info(value : Value) -> (String, Int?) raise EvalError {
+fn identifier_info(value : Value) -> (String, Array[Int]) raise EvalError {
   match value {
     Value::Datum(d) =>
       match datum_unlabel(d) {
-        Datum::Symbol(name) => (name, None)
+        Datum::Symbol(name) => (name, [])
         _ => raise @core.EvalError("type error: identifier expected")
       }
     Value::SyntaxObject(obj) =>
       match datum_unlabel(obj.datum) {
-        Datum::Symbol(name) => (name, Some(obj.context))
+        Datum::Symbol(name) => (name, obj.scopes)
         _ => raise @core.EvalError("type error: identifier expected")
       }
     _ => raise @core.EvalError("type error: identifier expected")
@@ -5099,15 +5114,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::FreeIdentifierEq => {
       match args.length() {
         2 => {
-          let (a, a_ctx) = identifier_info(args[0])
-          let (b, b_ctx) = identifier_info(args[1])
+          let (a, a_scopes) = identifier_info(args[0])
+          let (b, b_scopes) = identifier_info(args[1])
           if a != b {
             bool_value(false)
           } else {
-            match (a_ctx, b_ctx) {
-              (Some(left), Some(right)) => bool_value(left == right)
-              _ => bool_value(true)
-            }
+            bool_value(scopes_equal(a_scopes, b_scopes))
           }
         }
         n => raise arity_mismatch(2, n)
@@ -5116,15 +5128,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::BoundIdentifierEq => {
       match args.length() {
         2 => {
-          let (a, a_ctx) = identifier_info(args[0])
-          let (b, b_ctx) = identifier_info(args[1])
+          let (a, a_scopes) = identifier_info(args[0])
+          let (b, b_scopes) = identifier_info(args[1])
           if a != b {
             bool_value(false)
           } else {
-            match (a_ctx, b_ctx) {
-              (Some(left), Some(right)) => bool_value(left == right)
-              _ => bool_value(true)
-            }
+            bool_value(scopes_equal(a_scopes, b_scopes))
           }
         }
         n => raise arity_mismatch(2, n)
@@ -5156,8 +5165,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       match args.length() {
         1 => {
           match args[0] {
-            Value::SyntaxObject(obj) => Value::Datum(obj.datum)
-            Value::Datum(d) => Value::Datum(d)
+            Value::SyntaxObject(obj) => Value::Datum(strip_syntax_datum(obj.datum))
+            Value::Datum(d) => Value::Datum(strip_syntax_datum(d))
             _ => raise @core.EvalError("type error: syntax expected")
           }
         }
@@ -5167,16 +5176,17 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
     Primitive::DatumToSyntax => {
       match args.length() {
         2 => {
-          let context = match args[0] {
-            Value::SyntaxObject(obj) => obj.context
-            _ => 0
+          let scopes = match args[0] {
+            Value::SyntaxObject(obj) => obj.scopes
+            _ => []
           }
-          let datum = match args[1] {
+          let base = match args[1] {
             Value::SyntaxObject(obj) => obj.datum
             Value::Datum(d) => d
             _ => raise @core.EvalError("type error: datum expected")
           }
-          Value::SyntaxObject(SyntaxObject::{ datum, context })
+          let datum = syntax_wrap_root(base, scopes)
+          Value::SyntaxObject(SyntaxObject::{ datum, scopes })
         }
         n => raise arity_mismatch(2, n)
       }
@@ -7337,7 +7347,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let items = datum_list_to_array(datum)
           let results : Array[Datum] = []
           for item in items {
-            let (name, ctx) = match datum_unlabel(item) {
+            let (name, scope) = match datum_unlabel(item) {
               Datum::Symbol(name) => (name, next_syntax_context())
               Datum::Value(Value::SyntaxObject(obj)) =>
                 match datum_unlabel(obj.datum) {
@@ -7347,7 +7357,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               _ => raise @core.EvalError("type error: identifier expected")
             }
             let datum = Datum::Symbol(gensym(name))
-            let temp = Value::SyntaxObject(SyntaxObject::{ datum, context: ctx })
+            let temp = Value::SyntaxObject(SyntaxObject::{ datum, scopes: [scope] })
             results.push(value_to_datum_element(temp))
           }
           Value::Datum(list_from_array(results))

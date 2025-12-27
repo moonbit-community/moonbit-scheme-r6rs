@@ -40,6 +40,15 @@ test "r6rs syntax: helpers" {
     )),
     content="x",
   )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(let ((x (syntax x)))
+        #|  (syntax->datum (datum->syntax x (list x))))
+      )
+    )),
+    content="(x)",
+  )
 }
 
 ///|
