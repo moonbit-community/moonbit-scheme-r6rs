@@ -913,6 +913,42 @@ test "r6rs numeric: conversions and fractions" {
 }
 
 ///|
+test "r6rs numeric: complex conversions" {
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(inexact? (exact->inexact 1+2i))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(exact? (inexact->exact 1.0+2.0i))
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(inexact->exact 1.5+0.5i)
+      )
+    )),
+    content="3/2+1/2i",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(inexact? (exact->inexact (make-rectangular 1/2 1/4)))
+      )
+    )),
+    content="#t",
+  )
+}
+
+///|
 test "r6rs numeric: reader prefixes and exponent" {
   inspect(
     value_to_string(eval_program(
