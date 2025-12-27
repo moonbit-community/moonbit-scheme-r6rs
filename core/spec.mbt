@@ -24,7 +24,8 @@
 ///   exact->inexact inexact->exact number->string string->number
 ///   make-rectangular make-polar real-part imag-part magnitude angle
 ///   sqrt exp log expt sin cos tan asin acos atan
-///   numerator denominator abs quotient remainder modulo gcd lcm
+///   numerator denominator abs quotient remainder modulo div mod div0 mod0
+///   div-and-mod div0-and-mod0 gcd lcm
 ///   max min floor ceiling truncate round
 ///   procedure? record? record-rtd record-type-descriptor?
 ///   record-constructor-descriptor? record-type-name record-type-parent

@@ -966,6 +966,86 @@ test "r6rs numeric: conversions and fractions" {
     )),
     content="-1",
   )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(div 5 2)
+      )
+    )),
+    content="2",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(mod 5 2)
+      )
+    )),
+    content="1",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(div -5 2)
+      )
+    )),
+    content="-3",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(mod -5 2)
+      )
+    )),
+    content="1",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(div 5 -2)
+      )
+    )),
+    content="-3",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(mod 5 -2)
+      )
+    )),
+    content="-1",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(div0 -5 2)
+      )
+    )),
+    content="-2",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(mod0 -5 2)
+      )
+    )),
+    content="-1",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(call-with-values (lambda () (div-and-mod -5 2)) list)
+      )
+    )),
+    content="(-3 1)",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(call-with-values (lambda () (div0-and-mod0 -5 2)) list)
+      )
+    )),
+    content="(-2 -1)",
+  )
 }
 
 ///|
