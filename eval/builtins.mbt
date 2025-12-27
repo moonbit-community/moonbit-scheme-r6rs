@@ -39,6 +39,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::NullP, Primitive::NullP)
     | (Primitive::PairP, Primitive::PairP)
     | (Primitive::SymbolP, Primitive::SymbolP)
+    | (Primitive::SymbolEq, Primitive::SymbolEq)
     | (Primitive::IdentifierP, Primitive::IdentifierP)
     | (Primitive::SyntaxP, Primitive::SyntaxP)
     | (Primitive::FreeIdentifierEq, Primitive::FreeIdentifierEq)
@@ -48,6 +49,7 @@ fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
     | (Primitive::SyntaxToDatum, Primitive::SyntaxToDatum)
     | (Primitive::DatumToSyntax, Primitive::DatumToSyntax)
     | (Primitive::BooleanP, Primitive::BooleanP)
+    | (Primitive::BooleanEq, Primitive::BooleanEq)
     | (Primitive::NumberP, Primitive::NumberP)
     | (Primitive::IntegerP, Primitive::IntegerP)
     | (Primitive::RationalP, Primitive::RationalP)
@@ -2124,6 +2126,42 @@ fn compare_chain_string(
     }
     let cmp = prev.lexical_compare(cur)
     if !compare_ok(mode, cmp) {
+      return false
+    }
+    prev = cur
+    i = i + 1
+  }
+  true
+}
+
+///|
+fn compare_chain_bool(args : Array[Value]) -> Bool raise EvalError {
+  if args.length() <= 1 {
+    return true
+  }
+  let mut prev = value_as_bool(args[0])
+  let mut i = 1
+  while i < args.length() {
+    let cur = value_as_bool(args[i])
+    if prev != cur {
+      return false
+    }
+    prev = cur
+    i = i + 1
+  }
+  true
+}
+
+///|
+fn compare_chain_symbol(args : Array[Value]) -> Bool raise EvalError {
+  if args.length() <= 1 {
+    return true
+  }
+  let mut prev = value_as_symbol(args[0])
+  let mut i = 1
+  while i < args.length() {
+    let cur = value_as_symbol(args[i])
+    if prev != cur {
       return false
     }
     prev = cur
@@ -5226,6 +5264,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         n => raise arity_mismatch(1, n)
       }
     }
+    Primitive::SymbolEq => bool_value(compare_chain_symbol(args))
     Primitive::IdentifierP => {
       match args.length() {
         1 => {
@@ -5348,6 +5387,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         n => raise arity_mismatch(1, n)
       }
     }
+    Primitive::BooleanEq => bool_value(compare_chain_bool(args))
     Primitive::NumberP => {
       match args.length() {
         1 => {

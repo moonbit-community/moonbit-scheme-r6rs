@@ -29,6 +29,7 @@ fn init_env() -> Env {
   env_define(env, "null?", Value::Primitive(Primitive::NullP))
   env_define(env, "pair?", Value::Primitive(Primitive::PairP))
   env_define(env, "symbol?", Value::Primitive(Primitive::SymbolP))
+  env_define(env, "symbol=?", Value::Primitive(Primitive::SymbolEq))
   env_define(env, "identifier?", Value::Primitive(Primitive::IdentifierP))
   env_define(env, "syntax?", Value::Primitive(Primitive::SyntaxP))
   env_define(env, "free-identifier=?", Value::Primitive(Primitive::FreeIdentifierEq))
@@ -48,6 +49,7 @@ fn init_env() -> Env {
     Value::Primitive(Primitive::GenerateTemporaries),
   )
   env_define(env, "boolean?", Value::Primitive(Primitive::BooleanP))
+  env_define(env, "boolean=?", Value::Primitive(Primitive::BooleanEq))
   env_define(env, "number?", Value::Primitive(Primitive::NumberP))
   env_define(env, "integer?", Value::Primitive(Primitive::IntegerP))
   env_define(env, "rational?", Value::Primitive(Primitive::RationalP))

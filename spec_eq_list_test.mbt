@@ -11,6 +11,38 @@ test "r6rs equality predicates" {
   inspect(
     value_to_string(eval_program(
       (
+        #|(boolean=? #t #t #t)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(boolean=? #t #f)
+      )
+    )),
+    content="#f",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(symbol=? 'a 'a 'a)
+      )
+    )),
+    content="#t",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
+        #|(symbol=? 'a 'b)
+      )
+    )),
+    content="#f",
+  )
+  inspect(
+    value_to_string(eval_program(
+      (
         #|(eqv? #t #t)
       )
     )),

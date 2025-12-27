@@ -18,8 +18,8 @@
 /// - library and import (minimal library support)
 /// - builtins: + - * / = < > <= >= cons car cdr list null? pair? symbol?
 ///   identifier? syntax? free-identifier=? bound-identifier=?
-///   symbol->string string->symbol syntax syntax->datum datum->syntax
-///   boolean? number? integer? rational? real? complex? exact? inexact?
+///   symbol? symbol=? symbol->string string->symbol syntax syntax->datum datum->syntax
+///   boolean? boolean=? number? integer? rational? real? complex? exact? inexact?
 ///   zero? positive? negative? odd? even? finite? infinite? nan?
 ///   exact->inexact inexact->exact number->string string->number
 ///   make-rectangular make-polar real-part imag-part magnitude angle
@@ -120,6 +120,7 @@ pub(all) enum Primitive {
   NullP
   PairP
   SymbolP
+  SymbolEq
   IdentifierP
   SyntaxP
   FreeIdentifierEq
@@ -129,6 +130,7 @@ pub(all) enum Primitive {
   SyntaxToDatum
   DatumToSyntax
   BooleanP
+  BooleanEq
   NumberP
   IntegerP
   RationalP
