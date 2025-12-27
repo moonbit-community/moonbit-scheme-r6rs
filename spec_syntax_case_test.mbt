@@ -232,6 +232,42 @@ test "r6rs syntax-case: invalid ellipsis depth" {
 }
 
 ///|
+test "r6rs syntax-case: invalid nested ellipsis depth (fewer in template)" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ ((x ...) ...)) #'(list x ...)))))
+      #|  (bad ((1 2) (3 4))))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for nested ellipsis mismatch")
+  }
+}
+
+///|
+test "r6rs syntax-case: invalid nested ellipsis depth (more in template)" {
+  let bad = try? eval_program(
+    (
+      #|(begin
+      #|  (define-syntax bad
+      #|    (lambda (stx)
+      #|      (syntax-case stx ()
+      #|        ((_ (x ...)) #'(list (list x ...) ...)))))
+      #|  (bad (1 2)))
+    )
+  )
+  match bad {
+    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+    _ => fail("expected syntax-case error for nested ellipsis mismatch")
+  }
+}
+
+///|
 test "r6rs syntax-case: literal ellipsis pattern" {
   let program = (
     (
