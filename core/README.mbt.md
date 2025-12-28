@@ -17,3 +17,11 @@ let folded = @core.unicode_string_foldcase("StraSSE")
 ///|
 let nfc = @core.unicode_string_normalize_nfc("e\u{301}")
 ```
+
+```mbt check
+///|
+test "unicode helpers" {
+  inspect(unicode_char_general_category('A'), content="Lu")
+  inspect(unicode_string_foldcase("ABC"), content="abc")
+}
+```

@@ -19,6 +19,16 @@ let value = @dii/scheme-r6rs.eval_program(program)
 let text = @dii/scheme-r6rs.value_to_string(value)
 ```
 
+## Tests
+
+```mbt check
+///|
+test "eval program" {
+  let value = eval_program("(+ 1 2)")
+  inspect(value_to_string(value), content="3")
+}
+```
+
 ## Development
 
 Use `moon check` to type check, `moon test` to run the spec tests, and `moon fmt`

@@ -19,3 +19,12 @@ let env = @runtime.env_new()
 ///|
 let port = @runtime.new_output_string_port()
 ```
+
+```mbt check
+///|
+test "string port" {
+  let port = new_output_string_port()
+  port_write(port, "hi")
+  inspect(port_get_output_string(port), content="hi")
+}
+```

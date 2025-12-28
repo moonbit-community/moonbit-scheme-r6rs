@@ -16,3 +16,11 @@ let program = "(define x 1) (+ x 2)"
 ///|
 let result = @eval.eval_program(program)
 ```
+
+```mbt check
+///|
+test "evaluate program" {
+  let value = eval_program("(+ 1 2)")
+  inspect(@runtime.value_to_string(value), content="3")
+}
+```
