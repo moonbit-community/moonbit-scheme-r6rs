@@ -1,0 +1,180 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "dii/scheme-r6rs/runtime"
+
+import(
+  "dii/scheme-r6rs/core"
+  "moonbitlang/core/bigint"
+)
+
+// Values
+pub fn bigint_abs(@bigint.BigInt) -> @bigint.BigInt
+
+pub fn bigint_from_int(Int) -> @bigint.BigInt
+
+pub fn bigint_gcd(@bigint.BigInt, @bigint.BigInt) -> @bigint.BigInt
+
+pub fn bigint_is_zero(@bigint.BigInt) -> Bool
+
+pub fn bigint_to_int_option(@bigint.BigInt) -> Int?
+
+pub fn bool_value(Bool) -> @core.Value
+
+pub fn condition_base_type() -> @core.RecordType raise @core.EvalError
+
+pub fn condition_components(@core.Value, @core.RecordType) -> Array[@core.Record] raise @core.EvalError
+
+pub fn condition_components_opt(@core.Value, @core.RecordType) -> Array[@core.Record]?
+
+pub fn datum_list_to_array(@core.Datum) -> Array[@core.Datum] raise @core.EvalError
+
+pub fn datum_list_to_value_array(@core.Datum) -> Array[@core.Value] raise @core.EvalError
+
+pub fn datum_unlabel(@core.Datum) -> @core.Datum
+
+pub fn default_constructor_descriptor(@core.RecordType) -> @core.RecordConstructorDescriptor
+
+pub fn enum_set_from_names(Array[String], Array[String]) -> @core.EnumSet raise @core.EvalError
+
+pub fn enum_set_index_of(Array[String], String) -> Int?
+
+pub fn enum_set_member_by_name(@core.EnumSet, String) -> Bool
+
+pub fn enum_set_members_all_false(Array[String]) -> Array[Bool]
+
+pub fn enum_set_members_all_true(Array[String]) -> Array[Bool]
+
+pub fn enum_set_universe_equal(@core.EnumSet, @core.EnumSet) -> Bool
+
+pub fn env_binding_id_optional(Array[Map[String, @core.Binding]], String) -> Int?
+
+pub fn env_clone(Array[Map[String, @core.Binding]]) -> Array[Map[String, @core.Binding]]
+
+pub fn env_define(Array[Map[String, @core.Binding]], String, @core.Value) -> Unit
+
+pub fn env_define_binding(Array[Map[String, @core.Binding]], String, @core.Binding) -> Unit
+
+pub fn env_extend(Array[Map[String, @core.Binding]]) -> Array[Map[String, @core.Binding]]
+
+pub fn env_get_macro(Array[Map[String, @core.Binding]], String) -> @core.MacroTransformer?
+
+pub fn env_lookup(Array[Map[String, @core.Binding]], String) -> @core.Value raise @core.EvalError
+
+pub fn env_lookup_binding(Array[Map[String, @core.Binding]], String) -> @core.Binding raise @core.EvalError
+
+pub fn env_lookup_binding_optional(Array[Map[String, @core.Binding]], String) -> @core.Binding?
+
+pub fn env_lookup_optional(Array[Map[String, @core.Binding]], String) -> @core.Value?
+
+pub fn env_new() -> Array[Map[String, @core.Binding]]
+
+pub fn env_set(Array[Map[String, @core.Binding]], String, @core.Value) -> Unit raise @core.EvalError
+
+pub fn gcd(Int, Int) -> Int
+
+pub fn gensym(String) -> String
+
+pub fn get_current_output_port() -> @core.Port
+
+pub fn int_abs(Int) -> Int
+
+pub fn is_false(@core.Value) -> Bool
+
+pub fn is_procedure_value(@core.Value) -> Bool
+
+pub fn list_from_array(Array[@core.Datum]) -> @core.Datum
+
+pub fn lookup_library(String) -> Library?
+
+pub fn lookup_record_type_descriptor(String) -> @core.RecordTypeDescriptor?
+
+pub fn lookup_record_type_descriptor_by_id(Int) -> @core.RecordTypeDescriptor?
+
+pub fn lookup_record_type_descriptor_by_uid(String) -> @core.RecordTypeDescriptor?
+
+pub fn make_condition(Array[@core.Record]) -> @core.Condition
+
+pub fn make_condition_proc(@core.ConditionProcKind) -> @core.ConditionProc
+
+pub fn make_enum_set(Array[String], Array[Bool]) -> @core.EnumSet
+
+pub fn make_enum_set_proc(@core.EnumSetProcKind) -> @core.EnumSetProc
+
+pub fn make_hashtable(@core.HashtableEquiv, @core.Value?, Bool) -> @core.Hashtable
+
+pub fn make_record_constructor_descriptor(@core.RecordType, @core.RecordConstructorDescriptor?, @core.Value?) -> @core.RecordConstructorDescriptor
+
+pub fn make_record_instance(@core.RecordType, Array[@core.Value]) -> @core.Record
+
+pub fn make_record_proc(@core.RecordProcKind) -> @core.RecordProc
+
+pub fn make_record_type(String, @core.RecordType?, Bool, Bool, String?, Array[@core.RecordField]) -> @core.RecordType
+
+pub fn make_record_type_descriptor(@core.RecordType, @core.RecordConstructorDescriptor) -> @core.RecordTypeDescriptor
+
+pub fn new_output_string_port() -> @core.Port
+
+pub fn next_binding_id() -> Int
+
+pub fn next_hashtable_id() -> Int
+
+pub fn next_syntax_context() -> Int
+
+pub fn normalize_big_rat(@bigint.BigInt, @bigint.BigInt) -> @core.Datum?
+
+pub fn normalize_rat(Int, Int) -> @core.Datum?
+
+pub fn pair_new(@core.Datum, @core.Datum) -> @core.Datum
+
+pub fn port_get_output_string(@core.Port) -> String
+
+pub fn port_write(@core.Port, String) -> Unit
+
+pub fn record_type_is_a(@core.RecordType, @core.RecordType) -> Bool
+
+pub fn record_type_matches(@core.RecordType, @core.RecordType?, Bool, Bool, Array[@core.RecordField]) -> Bool
+
+pub fn register_library(String, Map[String, @core.Binding]) -> Unit
+
+pub fn register_record_type(String, @core.RecordTypeDescriptor) -> @core.RecordTypeDescriptor
+
+pub fn register_record_type_alias(String, @core.RecordTypeDescriptor) -> Unit
+
+pub fn reset_library_registry() -> Unit
+
+pub fn reset_record_type_registry() -> Unit
+
+pub fn set_current_output_port(@core.Port) -> Unit
+
+pub fn strip_syntax_datum(@core.Datum) -> @core.Datum
+
+pub fn symbol_name(@core.Datum) -> String?
+
+pub fn syntax_add_scope(@core.Datum, Int) -> @core.Datum
+
+pub fn syntax_wrap_datum(@core.Datum, Array[Int]) -> @core.Datum
+
+pub fn syntax_wrap_root(@core.Datum, Array[Int]) -> @core.Datum
+
+pub fn value_as_datum(@core.Value) -> @core.Datum raise @core.EvalError
+
+pub fn value_as_pair(@core.Value) -> (@core.Datum, @core.Datum) raise @core.EvalError
+
+pub fn value_as_pair_cells(@core.Value) -> (Ref[@core.Datum], Ref[@core.Datum]) raise @core.EvalError
+
+pub fn value_from_datum(@core.Datum) -> @core.Value
+
+pub fn value_to_datum_element(@core.Value) -> @core.Datum
+
+pub fn value_to_string(@core.Value) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct Library {
+  exports : Map[String, @core.Binding]
+}
+
+// Type aliases
+
+// Traits
+

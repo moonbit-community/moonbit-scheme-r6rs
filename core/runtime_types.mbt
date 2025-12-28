@@ -1,42 +1,47 @@
 ///|
+/// Kinds of runtime ports.
 pub(all) enum PortKind {
   OutputString(Ref[String])
 }
 
 ///|
+/// Runtime port descriptor.
 pub(all) struct Port {
-  pub id : Int
-  pub kind : PortKind
+  id : Int
+  kind : PortKind
 }
 
 ///|
 pub(all) struct RecordField {
-  pub name : String
-  pub mutable : Bool
+  name : String
+  mutable : Bool
 }
 
 ///|
+/// Record type metadata used by the runtime.
 pub(all) struct RecordType {
-  pub id : Int
-  pub name : String
-  pub parent : RecordType?
-  pub is_sealed : Bool
-  pub is_opaque : Bool
-  pub uid : String?
-  pub fields : Array[RecordField]
+  id : Int
+  name : String
+  parent : RecordType?
+  is_sealed : Bool
+  is_opaque : Bool
+  uid : String?
+  fields : Array[RecordField]
 }
 
 ///|
+/// Record instance with boxed fields.
 pub(all) struct Record {
-  pub id : Int
-  pub record_type : RecordType
-  pub fields : Array[Ref[Value]]
+  id : Int
+  record_type : RecordType
+  fields : Array[Ref[Value]]
 }
 
 ///|
+/// Condition value containing record components.
 pub(all) struct Condition {
-  pub id : Int
-  pub components : Array[Record]
+  id : Int
+  components : Array[Record]
 }
 
 ///|
@@ -49,24 +54,26 @@ pub(all) enum HashtableEquiv {
 
 ///|
 pub(all) struct HashtableEntry {
-  pub key : Value
-  pub value : Ref[Value]
+  key : Value
+  value : Ref[Value]
 }
 
 ///|
+/// Hashtable with configured equivalence and hash function.
 pub(all) struct Hashtable {
-  pub id : Int
-  pub mutable : Bool
-  pub equiv : HashtableEquiv
-  pub hash : Value?
-  pub entries : Ref[Array[HashtableEntry]]
+  id : Int
+  mutable : Bool
+  equiv : HashtableEquiv
+  hash : Value?
+  entries : Ref[Array[HashtableEntry]]
 }
 
 ///|
+/// Enum set value with a fixed universe ordering.
 pub(all) struct EnumSet {
-  pub id : Int
-  pub universe : Array[String]
-  pub members : Array[Bool]
+  id : Int
+  universe : Array[String]
+  members : Array[Bool]
 }
 
 ///|
@@ -77,8 +84,8 @@ pub(all) enum EnumSetProcKind {
 
 ///|
 pub(all) struct EnumSetProc {
-  pub id : Int
-  pub kind : EnumSetProcKind
+  id : Int
+  kind : EnumSetProcKind
 }
 
 ///|
@@ -92,9 +99,10 @@ pub(all) enum RecordProcKind {
 }
 
 ///|
+/// Record-related procedure wrapper.
 pub(all) struct RecordProc {
-  pub id : Int
-  pub kind : RecordProcKind
+  id : Int
+  kind : RecordProcKind
 }
 
 ///|
@@ -104,44 +112,45 @@ pub(all) enum ConditionProcKind {
 }
 
 ///|
+/// Condition-related procedure wrapper.
 pub(all) struct ConditionProc {
-  pub id : Int
-  pub kind : ConditionProcKind
+  id : Int
+  kind : ConditionProcKind
 }
 
 ///|
 pub(all) struct RecordConstructorDescriptor {
-  pub id : Int
-  pub record_type : RecordType
-  pub parent_desc : RecordConstructorDescriptor?
-  pub protocol : Value?
+  id : Int
+  record_type : RecordType
+  parent_desc : RecordConstructorDescriptor?
+  protocol : Value?
 }
 
 ///|
 pub(all) struct RecordTypeDescriptor {
-  pub id : Int
-  pub record_type : RecordType
-  pub constructor_desc : RecordConstructorDescriptor
+  id : Int
+  record_type : RecordType
+  constructor_desc : RecordConstructorDescriptor
 }
 
 ///|
 pub(all) struct Formals {
-  pub params : Array[String]
-  pub rest : String?
+  params : Array[String]
+  rest : String?
 }
 
 ///|
 pub(all) struct ParamBinding {
-  pub param : Parameter
-  pub old_value : Value
-  pub new_value : Value
+  param : Parameter
+  old_value : Value
+  new_value : Value
 }
 
 ///|
 pub(all) struct RecordFieldBinding {
-  pub accessor : String
-  pub index : Int
-  pub mutator : String?
+  accessor : String
+  index : Int
+  mutator : String?
 }
 
 ///|
@@ -155,11 +164,11 @@ pub(all) enum HashtableOp {
 
 ///|
 pub(all) struct GuardInfo {
-  pub condition : Value
-  pub resume_value : Value
-  pub handlers : Array[Value]
-  pub raise_kont : Kont
-  pub continuable : Bool
+  condition : Value
+  resume_value : Value
+  handlers : Array[Value]
+  raise_kont : Kont
+  continuable : Bool
 }
 
 ///|
@@ -170,8 +179,8 @@ pub(all) enum WinderKind {
 
 ///|
 pub(all) struct Winder {
-  pub id : Int
-  pub kind : WinderKind
+  id : Int
+  kind : WinderKind
 }
 
 ///|
@@ -182,6 +191,7 @@ pub(all) enum WindAction {
 }
 
 ///|
+/// Continuation frames for the evaluator.
 pub(all) enum Kont {
   Halt
   If(Datum, Datum, Env, Kont)
@@ -204,7 +214,7 @@ pub(all) enum Kont {
     Array[Array[(String, Value)]],
     Env,
     Array[Datum],
-    Kont,
+    Kont
   )
   LetStarValues(Array[(Formals, Datum)], Int, Env, Array[Datum], Kont)
   DefineValues(Formals, Env, Kont)
@@ -216,7 +226,7 @@ pub(all) enum Kont {
     Array[Value],
     Env,
     Array[Datum],
-    Kont,
+    Kont
   )
   ParameterizeValue(
     Array[(Datum, Datum)],
@@ -225,7 +235,7 @@ pub(all) enum Kont {
     Array[Value],
     Env,
     Array[Datum],
-    Kont,
+    Kont
   )
   ParameterizeConvert(
     Array[(Datum, Datum)],
@@ -234,7 +244,7 @@ pub(all) enum Kont {
     Array[Value],
     Env,
     Array[Datum],
-    Kont,
+    Kont
   )
   MakeParameter(Value, Kont)
   SetParameter(Parameter, Kont)
@@ -247,8 +257,22 @@ pub(all) enum Kont {
   RecordConstructorDone(Kont)
   RecordProtocolNApply(RecordType, Array[Value], Kont)
   RecordProtocolNResult(RecordType, Kont)
-  DefineRecordType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
-  DefineConditionType(String, String, RecordType, Array[RecordFieldBinding], Env, Kont)
+  DefineRecordType(
+    String,
+    String,
+    RecordType,
+    Array[RecordFieldBinding],
+    Env,
+    Kont
+  )
+  DefineConditionType(
+    String,
+    String,
+    RecordType,
+    Array[RecordFieldBinding],
+    Env,
+    Kont
+  )
   HashtableFindResult(Hashtable, Value, Int, HashtableOp, Kont)
   HashtableUpdateApply(Hashtable, Value, Int, Bool, Kont)
   MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
@@ -265,9 +289,10 @@ pub(all) enum Kont {
 }
 
 ///|
+/// First-class continuation value.
 pub(all) struct Continuation {
-  pub id : Int
-  pub kont : Kont
-  pub handlers : Array[Value]
-  pub winds : Array[Winder]
+  id : Int
+  kont : Kont
+  handlers : Array[Value]
+  winds : Array[Winder]
 }

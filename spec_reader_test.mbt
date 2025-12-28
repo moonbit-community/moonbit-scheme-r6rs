@@ -4,10 +4,7 @@ test "reader: datum and block comments" {
     #|(begin
     #|  (list 1 #;2 3 #| drop |# 4))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="(1 3 4)",
-  )
+  inspect(value_to_string(eval_program(program)), content="(1 3 4)")
 }
 
 ///|
@@ -16,10 +13,7 @@ test "reader: nested block comments" {
     #|(begin
     #|  (list 1 #| outer #| inner |# outer |# 2))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="(1 2)",
-  )
+  inspect(value_to_string(eval_program(program)), content="(1 2)")
 }
 
 ///|
@@ -28,10 +22,7 @@ test "reader: delimited identifiers" {
     #|(begin
     #|  (symbol->string '|a b|))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="\"a b\"",
-  )
+  inspect(value_to_string(eval_program(program)), content="\"a b\"")
 }
 
 ///|
@@ -89,10 +80,7 @@ test "reader: fold-case unicode identifiers" {
     #|  (define \x03A9; 42)
     #|  \x03C9;)
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="42",
-  )
+  inspect(value_to_string(eval_program(program)), content="42")
 }
 
 ///|
@@ -101,10 +89,7 @@ test "reader: identifier hex escapes" {
     #|(begin
     #|  (symbol->string '|a\x41;|))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="\"aA\"",
-  )
+  inspect(value_to_string(eval_program(program)), content="\"aA\"")
 }
 
 ///|
@@ -114,10 +99,7 @@ test "reader: string line continuation" {
     #|  (map char->integer (string->list "a\
     #|    b")))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="(97 98)",
-  )
+  inspect(value_to_string(eval_program(program)), content="(97 98)")
 }
 
 ///|
@@ -129,10 +111,7 @@ test "reader: datum labels" {
     #|  (set-car! y 'z)
     #|  x)
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="#1=(z b)",
-  )
+  inspect(value_to_string(eval_program(program)), content="#1=(z b)")
 }
 
 ///|
@@ -142,8 +121,5 @@ test "reader: datum labels cycle" {
     #|  (define x '#1=(a . #1#))
     #|  x)
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="#1=(a . #1#)",
-  )
+  inspect(value_to_string(eval_program(program)), content="#1=(a . #1#)")
 }

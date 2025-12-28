@@ -1,0 +1,42 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "dii/scheme-r6rs/lexer"
+
+import(
+  "dii/scheme-r6rs/core"
+)
+
+// Values
+pub fn digit_value(Char) -> Int?
+
+pub fn is_bytevector_start(Reader) -> Bool
+
+pub fn is_ellipsis_start(Reader) -> Bool
+
+pub fn is_vector_start(Reader) -> Bool
+
+pub fn make_reader(String) -> Reader
+
+pub fn read_string(Reader) -> String raise @core.ParseError
+
+pub fn read_token(Reader) -> String raise @core.ParseError
+
+pub fn reader_next(Reader) -> Char?
+
+pub fn reader_peek(Reader) -> Char?
+
+pub fn skip_ws_and_comments(Reader) -> Unit raise @core.ParseError
+
+// Errors
+
+// Types and methods
+pub(all) struct Reader {
+  chars : Array[Char]
+  mut pos : Int
+  mut fold_case : Bool
+  labels : Map[Int, Ref[@core.Datum]]
+}
+
+// Type aliases
+
+// Traits
+

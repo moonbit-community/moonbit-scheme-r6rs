@@ -1,2830 +1,9 @@
 ///|
-fn arity_mismatch(expected : Int, got : Int) -> EvalError {
-  @core.EvalError("arity mismatch: expected \{expected} got \{got}")
-}
-
-///|
-fn is_proper_list(value : Datum) -> Bool {
-  let mut cur = value
-  while true {
-    match datum_unlabel(cur) {
-      Datum::Nil => return true
-      Datum::Pair(_, cdr) => cur = cdr.val
-      _ => return false
-    }
-  }
-  false
-}
-
-///|
-fn primitive_eq(left : Primitive, right : Primitive) -> Bool {
-  match (left, right) {
-    (Primitive::Cxr(a), Primitive::Cxr(b)) => a == b
-    (Primitive::Add, Primitive::Add)
-    | (Primitive::Sub, Primitive::Sub)
-    | (Primitive::Mul, Primitive::Mul)
-    | (Primitive::Div, Primitive::Div)
-    | (Primitive::NumEq, Primitive::NumEq)
-    | (Primitive::Less, Primitive::Less)
-    | (Primitive::Greater, Primitive::Greater)
-    | (Primitive::LessEq, Primitive::LessEq)
-    | (Primitive::GreaterEq, Primitive::GreaterEq)
-    | (Primitive::Eq, Primitive::Eq)
-    | (Primitive::Eqv, Primitive::Eqv)
-    | (Primitive::Equal, Primitive::Equal)
-    | (Primitive::Cons, Primitive::Cons)
-    | (Primitive::Car, Primitive::Car)
-    | (Primitive::Cdr, Primitive::Cdr)
-    | (Primitive::List, Primitive::List)
-    | (Primitive::NullP, Primitive::NullP)
-    | (Primitive::PairP, Primitive::PairP)
-    | (Primitive::SymbolP, Primitive::SymbolP)
-    | (Primitive::SymbolEq, Primitive::SymbolEq)
-    | (Primitive::IdentifierP, Primitive::IdentifierP)
-    | (Primitive::SyntaxP, Primitive::SyntaxP)
-    | (Primitive::FreeIdentifierEq, Primitive::FreeIdentifierEq)
-    | (Primitive::BoundIdentifierEq, Primitive::BoundIdentifierEq)
-    | (Primitive::SymbolToString, Primitive::SymbolToString)
-    | (Primitive::StringToSymbol, Primitive::StringToSymbol)
-    | (Primitive::StringHash, Primitive::StringHash)
-    | (Primitive::StringCiHash, Primitive::StringCiHash)
-    | (Primitive::SymbolHash, Primitive::SymbolHash)
-    | (Primitive::EqualHash, Primitive::EqualHash)
-    | (Primitive::SyntaxToDatum, Primitive::SyntaxToDatum)
-    | (Primitive::DatumToSyntax, Primitive::DatumToSyntax)
-    | (Primitive::BooleanP, Primitive::BooleanP)
-    | (Primitive::BooleanEq, Primitive::BooleanEq)
-    | (Primitive::NumberP, Primitive::NumberP)
-    | (Primitive::IntegerP, Primitive::IntegerP)
-    | (Primitive::ExactIntegerP, Primitive::ExactIntegerP)
-    | (Primitive::RationalP, Primitive::RationalP)
-    | (Primitive::RealP, Primitive::RealP)
-    | (Primitive::ComplexP, Primitive::ComplexP)
-    | (Primitive::ExactP, Primitive::ExactP)
-    | (Primitive::InexactP, Primitive::InexactP)
-    | (Primitive::ZeroP, Primitive::ZeroP)
-    | (Primitive::PositiveP, Primitive::PositiveP)
-    | (Primitive::NegativeP, Primitive::NegativeP)
-    | (Primitive::OddP, Primitive::OddP)
-    | (Primitive::EvenP, Primitive::EvenP)
-    | (Primitive::FiniteP, Primitive::FiniteP)
-    | (Primitive::InfiniteP, Primitive::InfiniteP)
-    | (Primitive::NanP, Primitive::NanP)
-    | (Primitive::ProcedureP, Primitive::ProcedureP)
-    | (Primitive::RecordP, Primitive::RecordP)
-    | (Primitive::RecordRtd, Primitive::RecordRtd)
-    | (Primitive::RecordTypeDescriptorP, Primitive::RecordTypeDescriptorP)
-    | (Primitive::RecordConstructorDescriptorP, Primitive::RecordConstructorDescriptorP)
-    | (Primitive::RecordTypeName, Primitive::RecordTypeName)
-    | (Primitive::RecordTypeParent, Primitive::RecordTypeParent)
-    | (Primitive::RecordTypeUid, Primitive::RecordTypeUid)
-    | (Primitive::RecordTypeGenerativeP, Primitive::RecordTypeGenerativeP)
-    | (Primitive::RecordTypeSealedP, Primitive::RecordTypeSealedP)
-    | (Primitive::RecordTypeOpaqueP, Primitive::RecordTypeOpaqueP)
-    | (Primitive::RecordTypeFieldNames, Primitive::RecordTypeFieldNames)
-    | (Primitive::RecordTypeFieldMutableP, Primitive::RecordTypeFieldMutableP)
-    | (Primitive::RecordConstructorDescriptor, Primitive::RecordConstructorDescriptor)
-    | (Primitive::RecordConstructor, Primitive::RecordConstructor)
-    | (Primitive::RecordPredicate, Primitive::RecordPredicate)
-    | (Primitive::RecordAccessor, Primitive::RecordAccessor)
-    | (Primitive::RecordMutator, Primitive::RecordMutator)
-    | (Primitive::MakeRecordTypeDescriptor, Primitive::MakeRecordTypeDescriptor)
-    | (Primitive::MakeRecordConstructorDescriptor, Primitive::MakeRecordConstructorDescriptor)
-    | (Primitive::Condition, Primitive::Condition)
-    | (Primitive::ConditionP, Primitive::ConditionP)
-    | (Primitive::SimpleConditions, Primitive::SimpleConditions)
-    | (Primitive::ConditionPredicate, Primitive::ConditionPredicate)
-    | (Primitive::ConditionAccessor, Primitive::ConditionAccessor)
-    | (Primitive::MakeEqHashtable, Primitive::MakeEqHashtable)
-    | (Primitive::MakeEqvHashtable, Primitive::MakeEqvHashtable)
-    | (Primitive::MakeHashtable, Primitive::MakeHashtable)
-    | (Primitive::HashtableP, Primitive::HashtableP)
-    | (Primitive::HashtableSize, Primitive::HashtableSize)
-    | (Primitive::HashtableRef, Primitive::HashtableRef)
-    | (Primitive::HashtableSet, Primitive::HashtableSet)
-    | (Primitive::HashtableDelete, Primitive::HashtableDelete)
-    | (Primitive::HashtableContainsP, Primitive::HashtableContainsP)
-    | (Primitive::HashtableUpdate, Primitive::HashtableUpdate)
-    | (Primitive::HashtableCopy, Primitive::HashtableCopy)
-    | (Primitive::HashtableClear, Primitive::HashtableClear)
-    | (Primitive::HashtableKeys, Primitive::HashtableKeys)
-    | (Primitive::HashtableEntries, Primitive::HashtableEntries)
-    | (Primitive::HashtableEquivalenceFunction, Primitive::HashtableEquivalenceFunction)
-    | (Primitive::HashtableHashFunction, Primitive::HashtableHashFunction)
-    | (Primitive::HashtableMutableP, Primitive::HashtableMutableP)
-    | (Primitive::MakeEnumeration, Primitive::MakeEnumeration)
-    | (Primitive::EnumSetUniverse, Primitive::EnumSetUniverse)
-    | (Primitive::EnumSetIndexer, Primitive::EnumSetIndexer)
-    | (Primitive::EnumSetConstructor, Primitive::EnumSetConstructor)
-    | (Primitive::EnumSetP, Primitive::EnumSetP)
-    | (Primitive::EnumSetMemberP, Primitive::EnumSetMemberP)
-    | (Primitive::EnumSetSubsetP, Primitive::EnumSetSubsetP)
-    | (Primitive::EnumSetEq, Primitive::EnumSetEq)
-    | (Primitive::EnumSetUnion, Primitive::EnumSetUnion)
-    | (Primitive::EnumSetIntersection, Primitive::EnumSetIntersection)
-    | (Primitive::EnumSetDifference, Primitive::EnumSetDifference)
-    | (Primitive::EnumSetComplement, Primitive::EnumSetComplement)
-    | (Primitive::EnumSetProjection, Primitive::EnumSetProjection)
-    | (Primitive::EnumSetToList, Primitive::EnumSetToList)
-    | (Primitive::Not, Primitive::Not)
-    | (Primitive::Apply, Primitive::Apply)
-    | (Primitive::CallCC, Primitive::CallCC)
-    | (Primitive::Values, Primitive::Values)
-    | (Primitive::CallWithValues, Primitive::CallWithValues)
-    | (Primitive::MakeParameter, Primitive::MakeParameter)
-    | (Primitive::DynamicWind, Primitive::DynamicWind)
-    | (Primitive::Eval, Primitive::Eval)
-    | (Primitive::Environment, Primitive::Environment)
-    | (Primitive::PromiseP, Primitive::PromiseP)
-    | (Primitive::MakePromise, Primitive::MakePromise)
-    | (Primitive::Force, Primitive::Force)
-    | (Primitive::ExactToInexact, Primitive::ExactToInexact)
-    | (Primitive::InexactToExact, Primitive::InexactToExact)
-    | (Primitive::ExactIntegerSqrt, Primitive::ExactIntegerSqrt)
-    | (Primitive::Rationalize, Primitive::Rationalize)
-    | (Primitive::NumberToString, Primitive::NumberToString)
-    | (Primitive::StringToNumber, Primitive::StringToNumber)
-    | (Primitive::MakeRectangular, Primitive::MakeRectangular)
-    | (Primitive::MakePolar, Primitive::MakePolar)
-    | (Primitive::RealPart, Primitive::RealPart)
-    | (Primitive::ImagPart, Primitive::ImagPart)
-    | (Primitive::Magnitude, Primitive::Magnitude)
-    | (Primitive::Angle, Primitive::Angle)
-    | (Primitive::Sqrt, Primitive::Sqrt)
-    | (Primitive::Exp, Primitive::Exp)
-    | (Primitive::Log, Primitive::Log)
-    | (Primitive::Expt, Primitive::Expt)
-    | (Primitive::Sin, Primitive::Sin)
-    | (Primitive::Cos, Primitive::Cos)
-    | (Primitive::Tan, Primitive::Tan)
-    | (Primitive::Asin, Primitive::Asin)
-    | (Primitive::Acos, Primitive::Acos)
-    | (Primitive::Atan, Primitive::Atan)
-    | (Primitive::Numerator, Primitive::Numerator)
-    | (Primitive::Denominator, Primitive::Denominator)
-    | (Primitive::Abs, Primitive::Abs)
-    | (Primitive::Quotient, Primitive::Quotient)
-    | (Primitive::Remainder, Primitive::Remainder)
-    | (Primitive::Modulo, Primitive::Modulo)
-    | (Primitive::Gcd, Primitive::Gcd)
-    | (Primitive::Lcm, Primitive::Lcm)
-    | (Primitive::Max, Primitive::Max)
-    | (Primitive::Min, Primitive::Min)
-    | (Primitive::Floor, Primitive::Floor)
-    | (Primitive::Ceiling, Primitive::Ceiling)
-    | (Primitive::Truncate, Primitive::Truncate)
-    | (Primitive::Round, Primitive::Round)
-    | (Primitive::BitwiseAnd, Primitive::BitwiseAnd)
-    | (Primitive::BitwiseIor, Primitive::BitwiseIor)
-    | (Primitive::BitwiseXor, Primitive::BitwiseXor)
-    | (Primitive::BitwiseNot, Primitive::BitwiseNot)
-    | (Primitive::BitwiseIf, Primitive::BitwiseIf)
-    | (Primitive::ArithmeticShift, Primitive::ArithmeticShift)
-    | (Primitive::BitwiseBitCount, Primitive::BitwiseBitCount)
-    | (Primitive::BitwiseLength, Primitive::BitwiseLength)
-    | (Primitive::BitwiseFirstBitSet, Primitive::BitwiseFirstBitSet)
-    | (Primitive::BitwiseBitSetP, Primitive::BitwiseBitSetP)
-    | (Primitive::BitwiseCopyBit, Primitive::BitwiseCopyBit)
-    | (Primitive::BitwiseBitField, Primitive::BitwiseBitField)
-    | (Primitive::BitwiseCopyBitField, Primitive::BitwiseCopyBitField)
-    | (Primitive::BitwiseRotateBitField, Primitive::BitwiseRotateBitField)
-    | (Primitive::BitwiseReverseBitField, Primitive::BitwiseReverseBitField)
-    | (Primitive::FixnumP, Primitive::FixnumP)
-    | (Primitive::FixnumWidth, Primitive::FixnumWidth)
-    | (Primitive::LeastFixnum, Primitive::LeastFixnum)
-    | (Primitive::GreatestFixnum, Primitive::GreatestFixnum)
-    | (Primitive::FxEq, Primitive::FxEq)
-    | (Primitive::FxLess, Primitive::FxLess)
-    | (Primitive::FxGreater, Primitive::FxGreater)
-    | (Primitive::FxLessEq, Primitive::FxLessEq)
-    | (Primitive::FxGreaterEq, Primitive::FxGreaterEq)
-    | (Primitive::FxZeroP, Primitive::FxZeroP)
-    | (Primitive::FxPositiveP, Primitive::FxPositiveP)
-    | (Primitive::FxNegativeP, Primitive::FxNegativeP)
-    | (Primitive::FxOddP, Primitive::FxOddP)
-    | (Primitive::FxEvenP, Primitive::FxEvenP)
-    | (Primitive::FxMin, Primitive::FxMin)
-    | (Primitive::FxMax, Primitive::FxMax)
-    | (Primitive::FxAdd, Primitive::FxAdd)
-    | (Primitive::FxSub, Primitive::FxSub)
-    | (Primitive::FxMul, Primitive::FxMul)
-    | (Primitive::FxDiv, Primitive::FxDiv)
-    | (Primitive::FxMod, Primitive::FxMod)
-    | (Primitive::FxDiv0, Primitive::FxDiv0)
-    | (Primitive::FxMod0, Primitive::FxMod0)
-    | (Primitive::FxAddCarry, Primitive::FxAddCarry)
-    | (Primitive::FxSubCarry, Primitive::FxSubCarry)
-    | (Primitive::FxMulCarry, Primitive::FxMulCarry)
-    | (Primitive::FxNot, Primitive::FxNot)
-    | (Primitive::FxAnd, Primitive::FxAnd)
-    | (Primitive::FxIor, Primitive::FxIor)
-    | (Primitive::FxXor, Primitive::FxXor)
-    | (Primitive::FxIf, Primitive::FxIf)
-    | (Primitive::FxBitCount, Primitive::FxBitCount)
-    | (Primitive::FxLength, Primitive::FxLength)
-    | (Primitive::FxFirstBitSet, Primitive::FxFirstBitSet)
-    | (Primitive::FxBitSetP, Primitive::FxBitSetP)
-    | (Primitive::FxCopyBit, Primitive::FxCopyBit)
-    | (Primitive::FxBitField, Primitive::FxBitField)
-    | (Primitive::FxCopyBitField, Primitive::FxCopyBitField)
-    | (Primitive::FxRotateBitField, Primitive::FxRotateBitField)
-    | (Primitive::FxReverseBitField, Primitive::FxReverseBitField)
-    | (Primitive::FxArithmeticShift, Primitive::FxArithmeticShift)
-    | (Primitive::FxArithmeticShiftLeft, Primitive::FxArithmeticShiftLeft)
-    | (Primitive::FxArithmeticShiftRight, Primitive::FxArithmeticShiftRight)
-    | (Primitive::FlonumP, Primitive::FlonumP)
-    | (Primitive::RealToFlonum, Primitive::RealToFlonum)
-    | (Primitive::FixnumToFlonum, Primitive::FixnumToFlonum)
-    | (Primitive::FlEq, Primitive::FlEq)
-    | (Primitive::FlLess, Primitive::FlLess)
-    | (Primitive::FlGreater, Primitive::FlGreater)
-    | (Primitive::FlLessEq, Primitive::FlLessEq)
-    | (Primitive::FlGreaterEq, Primitive::FlGreaterEq)
-    | (Primitive::FlIntegerP, Primitive::FlIntegerP)
-    | (Primitive::FlZeroP, Primitive::FlZeroP)
-    | (Primitive::FlPositiveP, Primitive::FlPositiveP)
-    | (Primitive::FlNegativeP, Primitive::FlNegativeP)
-    | (Primitive::FlOddP, Primitive::FlOddP)
-    | (Primitive::FlEvenP, Primitive::FlEvenP)
-    | (Primitive::FlFiniteP, Primitive::FlFiniteP)
-    | (Primitive::FlInfiniteP, Primitive::FlInfiniteP)
-    | (Primitive::FlNanP, Primitive::FlNanP)
-    | (Primitive::FlMax, Primitive::FlMax)
-    | (Primitive::FlMin, Primitive::FlMin)
-    | (Primitive::FlAdd, Primitive::FlAdd)
-    | (Primitive::FlMul, Primitive::FlMul)
-    | (Primitive::FlSub, Primitive::FlSub)
-    | (Primitive::FlDiv, Primitive::FlDiv)
-    | (Primitive::FlAbs, Primitive::FlAbs)
-    | (Primitive::FlDivAndMod, Primitive::FlDivAndMod)
-    | (Primitive::FlDivInt, Primitive::FlDivInt)
-    | (Primitive::FlMod, Primitive::FlMod)
-    | (Primitive::FlDiv0AndMod0, Primitive::FlDiv0AndMod0)
-    | (Primitive::FlDiv0, Primitive::FlDiv0)
-    | (Primitive::FlMod0, Primitive::FlMod0)
-    | (Primitive::FlNumerator, Primitive::FlNumerator)
-    | (Primitive::FlDenominator, Primitive::FlDenominator)
-    | (Primitive::FlFloor, Primitive::FlFloor)
-    | (Primitive::FlCeiling, Primitive::FlCeiling)
-    | (Primitive::FlTruncate, Primitive::FlTruncate)
-    | (Primitive::FlRound, Primitive::FlRound)
-    | (Primitive::FlExp, Primitive::FlExp)
-    | (Primitive::FlLog, Primitive::FlLog)
-    | (Primitive::FlSin, Primitive::FlSin)
-    | (Primitive::FlCos, Primitive::FlCos)
-    | (Primitive::FlTan, Primitive::FlTan)
-    | (Primitive::FlAsin, Primitive::FlAsin)
-    | (Primitive::FlAcos, Primitive::FlAcos)
-    | (Primitive::FlAtan, Primitive::FlAtan)
-    | (Primitive::FlSqrt, Primitive::FlSqrt)
-    | (Primitive::FlExpt, Primitive::FlExpt)
-    | (Primitive::MakeVariableTransformer, Primitive::MakeVariableTransformer)
-    | (Primitive::GenerateTemporaries, Primitive::GenerateTemporaries)
-    | (Primitive::ListP, Primitive::ListP)
-    | (Primitive::MakeList, Primitive::MakeList)
-    | (Primitive::Length, Primitive::Length)
-    | (Primitive::Append, Primitive::Append)
-    | (Primitive::Reverse, Primitive::Reverse)
-    | (Primitive::ListRef, Primitive::ListRef)
-    | (Primitive::ListTail, Primitive::ListTail)
-    | (Primitive::Member, Primitive::Member)
-    | (Primitive::Memq, Primitive::Memq)
-    | (Primitive::Memv, Primitive::Memv)
-    | (Primitive::Assoc, Primitive::Assoc)
-    | (Primitive::Assq, Primitive::Assq)
-    | (Primitive::Assv, Primitive::Assv)
-    | (Primitive::Map, Primitive::Map)
-    | (Primitive::ForEach, Primitive::ForEach)
-    | (Primitive::SetCar, Primitive::SetCar)
-    | (Primitive::SetCdr, Primitive::SetCdr)
-    | (Primitive::ListCopy, Primitive::ListCopy)
-    | (Primitive::CharEq, Primitive::CharEq)
-    | (Primitive::CharLess, Primitive::CharLess)
-    | (Primitive::CharGreater, Primitive::CharGreater)
-    | (Primitive::CharLessEq, Primitive::CharLessEq)
-    | (Primitive::CharGreaterEq, Primitive::CharGreaterEq)
-    | (Primitive::CharCiEq, Primitive::CharCiEq)
-    | (Primitive::CharCiLess, Primitive::CharCiLess)
-    | (Primitive::CharCiGreater, Primitive::CharCiGreater)
-    | (Primitive::CharCiLessEq, Primitive::CharCiLessEq)
-    | (Primitive::CharCiGreaterEq, Primitive::CharCiGreaterEq)
-    | (Primitive::CharP, Primitive::CharP)
-    | (Primitive::CharToInteger, Primitive::CharToInteger)
-    | (Primitive::IntegerToChar, Primitive::IntegerToChar)
-    | (Primitive::CharAlphabeticP, Primitive::CharAlphabeticP)
-    | (Primitive::CharNumericP, Primitive::CharNumericP)
-    | (Primitive::CharWhitespaceP, Primitive::CharWhitespaceP)
-    | (Primitive::CharUpperCaseP, Primitive::CharUpperCaseP)
-    | (Primitive::CharLowerCaseP, Primitive::CharLowerCaseP)
-    | (Primitive::CharUpcase, Primitive::CharUpcase)
-    | (Primitive::CharDowncase, Primitive::CharDowncase)
-    | (Primitive::CharFoldcase, Primitive::CharFoldcase)
-    | (Primitive::CharGeneralCategory, Primitive::CharGeneralCategory)
-    | (Primitive::StringEq, Primitive::StringEq)
-    | (Primitive::StringLess, Primitive::StringLess)
-    | (Primitive::StringGreater, Primitive::StringGreater)
-    | (Primitive::StringLessEq, Primitive::StringLessEq)
-    | (Primitive::StringGreaterEq, Primitive::StringGreaterEq)
-    | (Primitive::StringCiEq, Primitive::StringCiEq)
-    | (Primitive::StringCiLess, Primitive::StringCiLess)
-    | (Primitive::StringCiGreater, Primitive::StringCiGreater)
-    | (Primitive::StringCiLessEq, Primitive::StringCiLessEq)
-    | (Primitive::StringCiGreaterEq, Primitive::StringCiGreaterEq)
-    | (Primitive::String, Primitive::String)
-    | (Primitive::MakeString, Primitive::MakeString)
-    | (Primitive::StringP, Primitive::StringP)
-    | (Primitive::StringLength, Primitive::StringLength)
-    | (Primitive::StringAppend, Primitive::StringAppend)
-    | (Primitive::StringRef, Primitive::StringRef)
-    | (Primitive::StringSet, Primitive::StringSet)
-    | (Primitive::StringCopy, Primitive::StringCopy)
-    | (Primitive::Substring, Primitive::Substring)
-    | (Primitive::StringCopyBang, Primitive::StringCopyBang)
-    | (Primitive::StringFill, Primitive::StringFill)
-    | (Primitive::StringToList, Primitive::StringToList)
-    | (Primitive::ListToString, Primitive::ListToString)
-    | (Primitive::StringMap, Primitive::StringMap)
-    | (Primitive::StringForEach, Primitive::StringForEach)
-    | (Primitive::StringUpcase, Primitive::StringUpcase)
-    | (Primitive::StringDowncase, Primitive::StringDowncase)
-    | (Primitive::StringFoldcase, Primitive::StringFoldcase)
-    | (Primitive::StringNormalizeNfc, Primitive::StringNormalizeNfc)
-    | (Primitive::StringNormalizeNfd, Primitive::StringNormalizeNfd)
-    | (Primitive::StringNormalizeNfkc, Primitive::StringNormalizeNfkc)
-    | (Primitive::StringNormalizeNfkd, Primitive::StringNormalizeNfkd)
-    | (Primitive::Vector, Primitive::Vector)
-    | (Primitive::MakeVector, Primitive::MakeVector)
-    | (Primitive::VectorP, Primitive::VectorP)
-    | (Primitive::VectorLength, Primitive::VectorLength)
-    | (Primitive::VectorRef, Primitive::VectorRef)
-    | (Primitive::VectorSet, Primitive::VectorSet)
-    | (Primitive::VectorFill, Primitive::VectorFill)
-    | (Primitive::VectorCopy, Primitive::VectorCopy)
-    | (Primitive::VectorCopyBang, Primitive::VectorCopyBang)
-    | (Primitive::VectorAppend, Primitive::VectorAppend)
-    | (Primitive::VectorMap, Primitive::VectorMap)
-    | (Primitive::VectorForEach, Primitive::VectorForEach)
-    | (Primitive::VectorToList, Primitive::VectorToList)
-    | (Primitive::ListToVector, Primitive::ListToVector)
-    | (Primitive::ByteVector, Primitive::ByteVector)
-    | (Primitive::MakeByteVector, Primitive::MakeByteVector)
-    | (Primitive::ByteVectorP, Primitive::ByteVectorP)
-    | (Primitive::ByteVectorLength, Primitive::ByteVectorLength)
-    | (Primitive::ByteVectorEq, Primitive::ByteVectorEq)
-    | (Primitive::ByteVectorU8Ref, Primitive::ByteVectorU8Ref)
-    | (Primitive::StringToUtf8, Primitive::StringToUtf8)
-    | (Primitive::Utf8ToString, Primitive::Utf8ToString)
-    | (Primitive::ByteVectorU8Set, Primitive::ByteVectorU8Set)
-    | (Primitive::ByteVectorCopy, Primitive::ByteVectorCopy)
-    | (Primitive::ByteVectorCopyBang, Primitive::ByteVectorCopyBang)
-    | (Primitive::ByteVectorAppend, Primitive::ByteVectorAppend)
-    | (Primitive::ByteVectorFill, Primitive::ByteVectorFill)
-    | (Primitive::ByteVectorToU8List, Primitive::ByteVectorToU8List)
-    | (Primitive::U8ListToByteVector, Primitive::U8ListToByteVector)
-    | (Primitive::NativeEndianness, Primitive::NativeEndianness)
-    | (Primitive::ByteVectorUintRef, Primitive::ByteVectorUintRef)
-    | (Primitive::ByteVectorSintRef, Primitive::ByteVectorSintRef)
-    | (Primitive::ByteVectorUintSet, Primitive::ByteVectorUintSet)
-    | (Primitive::ByteVectorSintSet, Primitive::ByteVectorSintSet)
-    | (Primitive::Display, Primitive::Display)
-    | (Primitive::Write, Primitive::Write)
-    | (Primitive::Newline, Primitive::Newline)
-    | (Primitive::OpenOutputString, Primitive::OpenOutputString)
-    | (Primitive::GetOutputString, Primitive::GetOutputString)
-    | (Primitive::CurrentOutputPort, Primitive::CurrentOutputPort)
-    | (Primitive::WithExceptionHandler, Primitive::WithExceptionHandler)
-    | (Primitive::Raise, Primitive::Raise)
-    | (Primitive::RaiseContinuable, Primitive::RaiseContinuable)
-    | (Primitive::Error, Primitive::Error)
-    | (Primitive::AssertionViolation, Primitive::AssertionViolation)
-    | (Primitive::ImplementationRestrictionViolation, Primitive::ImplementationRestrictionViolation)
-    | (Primitive::UndefinedViolation, Primitive::UndefinedViolation)
-    | (Primitive::SyntaxViolation, Primitive::SyntaxViolation) => true
-    _ => false
-  }
-}
-
-///|
-priv enum CompareMode {
-  Eq
-  Lt
-  Gt
-  Le
-  Ge
-}
-
-///|
-fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
-  match mode {
-    CompareMode::Eq => cmp == 0
-    CompareMode::Lt => cmp < 0
-    CompareMode::Gt => cmp > 0
-    CompareMode::Le => cmp <= 0
-    CompareMode::Ge => cmp >= 0
-  }
-}
-
-fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
-  if left.length() != right.length() {
-    false
-  } else {
-    let mut i = 0
-    while i < left.length() {
-      if left[i] != right[i] {
-        return false
-      }
-      i = i + 1
-    }
-    true
-  }
-}
-
-fn strip_gensym_suffix(name : String) -> String? {
-  let len = name.length()
-  if len < 5 {
-    return None
-  }
-  let mut i = len
-  while i > 0 {
-    match name.get_char(i - 1) {
-      Some(ch) =>
-        if ch >= '0' && ch <= '9' {
-          i = i - 1
-        } else {
-          break
-        }
-      None => return None
-    }
-  }
-  if i == len || i < 4 {
-    return None
-  }
-  match (name.get_char(i - 1), name.get_char(i - 2), name.get_char(i - 3), name.get_char(i - 4)) {
-    (Some('s'), Some('g'), Some('_'), Some('_')) => ()
-    _ => return None
-  }
-  let base_len = i - 4
-  if base_len == 0 {
-    return None
-  }
-  let chars : Array[Char] = []
-  let mut j = 0
-  while j < base_len {
-    match name.get_char(j) {
-      Some(ch) => chars.push(ch)
-      None => return None
-    }
-    j = j + 1
-  }
-  Some(String::from_array(chars))
-}
-
-fn strip_all_gensym_suffixes(name : String) -> String {
-  let mut cur = name
-  while true {
-    match strip_gensym_suffix(cur) {
-      Some(next) => cur = next
-      None => break
-    }
-  }
-  cur
-}
-
-///|
-fn value_eqv(left : Value, right : Value) -> Bool {
-  match (left, right) {
-    (Value::Datum(a), Value::Datum(b)) => datum_equal(a, b)
-    (Value::Primitive(a), Value::Primitive(b)) => primitive_eq(a, b)
-    (Value::Closure(a), Value::Closure(b)) => a.id == b.id
-    (Value::CaseClosure(a), Value::CaseClosure(b)) => a.id == b.id
-    (Value::GuardHandler(a), Value::GuardHandler(b)) => a.id == b.id
-    (Value::Parameter(a), Value::Parameter(b)) => a.id == b.id
-    (Value::Promise(a), Value::Promise(b)) => a.id == b.id
-    (Value::EvalEnv(a), Value::EvalEnv(b)) => a.id == b.id
-    (Value::Continuation(a), Value::Continuation(b)) => a.id == b.id
-    (Value::Port(a), Value::Port(b)) => a.id == b.id
-    (Value::Record(a), Value::Record(b)) => a.id == b.id
-    (Value::RecordProc(a), Value::RecordProc(b)) => a.id == b.id
-    (Value::ConditionProc(a), Value::ConditionProc(b)) => a.id == b.id
-    (Value::Hashtable(a), Value::Hashtable(b)) => a.id == b.id
-    (Value::EnumSet(a), Value::EnumSet(b)) => a.id == b.id
-    (Value::EnumSetProc(a), Value::EnumSetProc(b)) => a.id == b.id
-    (Value::RecordTypeDescriptor(a), Value::RecordTypeDescriptor(b)) => a.id == b.id
-    (Value::RecordConstructorDescriptor(a), Value::RecordConstructorDescriptor(b)) => a.id == b.id
-    (Value::SyntaxObject(a), Value::SyntaxObject(b)) =>
-      scopes_equal(a.scopes, b.scopes) && datum_equal(a.datum, b.datum)
-    (Value::SyntaxKeyword(a), Value::SyntaxKeyword(b)) => a == b
-    (Value::Void, Value::Void) => true
-    _ => false
-  }
-}
-
-///|
-fn value_equal(left : Value, right : Value) -> Bool {
-  value_eqv(left, right)
-}
-
-///|
-fn identifier_info(value : Value) -> (String, Array[Int], Int?) raise EvalError {
-  match value {
-    Value::Datum(d) =>
-      match datum_unlabel(d) {
-        Datum::Symbol(name) => (name, [], None)
-        _ => raise @core.EvalError("type error: identifier expected")
-      }
-    Value::SyntaxObject(obj) =>
-      match datum_unlabel(obj.datum) {
-        Datum::Symbol(name) => (name, obj.scopes, obj.binding_id)
-        _ => raise @core.EvalError("type error: identifier expected")
-      }
-    _ => raise @core.EvalError("type error: identifier expected")
-  }
-}
-
-///|
-fn is_identifier_value(value : Value) -> Bool {
-  match value {
-    Value::Datum(d) =>
-      match datum_unlabel(d) {
-        Datum::Symbol(_) => true
-        _ => false
-      }
-    Value::SyntaxObject(obj) =>
-      match datum_unlabel(obj.datum) {
-        Datum::Symbol(_) => true
-        _ => false
-      }
-    _ => false
-  }
-}
-
-///|
-fn value_as_number(value : Value) -> Datum raise EvalError {
-  match value {
-    Value::Datum(d) => {
-      let unlabel = datum_unlabel(d)
-      match unlabel {
-        Datum::Int(_)
-        | Datum::BigInt(_)
-        | Datum::Rat(_, _)
-        | Datum::BigRat(_, _)
-        | Datum::Float(_)
-        | Datum::Complex(_, _) => unlabel
-        _ => raise @core.EvalError("type error: number expected")
-      }
-    }
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn bigint_to_float(value : @bigint.BigInt) -> Float raise EvalError {
-  try @strconv.parse_double(value.to_string()) catch {
-    _ => raise @core.EvalError("number too large")
-  } noraise {
-    v => Float::from_double(v)
-  }
-}
-
-///|
-fn bigint_to_float_unchecked(value : @bigint.BigInt) -> Float {
-  try @strconv.parse_double(value.to_string()) catch {
-    _ => Float::from_int(0)
-  } noraise {
-    v => Float::from_double(v)
-  }
-}
-
-///|
-fn number_to_float(value : Datum) -> Float raise EvalError {
-  let real_value = datum_to_real(value)
-  match real_value {
-    Datum::Int(n) => Float::from_int(n)
-    Datum::BigInt(n) => bigint_to_float(n)
-    Datum::Rat(n, d) => Float::from_int(n) / Float::from_int(d)
-    Datum::BigRat(n, d) => bigint_to_float(n) / bigint_to_float(d)
-    Datum::Float(f) => f
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn number_to_rat(value : Datum) -> (Int, Int) raise EvalError {
-  let real_value = datum_to_real(value)
-  match real_value {
-    Datum::Int(n) => (n, 1)
-    Datum::Rat(n, d) => (n, d)
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn number_to_bigrat(value : Datum) -> (@bigint.BigInt, @bigint.BigInt) raise EvalError {
-  let real_value = datum_to_real(value)
-  match real_value {
-    Datum::Int(n) => (bigint_from_int(n), bigint_from_int(1))
-    Datum::BigInt(n) => (n, bigint_from_int(1))
-    Datum::Rat(n, d) => (bigint_from_int(n), bigint_from_int(d))
-    Datum::BigRat(n, d) => (n, d)
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn float_to_exact_datum(value : Float) -> Datum raise EvalError {
-  if !float_is_finite(value) {
-    raise @core.EvalError("inexact->exact: non-finite")
-  }
-  // Decode IEEE-754 f32 into an exact rational.
-  let bits = Float::reinterpret_as_uint(value)
-  let sign_bit = (bits >> 31) & 0x1U
-  let exp_bits = (bits >> 23) & 0xFFU
-  let frac_bits = bits & 0x7FFFFFU
-  if exp_bits == 0U && frac_bits == 0U {
-    return Datum::Int(0)
-  }
-  let mantissa_bits = if exp_bits == 0U { frac_bits } else { (1U << 23) | frac_bits }
-  let exp_adjusted = if exp_bits == 0U {
-    -149
-  } else {
-    exp_bits.reinterpret_as_int() - 150
-  }
-  let mut num = bigint_from_int(mantissa_bits.reinterpret_as_int())
-  let mut den = bigint_from_int(1)
-  if exp_adjusted >= 0 {
-    num = num * pow_bigint_int(bigint_from_int(2), exp_adjusted)
-  } else {
-    den = pow_bigint_int(bigint_from_int(2), -exp_adjusted)
-  }
-  if sign_bit != 0U {
-    num = -num
-  }
-  match normalize_big_rat(num, den) {
-    Some(datum) => datum
-    None => raise @core.EvalError("inexact->exact: unsupported")
-  }
-}
-
-///|
-fn inexact_component_to_exact(value : Datum) -> Datum raise EvalError {
-  match value {
-    Datum::Float(f) => float_to_exact_datum(f)
-    Datum::Int(_) | Datum::BigInt(_) | Datum::Rat(_, _) | Datum::BigRat(_, _) => value
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn normalize_rat_or_error(num : Int, den : Int) -> Datum raise EvalError {
-  match normalize_rat(num, den) {
-    Some(result) => result
-    None => raise @core.EvalError("division by zero")
-  }
-}
-
-///|
-fn normalize_big_rat_or_error(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum raise EvalError {
-  match normalize_big_rat(num, den) {
-    Some(result) => result
-    None => raise @core.EvalError("division by zero")
-  }
-}
-
-///|
-fn datum_is_zero(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::Int(n) => n == 0
-    Datum::BigInt(n) => n.is_zero()
-    Datum::Rat(n, _) => n == 0
-    Datum::BigRat(n, _) => n.is_zero()
-    Datum::Float(f) => f == 0.0
-    _ => false
-  }
-}
-
-///|
-fn datum_is_inexact(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::Float(_) => true
-    _ => false
-  }
-}
-
-///|
-fn datum_is_big_exact(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::BigInt(_) | Datum::BigRat(_, _) => true
-    _ => false
-  }
-}
-
-///|
-fn datum_is_exact_integer(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::Int(_) | Datum::BigInt(_) => true
-    Datum::Complex(real, imag) =>
-      datum_is_zero(imag.val) && !datum_is_inexact(imag.val) && datum_is_exact_integer(real.val)
-    _ => false
-  }
-}
-
-///|
-fn datum_is_integer_valued(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::Int(_) | Datum::BigInt(_) => true
-    Datum::Float(f) => float_is_finite(f) && float_to_int_exact(f) is Some(_)
-    Datum::Complex(real, imag) => datum_is_zero(imag.val) && datum_is_integer_valued(real.val)
-    _ => false
-  }
-}
-
-///|
-fn datum_is_rational_valued(value : Datum) -> Bool {
-  match datum_unlabel(value) {
-    Datum::Int(_)
-    | Datum::BigInt(_)
-    | Datum::Rat(_, _)
-    | Datum::BigRat(_, _) => true
-    Datum::Float(f) => float_is_finite(f)
-    Datum::Complex(real, imag) => datum_is_zero(imag.val) && datum_is_rational_valued(real.val)
-    _ => false
-  }
-}
-
-///|
-fn datum_to_real(value : Datum) -> Datum raise EvalError {
-  match datum_unlabel(value) {
-    Datum::Complex(real, imag) => {
-      if datum_is_zero(imag.val) {
-        real.val
-      } else {
-        raise @core.EvalError("type error: real expected")
-      }
-    }
-    _ => value
-  }
-}
-
-///|
-fn datum_to_complex_parts(value : Datum) -> (Datum, Datum) {
-  match datum_unlabel(value) {
-    Datum::Complex(real, imag) => (real.val, imag.val)
-    _ => (value, Datum::Int(0))
-  }
-}
-
-///|
-fn datum_to_complex_float(value : Datum) -> (Float, Float) raise EvalError {
-  match datum_unlabel(value) {
-    Datum::Complex(real, imag) => (number_to_float(real.val), number_to_float(imag.val))
-    _ => (number_to_float(value), 0.0)
-  }
-}
-
-///|
-fn make_complex(real : Datum, imag : Datum) -> Datum {
-  if datum_is_zero(imag) {
-    if datum_is_inexact(imag) && !datum_is_inexact(real) {
-      match real {
-        Datum::Int(n) => Datum::Float(Float::from_int(n))
-        Datum::Rat(n, d) => Datum::Float(Float::from_int(n) / Float::from_int(d))
-        Datum::BigInt(n) => Datum::Float(bigint_to_float_unchecked(n))
-        Datum::BigRat(n, d) => Datum::Float(bigint_to_float_unchecked(n) / bigint_to_float_unchecked(d))
-        Datum::Float(f) => Datum::Float(f)
-        _ => real
-      }
-    } else {
-      real
-    }
-  } else {
-    Datum::Complex(Ref::new(real), Ref::new(imag))
-  }
-}
-
-///|
-fn complex_from_float(real : Float, imag : Float) -> Datum {
-  make_complex(Datum::Float(real), Datum::Float(imag))
-}
-
-///|
-fn float_to_int_exact(value : Float) -> Int? {
-  let n = value.to_int()
-  if value == Float::from_int(n) { Some(n) } else { None }
-}
-
-///|
-fn pow_int(base : Int, exp : Int) -> Int {
-  let mut result = 1
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
-  }
-  result
-}
-
-///|
-fn pow_bigint_int(base : @bigint.BigInt, exp : Int) -> @bigint.BigInt {
-  let mut result = bigint_from_int(1)
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
-  }
-  result
-}
-
-///|
-fn pow_bigint_bigint(base : @bigint.BigInt, exp : @bigint.BigInt) -> @bigint.BigInt {
-  let mut result = bigint_from_int(1)
-  let mut b = base
-  let mut e = exp
-  let two = bigint_from_int(2)
-  while e.compare_int(0) > 0 {
-    if !bigint_is_zero(e % two) {
-      result = result * b
-    }
-    b = b * b
-    e = e / two
-  }
-  result
-}
-
-///|
-fn pow_float_int(base : Float, exp : Int) -> Float {
-  let mut result = Float::from_int(1)
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
-  }
-  result
-}
-
-///|
-fn complex_add_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
-  (ar + br, ai + bi)
-}
-
-///|
-fn complex_sub_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
-  (ar - br, ai - bi)
-}
-
-///|
-fn complex_mul_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) {
-  (ar * br - ai * bi, ar * bi + ai * br)
-}
-
-///|
-fn complex_div_f(ar : Float, ai : Float, br : Float, bi : Float) -> (Float, Float) raise EvalError {
-  let denom = br * br + bi * bi
-  if denom == 0.0 {
-    raise @core.EvalError("division by zero")
-  }
-  ((ar * br + ai * bi) / denom, (ai * br - ar * bi) / denom)
-}
-
-///|
-fn complex_exp_f(ar : Float, ai : Float) -> (Float, Float) {
-  let exp_a = @math.expf(ar)
-  (exp_a * @math.cosf(ai), exp_a * @math.sinf(ai))
-}
-
-///|
-fn complex_log_f(ar : Float, ai : Float) -> (Float, Float) {
-  let r = (ar * ar + ai * ai).sqrt()
-  (@math.lnf(r), @math.atan2f(ai, ar))
-}
-
-///|
-fn complex_sqrt_f(ar : Float, ai : Float) -> (Float, Float) {
-  let r = (ar * ar + ai * ai).sqrt()
-  let real = ((r + ar) / 2.0).sqrt()
-  let imag_mag = ((r - ar) / 2.0).sqrt()
-  let imag = if ai < 0.0 { -imag_mag } else { imag_mag }
-  (real, imag)
-}
-
-///|
-fn complex_sin_f(ar : Float, ai : Float) -> (Float, Float) {
-  let sin_a = @math.sinf(ar)
-  let cos_a = @math.cosf(ar)
-  let exp_b = @math.expf(ai)
-  let exp_neg_b = @math.expf(-ai)
-  let cosh_b = (exp_b + exp_neg_b) / 2.0
-  let sinh_b = (exp_b - exp_neg_b) / 2.0
-  (sin_a * cosh_b, cos_a * sinh_b)
-}
-
-///|
-fn complex_cos_f(ar : Float, ai : Float) -> (Float, Float) {
-  let sin_a = @math.sinf(ar)
-  let cos_a = @math.cosf(ar)
-  let exp_b = @math.expf(ai)
-  let exp_neg_b = @math.expf(-ai)
-  let cosh_b = (exp_b + exp_neg_b) / 2.0
-  let sinh_b = (exp_b - exp_neg_b) / 2.0
-  (cos_a * cosh_b, -sin_a * sinh_b)
-}
-
-///|
-fn complex_tan_f(ar : Float, ai : Float) -> (Float, Float) raise EvalError {
-  let (sr, si) = complex_sin_f(ar, ai)
-  let (cr, ci) = complex_cos_f(ar, ai)
-  complex_div_f(sr, si, cr, ci)
-}
-
-///|
-fn complex_asin_f(ar : Float, ai : Float) -> (Float, Float) {
-  let (zr, zi) = (ar, ai)
-  let (z2r, z2i) = complex_mul_f(zr, zi, zr, zi)
-  let (one_minus_r, one_minus_i) = complex_sub_f(1.0, 0.0, z2r, z2i)
-  let (sqrt_r, sqrt_i) = complex_sqrt_f(one_minus_r, one_minus_i)
-  let (iz_r, iz_i) = (-zi, zr)
-  let (inside_r, inside_i) = complex_add_f(iz_r, iz_i, sqrt_r, sqrt_i)
-  let (log_r, log_i) = complex_log_f(inside_r, inside_i)
-  (log_i, -log_r)
-}
-
-///|
-fn complex_acos_f(ar : Float, ai : Float) -> (Float, Float) {
-  let (asin_r, asin_i) = complex_asin_f(ar, ai)
-  let pi_over_2 = Float::from_double(@math.PI / 2.0)
-  (pi_over_2 - asin_r, -asin_i)
-}
-
-///|
-fn complex_atan_f(ar : Float, ai : Float) -> (Float, Float) {
-  let (iz_r, iz_i) = (-ai, ar)
-  let (one_minus_r, one_minus_i) = complex_sub_f(1.0, 0.0, iz_r, iz_i)
-  let (one_plus_r, one_plus_i) = complex_add_f(1.0, 0.0, iz_r, iz_i)
-  let (log1_r, log1_i) = complex_log_f(one_minus_r, one_minus_i)
-  let (log2_r, log2_i) = complex_log_f(one_plus_r, one_plus_i)
-  let (diff_r, diff_i) = complex_sub_f(log1_r, log1_i, log2_r, log2_i)
-  (-diff_i / 2.0, diff_r / 2.0)
-}
-
-///|
-fn complex_expt_f(base_r : Float, base_i : Float, exp_r : Float, exp_i : Float) -> (Float, Float) {
-  let (log_r, log_i) = complex_log_f(base_r, base_i)
-  let (mul_r, mul_i) = complex_mul_f(exp_r, exp_i, log_r, log_i)
-  complex_exp_f(mul_r, mul_i)
-}
-
-///|
-fn num_add(left : Datum, right : Datum) -> Datum raise EvalError {
-  if left is Datum::Complex(_, _) || right is Datum::Complex(_, _) {
-    let (lr, li) = datum_to_complex_parts(left)
-    let (rr, ri) = datum_to_complex_parts(right)
-    let real = num_add(lr, rr)
-    let imag = num_add(li, ri)
-    return make_complex(real, imag)
-  }
-  if left is Datum::Float(_) || right is Datum::Float(_) {
-    Datum::Float(number_to_float(left) + number_to_float(right))
-  } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
-    let (n1, d1) = number_to_bigrat(left)
-    let (n2, d2) = number_to_bigrat(right)
-    normalize_big_rat_or_error(n1 * d2 + n2 * d1, d1 * d2)
-  } else {
-    let (n1, d1) = number_to_rat(left)
-    let (n2, d2) = number_to_rat(right)
-    normalize_rat_or_error(n1 * d2 + n2 * d1, d1 * d2)
-  }
-}
-
-///|
-fn num_sub(left : Datum, right : Datum) -> Datum raise EvalError {
-  if left is Datum::Complex(_, _) || right is Datum::Complex(_, _) {
-    let (lr, li) = datum_to_complex_parts(left)
-    let (rr, ri) = datum_to_complex_parts(right)
-    let real = num_sub(lr, rr)
-    let imag = num_sub(li, ri)
-    return make_complex(real, imag)
-  }
-  if left is Datum::Float(_) || right is Datum::Float(_) {
-    Datum::Float(number_to_float(left) - number_to_float(right))
-  } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
-    let (n1, d1) = number_to_bigrat(left)
-    let (n2, d2) = number_to_bigrat(right)
-    normalize_big_rat_or_error(n1 * d2 - n2 * d1, d1 * d2)
-  } else {
-    let (n1, d1) = number_to_rat(left)
-    let (n2, d2) = number_to_rat(right)
-    normalize_rat_or_error(n1 * d2 - n2 * d1, d1 * d2)
-  }
-}
-
-///|
-fn num_mul(left : Datum, right : Datum) -> Datum raise EvalError {
-  if left is Datum::Complex(_, _) || right is Datum::Complex(_, _) {
-    let (lr, li) = datum_to_complex_parts(left)
-    let (rr, ri) = datum_to_complex_parts(right)
-    let real = num_sub(num_mul(lr, rr), num_mul(li, ri))
-    let imag = num_add(num_mul(lr, ri), num_mul(li, rr))
-    return make_complex(real, imag)
-  }
-  if left is Datum::Float(_) || right is Datum::Float(_) {
-    Datum::Float(number_to_float(left) * number_to_float(right))
-  } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
-    let (n1, d1) = number_to_bigrat(left)
-    let (n2, d2) = number_to_bigrat(right)
-    normalize_big_rat_or_error(n1 * n2, d1 * d2)
-  } else {
-    let (n1, d1) = number_to_rat(left)
-    let (n2, d2) = number_to_rat(right)
-    normalize_rat_or_error(n1 * n2, d1 * d2)
-  }
-}
-
-///|
-fn num_div(left : Datum, right : Datum) -> Datum raise EvalError {
-  if left is Datum::Complex(_, _) || right is Datum::Complex(_, _) {
-    let (lr, li) = datum_to_complex_parts(left)
-    let (rr, ri) = datum_to_complex_parts(right)
-    let denom = num_add(num_mul(rr, rr), num_mul(ri, ri))
-    let real_num = num_add(num_mul(lr, rr), num_mul(li, ri))
-    let imag_num = num_sub(num_mul(li, rr), num_mul(lr, ri))
-    let real = num_div(real_num, denom)
-    let imag = num_div(imag_num, denom)
-    return make_complex(real, imag)
-  }
-  if left is Datum::Float(_) || right is Datum::Float(_) {
-    let denom = number_to_float(right)
-    if denom == 0.0 {
-      raise @core.EvalError("division by zero")
-    }
-    Datum::Float(number_to_float(left) / denom)
-  } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
-    let (n1, d1) = number_to_bigrat(left)
-    let (n2, d2) = number_to_bigrat(right)
-    if bigint_is_zero(n2) {
-      raise @core.EvalError("division by zero")
-    }
-    normalize_big_rat_or_error(n1 * d2, d1 * n2)
-  } else {
-    let (n1, d1) = number_to_rat(left)
-    let (n2, d2) = number_to_rat(right)
-    if n2 == 0 {
-      raise @core.EvalError("division by zero")
-    }
-    normalize_rat_or_error(n1 * d2, d1 * n2)
-  }
-}
-
-///|
-fn num_equal(left : Datum, right : Datum) -> Bool raise EvalError {
-  if left is Datum::Complex(_, _) || right is Datum::Complex(_, _) {
-    let (lr, li) = datum_to_complex_parts(left)
-    let (rr, ri) = datum_to_complex_parts(right)
-    return num_equal(lr, rr) && num_equal(li, ri)
-  }
-  if left is Datum::Float(_) || right is Datum::Float(_) {
-    number_to_float(left) == number_to_float(right)
-  } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
-    let (n1, d1) = number_to_bigrat(left)
-    let (n2, d2) = number_to_bigrat(right)
-    n1 * d2 == n2 * d1
-  } else {
-    let (n1, d1) = number_to_rat(left)
-    let (n2, d2) = number_to_rat(right)
-    n1 * d2 == n2 * d1
-  }
-}
-
-///|
-fn num_less(left : Datum, right : Datum) -> Bool raise EvalError {
-  let lreal = datum_to_real(left)
-  let rreal = datum_to_real(right)
-  if lreal is Datum::Float(_) || rreal is Datum::Float(_) {
-    number_to_float(lreal) < number_to_float(rreal)
-  } else if datum_is_big_exact(lreal) || datum_is_big_exact(rreal) {
-    let (n1, d1) = number_to_bigrat(lreal)
-    let (n2, d2) = number_to_bigrat(rreal)
-    n1 * d2 < n2 * d1
-  } else {
-    let (n1, d1) = number_to_rat(lreal)
-    let (n2, d2) = number_to_rat(rreal)
-    n1 * d2 < n2 * d1
-  }
-}
-
-///|
-fn num_greater(left : Datum, right : Datum) -> Bool raise EvalError {
-  let lreal = datum_to_real(left)
-  let rreal = datum_to_real(right)
-  if lreal is Datum::Float(_) || rreal is Datum::Float(_) {
-    number_to_float(lreal) > number_to_float(rreal)
-  } else if datum_is_big_exact(lreal) || datum_is_big_exact(rreal) {
-    let (n1, d1) = number_to_bigrat(lreal)
-    let (n2, d2) = number_to_bigrat(rreal)
-    n1 * d2 > n2 * d1
-  } else {
-    let (n1, d1) = number_to_rat(lreal)
-    let (n2, d2) = number_to_rat(rreal)
-    n1 * d2 > n2 * d1
-  }
-}
-
-///|
-fn num_less_eq(left : Datum, right : Datum) -> Bool raise EvalError {
-  num_less(left, right) || num_equal(left, right)
-}
-
-///|
-fn num_greater_eq(left : Datum, right : Datum) -> Bool raise EvalError {
-  num_greater(left, right) || num_equal(left, right)
-}
-
-///|
-fn rat_floor(num : Int, den : Int) -> Int {
-  let q = num / den
-  let r = num % den
-  if r == 0 {
-    q
-  } else if num < 0 {
-    q - 1
-  } else {
-    q
-  }
-}
-
-///|
-fn rat_ceiling(num : Int, den : Int) -> Int {
-  let q = num / den
-  let r = num % den
-  if r == 0 {
-    q
-  } else if num > 0 {
-    q + 1
-  } else {
-    q
-  }
-}
-
-///|
-fn rat_round(num : Int, den : Int) -> Int {
-  let q = num / den
-  let r = num % den
-  if r == 0 {
-    q
-  } else {
-    let abs_r = int_abs(r)
-    let twice = abs_r * 2
-    if twice < den {
-      q
-    } else if twice > den {
-      if num < 0 { q - 1 } else { q + 1 }
-    } else {
-      if q % 2 == 0 {
-        q
-      } else if num < 0 {
-        q - 1
-      } else {
-        q + 1
-      }
-    }
-  }
-}
-
-///|
-fn bigrat_floor(num : @bigint.BigInt, den : @bigint.BigInt) -> @bigint.BigInt {
-  let q = num / den
-  let r = num % den
-  if bigint_is_zero(r) {
-    q
-  } else if num.compare_int(0) < 0 {
-    q - bigint_from_int(1)
-  } else {
-    q
-  }
-}
-
-///|
-fn bigrat_ceiling(num : @bigint.BigInt, den : @bigint.BigInt) -> @bigint.BigInt {
-  let q = num / den
-  let r = num % den
-  if bigint_is_zero(r) {
-    q
-  } else if num.compare_int(0) > 0 {
-    q + bigint_from_int(1)
-  } else {
-    q
-  }
-}
-
-///|
-fn bigrat_round(num : @bigint.BigInt, den : @bigint.BigInt) -> @bigint.BigInt {
-  let q = num / den
-  let r = num % den
-  if bigint_is_zero(r) {
-    q
-  } else {
-    let abs_r = bigint_abs(r)
-    let twice = abs_r * bigint_from_int(2)
-    if twice < den {
-      q
-    } else if twice > den {
-      if num.compare_int(0) < 0 { q - bigint_from_int(1) } else { q + bigint_from_int(1) }
-    } else {
-      if bigint_is_zero(q % bigint_from_int(2)) {
-        q
-      } else if num.compare_int(0) < 0 {
-        q - bigint_from_int(1)
-      } else {
-        q + bigint_from_int(1)
-      }
-    }
-  }
-}
-
-///|
-fn float_floor_int(value : Float) -> Int {
-  let n = value.to_int()
-  if value == Float::from_int(n) {
-    n
-  } else if value > 0.0 {
-    n
-  } else {
-    n - 1
-  }
-}
-
-///|
-fn float_ceiling_int(value : Float) -> Int {
-  let n = value.to_int()
-  if value == Float::from_int(n) {
-    n
-  } else if value > 0.0 {
-    n + 1
-  } else {
-    n
-  }
-}
-
-///|
-fn float_round_int(value : Float) -> Int {
-  let floor_n = float_floor_int(value)
-  let diff = value - Float::from_int(floor_n)
-  if diff < 0.5 {
-    floor_n
-  } else if diff > 0.5 {
-    floor_n + 1
-  } else if floor_n % 2 == 0 {
-    floor_n
-  } else {
-    floor_n + 1
-  }
-}
-
-///|
-fn float_is_nan(value : Float) -> Bool {
-  value != value
-}
-
-///|
-fn float_is_infinite(value : Float) -> Bool {
-  if float_is_nan(value) {
-    false
-  } else {
-    let diff = value - value
-    diff != diff
-  }
-}
-
-///|
-fn float_is_finite(value : Float) -> Bool {
-  !float_is_nan(value) && !float_is_infinite(value)
-}
-
-///|
-fn int_to_string_radix(value : Int, radix : Int) -> String {
-  if value == 0 {
-    return "0"
-  }
-  let digits : Array[Char] = [
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z',
-  ]
-  let mut n = if value < 0 { -value } else { value }
-  let chars : Array[Char] = []
-  while n > 0 {
-    let rem = n % radix
-    chars.push(digits[rem])
-    n = n / radix
-  }
-  if value < 0 {
-    chars.push('-')
-  }
-  let out : Array[Char] = []
-  for ch in chars.rev_iter() {
-    out.push(ch)
-  }
-  String::from_array(out)
-}
-
-///|
-fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
-  if value.is_zero() {
-    return "0"
-  }
-  let digits : Array[Char] = [
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z',
-  ]
-  let mut n = if value.compare_int(0) < 0 { -value } else { value }
-  let radix_big = bigint_from_int(radix)
-  let chars : Array[Char] = []
-  while n.compare_int(0) > 0 {
-    let rem = n % radix_big
-    chars.push(digits[rem.to_int()])
-    n = n / radix_big
-  }
-  if value.compare_int(0) < 0 {
-    chars.push('-')
-  }
-  let out : Array[Char] = []
-  for ch in chars.rev_iter() {
-    out.push(ch)
-  }
-  String::from_array(out)
-}
-
-///|
-fn value_as_string(value : Value) -> String raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::String(s) => s.val
-        _ => raise @core.EvalError("type error: string expected")
-      }
-    _ => raise @core.EvalError("type error: string expected")
-  }
-}
-
-///|
-fn value_as_string_ref(value : Value) -> Ref[String] raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::String(s) => s
-        _ => raise @core.EvalError("type error: string expected")
-      }
-    _ => raise @core.EvalError("type error: string expected")
-  }
-}
-
-///|
-fn string_replace_range(s : String, start : Int, end : Int, fill : Char) -> String raise EvalError {
-  let len = s.length()
-  if start < 0 || end < start || end > len {
-    raise @core.EvalError("index out of range")
-  }
-  let buf = @buffer.new()
-  let mut i = 0
-  while i < len {
-    match s.get_char(i) {
-      Some(ch) => {
-        if i >= start && i < end {
-          buf.write_char(fill)
-        } else {
-          buf.write_char(ch)
-        }
-      }
-      None => raise @core.EvalError("index out of range")
-    }
-    i = i + 1
-  }
-  buf.to_string()
-}
-
-///|
-fn value_as_char(value : Value) -> Char raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Char(ch) => ch
-        _ => raise @core.EvalError("type error: char expected")
-      }
-    _ => raise @core.EvalError("type error: char expected")
-  }
-}
-
-///|
-fn char_from_int_value(value : Value) -> Char raise EvalError {
-  let n = value_as_int_index(value)
-  match n.to_char() {
-    Some(ch) => ch
-    None => raise @core.EvalError("type error: valid scalar value expected")
-  }
-}
-
-///|
-fn exact_integer_sqrt(n : Int) -> (Int, Int) {
-  if n <= 0 {
-    if n == 0 {
-      return (0, 0)
-    }
-    // Caller ensures nonnegative; keep a safe fallback.
-    return (0, n)
-  }
-  let mut low = 0
-  let mut high = n
-  let mut ans = 0
-  while low <= high {
-    let mid = (low + high) / 2
-    if mid == 0 {
-      ans = 0
-      low = 1
-    } else {
-      let div = n / mid
-      if mid <= div {
-        ans = mid
-        low = mid + 1
-      } else {
-        high = mid - 1
-      }
-    }
-  }
-  let rem = n - (ans * ans)
-  (ans, rem)
-}
-
-///|
-fn exact_integer_sqrt_bigint(n : @bigint.BigInt) -> (@bigint.BigInt, @bigint.BigInt) {
-  if n.compare_int(0) <= 0 {
-    if n.is_zero() {
-      return (bigint_from_int(0), bigint_from_int(0))
-    }
-    return (bigint_from_int(0), n)
-  }
-  let mut low = bigint_from_int(0)
-  let mut high = n
-  let mut ans = bigint_from_int(0)
-  let one = bigint_from_int(1)
-  let two = bigint_from_int(2)
-  while low <= high {
-    let mid = (low + high) / two
-    if mid.is_zero() {
-      ans = bigint_from_int(0)
-      low = one
-    } else {
-      let div = n / mid
-      if mid <= div {
-        ans = mid
-        low = mid + one
-      } else {
-        high = mid - one
-      }
-    }
-  }
-  let rem = n - (ans * ans)
-  (ans, rem)
-}
-
-///|
-fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
-  if value == 0.0 {
-    return (0, 1)
-  }
-  let mut sign = 1
-  let mut x = value
-  if x < 0.0 {
-    sign = -1
-    x = -x
-  }
-  let mut a = float_floor_int(x)
-  let mut p0 = 1
-  let mut q0 = 0
-  let mut p1 = a
-  let mut q1 = 1
-  let mut frac = x - Float::from_int(a)
-  let mut iter = 0
-  while iter < 64 {
-    let approx = Float::from_int(p1) / Float::from_int(q1)
-    let mut diff = x - approx
-    if diff < 0.0 {
-      diff = -diff
-    }
-    if diff <= tol || frac == 0.0 {
-      break
-    }
-    frac = 1.0 / frac
-    a = float_floor_int(frac)
-    let p2 = a * p1 + p0
-    let q2 = a * q1 + q0
-    if q2 == 0 {
-      break
-    }
-    p0 = p1
-    q0 = q1
-    p1 = p2
-    q1 = q2
-    frac = frac - Float::from_int(a)
-    iter = iter + 1
-  }
-  (sign * p1, q1)
-}
-
-///|
-fn value_as_int_index(value : Value) -> Int raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Int(n) => n
-        Datum::BigInt(n) =>
-          match bigint_to_int_option(n) {
-            Some(v) => v
-            None => raise @core.EvalError("index out of range")
-          }
-        Datum::Complex(real, imag) => {
-          if datum_is_zero(imag.val) {
-            match datum_unlabel(real.val) {
-              Datum::Int(n) => n
-              Datum::BigInt(n) =>
-                match bigint_to_int_option(n) {
-                  Some(v) => v
-                  None => raise @core.EvalError("index out of range")
-                }
-              _ => raise @core.EvalError("type error: exact integer expected")
-            }
-          } else {
-            raise @core.EvalError("type error: exact integer expected")
-          }
-        }
-        _ => raise @core.EvalError("type error: exact integer expected")
-      }
-    _ => raise @core.EvalError("type error: exact integer expected")
-  }
-}
-
-///|
-fn value_as_exact_integer(value : Value) -> Datum raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Int(n) => Datum::Int(n)
-        Datum::BigInt(n) => Datum::BigInt(n)
-        Datum::Complex(real, imag) =>
-          if datum_is_zero(imag.val) {
-            match datum_unlabel(real.val) {
-              Datum::Int(n) => Datum::Int(n)
-              Datum::BigInt(n) => Datum::BigInt(n)
-              _ => raise @core.EvalError("type error: integer expected")
-            }
-          } else {
-            raise @core.EvalError("type error: integer expected")
-          }
-        _ => raise @core.EvalError("type error: integer expected")
-      }
-    _ => raise @core.EvalError("type error: integer expected")
-  }
-}
-
-///|
-fn datum_to_bigint(value : Datum) -> @bigint.BigInt raise EvalError {
-  match datum_unlabel(value) {
-    Datum::Int(n) => bigint_from_int(n)
-    Datum::BigInt(n) => n
-    _ => raise @core.EvalError("type error: integer expected")
-  }
-}
-
-///|
-fn bigint_to_integer_datum(value : @bigint.BigInt) -> Datum {
-  match bigint_to_int_option(value) {
-    Some(v) => Datum::Int(v)
-    None => Datum::BigInt(value)
-  }
-}
-
-///|
-fn exact_sqrt_real(value : Datum) -> Datum? raise EvalError {
-  match datum_unlabel(value) {
-    Datum::Int(n) =>
-      if n < 0 {
-        None
-      } else {
-        let (s, r) = exact_integer_sqrt(n)
-        if r == 0 { Some(Datum::Int(s)) } else { None }
-      }
-    Datum::BigInt(n) =>
-      if n.compare_int(0) < 0 {
-        None
-      } else {
-        let (s, r) = exact_integer_sqrt_bigint(n)
-        if bigint_is_zero(r) { Some(bigint_to_integer_datum(s)) } else { None }
-      }
-    Datum::Rat(n, d) =>
-      if n < 0 {
-        None
-      } else {
-        let (sn, rn) = exact_integer_sqrt(n)
-        if rn != 0 {
-          None
-        } else {
-          let (sd, rd) = exact_integer_sqrt(d)
-          if rd != 0 { None } else { Some(normalize_rat_or_error(sn, sd)) }
-        }
-      }
-    Datum::BigRat(n, d) =>
-      if n.compare_int(0) < 0 {
-        None
-      } else {
-        let (sn, rn) = exact_integer_sqrt_bigint(n)
-        if !bigint_is_zero(rn) {
-          None
-        } else {
-          let (sd, rd) = exact_integer_sqrt_bigint(d)
-          if !bigint_is_zero(rd) {
-            None
-          } else {
-            Some(normalize_big_rat_or_error(sn, sd))
-          }
-        }
-      }
-    _ => None
-  }
-}
-
-///|
-fn value_as_nonnegative_int(value : Value) -> Int raise EvalError {
-  let n = value_as_int_index(value)
-  if n < 0 {
-    raise @core.EvalError("type error: exact nonnegative integer expected")
-  }
-  n
-}
-
-///|
-let fixnum_width_cache : Ref[Int] = Ref::new(0)
-
-///|
-fn fixnum_width_value() -> Int {
-  let cached = fixnum_width_cache.val
-  if cached != 0 {
-    return cached
-  }
-  let mut exp = 0
-  let mut value = bigint_from_int(1)
-  let two = bigint_from_int(2)
-  while true {
-    match bigint_to_int_option(value) {
-      Some(_) => {
-        exp = exp + 1
-        value = value * two
-      }
-      None => break
-    }
-  }
-  let width = exp + 1
-  fixnum_width_cache.val = width
-  width
-}
-
-///|
-fn fixnum_base_bigint() -> @bigint.BigInt {
-  bigint_pow2(fixnum_width_value())
-}
-
-///|
-fn fixnum_half_bigint() -> @bigint.BigInt {
-  bigint_pow2(fixnum_width_value() - 1)
-}
-
-///|
-fn datum_fixnum_bigint(datum : Datum) -> @bigint.BigInt? {
-  match datum_unlabel(datum) {
-    Datum::Int(n) => Some(bigint_from_int(n))
-    Datum::BigInt(n) =>
-      match bigint_to_int_option(n) {
-        Some(_) => Some(n)
-        None => None
-      }
-    Datum::Complex(real, imag) =>
-      if datum_is_zero(imag.val) {
-        datum_fixnum_bigint(real.val)
-      } else {
-        None
-      }
-    _ => None
-  }
-}
-
-///|
-fn value_is_fixnum(value : Value) -> Bool {
-  match value {
-    Value::Datum(datum) => datum_fixnum_bigint(datum) is Some(_)
-    _ => false
-  }
-}
-
-///|
-fn value_as_fixnum_bigint(value : Value) -> @bigint.BigInt raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_fixnum_bigint(datum) {
-        Some(n) => n
-        None => raise @core.EvalError("type error: fixnum expected")
-      }
-    _ => raise @core.EvalError("type error: fixnum expected")
-  }
-}
-
-///|
-fn value_as_fixnum_datum(value : Value) -> Datum raise EvalError {
-  fixnum_from_bigint(value_as_fixnum_bigint(value))
-}
-
-///|
-fn value_as_fixnum_int(value : Value) -> Int raise EvalError {
-  let big = value_as_fixnum_bigint(value)
-  match bigint_to_int_option(big) {
-    Some(v) => v
-    None => raise @core.EvalError("type error: fixnum expected")
-  }
-}
-
-///|
-fn value_as_nonnegative_fixnum_int(value : Value) -> Int raise EvalError {
-  let n = value_as_fixnum_int(value)
-  if n < 0 {
-    raise @core.EvalError("type error: exact nonnegative integer expected")
-  }
-  n
-}
-
-///|
-fn fixnum_from_bigint(value : @bigint.BigInt) -> Datum raise EvalError {
-  match bigint_to_int_option(value) {
-    Some(v) => Datum::Int(v)
-    None => raise @core.EvalError("fixnum overflow")
-  }
-}
-
-///|
-fn fixnum_from_datum(value : Datum) -> Datum raise EvalError {
-  fixnum_from_bigint(datum_to_bigint(value))
-}
-
-///|
-fn bigint_floor_div(value : @bigint.BigInt, base : @bigint.BigInt) -> @bigint.BigInt {
-  let q = value / base
-  let r = value % base
-  if r.compare_int(0) < 0 {
-    q - bigint_from_int(1)
-  } else {
-    q
-  }
-}
-
-///|
-fn value_as_flonum(value : Value) -> Float raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Float(f) => f
-        _ => raise @core.EvalError("type error: flonum expected")
-      }
-    _ => raise @core.EvalError("type error: flonum expected")
-  }
-}
-
-///|
-fn value_as_integer_flonum(value : Value) -> Int raise EvalError {
-  let f = value_as_flonum(value)
-  if !float_is_finite(f) {
-    raise @core.EvalError("type error: integer-valued flonum expected")
-  }
-  match float_to_int_exact(f) {
-    Some(n) => n
-    None => raise @core.EvalError("type error: integer-valued flonum expected")
-  }
-}
-
-///|
-fn flonum_div_and_mod(left : Float, right : Float) -> (Float, Float) {
-  let quotient = left / right
-  if !float_is_finite(quotient) {
-    return (quotient, left - right * quotient)
-  }
-  let q_int = float_floor_int(quotient)
-  let q = Float::from_int(q_int)
-  (q, left - right * q)
-}
-
-///|
-fn flonum_div0_and_mod0(left : Float, right : Float) -> (Float, Float) {
-  let quotient = left / right
-  if !float_is_finite(quotient) {
-    return (quotient, left - right * quotient)
-  }
-  let q_int = quotient.to_int()
-  let q = Float::from_int(q_int)
-  (q, left - right * q)
-}
-
-///|
-fn flonum_numerator(value : Float) -> Float raise EvalError {
-  if float_is_nan(value) || float_is_infinite(value) {
-    return value
-  }
-  if value == 0.0 {
-    let neg_zero = (Float::from_int(1) / value) < 0.0
-    let zero = Float::from_int(0)
-    return if neg_zero { -zero } else { zero }
-  }
-  let exact = float_to_exact_datum(value)
-  match exact {
-    Datum::Int(n) => Float::from_int(n)
-    Datum::BigInt(n) => bigint_to_float(n)
-    Datum::Rat(n, _) => Float::from_int(n)
-    Datum::BigRat(n, _) => bigint_to_float(n)
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-fn flonum_denominator(value : Float) -> Float raise EvalError {
-  if float_is_nan(value) {
-    return value
-  }
-  if float_is_infinite(value) || value == 0.0 {
-    return Float::from_int(1)
-  }
-  let exact = float_to_exact_datum(value)
-  match exact {
-    Datum::Int(_) | Datum::BigInt(_) => Float::from_int(1)
-    Datum::Rat(_, d) => Float::from_int(d)
-    Datum::BigRat(_, d) => bigint_to_float(d)
-    _ => raise @core.EvalError("type error: number expected")
-  }
-}
-
-///|
-priv enum BitOp {
-  And
-  Or
-  Xor
-}
-
-///|
-fn bigint_pow2(exp : Int) -> @bigint.BigInt {
-  pow_bigint_int(bigint_from_int(2), exp)
-}
-
-///|
-fn bigint_ge(left : @bigint.BigInt, right : @bigint.BigInt) -> Bool {
-  (left - right).compare_int(0) >= 0
-}
-
-///|
-fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int {
-  if bigint_is_zero(value) {
-    return 0
-  }
-  let mut n = value
-  let two = bigint_from_int(2)
-  let mut count = 0
-  while n.compare_int(0) > 0 {
-    n = n / two
-    count = count + 1
-  }
-  count
-}
-
-///|
-fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int {
-  let mut n = value
-  let two = bigint_from_int(2)
-  let mut count = 0
-  while n.compare_int(0) > 0 {
-    let bit = n % two
-    if !bigint_is_zero(bit) {
-      count = count + 1
-    }
-    n = n / two
-  }
-  count
-}
-
-///|
-fn bigint_twos_length(value : @bigint.BigInt) -> Int {
-  if value.compare_int(0) >= 0 {
-    bigint_bit_length_nonneg(value)
-  } else {
-    bigint_bit_length_nonneg(-value - bigint_from_int(1))
-  }
-}
-
-///|
-fn bigint_to_twos(value : @bigint.BigInt, width : Int) -> @bigint.BigInt {
-  if value.compare_int(0) >= 0 {
-    value
-  } else {
-    value + bigint_pow2(width)
-  }
-}
-
-///|
-fn bigint_from_twos(value : @bigint.BigInt, width : Int) -> @bigint.BigInt {
-  let limit = bigint_pow2(width - 1)
-  if bigint_ge(value, limit) {
-    value - bigint_pow2(width)
-  } else {
-    value
-  }
-}
-
-///|
-fn bigint_bitwise_nonneg(
-  left : @bigint.BigInt,
-  right : @bigint.BigInt,
-  op : BitOp,
-) -> @bigint.BigInt {
-  let mut a = left
-  let mut b = right
-  let two = bigint_from_int(2)
-  let mut bit = bigint_from_int(1)
-  let mut result = bigint_from_int(0)
-  while !bigint_is_zero(a) || !bigint_is_zero(b) {
-    let a_bit = a % two
-    let b_bit = b % two
-    let a_one = !bigint_is_zero(a_bit)
-    let b_one = !bigint_is_zero(b_bit)
-    let out_one = match op {
-      BitOp::And => a_one && b_one
-      BitOp::Or => a_one || b_one
-      BitOp::Xor => a_one != b_one
-    }
-    if out_one {
-      result = result + bit
-    }
-    a = a / two
-    b = b / two
-    bit = bit * two
-  }
-  result
-}
-
-///|
-fn bigint_bitwise_binop(
-  left : @bigint.BigInt,
-  right : @bigint.BigInt,
-  op : BitOp,
-) -> @bigint.BigInt {
-  let len_left = bigint_twos_length(left)
-  let len_right = bigint_twos_length(right)
-  let width = (if len_left > len_right { len_left } else { len_right }) + 1
-  let left_rep = bigint_to_twos(left, width)
-  let right_rep = bigint_to_twos(right, width)
-  let result_rep = bigint_bitwise_nonneg(left_rep, right_rep, op)
-  bigint_from_twos(result_rep, width)
-}
-
-///|
-fn datum_bitwise_binop(left : Datum, right : Datum, op : BitOp) -> Datum raise EvalError {
-  let left_big = datum_to_bigint(left)
-  let right_big = datum_to_bigint(right)
-  bigint_to_integer_datum(bigint_bitwise_binop(left_big, right_big, op))
-}
-
-///|
-fn datum_bitwise_not(value : Datum) -> Datum raise EvalError {
-  let big = datum_to_bigint(value)
-  bigint_to_integer_datum(-big - bigint_from_int(1))
-}
-
-///|
-fn datum_arithmetic_shift(value : Datum, shift : Int) -> Datum raise EvalError {
-  let big = datum_to_bigint(value)
-  if shift == 0 {
-    return bigint_to_integer_datum(big)
-  }
-  if shift > 0 {
-    let factor = bigint_pow2(shift)
-    return bigint_to_integer_datum(big * factor)
-  }
-  let count = -shift
-  let divisor = bigint_pow2(count)
-  let q = big / divisor
-  let r = big % divisor
-  if big.compare_int(0) < 0 && !bigint_is_zero(r) {
-    bigint_to_integer_datum(q - bigint_from_int(1))
-  } else {
-    bigint_to_integer_datum(q)
-  }
-}
-
-///|
-fn datum_bitwise_length(value : Datum) -> Int raise EvalError {
-  let big = datum_to_bigint(value)
-  if big.compare_int(0) >= 0 {
-    bigint_bit_length_nonneg(big)
-  } else {
-    bigint_bit_length_nonneg(-big - bigint_from_int(1))
-  }
-}
-
-///|
-fn datum_bitwise_bit_count(value : Datum) -> Int raise EvalError {
-  let big = datum_to_bigint(value)
-  if big.compare_int(0) >= 0 {
-    bigint_bit_count_nonneg(big)
-  } else {
-    bigint_bit_count_nonneg(-big - bigint_from_int(1))
-  }
-}
-
-///|
-fn datum_bitwise_bit_set(value : Datum, index : Int) -> Bool raise EvalError {
-  let big = datum_to_bigint(value)
-  let mask = bigint_pow2(index)
-  let res = bigint_bitwise_binop(big, mask, BitOp::And)
-  !bigint_is_zero(res)
-}
-
-///|
-fn datum_bitwise_bit_field(value : Datum, start : Int, end : Int) -> Datum raise EvalError {
-  if end < start {
-    raise @core.EvalError("index out of range")
-  }
-  let width = end - start
-  if width == 0 {
-    return Datum::Int(0)
-  }
-  let shifted = datum_arithmetic_shift(value, -start)
-  let mask = bigint_pow2(width) - bigint_from_int(1)
-  let field = bigint_bitwise_binop(datum_to_bigint(shifted), mask, BitOp::And)
-  bigint_to_integer_datum(field)
-}
-
-///|
-fn datum_bitwise_copy_bit_field(
-  value : Datum,
-  start : Int,
-  end : Int,
-  from : Datum,
-) -> Datum raise EvalError {
-  if end < start {
-    raise @core.EvalError("index out of range")
-  }
-  let width = end - start
-  if width == 0 {
-    return value
-  }
-  let mask_low = bigint_pow2(width) - bigint_from_int(1)
-  let shift_factor = bigint_pow2(start)
-  let mask = mask_low * shift_factor
-  let mask_not = -mask - bigint_from_int(1)
-  let cleared_value = bigint_bitwise_binop(
-    datum_to_bigint(value),
-    mask_not,
-    BitOp::And,
-  )
-  let from_shifted = datum_arithmetic_shift(from, start)
-  let insert = bigint_bitwise_binop(datum_to_bigint(from_shifted), mask, BitOp::And)
-  let result = bigint_bitwise_binop(cleared_value, insert, BitOp::Or)
-  bigint_to_integer_datum(result)
-}
-
-///|
-fn datum_bitwise_rotate_bit_field(
-  value : Datum,
-  start : Int,
-  end : Int,
-  count : Int,
-) -> Datum raise EvalError {
-  if end < start {
-    raise @core.EvalError("index out of range")
-  }
-  let width = end - start
-  if width == 0 {
-    return value
-  }
-  let mut shift = count % width
-  if shift < 0 {
-    shift = shift + width
-  }
-  let field = datum_bitwise_bit_field(value, start, end)
-  let mask = bigint_pow2(width) - bigint_from_int(1)
-  let field_big = datum_to_bigint(field)
-  let left = field_big * bigint_pow2(shift)
-  let right = if shift == 0 {
-    bigint_from_int(0)
-  } else {
-    field_big / bigint_pow2(width - shift)
-  }
-  let rotated = bigint_bitwise_binop(left, right, BitOp::Or)
-  let rotated_masked = bigint_bitwise_binop(rotated, mask, BitOp::And)
-  let rotated_value = bigint_to_integer_datum(rotated_masked)
-  datum_bitwise_copy_bit_field(value, start, end, rotated_value)
-}
-
-///|
-fn datum_bitwise_reverse_bit_field(
-  value : Datum,
-  start : Int,
-  end : Int,
-) -> Datum raise EvalError {
-  if end < start {
-    raise @core.EvalError("index out of range")
-  }
-  let width = end - start
-  if width == 0 {
-    return value
-  }
-  let field = datum_bitwise_bit_field(value, start, end)
-  let mut reversed = bigint_from_int(0)
-  let mut i = 0
-  while i < width {
-    if datum_bitwise_bit_set(field, i) {
-      reversed = reversed + bigint_pow2(width - 1 - i)
-    }
-    i = i + 1
-  }
-  datum_bitwise_copy_bit_field(value, start, end, bigint_to_integer_datum(reversed))
-}
-
-///|
-fn check_index(idx : Int, len : Int) -> Unit raise EvalError {
-  if idx < 0 || idx >= len {
-    raise @core.EvalError("index out of range")
-  }
-}
-
-///|
-fn compare_chain_char(
+/// Apply a primitive to evaluated arguments.
+fn apply_primitive(
+  prim : Primitive,
   args : Array[Value],
-  mode : CompareMode,
-  case_insensitive : Bool,
-) -> Bool raise EvalError {
-  if args.length() <= 1 {
-    return true
-  }
-  let mut prev = value_as_char(args[0])
-  if case_insensitive {
-    prev = unicode_char_foldcase(prev)
-  }
-  let mut i = 1
-  while i < args.length() {
-    let mut cur = value_as_char(args[i])
-    if case_insensitive {
-      cur = unicode_char_foldcase(cur)
-    }
-    let cmp = prev.to_int().compare(cur.to_int())
-    if !compare_ok(mode, cmp) {
-      return false
-    }
-    prev = cur
-    i = i + 1
-  }
-  true
-}
-
-///|
-fn compare_chain_string(
-  args : Array[Value],
-  mode : CompareMode,
-  case_insensitive : Bool,
-) -> Bool raise EvalError {
-  if args.length() <= 1 {
-    return true
-  }
-  let mut prev = value_as_string(args[0])
-  if case_insensitive {
-    prev = unicode_string_foldcase(prev)
-  }
-  let mut i = 1
-  while i < args.length() {
-    let mut cur = value_as_string(args[i])
-    if case_insensitive {
-      cur = unicode_string_foldcase(cur)
-    }
-    let cmp = prev.lexical_compare(cur)
-    if !compare_ok(mode, cmp) {
-      return false
-    }
-    prev = cur
-    i = i + 1
-  }
-  true
-}
-
-///|
-fn compare_chain_bool(args : Array[Value]) -> Bool raise EvalError {
-  if args.length() <= 1 {
-    return true
-  }
-  let mut prev = value_as_bool(args[0])
-  let mut i = 1
-  while i < args.length() {
-    let cur = value_as_bool(args[i])
-    if prev != cur {
-      return false
-    }
-    prev = cur
-    i = i + 1
-  }
-  true
-}
-
-///|
-fn compare_chain_symbol(args : Array[Value]) -> Bool raise EvalError {
-  if args.length() <= 1 {
-    return true
-  }
-  let mut prev = value_as_symbol(args[0])
-  let mut i = 1
-  while i < args.length() {
-    let cur = value_as_symbol(args[i])
-    if prev != cur {
-      return false
-    }
-    prev = cur
-    i = i + 1
-  }
-  true
-}
-
-///|
-fn hash_string_value(s : String) -> Int {
-  let modulus = 2147483647
-  let factor = 65599
-  let mut hash = 0
-  let mut i = 0
-  while i < s.length() {
-    match s.get_char(i) {
-      Some(ch) => {
-        let next = (hash * factor + ch.to_int()) % modulus
-        hash = if next < 0 { next + modulus } else { next }
-      }
-      None => return hash
-    }
-    i = i + 1
-  }
-  hash
-}
-
-///|
-priv enum EqualityMode {
-  Eqv
-  Equal
-}
-
-///|
-fn equality_match(mode : EqualityMode, left : Value, right : Value) -> Bool {
-  match mode {
-    EqualityMode::Eqv => value_eqv(left, right)
-    EqualityMode::Equal => value_equal(left, right)
-  }
-}
-
-///|
-fn list_member(
-  mode : EqualityMode,
-  item : Value,
-  list : Datum,
 ) -> Value raise EvalError {
-  let mut cur = list
-  while true {
-    match cur {
-      Datum::Nil => return bool_value(false)
-      Datum::Pair(car, cdr) => {
-        if equality_match(mode, item, value_from_datum(car.val)) {
-          return Value::Datum(cur)
-        }
-        cur = cdr.val
-      }
-      _ => raise @core.EvalError("type error: proper list expected")
-    }
-  }
-  bool_value(false)
-}
-
-///|
-fn list_assoc(
-  mode : EqualityMode,
-  key : Value,
-  list : Datum,
-) -> Value raise EvalError {
-  let mut cur = list
-  while true {
-    match cur {
-      Datum::Nil => return bool_value(false)
-      Datum::Pair(entry, rest) => {
-        let entry_val = entry.val
-        match entry_val {
-          Datum::Pair(car, _) => {
-            if equality_match(mode, key, value_from_datum(car.val)) {
-              return Value::Datum(entry_val)
-            }
-          }
-          _ => raise @core.EvalError("type error: pair expected")
-        }
-        cur = rest.val
-      }
-      _ => raise @core.EvalError("type error: proper list expected")
-    }
-  }
-  bool_value(false)
-}
-
-///|
-fn value_as_vector(value : Value) -> Array[Datum] raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Vector(items) => items
-        _ => raise @core.EvalError("type error: vector expected")
-      }
-    _ => raise @core.EvalError("type error: vector expected")
-  }
-}
-
-///|
-fn value_as_bool(value : Value) -> Bool raise EvalError {
-  match value {
-    Value::Datum(Datum::Bool(flag)) => flag
-    _ => raise @core.EvalError("type error: boolean expected")
-  }
-}
-
-///|
-fn value_as_symbol(value : Value) -> String raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::Symbol(name) => name
-        _ => raise @core.EvalError("type error: symbol expected")
-      }
-    _ => raise @core.EvalError("type error: symbol expected")
-  }
-}
-
-///|
-fn parse_field_spec(item : Datum) -> RecordField raise EvalError {
-  let parts = datum_list_to_array(item)
-  if parts.length() != 2 {
-    raise @core.EvalError("invalid record field spec")
-  }
-  let mut_flag = match symbol_name(parts[0]) {
-    Some("mutable") => true
-    Some("immutable") => false
-    _ => raise @core.EvalError("invalid record field spec")
-  }
-  let name = match symbol_name(parts[1]) {
-    Some(field_name) => field_name
-    None => raise @core.EvalError("invalid record field spec")
-  }
-  RecordField::{ name, mutable: mut_flag }
-}
-
-///|
-fn parse_field_specs(items : Array[Datum]) -> Array[RecordField] raise EvalError {
-  let fields : Array[RecordField] = []
-  for item in items {
-    fields.push(parse_field_spec(item))
-  }
-  fields
-}
-
-///|
-fn value_as_bytevector(value : Value) -> Array[Int] raise EvalError {
-  match value {
-    Value::Datum(datum) =>
-      match datum_unlabel(datum) {
-        Datum::ByteVector(items) => items
-        _ => raise @core.EvalError("type error: bytevector expected")
-      }
-    _ => raise @core.EvalError("type error: bytevector expected")
-  }
-}
-
-///|
-fn value_as_byte(value : Value) -> Int raise EvalError {
-  match value {
-    Value::Datum(Datum::Int(n)) => {
-      if n < 0 || n > 255 {
-        raise @core.EvalError("type error: byte expected")
-      }
-      n
-    }
-    _ => raise @core.EvalError("type error: byte expected")
-  }
-}
-
-priv enum Endian {
-  Big
-  Little
-}
-
-fn native_endianness_mode() -> Endian {
-  Endian::Little
-}
-
-fn native_endianness_value() -> Value {
-  Value::Datum(Datum::Symbol("little"))
-}
-
-fn endianness_from_value(value : Value) -> Endian raise EvalError {
-  let name = value_as_symbol(value)
-  match name {
-    "big" => Endian::Big
-    "little" => Endian::Little
-    "native" => native_endianness_mode()
-    _ => raise @core.EvalError("type error: endianness expected")
-  }
-}
-
-fn bytevector_size_from_value(value : Value) -> Int raise EvalError {
-  let size = value_as_nonnegative_int(value)
-  if size <= 0 || size > 8 {
-    raise @core.EvalError("size out of range")
-  }
-  size
-}
-
-fn check_bytevector_range(start : Int, size : Int, len : Int) -> Unit raise EvalError {
-  if start < 0 || start + size > len {
-    raise @core.EvalError("index out of range")
-  }
-}
-
-fn utf8_raise_invalid() -> Unit raise EvalError {
-  raise @core.EvalError("invalid utf8 sequence")
-}
-
-fn utf8_encode_char(codepoint : Int, bytes : Array[Int]) -> Unit raise EvalError {
-  if codepoint < 0 || codepoint > 0x10FFFF {
-    utf8_raise_invalid()
-  }
-  if codepoint >= 0xD800 && codepoint <= 0xDFFF {
-    utf8_raise_invalid()
-  }
-  if codepoint <= 0x7F {
-    bytes.push(codepoint)
-  } else if codepoint <= 0x7FF {
-    bytes.push(0xC0 | (codepoint >> 6))
-    bytes.push(0x80 | (codepoint & 0x3F))
-  } else if codepoint <= 0xFFFF {
-    bytes.push(0xE0 | (codepoint >> 12))
-    bytes.push(0x80 | ((codepoint >> 6) & 0x3F))
-    bytes.push(0x80 | (codepoint & 0x3F))
-  } else {
-    bytes.push(0xF0 | (codepoint >> 18))
-    bytes.push(0x80 | ((codepoint >> 12) & 0x3F))
-    bytes.push(0x80 | ((codepoint >> 6) & 0x3F))
-    bytes.push(0x80 | (codepoint & 0x3F))
-  }
-}
-
-fn string_char_length(s : String) -> Int {
-  let mut len = 0
-  for _ in s {
-    len = len + 1
-  }
-  len
-}
-
-fn string_to_utf8_bytes(s : String, start : Int, end : Int) -> Array[Int] raise EvalError {
-  if start < 0 || end < start {
-    raise @core.EvalError("index out of range")
-  }
-  let bytes : Array[Int] = []
-  let mut idx = 0
-  for ch in s {
-    if idx >= start && idx < end {
-      utf8_encode_char(ch.to_int(), bytes)
-    }
-    idx = idx + 1
-  }
-  if end > idx {
-    raise @core.EvalError("index out of range")
-  }
-  bytes
-}
-
-fn utf8_decode_to_string(items : Array[Int], start : Int, end : Int) -> String raise EvalError {
-  if start < 0 || end < start || end > items.length() {
-    raise @core.EvalError("index out of range")
-  }
-  let buf = @buffer.new()
-  let mut i = start
-  while i < end {
-    let b0 = items[i]
-    if b0 < 0 || b0 > 255 {
-      utf8_raise_invalid()
-    }
-    let (codepoint, size) = if b0 <= 0x7F {
-      (b0, 1)
-    } else if b0 >= 0xC2 && b0 <= 0xDF {
-      if i + 1 >= end {
-        utf8_raise_invalid()
-      }
-      let b1 = items[i + 1]
-      if b1 < 0x80 || b1 > 0xBF {
-        utf8_raise_invalid()
-      }
-      (((b0 & 0x1F) << 6) | (b1 & 0x3F), 2)
-    } else if b0 >= 0xE0 && b0 <= 0xEF {
-      if i + 2 >= end {
-        utf8_raise_invalid()
-      }
-      let b1 = items[i + 1]
-      let b2 = items[i + 2]
-      if b1 < 0x80 || b1 > 0xBF || b2 < 0x80 || b2 > 0xBF {
-        utf8_raise_invalid()
-      }
-      if b0 == 0xE0 && b1 < 0xA0 {
-        utf8_raise_invalid()
-      }
-      if b0 == 0xED && b1 > 0x9F {
-        utf8_raise_invalid()
-      }
-      (
-        ((b0 & 0x0F) << 12) | ((b1 & 0x3F) << 6) | (b2 & 0x3F),
-        3,
-      )
-    } else if b0 >= 0xF0 && b0 <= 0xF4 {
-      if i + 3 >= end {
-        utf8_raise_invalid()
-      }
-      let b1 = items[i + 1]
-      let b2 = items[i + 2]
-      let b3 = items[i + 3]
-      if b1 < 0x80 || b1 > 0xBF || b2 < 0x80 || b2 > 0xBF || b3 < 0x80 || b3 > 0xBF {
-        utf8_raise_invalid()
-      }
-      if b0 == 0xF0 && b1 < 0x90 {
-        utf8_raise_invalid()
-      }
-      if b0 == 0xF4 && b1 > 0x8F {
-        utf8_raise_invalid()
-      }
-      (
-        ((b0 & 0x07) << 18)
-        | ((b1 & 0x3F) << 12)
-        | ((b2 & 0x3F) << 6)
-        | (b3 & 0x3F),
-        4,
-      )
-    } else {
-      utf8_raise_invalid()
-      (0, 1)
-    }
-    match codepoint.to_char() {
-      Some(ch) => buf.write_char(ch)
-      None => utf8_raise_invalid()
-    }
-    i = i + size
-  }
-  buf.to_string()
-}
-
-fn bytevector_uint_ref(items : Array[Int], start : Int, size : Int, endian : Endian) -> @bigint.BigInt {
-  let base = bigint_from_int(256)
-  let mut result = bigint_from_int(0)
-  match endian {
-    Endian::Big => {
-      let mut i = 0
-      while i < size {
-        result = result * base + bigint_from_int(items[start + i])
-        i = i + 1
-      }
-    }
-    Endian::Little => {
-      let mut factor = bigint_from_int(1)
-      let mut i = 0
-      while i < size {
-        result = result + bigint_from_int(items[start + i]) * factor
-        factor = factor * base
-        i = i + 1
-      }
-    }
-  }
-  result
-}
-
-fn bytevector_uint_set(
-  items : Array[Int],
-  start : Int,
-  size : Int,
-  endian : Endian,
-  value : @bigint.BigInt,
-) -> Unit raise EvalError {
-  let limit = bigint_pow2(size * 8)
-  if value.compare_int(0) < 0 || value >= limit {
-    raise @core.EvalError("integer out of range")
-  }
-  let base = bigint_from_int(256)
-  let bytes : Array[Int] = []
-  let mut v = value
-  let mut i = 0
-  while i < size {
-    let byte = v % base
-    let byte_int = match bigint_to_int_option(byte) {
-      Some(n) => n
-      None => raise @core.EvalError("integer out of range")
-    }
-    bytes.push(byte_int)
-    v = v / base
-    i = i + 1
-  }
-  match endian {
-    Endian::Big => {
-      let mut j = 0
-      while j < size {
-        items[start + j] = bytes[size - 1 - j]
-        j = j + 1
-      }
-    }
-    Endian::Little => {
-      let mut j = 0
-      while j < size {
-        items[start + j] = bytes[j]
-        j = j + 1
-      }
-    }
-  }
-}
-
-fn bytevector_sint_ref(items : Array[Int], start : Int, size : Int, endian : Endian) -> @bigint.BigInt {
-  let unsigned = bytevector_uint_ref(items, start, size, endian)
-  let sign_bit = bigint_pow2(size * 8 - 1)
-  if unsigned >= sign_bit {
-    unsigned - bigint_pow2(size * 8)
-  } else {
-    unsigned
-  }
-}
-
-fn bytevector_sint_to_uint(value : @bigint.BigInt, size : Int) -> @bigint.BigInt raise EvalError {
-  let sign_bit = bigint_pow2(size * 8 - 1)
-  let limit = bigint_pow2(size * 8)
-  let min = -sign_bit
-  if value < min || value >= sign_bit {
-    raise @core.EvalError("integer out of range")
-  }
-  if value.compare_int(0) < 0 { value + limit } else { value }
-}
-
-///|
-fn value_as_port(value : Value) -> Port raise EvalError {
-  match value {
-    Value::Port(port) => port
-    _ => raise @core.EvalError("type error: port expected")
-  }
-}
-
-///|
-fn value_as_record_type_descriptor(value : Value) -> RecordTypeDescriptor raise EvalError {
-  match value {
-    Value::RecordTypeDescriptor(desc) => desc
-    _ => raise @core.EvalError("type error: record type descriptor expected")
-  }
-}
-
-///|
-fn value_as_record_constructor_descriptor(value : Value) -> RecordConstructorDescriptor raise EvalError {
-  match value {
-    Value::RecordConstructorDescriptor(desc) => desc
-    _ => raise @core.EvalError("type error: record constructor descriptor expected")
-  }
-}
-
-///|
-fn value_as_hashtable(value : Value) -> Hashtable raise EvalError {
-  match value {
-    Value::Hashtable(table) => table
-    _ => raise @core.EvalError("type error: hashtable expected")
-  }
-}
-
-///|
-fn value_as_enum_set(value : Value) -> EnumSet raise EvalError {
-  match value {
-    Value::EnumSet(set) => set
-    _ => raise @core.EvalError("type error: enum-set expected")
-  }
-}
-
-///|
-fn hashtable_equiv_from_value(value : Value) -> HashtableEquiv raise EvalError {
-  match value {
-    Value::Primitive(Primitive::Eq) => HashtableEquiv::Eq
-    Value::Primitive(Primitive::Eqv) => HashtableEquiv::Eqv
-    Value::Primitive(Primitive::Equal) => HashtableEquiv::Equal
-    _ => {
-      if !is_procedure_value(value) {
-        raise @core.EvalError("type error: procedure expected")
-      }
-      HashtableEquiv::Proc(value)
-    }
-  }
-}
-
-///|
-fn hashtable_equiv_to_value(equiv : HashtableEquiv) -> Value {
-  match equiv {
-    HashtableEquiv::Eq => Value::Primitive(Primitive::Eq)
-    HashtableEquiv::Eqv => Value::Primitive(Primitive::Eqv)
-    HashtableEquiv::Equal => Value::Primitive(Primitive::Equal)
-    HashtableEquiv::Proc(proc) => proc
-  }
-}
-
-///|
-fn validate_hashtable_size_arg(value : Value) -> Unit raise EvalError {
-  let n = value_as_int_index(value)
-  if n < 0 {
-    raise @core.EvalError("type error: non-negative integer expected")
-  }
-}
-
-///|
-fn enum_set_require_same_universe(a : EnumSet, b : EnumSet) -> Unit raise EvalError {
-  if !enum_set_universe_equal(a, b) {
-    raise @core.EvalError("type error: enum-set universe mismatch")
-  }
-}
-
-///|
-fn enum_set_symbol_list(value : Value) -> Array[String] raise EvalError {
-  let datum = value_as_datum(value)
-  let items = datum_list_to_array(datum)
-  parse_symbol_list(items)
-}
-
-///|
-fn ensure_unique_symbols(names : Array[String]) -> Unit raise EvalError {
-  let seen : Map[String, Bool] = {}
-  for name in names {
-    if seen.contains(name) {
-      raise @core.EvalError("type error: duplicate symbol")
-    }
-    seen[name] = true
-  }
-}
-
-///|
-fn value_as_condition_type_descriptor(value : Value) -> RecordTypeDescriptor raise EvalError {
-  let desc = value_as_record_type_descriptor(value)
-  let base = condition_base_type()
-  if !record_type_is_a(desc.record_type, base) {
-    raise @core.EvalError("type error: condition type expected")
-  }
-  desc
-}
-
-///|
-fn record_accessor_info(value : Value) -> (RecordType, Int) raise EvalError {
-  match value {
-    Value::RecordProc(proc) =>
-      match proc.kind {
-        RecordProcKind::Accessor(record_type, idx) => (record_type, idx)
-        _ => raise @core.EvalError("type error: record accessor expected")
-      }
-    _ => raise @core.EvalError("type error: record accessor expected")
-  }
-}
-
-///|
-fn char_to_raw_string(ch : Char) -> String {
-  let buf = @buffer.new()
-  buf.write_char(ch)
-  buf.to_string()
-}
-
-///|
-fn display_string(value : Value) -> String {
-  match value {
-    Value::Datum(Datum::String(s)) => s.val
-    Value::Datum(Datum::Char(ch)) => char_to_raw_string(ch)
-    Value::Datum(Datum::Symbol(name)) => name
-    _ => value_to_string(value)
-  }
-}
-
-///|
-fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalError {
   match prim {
     Primitive::Add => {
       let mut acc = Datum::Int(0)
@@ -2833,7 +12,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(acc)
     }
-    Primitive::Sub => {
+    Primitive::Sub =>
       match args.length() {
         0 => raise arity_mismatch(1, 0)
         1 => {
@@ -2850,7 +29,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(result)
         }
       }
-    }
     Primitive::Mul => {
       let mut product = Datum::Int(1)
       for arg in args {
@@ -2858,7 +36,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(product)
     }
-    Primitive::Div => {
+    Primitive::Div =>
       match args.length() {
         0 => raise arity_mismatch(1, 0)
         1 => {
@@ -2875,8 +53,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(result)
         }
       }
-    }
-    Primitive::NumEq => {
+    Primitive::NumEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2893,8 +70,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::Less => {
+    Primitive::Less =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2913,8 +89,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::Greater => {
+    Primitive::Greater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2933,8 +108,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::LessEq => {
+    Primitive::LessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2953,8 +127,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::GreaterEq => {
+    Primitive::GreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2973,31 +146,31 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::ExactToInexact => {
+    Primitive::ExactToInexact =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Float(_)) => args[0]
             Value::Datum(Datum::Complex(real, imag)) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
-              Value::Datum(make_complex(Datum::Float(real_f), Datum::Float(imag_f)))
+              Value::Datum(
+                make_complex(Datum::Float(real_f), Datum::Float(imag_f)),
+              )
             }
             _ => {
               let value = value_as_number(args[0])
               Value::Datum(Datum::Float(number_to_float(value)))
             }
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::InexactToExact => {
+    Primitive::InexactToExact =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
-            Value::Datum(Datum::Float(f)) => Value::Datum(float_to_exact_datum(f))
+            Value::Datum(Datum::Float(f)) =>
+              Value::Datum(float_to_exact_datum(f))
             Value::Datum(Datum::Complex(real, imag)) => {
               let real_exact = inexact_component_to_exact(real.val)
               let imag_exact = inexact_component_to_exact(imag.val)
@@ -3009,18 +182,18 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::Datum(Datum::BigRat(_, _)) => args[0]
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ExactIntegerSqrt => {
+    Primitive::ExactIntegerSqrt =>
       match args.length() {
         1 => {
           let value = value_as_exact_integer(args[0])
           match value {
             Datum::Int(n) => {
               if n < 0 {
-                raise @core.EvalError("type error: exact nonnegative integer expected")
+                raise @core.EvalError(
+                  "type error: exact nonnegative integer expected",
+                )
               }
               let (s, r) = exact_integer_sqrt(n)
               Value::Values([
@@ -3030,7 +203,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             }
             Datum::BigInt(n) => {
               if n.compare_int(0) < 0 {
-                raise @core.EvalError("type error: exact nonnegative integer expected")
+                raise @core.EvalError(
+                  "type error: exact nonnegative integer expected",
+                )
               }
               let (s, r) = exact_integer_sqrt_bigint(n)
               Value::Values([
@@ -3043,8 +218,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Rationalize => {
+    Primitive::Rationalize =>
       match args.length() {
         2 => {
           let x = value_as_number(args[0])
@@ -3067,8 +241,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::NumberToString => {
+    Primitive::NumberToString =>
       match args.length() {
         1 | 2 => {
           let num = value_as_number(args[0])
@@ -3104,8 +277,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::StringToNumber => {
+    Primitive::StringToNumber =>
       match args.length() {
         1 | 2 => {
           let s = value_as_string(args[0])
@@ -3129,8 +301,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::MakeRectangular => {
+    Primitive::MakeRectangular =>
       match args.length() {
         2 => {
           let real = datum_to_real(value_as_number(args[0]))
@@ -3139,8 +310,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::MakePolar => {
+    Primitive::MakePolar =>
       match args.length() {
         2 => {
           let r = number_to_float(datum_to_real(value_as_number(args[0])))
@@ -3151,35 +321,32 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::RealPart => {
+    Primitive::RealPart =>
       match args.length() {
-        1 => {
+        1 =>
           match value_as_number(args[0]) {
             Datum::Complex(real, _) => Value::Datum(real.val)
             datum => Value::Datum(datum)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ImagPart => {
+    Primitive::ImagPart =>
       match args.length() {
-        1 => {
+        1 =>
           match value_as_number(args[0]) {
             Datum::Complex(_, imag) => Value::Datum(imag.val)
             Datum::Float(_) => Value::Datum(Datum::Float(0.0))
-            Datum::Int(_) | Datum::BigInt(_) | Datum::Rat(_, _) | Datum::BigRat(_, _) =>
-              Value::Datum(Datum::Int(0))
+            Datum::Int(_)
+            | Datum::BigInt(_)
+            | Datum::Rat(_, _)
+            | Datum::BigRat(_, _) => Value::Datum(Datum::Int(0))
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Magnitude => {
+    Primitive::Magnitude =>
       match args.length() {
-        1 => {
+        1 =>
           match value_as_number(args[0]) {
             Datum::Complex(real, imag) => {
               let real_f = number_to_float(real.val)
@@ -3188,7 +355,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               Value::Datum(Datum::Float(mag))
             }
             Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
-            Datum::Rat(n, d) => Value::Datum(normalize_rat_or_error(int_abs(n), d))
+            Datum::Rat(n, d) =>
+              Value::Datum(normalize_rat_or_error(int_abs(n), d))
             Datum::BigInt(n) => Value::Datum(Datum::BigInt(bigint_abs(n)))
             Datum::BigRat(n, d) =>
               Value::Datum(normalize_big_rat_or_error(bigint_abs(n), d))
@@ -3200,13 +368,11 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               }
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Angle => {
+    Primitive::Angle =>
       match args.length() {
-        1 => {
+        1 =>
           match value_as_number(args[0]) {
             Datum::Complex(real, imag) => {
               let real_f = number_to_float(real.val)
@@ -3218,11 +384,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               Value::Datum(Datum::Float(@math.atan2f(0.0, real_f)))
             }
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Sqrt => {
+    Primitive::Sqrt =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3237,7 +401,11 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               }
             _ => ()
           }
-          let exact_opt = if is_real { exact_sqrt_real(real_value) } else { None }
+          let exact_opt = if is_real {
+            exact_sqrt_real(real_value)
+          } else {
+            None
+          }
           match exact_opt {
             Some(result) => Value::Datum(result)
             None => {
@@ -3253,8 +421,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Exp => {
+    Primitive::Exp =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3268,8 +435,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Log => {
+    Primitive::Log =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3283,34 +449,37 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Expt => {
+    Primitive::Expt =>
       match args.length() {
         2 => {
           let base = value_as_number(args[0])
           let exponent = value_as_number(args[1])
           match exponent {
-            Datum::Int(exp_int) => {
+            Datum::Int(exp_int) =>
               match base {
-                Datum::Int(base_int) => {
+                Datum::Int(base_int) =>
                   if exp_int >= 0 {
                     Value::Datum(Datum::Int(pow_int(base_int, exp_int)))
                   } else {
-                    Value::Datum(normalize_rat_or_error(1, pow_int(base_int, -exp_int)))
+                    Value::Datum(
+                      normalize_rat_or_error(1, pow_int(base_int, -exp_int)),
+                    )
                   }
-                }
-                Datum::BigInt(base_big) => {
+                Datum::BigInt(base_big) =>
                   if exp_int >= 0 {
-                    Value::Datum(bigint_to_integer_datum(pow_bigint_int(base_big, exp_int)))
+                    Value::Datum(
+                      bigint_to_integer_datum(pow_bigint_int(base_big, exp_int)),
+                    )
                   } else {
                     if bigint_is_zero(base_big) {
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_int(base_big, -exp_int)
-                    Value::Datum(normalize_big_rat_or_error(bigint_from_int(1), denom))
+                    Value::Datum(
+                      normalize_big_rat_or_error(bigint_from_int(1), denom),
+                    )
                   }
-                }
-                Datum::Rat(n, d) => {
+                Datum::Rat(n, d) =>
                   if exp_int >= 0 {
                     let num = pow_int(n, exp_int)
                     let den = pow_int(d, exp_int)
@@ -3320,8 +489,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                     let den = pow_int(n, -exp_int)
                     Value::Datum(normalize_rat_or_error(num, den))
                   }
-                }
-                Datum::BigRat(n, d) => {
+                Datum::BigRat(n, d) =>
                   if exp_int >= 0 {
                     let num = pow_bigint_int(n, exp_int)
                     let den = pow_bigint_int(d, exp_int)
@@ -3334,7 +502,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                     let den = pow_bigint_int(n, -exp_int)
                     Value::Datum(normalize_big_rat_or_error(num, den))
                   }
-                }
                 Datum::Float(f) => {
                   let pow = if exp_int >= 0 {
                     pow_float_int(f, exp_int)
@@ -3345,15 +512,23 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 }
                 Datum::Complex(_, _) => {
                   let (br, bi) = datum_to_complex_float(base)
-                  let (rr, ri) = complex_expt_f(br, bi, Float::from_int(exp_int), 0.0)
+                  let (rr, ri) = complex_expt_f(
+                    br,
+                    bi,
+                    Float::from_int(exp_int),
+                    0.0,
+                  )
                   Value::Datum(complex_from_float(rr, ri))
                 }
                 _ => raise @core.EvalError("type error: number expected")
               }
-            }
             Datum::BigInt(exp_big) => {
               let exp_sign = exp_big.compare_int(0)
-              let abs_exp = if exp_sign < 0 { bigint_abs(exp_big) } else { exp_big }
+              let abs_exp = if exp_sign < 0 {
+                bigint_abs(exp_big)
+              } else {
+                exp_big
+              }
               let exp_is_odd = !bigint_is_zero(abs_exp % bigint_from_int(2))
               match base {
                 Datum::Int(base_int) => {
@@ -3368,10 +543,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(bigint_from_int(1), denom))
+                    Value::Datum(
+                      normalize_big_rat_or_error(bigint_from_int(1), denom),
+                    )
                   }
                 }
-                Datum::BigInt(base_big) => {
+                Datum::BigInt(base_big) =>
                   if exp_sign == 0 {
                     Value::Datum(Datum::Int(1))
                   } else if exp_sign > 0 {
@@ -3382,9 +559,10 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(bigint_from_int(1), denom))
+                    Value::Datum(
+                      normalize_big_rat_or_error(bigint_from_int(1), denom),
+                    )
                   }
-                }
                 Datum::Rat(n, d) => {
                   let num = bigint_from_int(n)
                   let den = bigint_from_int(d)
@@ -3403,7 +581,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                     Value::Datum(normalize_big_rat_or_error(den_pow, num_pow))
                   }
                 }
-                Datum::BigRat(n, d) => {
+                Datum::BigRat(n, d) =>
                   if exp_sign == 0 {
                     Value::Datum(Datum::Int(1))
                   } else if exp_sign > 0 {
@@ -3418,7 +596,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                     let den_pow = pow_bigint_bigint(d, abs_exp)
                     Value::Datum(normalize_big_rat_or_error(den_pow, num_pow))
                   }
-                }
                 Datum::Float(f) => {
                   let exp_f = bigint_to_float(abs_exp)
                   let abs_base = if f < 0.0 { -f } else { f }
@@ -3441,7 +618,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 _ => raise @core.EvalError("type error: number expected")
               }
             }
-            Datum::Float(exp_f) => {
+            Datum::Float(exp_f) =>
               match base {
                 Datum::Complex(_, _) => {
                   let (br, bi) = datum_to_complex_float(base)
@@ -3459,18 +636,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                       }
                       Value::Datum(Datum::Float(pow))
                     }
-                    None => {
+                    None =>
                       if base_f >= 0.0 {
                         Value::Datum(Datum::Float(@math.powf(base_f, exp_f)))
                       } else {
                         let (rr, ri) = complex_expt_f(base_f, 0.0, exp_f, 0.0)
                         Value::Datum(complex_from_float(rr, ri))
                       }
-                    }
                   }
                 }
               }
-            }
             Datum::Rat(_, _) | Datum::BigRat(_, _) => {
               let exp_f = number_to_float(exponent)
               match base {
@@ -3501,8 +676,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Sin => {
+    Primitive::Sin =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3516,8 +690,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Cos => {
+    Primitive::Cos =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3531,8 +704,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Tan => {
+    Primitive::Tan =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3546,8 +718,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Asin => {
+    Primitive::Asin =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3561,8 +732,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Acos => {
+    Primitive::Acos =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3576,8 +746,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Atan => {
+    Primitive::Atan =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3598,10 +767,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::Numerator => {
+    Primitive::Numerator =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(n)) => Value::Datum(Datum::Int(n))
             Value::Datum(Datum::Rat(n, _)) => Value::Datum(Datum::Int(n))
@@ -3609,13 +777,11 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::Datum(Datum::BigRat(n, _)) => Value::Datum(Datum::BigInt(n))
             _ => raise @core.EvalError("type error: rational expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Denominator => {
+    Primitive::Denominator =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(_)) => Value::Datum(Datum::Int(1))
             Value::Datum(Datum::Rat(_, d)) => Value::Datum(Datum::Int(d))
@@ -3623,23 +789,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             Value::Datum(Datum::BigRat(_, d)) => Value::Datum(Datum::BigInt(d))
             _ => raise @core.EvalError("type error: rational expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Abs => {
+    Primitive::Abs =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
           match value {
             Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
-            Datum::Rat(n, d) => Value::Datum(normalize_rat_or_error(int_abs(n), d))
+            Datum::Rat(n, d) =>
+              Value::Datum(normalize_rat_or_error(int_abs(n), d))
             Datum::BigInt(n) => Value::Datum(Datum::BigInt(bigint_abs(n)))
-            Datum::BigRat(n, d) => {
-              Value::Datum(
-                normalize_big_rat_or_error(bigint_abs(n), d),
-              )
-            }
+            Datum::BigRat(n, d) =>
+              Value::Datum(normalize_big_rat_or_error(bigint_abs(n), d))
             Datum::Float(f) =>
               if f < 0.0 {
                 Value::Datum(Datum::Float(-f))
@@ -3657,8 +819,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Quotient => {
+    Primitive::Quotient =>
       match args.length() {
         2 => {
           let left_val = value_as_exact_integer(args[0])
@@ -3682,8 +843,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Remainder => {
+    Primitive::Remainder =>
       match args.length() {
         2 => {
           let left_val = value_as_exact_integer(args[0])
@@ -3707,8 +867,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Modulo => {
+    Primitive::Modulo =>
       match args.length() {
         2 => {
           let left_val = value_as_exact_integer(args[0])
@@ -3719,12 +878,13 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 raise @core.EvalError("division by zero")
               }
               let rem = left % right
-              let result =
-                if rem == 0 || (rem > 0 && right > 0) || (rem < 0 && right < 0) {
-                  rem
-                } else {
-                  rem + right
-                }
+              let result = if rem == 0 ||
+                (rem > 0 && right > 0) ||
+                (rem < 0 && right < 0) {
+                rem
+              } else {
+                rem + right
+              }
               Value::Datum(Datum::Int(result))
             }
             _ => {
@@ -3736,19 +896,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               let rem = left % right
               let rem_sign = rem.compare_int(0)
               let right_sign = right.compare_int(0)
-              let result =
-                if rem.is_zero() || (rem_sign > 0 && right_sign > 0) || (rem_sign < 0 && right_sign < 0) {
-                  rem
-                } else {
-                  rem + right
-                }
+              let result = if rem.is_zero() ||
+                (rem_sign > 0 && right_sign > 0) ||
+                (rem_sign < 0 && right_sign < 0) {
+                rem
+              } else {
+                rem + right
+              }
               Value::Datum(Datum::BigInt(result))
             }
           }
         }
         n => raise arity_mismatch(2, n)
       }
-    }
     Primitive::Gcd => {
       let mut acc_int = 0
       let mut acc_big = bigint_from_int(0)
@@ -3756,13 +916,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       for arg in args {
         let value = value_as_exact_integer(arg)
         match value {
-          Datum::Int(n) => {
+          Datum::Int(n) =>
             if use_big {
               acc_big = bigint_gcd(acc_big, bigint_from_int(n))
             } else {
               acc_int = gcd(acc_int, n)
             }
-          }
           Datum::BigInt(n) => {
             if !use_big {
               use_big = true
@@ -3791,24 +950,21 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       for arg in args {
         let value = value_as_exact_integer(arg)
         match value {
-          Datum::Int(n) => {
+          Datum::Int(n) =>
             if use_big {
               let n_big = bigint_from_int(n)
               if acc_big.is_zero() || n_big.is_zero() {
                 acc_big = bigint_from_int(0)
               } else {
                 let g = bigint_gcd(acc_big, n_big)
-                acc_big = bigint_abs((acc_big / g) * n_big)
+                acc_big = bigint_abs(acc_big / g * n_big)
               }
+            } else if acc_int == 0 || n == 0 {
+              acc_int = 0
             } else {
-              if acc_int == 0 || n == 0 {
-                acc_int = 0
-              } else {
-                let g = gcd(acc_int, n)
-                acc_int = int_abs((acc_int / g) * n)
-              }
+              let g = gcd(acc_int, n)
+              acc_int = int_abs(acc_int / g * n)
             }
-          }
           Datum::BigInt(n) => {
             if !use_big {
               use_big = true
@@ -3818,7 +974,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               acc_big = bigint_from_int(0)
             } else {
               let g = bigint_gcd(acc_big, n)
-              acc_big = bigint_abs((acc_big / g) * n)
+              acc_big = bigint_abs(acc_big / g * n)
             }
           }
           _ => raise @core.EvalError("type error: integer expected")
@@ -3881,7 +1037,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         Value::Datum(best)
       }
     }
-    Primitive::Floor => {
+    Primitive::Floor =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3902,8 +1058,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Ceiling => {
+    Primitive::Ceiling =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3924,8 +1079,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Truncate => {
+    Primitive::Truncate =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3946,8 +1100,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Round => {
+    Primitive::Round =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -3968,8 +1121,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::BitwiseAnd => {
+    Primitive::BitwiseAnd =>
       if args.is_empty() {
         Value::Datum(Datum::Int(-1))
       } else {
@@ -3982,8 +1134,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(acc)
       }
-    }
-    Primitive::BitwiseIor => {
+    Primitive::BitwiseIor =>
       if args.is_empty() {
         Value::Datum(Datum::Int(0))
       } else {
@@ -3996,8 +1147,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(acc)
       }
-    }
-    Primitive::BitwiseXor => {
+    Primitive::BitwiseXor =>
       if args.is_empty() {
         Value::Datum(Datum::Int(0))
       } else {
@@ -4010,8 +1160,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(acc)
       }
-    }
-    Primitive::BitwiseNot => {
+    Primitive::BitwiseNot =>
       match args.length() {
         1 => {
           let value = value_as_exact_integer(args[0])
@@ -4019,21 +1168,23 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::BitwiseIf => {
+    Primitive::BitwiseIf =>
       match args.length() {
         3 => {
           let mask = value_as_exact_integer(args[0])
           let yes_value = value_as_exact_integer(args[1])
           let no_value = value_as_exact_integer(args[2])
           let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
-          let masked_no = datum_bitwise_binop(datum_bitwise_not(mask), no_value, BitOp::And)
+          let masked_no = datum_bitwise_binop(
+            datum_bitwise_not(mask),
+            no_value,
+            BitOp::And,
+          )
           Value::Datum(datum_bitwise_binop(masked_yes, masked_no, BitOp::Or))
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::ArithmeticShift => {
+    Primitive::ArithmeticShift =>
       match args.length() {
         2 => {
           let value = value_as_exact_integer(args[0])
@@ -4042,8 +1193,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::BitwiseBitCount => {
+    Primitive::BitwiseBitCount =>
       match args.length() {
         1 => {
           let value = value_as_exact_integer(args[0])
@@ -4052,8 +1202,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::BitwiseLength => {
+    Primitive::BitwiseLength =>
       match args.length() {
         1 => {
           let value = value_as_exact_integer(args[0])
@@ -4062,8 +1211,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::BitwiseFirstBitSet => {
+    Primitive::BitwiseFirstBitSet =>
       match args.length() {
         1 => {
           let value = value_as_exact_integer(args[0])
@@ -4078,8 +1226,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::BitwiseBitSetP => {
+    Primitive::BitwiseBitSetP =>
       match args.length() {
         2 => {
           let value = value_as_exact_integer(args[0])
@@ -4088,8 +1235,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::BitwiseCopyBit => {
+    Primitive::BitwiseCopyBit =>
       match args.length() {
         3 => {
           let value = value_as_exact_integer(args[0])
@@ -4119,8 +1265,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::BitwiseBitField => {
+    Primitive::BitwiseBitField =>
       match args.length() {
         3 => {
           let value = value_as_exact_integer(args[0])
@@ -4130,8 +1275,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::BitwiseCopyBitField => {
+    Primitive::BitwiseCopyBitField =>
       match args.length() {
         4 => {
           let value = value_as_exact_integer(args[0])
@@ -4142,8 +1286,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::BitwiseRotateBitField => {
+    Primitive::BitwiseRotateBitField =>
       match args.length() {
         4 => {
           let value = value_as_exact_integer(args[0])
@@ -4154,8 +1297,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::BitwiseReverseBitField => {
+    Primitive::BitwiseReverseBitField =>
       match args.length() {
         3 => {
           let value = value_as_exact_integer(args[0])
@@ -4165,20 +1307,17 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FixnumP => {
+    Primitive::FixnumP =>
       match args.length() {
         1 => bool_value(value_is_fixnum(args[0]))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FixnumWidth => {
+    Primitive::FixnumWidth =>
       match args.length() {
         0 => Value::Datum(Datum::Int(fixnum_width_value()))
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::LeastFixnum => {
+    Primitive::LeastFixnum =>
       match args.length() {
         0 => {
           let half = fixnum_half_bigint()
@@ -4186,8 +1325,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::GreatestFixnum => {
+    Primitive::GreatestFixnum =>
       match args.length() {
         0 => {
           let half = fixnum_half_bigint()
@@ -4195,8 +1333,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::FxEq => {
+    Primitive::FxEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4213,8 +1350,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FxLess => {
+    Primitive::FxLess =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4233,8 +1369,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FxGreater => {
+    Primitive::FxGreater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4253,8 +1388,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FxLessEq => {
+    Primitive::FxLessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4273,8 +1407,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FxGreaterEq => {
+    Primitive::FxGreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4293,37 +1426,31 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FxZeroP => {
+    Primitive::FxZeroP =>
       match args.length() {
         1 => bool_value(value_as_fixnum_int(args[0]) == 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxPositiveP => {
+    Primitive::FxPositiveP =>
       match args.length() {
         1 => bool_value(value_as_fixnum_int(args[0]) > 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxNegativeP => {
+    Primitive::FxNegativeP =>
       match args.length() {
         1 => bool_value(value_as_fixnum_int(args[0]) < 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxOddP => {
+    Primitive::FxOddP =>
       match args.length() {
         1 => bool_value(value_as_fixnum_int(args[0]) % 2 != 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxEvenP => {
+    Primitive::FxEvenP =>
       match args.length() {
         1 => bool_value(value_as_fixnum_int(args[0]) % 2 == 0)
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::FxMin => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
@@ -4361,7 +1488,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(fixnum_from_bigint(acc))
     }
-    Primitive::FxSub => {
+    Primitive::FxSub =>
       match args.length() {
         0 => raise arity_mismatch(1, 0)
         1 => {
@@ -4378,7 +1505,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(fixnum_from_bigint(result))
         }
       }
-    }
     Primitive::FxMul => {
       let mut acc = bigint_from_int(1)
       for arg in args {
@@ -4386,7 +1512,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(fixnum_from_bigint(acc))
     }
-    Primitive::FxDiv => {
+    Primitive::FxDiv =>
       match args.length() {
         2 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4407,8 +1533,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxMod => {
+    Primitive::FxMod =>
       match args.length() {
         2 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4428,8 +1553,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxDiv0 => {
+    Primitive::FxDiv0 =>
       match args.length() {
         2 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4441,8 +1565,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxMod0 => {
+    Primitive::FxMod0 =>
       match args.length() {
         2 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4454,8 +1577,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxAddCarry => {
+    Primitive::FxAddCarry =>
       match args.length() {
         3 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4473,8 +1595,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxSubCarry => {
+    Primitive::FxSubCarry =>
       match args.length() {
         3 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4492,8 +1613,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxMulCarry => {
+    Primitive::FxMulCarry =>
       match args.length() {
         3 => {
           let left = value_as_fixnum_bigint(args[0])
@@ -4511,8 +1631,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxNot => {
+    Primitive::FxNot =>
       match args.length() {
         1 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4521,8 +1640,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxAnd => {
+    Primitive::FxAnd =>
       if args.is_empty() {
         Value::Datum(Datum::Int(-1))
       } else {
@@ -4535,8 +1653,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(fixnum_from_datum(acc))
       }
-    }
-    Primitive::FxIor => {
+    Primitive::FxIor =>
       if args.is_empty() {
         Value::Datum(Datum::Int(0))
       } else {
@@ -4549,8 +1666,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(fixnum_from_datum(acc))
       }
-    }
-    Primitive::FxXor => {
+    Primitive::FxXor =>
       if args.is_empty() {
         Value::Datum(Datum::Int(0))
       } else {
@@ -4563,23 +1679,27 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         Value::Datum(fixnum_from_datum(acc))
       }
-    }
-    Primitive::FxIf => {
+    Primitive::FxIf =>
       match args.length() {
         3 => {
           let mask = value_as_fixnum_datum(args[0])
           let yes_value = value_as_fixnum_datum(args[1])
           let no_value = value_as_fixnum_datum(args[2])
           let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
-          let masked_no = datum_bitwise_binop(datum_bitwise_not(mask), no_value, BitOp::And)
+          let masked_no = datum_bitwise_binop(
+            datum_bitwise_not(mask),
+            no_value,
+            BitOp::And,
+          )
           Value::Datum(
-            fixnum_from_datum(datum_bitwise_binop(masked_yes, masked_no, BitOp::Or)),
+            fixnum_from_datum(
+              datum_bitwise_binop(masked_yes, masked_no, BitOp::Or),
+            ),
           )
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxBitCount => {
+    Primitive::FxBitCount =>
       match args.length() {
         1 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4588,8 +1708,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxLength => {
+    Primitive::FxLength =>
       match args.length() {
         1 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4598,8 +1717,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxFirstBitSet => {
+    Primitive::FxFirstBitSet =>
       match args.length() {
         1 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4614,8 +1732,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FxBitSetP => {
+    Primitive::FxBitSetP =>
       match args.length() {
         2 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4624,21 +1741,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxCopyBit => {
+    Primitive::FxCopyBit =>
       match args.length() {
         3 => {
           let value = value_as_fixnum_datum(args[0])
           let index = value_as_nonnegative_fixnum_int(args[1])
           let bit_value = value_as_fixnum_bigint(args[2])
-          let bit =
-            if bigint_is_zero(bit_value) {
-              0
-            } else if bit_value.compare_int(1) == 0 {
-              1
-            } else {
-              raise @core.EvalError("type error: bit expected")
-            }
+          let bit = if bigint_is_zero(bit_value) {
+            0
+          } else if bit_value.compare_int(1) == 0 {
+            1
+          } else {
+            raise @core.EvalError("type error: bit expected")
+          }
           let mask = bigint_to_integer_datum(bigint_pow2(index))
           let result = if bit == 0 {
             datum_bitwise_binop(value, datum_bitwise_not(mask), BitOp::And)
@@ -4649,19 +1764,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxBitField => {
+    Primitive::FxBitField =>
       match args.length() {
         3 => {
           let value = value_as_fixnum_datum(args[0])
           let start = value_as_nonnegative_fixnum_int(args[1])
           let end = value_as_nonnegative_fixnum_int(args[2])
-          Value::Datum(fixnum_from_datum(datum_bitwise_bit_field(value, start, end)))
+          Value::Datum(
+            fixnum_from_datum(datum_bitwise_bit_field(value, start, end)),
+          )
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxCopyBitField => {
+    Primitive::FxCopyBitField =>
       match args.length() {
         4 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4669,13 +1784,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let end = value_as_nonnegative_fixnum_int(args[2])
           let from = value_as_fixnum_datum(args[3])
           Value::Datum(
-            fixnum_from_datum(datum_bitwise_copy_bit_field(value, start, end, from)),
+            fixnum_from_datum(
+              datum_bitwise_copy_bit_field(value, start, end, from),
+            ),
           )
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::FxRotateBitField => {
+    Primitive::FxRotateBitField =>
       match args.length() {
         4 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4683,24 +1799,28 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let end = value_as_nonnegative_fixnum_int(args[2])
           let count = value_as_fixnum_int(args[3])
           Value::Datum(
-            fixnum_from_datum(datum_bitwise_rotate_bit_field(value, start, end, count)),
+            fixnum_from_datum(
+              datum_bitwise_rotate_bit_field(value, start, end, count),
+            ),
           )
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::FxReverseBitField => {
+    Primitive::FxReverseBitField =>
       match args.length() {
         3 => {
           let value = value_as_fixnum_datum(args[0])
           let start = value_as_nonnegative_fixnum_int(args[1])
           let end = value_as_nonnegative_fixnum_int(args[2])
-          Value::Datum(fixnum_from_datum(datum_bitwise_reverse_bit_field(value, start, end)))
+          Value::Datum(
+            fixnum_from_datum(
+              datum_bitwise_reverse_bit_field(value, start, end),
+            ),
+          )
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::FxArithmeticShift => {
+    Primitive::FxArithmeticShift =>
       match args.length() {
         2 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4709,8 +1829,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxArithmeticShiftLeft => {
+    Primitive::FxArithmeticShiftLeft =>
       match args.length() {
         2 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4719,8 +1838,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FxArithmeticShiftRight => {
+    Primitive::FxArithmeticShiftRight =>
       match args.length() {
         2 => {
           let value = value_as_fixnum_datum(args[0])
@@ -4729,8 +1847,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlonumP => {
+    Primitive::FlonumP =>
       match args.length() {
         1 =>
           match args[0] {
@@ -4743,8 +1860,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RealToFlonum => {
+    Primitive::RealToFlonum =>
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
@@ -4752,8 +1868,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FixnumToFlonum => {
+    Primitive::FixnumToFlonum =>
       match args.length() {
         1 => {
           let value = value_as_fixnum_int(args[0])
@@ -4761,8 +1876,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlEq => {
+    Primitive::FlEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4779,8 +1893,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FlLess => {
+    Primitive::FlLess =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4799,8 +1912,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FlGreater => {
+    Primitive::FlGreater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4819,8 +1931,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FlLessEq => {
+    Primitive::FlLessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4839,8 +1950,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FlGreaterEq => {
+    Primitive::FlGreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -4859,8 +1969,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         bool_value(ok)
       }
-    }
-    Primitive::FlIntegerP => {
+    Primitive::FlIntegerP =>
       match args.length() {
         1 => {
           let f = value_as_flonum(args[0])
@@ -4869,55 +1978,46 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlZeroP => {
+    Primitive::FlZeroP =>
       match args.length() {
         1 => bool_value(value_as_flonum(args[0]) == 0.0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlPositiveP => {
+    Primitive::FlPositiveP =>
       match args.length() {
         1 => bool_value(value_as_flonum(args[0]) > 0.0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlNegativeP => {
+    Primitive::FlNegativeP =>
       match args.length() {
         1 => bool_value(value_as_flonum(args[0]) < 0.0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlOddP => {
+    Primitive::FlOddP =>
       match args.length() {
         1 => bool_value(value_as_integer_flonum(args[0]) % 2 != 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlEvenP => {
+    Primitive::FlEvenP =>
       match args.length() {
         1 => bool_value(value_as_integer_flonum(args[0]) % 2 == 0)
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlFiniteP => {
+    Primitive::FlFiniteP =>
       match args.length() {
         1 => bool_value(float_is_finite(value_as_flonum(args[0])))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlInfiniteP => {
+    Primitive::FlInfiniteP =>
       match args.length() {
         1 => bool_value(float_is_infinite(value_as_flonum(args[0])))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlNanP => {
+    Primitive::FlNanP =>
       match args.length() {
         1 => bool_value(float_is_nan(value_as_flonum(args[0])))
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::FlMax => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
@@ -4974,7 +2074,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::Float(acc))
     }
-    Primitive::FlSub => {
+    Primitive::FlSub =>
       match args.length() {
         0 => raise arity_mismatch(1, 0)
         1 => Value::Datum(Datum::Float(-value_as_flonum(args[0])))
@@ -4988,8 +2088,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(Datum::Float(result))
         }
       }
-    }
-    Primitive::FlDiv => {
+    Primitive::FlDiv =>
       match args.length() {
         0 => raise arity_mismatch(1, 0)
         1 => {
@@ -5006,8 +2105,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(Datum::Float(result))
         }
       }
-    }
-    Primitive::FlAbs => {
+    Primitive::FlAbs =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5015,19 +2113,20 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlDivAndMod => {
+    Primitive::FlDivAndMod =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
           let right = value_as_flonum(args[1])
           let (q, r) = flonum_div_and_mod(left, right)
-          Value::Values([Value::Datum(Datum::Float(q)), Value::Datum(Datum::Float(r))])
+          Value::Values([
+            Value::Datum(Datum::Float(q)),
+            Value::Datum(Datum::Float(r)),
+          ])
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlDivInt => {
+    Primitive::FlDivInt =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
@@ -5037,8 +2136,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlMod => {
+    Primitive::FlMod =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
@@ -5048,19 +2146,20 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlDiv0AndMod0 => {
+    Primitive::FlDiv0AndMod0 =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
           let right = value_as_flonum(args[1])
           let (q, r) = flonum_div0_and_mod0(left, right)
-          Value::Values([Value::Datum(Datum::Float(q)), Value::Datum(Datum::Float(r))])
+          Value::Values([
+            Value::Datum(Datum::Float(q)),
+            Value::Datum(Datum::Float(r)),
+          ])
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlDiv0 => {
+    Primitive::FlDiv0 =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
@@ -5070,8 +2169,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlMod0 => {
+    Primitive::FlMod0 =>
       match args.length() {
         2 => {
           let left = value_as_flonum(args[0])
@@ -5081,8 +2179,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlNumerator => {
+    Primitive::FlNumerator =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5090,8 +2187,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlDenominator => {
+    Primitive::FlDenominator =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5099,8 +2195,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlFloor => {
+    Primitive::FlFloor =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5112,21 +2207,21 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlCeiling => {
+    Primitive::FlCeiling =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
           if !float_is_finite(value) {
             Value::Datum(Datum::Float(value))
           } else {
-            Value::Datum(Datum::Float(Float::from_int(float_ceiling_int(value))))
+            Value::Datum(
+              Datum::Float(Float::from_int(float_ceiling_int(value))),
+            )
           }
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlTruncate => {
+    Primitive::FlTruncate =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5138,8 +2233,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlRound => {
+    Primitive::FlRound =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5151,50 +2245,42 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlExp => {
+    Primitive::FlExp =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.expf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlLog => {
+    Primitive::FlLog =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.lnf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlSin => {
+    Primitive::FlSin =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.sinf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlCos => {
+    Primitive::FlCos =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.cosf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlTan => {
+    Primitive::FlTan =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.tanf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlAsin => {
+    Primitive::FlAsin =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.asinf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlAcos => {
+    Primitive::FlAcos =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.acosf(value_as_flonum(args[0]))))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlAtan => {
+    Primitive::FlAtan =>
       match args.length() {
         1 => Value::Datum(Datum::Float(@math.atanf(value_as_flonum(args[0]))))
         2 => {
@@ -5204,8 +2290,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::FlSqrt => {
+    Primitive::FlSqrt =>
       match args.length() {
         1 => {
           let value = value_as_flonum(args[0])
@@ -5213,8 +2298,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FlExpt => {
+    Primitive::FlExpt =>
       match args.length() {
         2 => {
           let base = value_as_flonum(args[0])
@@ -5223,26 +2307,22 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Eq => {
+    Primitive::Eq =>
       match args.length() {
         2 => bool_value(value_eqv(args[0], args[1]))
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Eqv => {
+    Primitive::Eqv =>
       match args.length() {
         2 => bool_value(value_eqv(args[0], args[1]))
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Equal => {
+    Primitive::Equal =>
       match args.length() {
         2 => bool_value(value_equal(args[0], args[1]))
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Cons => {
+    Primitive::Cons =>
       match args.length() {
         2 => {
           let car = value_to_datum_element(args[0])
@@ -5251,8 +2331,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::SetCar => {
+    Primitive::SetCar =>
       match args.length() {
         2 => {
           let (car_cell, _) = value_as_pair_cells(args[0])
@@ -5261,8 +2340,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::SetCdr => {
+    Primitive::SetCdr =>
       match args.length() {
         2 => {
           let (_, cdr_cell) = value_as_pair_cells(args[0])
@@ -5271,8 +2349,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Car => {
+    Primitive::Car =>
       match args.length() {
         1 => {
           let (car, _) = value_as_pair(args[0])
@@ -5280,8 +2357,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Cdr => {
+    Primitive::Cdr =>
       match args.length() {
         1 => {
           let (_, cdr) = value_as_pair(args[0])
@@ -5289,8 +2365,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Cxr(chain) => {
+    Primitive::Cxr(chain) =>
       match args.length() {
         1 => {
           let mut cur = value_as_datum(args[0])
@@ -5302,13 +2377,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               None => raise @core.EvalError("internal error: invalid cxr")
             }
             match cur {
-              Datum::Pair(car, cdr) => {
+              Datum::Pair(car, cdr) =>
                 match op {
                   'a' => cur = car.val
                   'd' => cur = cdr.val
                   _ => raise @core.EvalError("internal error: invalid cxr")
                 }
-              }
               _ => raise @core.EvalError("type error: pair expected")
             }
           }
@@ -5316,7 +2390,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::List => {
       let items : Array[Datum] = []
       for arg in args {
@@ -5324,7 +2397,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(list_from_array(items))
     }
-    Primitive::MakeList => {
+    Primitive::MakeList =>
       match args.length() {
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
@@ -5343,61 +2416,49 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::NullP => {
+    Primitive::NullP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Nil) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::PairP => {
+    Primitive::PairP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Pair(_, _)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::SymbolP => {
+    Primitive::SymbolP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Symbol(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::SymbolEq => bool_value(compare_chain_symbol(args))
-    Primitive::IdentifierP => {
+    Primitive::IdentifierP =>
       match args.length() {
-        1 => {
-          bool_value(is_identifier_value(args[0]))
-        }
+        1 => bool_value(is_identifier_value(args[0]))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::SyntaxP => {
+    Primitive::SyntaxP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::SyntaxObject(_) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FreeIdentifierEq => {
+    Primitive::FreeIdentifierEq =>
       match args.length() {
         2 => {
           let (a, a_scopes, a_binding) = identifier_info(args[0])
@@ -5412,8 +2473,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::BoundIdentifierEq => {
+    Primitive::BoundIdentifierEq =>
       match args.length() {
         2 => {
           let (a, a_scopes, a_binding) = identifier_info(args[0])
@@ -5428,30 +2488,27 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::SymbolToString => {
+    Primitive::SymbolToString =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
-            Value::Datum(Datum::Symbol(name)) => Value::Datum(Datum::String(Ref::new(name)))
+            Value::Datum(Datum::Symbol(name)) =>
+              Value::Datum(Datum::String(Ref::new(name)))
             _ => raise @core.EvalError("type error: symbol expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringToSymbol => {
+    Primitive::StringToSymbol =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
-            Value::Datum(Datum::String(name)) => Value::Datum(Datum::Symbol(name.val))
+            Value::Datum(Datum::String(name)) =>
+              Value::Datum(Datum::Symbol(name.val))
             _ => raise @core.EvalError("type error: string expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringHash => {
+    Primitive::StringHash =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -5459,8 +2516,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringCiHash => {
+    Primitive::StringCiHash =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -5469,8 +2525,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::SymbolHash => {
+    Primitive::SymbolHash =>
       match args.length() {
         1 => {
           let name = value_as_symbol(args[0])
@@ -5478,8 +2533,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EqualHash => {
+    Primitive::EqualHash =>
       match args.length() {
         1 => {
           let repr = value_to_string(args[0])
@@ -5487,20 +2541,18 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::SyntaxToDatum => {
+    Primitive::SyntaxToDatum =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
-            Value::SyntaxObject(obj) => Value::Datum(strip_syntax_datum(obj.datum))
+            Value::SyntaxObject(obj) =>
+              Value::Datum(strip_syntax_datum(obj.datum))
             Value::Datum(d) => Value::Datum(strip_syntax_datum(d))
             _ => raise @core.EvalError("type error: syntax expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::DatumToSyntax => {
+    Primitive::DatumToSyntax =>
       match args.length() {
         2 | 3 => {
           let scopes = match args[0] {
@@ -5525,7 +2577,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             _ => None
           }
           match (template_name, datum_unlabel(base)) {
-            (Some(template), Datum::Symbol(base_name)) => {
+            (Some(template), Datum::Symbol(base_name)) =>
               match strip_gensym_suffix(template) {
                 Some(immediate) =>
                   if strip_gensym_suffix(immediate) is Some(_) {
@@ -5536,7 +2588,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                   }
                 None => ()
               }
-            }
             _ => ()
           }
           let datum = syntax_wrap_root(base, scopes)
@@ -5548,22 +2599,19 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 2 or 3 got \{n}")
       }
-    }
-    Primitive::BooleanP => {
+    Primitive::BooleanP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Bool(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::BooleanEq => bool_value(compare_chain_bool(args))
-    Primitive::NumberP => {
+    Primitive::NumberP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
@@ -5573,62 +2621,53 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::Datum(Datum::Complex(_, _)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::IntegerP => {
+    Primitive::IntegerP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(datum) => bool_value(datum_is_integer_valued(datum))
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ExactIntegerP => {
+    Primitive::ExactIntegerP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(datum) => bool_value(datum_is_exact_integer(datum))
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RationalP => {
+    Primitive::RationalP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(datum) => bool_value(datum_is_rational_valued(datum))
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RealP => {
+    Primitive::RealP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::BigRat(_, _))
             | Value::Datum(Datum::Float(_)) => bool_value(true)
-            Value::Datum(Datum::Complex(_, imag)) => bool_value(datum_is_zero(imag.val))
+            Value::Datum(Datum::Complex(_, imag)) =>
+              bool_value(datum_is_zero(imag.val))
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ComplexP => {
+    Primitive::ComplexP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
@@ -5638,19 +2677,17 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::Datum(Datum::Complex(_, _)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ExactP => {
+    Primitive::ExactP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::BigRat(_, _)) => bool_value(true)
-            Value::Datum(Datum::Complex(real, imag)) => {
+            Value::Datum(Datum::Complex(real, imag)) =>
               match (real.val, imag.val) {
                 (Datum::Int(_), Datum::Int(_)) => bool_value(true)
                 (Datum::Int(_), Datum::BigInt(_)) => bool_value(true)
@@ -5670,34 +2707,28 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 (Datum::BigRat(_, _), Datum::BigRat(_, _)) => bool_value(true)
                 _ => bool_value(false)
               }
-            }
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::InexactP => {
+    Primitive::InexactP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Float(_)) => bool_value(true)
-            Value::Datum(Datum::Complex(real, imag)) => {
+            Value::Datum(Datum::Complex(real, imag)) =>
               match (real.val, imag.val) {
                 (Datum::Float(_), _) => bool_value(true)
                 (_, Datum::Float(_)) => bool_value(true)
                 _ => bool_value(false)
               }
-            }
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ZeroP => {
+    Primitive::ZeroP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Int(n)) => bool_value(n == 0)
             Value::Datum(Datum::Rat(n, _)) => bool_value(n == 0)
@@ -5708,11 +2739,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               bool_value(datum_is_zero(real.val) && datum_is_zero(imag.val))
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::PositiveP => {
+    Primitive::PositiveP =>
       match args.length() {
         1 => {
           let value = datum_to_real(value_as_number(args[0]))
@@ -5727,8 +2756,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::NegativeP => {
+    Primitive::NegativeP =>
       match args.length() {
         1 => {
           let value = datum_to_real(value_as_number(args[0]))
@@ -5743,8 +2771,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::OddP => {
+    Primitive::OddP =>
       match args.length() {
         1 => {
           let value = match args[0] {
@@ -5755,7 +2782,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 match real.val {
                   Datum::Int(n) => Datum::Int(n)
                   Datum::BigInt(n) => Datum::BigInt(n)
-                  _ => raise @core.EvalError("type error: exact integer expected")
+                  _ =>
+                    raise @core.EvalError("type error: exact integer expected")
                 }
               } else {
                 raise @core.EvalError("type error: exact integer expected")
@@ -5764,14 +2792,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           match value {
             Datum::Int(n) => bool_value(n % 2 != 0)
-            Datum::BigInt(n) => bool_value(!bigint_is_zero(n % bigint_from_int(2)))
+            Datum::BigInt(n) =>
+              bool_value(!bigint_is_zero(n % bigint_from_int(2)))
             _ => raise @core.EvalError("type error: exact integer expected")
           }
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EvenP => {
+    Primitive::EvenP =>
       match args.length() {
         1 => {
           let value = match args[0] {
@@ -5782,7 +2810,8 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 match real.val {
                   Datum::Int(n) => Datum::Int(n)
                   Datum::BigInt(n) => Datum::BigInt(n)
-                  _ => raise @core.EvalError("type error: exact integer expected")
+                  _ =>
+                    raise @core.EvalError("type error: exact integer expected")
                 }
               } else {
                 raise @core.EvalError("type error: exact integer expected")
@@ -5791,97 +2820,94 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           match value {
             Datum::Int(n) => bool_value(n % 2 == 0)
-            Datum::BigInt(n) => bool_value(bigint_is_zero(n % bigint_from_int(2)))
+            Datum::BigInt(n) =>
+              bool_value(bigint_is_zero(n % bigint_from_int(2)))
             _ => raise @core.EvalError("type error: exact integer expected")
           }
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::FiniteP => {
+    Primitive::FiniteP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Float(f)) => bool_value(float_is_finite(f))
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::BigRat(_, _)) => bool_value(true)
-            Value::Datum(Datum::Complex(real, imag)) => {
+            Value::Datum(Datum::Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
                   Datum::Float(f) => bool_value(float_is_finite(f))
-                  Datum::Int(_) | Datum::BigInt(_) | Datum::Rat(_, _) | Datum::BigRat(_, _) =>
-                    bool_value(true)
+                  Datum::Int(_)
+                  | Datum::BigInt(_)
+                  | Datum::Rat(_, _)
+                  | Datum::BigRat(_, _) => bool_value(true)
                   _ => raise @core.EvalError("type error: number expected")
                 }
               } else {
                 raise @core.EvalError("type error: real expected")
               }
-            }
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::InfiniteP => {
+    Primitive::InfiniteP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Float(f)) => bool_value(float_is_infinite(f))
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::BigRat(_, _)) => bool_value(false)
-            Value::Datum(Datum::Complex(real, imag)) => {
+            Value::Datum(Datum::Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
                   Datum::Float(f) => bool_value(float_is_infinite(f))
-                  Datum::Int(_) | Datum::BigInt(_) | Datum::Rat(_, _) | Datum::BigRat(_, _) =>
-                    bool_value(false)
+                  Datum::Int(_)
+                  | Datum::BigInt(_)
+                  | Datum::Rat(_, _)
+                  | Datum::BigRat(_, _) => bool_value(false)
                   _ => raise @core.EvalError("type error: number expected")
                 }
               } else {
                 raise @core.EvalError("type error: real expected")
               }
-            }
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::NanP => {
+    Primitive::NanP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Float(f)) => bool_value(float_is_nan(f))
             Value::Datum(Datum::Int(_))
             | Value::Datum(Datum::BigInt(_))
             | Value::Datum(Datum::Rat(_, _))
             | Value::Datum(Datum::BigRat(_, _)) => bool_value(false)
-            Value::Datum(Datum::Complex(real, imag)) => {
+            Value::Datum(Datum::Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
                   Datum::Float(f) => bool_value(float_is_nan(f))
-                  Datum::Int(_) | Datum::BigInt(_) | Datum::Rat(_, _) | Datum::BigRat(_, _) =>
-                    bool_value(false)
+                  Datum::Int(_)
+                  | Datum::BigInt(_)
+                  | Datum::Rat(_, _)
+                  | Datum::BigRat(_, _) => bool_value(false)
                   _ => raise @core.EvalError("type error: number expected")
                 }
               } else {
                 raise @core.EvalError("type error: real expected")
               }
-            }
             _ => raise @core.EvalError("type error: number expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ProcedureP => {
+    Primitive::ProcedureP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Primitive(_)
             | Value::Closure(_)
@@ -5894,63 +2920,55 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             | Value::EnumSetProc(_) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordP => {
+    Primitive::RecordP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Record(record) => bool_value(!record.record_type.is_opaque)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordRtd => {
+    Primitive::RecordRtd =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Record(record) =>
               if record.record_type.is_opaque {
                 raise @core.EvalError("record type is opaque")
               } else {
-                match lookup_record_type_descriptor_by_id(record.record_type.id) {
+                match
+                  lookup_record_type_descriptor_by_id(record.record_type.id) {
                   Some(desc) => Value::RecordTypeDescriptor(desc)
-                  None => raise @core.EvalError("invalid record type descriptor")
+                  None =>
+                    raise @core.EvalError("invalid record type descriptor")
                 }
               }
             _ => raise @core.EvalError("type error: record expected")
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeDescriptorP => {
+    Primitive::RecordTypeDescriptorP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::RecordTypeDescriptor(_) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordConstructorDescriptorP => {
+    Primitive::RecordConstructorDescriptorP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::RecordConstructorDescriptor(_) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeName => {
+    Primitive::RecordTypeName =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -5958,25 +2976,22 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeParent => {
+    Primitive::RecordTypeParent =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
           match desc.record_type.parent {
-            Some(parent) => {
+            Some(parent) =>
               match lookup_record_type_descriptor(parent.name) {
                 Some(parent_desc) => Value::RecordTypeDescriptor(parent_desc)
                 None => Value::Datum(Datum::Bool(false))
               }
-            }
             None => Value::Datum(Datum::Bool(false))
           }
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeUid => {
+    Primitive::RecordTypeUid =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -5987,8 +3002,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeGenerativeP => {
+    Primitive::RecordTypeGenerativeP =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -5996,8 +3010,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeSealedP => {
+    Primitive::RecordTypeSealedP =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6005,8 +3018,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeOpaqueP => {
+    Primitive::RecordTypeOpaqueP =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6014,8 +3026,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordTypeFieldNames => {
+    Primitive::RecordTypeFieldNames =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6027,8 +3038,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordConstructorDescriptor => {
+    Primitive::RecordConstructorDescriptor =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6036,11 +3046,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordConstructor => {
+    Primitive::RecordConstructor =>
       raise @core.EvalError("record-constructor requires evaluation context")
-    }
-    Primitive::RecordTypeFieldMutableP => {
+    Primitive::RecordTypeFieldMutableP =>
       match args.length() {
         2 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6051,28 +3059,29 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::RecordPredicate => {
+    Primitive::RecordPredicate =>
       match args.length() {
         1 => {
           let desc = value_as_record_type_descriptor(args[0])
-          Value::RecordProc(make_record_proc(RecordProcKind::Predicate(desc.record_type)))
+          Value::RecordProc(
+            make_record_proc(RecordProcKind::Predicate(desc.record_type)),
+          )
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::RecordAccessor => {
+    Primitive::RecordAccessor =>
       match args.length() {
         2 => {
           let desc = value_as_record_type_descriptor(args[0])
           let idx = value_as_int_index(args[1])
           check_index(idx, desc.record_type.fields.length())
-          Value::RecordProc(make_record_proc(RecordProcKind::Accessor(desc.record_type, idx)))
+          Value::RecordProc(
+            make_record_proc(RecordProcKind::Accessor(desc.record_type, idx)),
+          )
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::RecordMutator => {
+    Primitive::RecordMutator =>
       match args.length() {
         2 => {
           let desc = value_as_record_type_descriptor(args[0])
@@ -6082,30 +3091,33 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           if !field.mutable {
             raise @core.EvalError("record field is immutable: \{field.name}")
           }
-          Value::RecordProc(make_record_proc(RecordProcKind::Mutator(desc.record_type, idx)))
+          Value::RecordProc(
+            make_record_proc(RecordProcKind::Mutator(desc.record_type, idx)),
+          )
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::MakeRecordTypeDescriptor => {
+    Primitive::MakeRecordTypeDescriptor =>
       match args.length() {
         6 => {
           let name = value_as_symbol(args[0])
           let parent_desc = match args[1] {
             Value::Datum(Datum::Bool(false)) => None
             Value::RecordTypeDescriptor(desc) => Some(desc)
-            _ => raise @core.EvalError("type error: record type descriptor expected")
+            _ =>
+              raise @core.EvalError(
+                "type error: record type descriptor expected",
+              )
           }
           let parent_type = match parent_desc {
             Some(desc) => Some(desc.record_type)
             None => None
           }
           match parent_type {
-            Some(parent) => {
+            Some(parent) =>
               if parent.is_sealed {
                 raise @core.EvalError("record type is sealed")
               }
-            }
             None => ()
           }
           let uid = match args[2] {
@@ -6118,11 +3130,10 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let new_fields = parse_field_specs(value_as_vector(args[5]))
           let fields : Array[RecordField] = []
           match parent_type {
-            Some(parent) => {
+            Some(parent) =>
               for field in parent.fields {
                 fields.push(field)
               }
-            }
             None => ()
           }
           for field in new_fields {
@@ -6133,16 +3144,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             None => is_opaque
           }
           match uid {
-            Some(uid_name) => {
+            Some(uid_name) =>
               match lookup_record_type_descriptor_by_uid(uid_name) {
                 Some(existing_desc) => {
                   if !record_type_matches(
-                    existing_desc.record_type,
-                    parent_type,
-                    is_sealed,
-                    is_opaque,
-                    fields,
-                  ) {
+                      existing_desc.record_type,
+                      parent_type,
+                      is_sealed,
+                      is_opaque,
+                      fields,
+                    ) {
                     raise @core.EvalError("invalid record type descriptor")
                   }
                   register_record_type_alias(name, existing_desc)
@@ -6150,12 +3161,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 }
                 None => {
                   let record_type = make_record_type(
-                    name,
-                    parent_type,
-                    is_sealed,
-                    effective_opaque,
-                    uid,
-                    fields,
+                    name, parent_type, is_sealed, effective_opaque, uid, fields,
                   )
                   let ctor_desc = default_constructor_descriptor(record_type)
                   let rtd = make_record_type_descriptor(record_type, ctor_desc)
@@ -6163,15 +3169,9 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                   Value::RecordTypeDescriptor(rtd)
                 }
               }
-            }
             None => {
               let record_type = make_record_type(
-                name,
-                parent_type,
-                is_sealed,
-                effective_opaque,
-                uid,
-                fields,
+                name, parent_type, is_sealed, effective_opaque, uid, fields,
               )
               let ctor_desc = default_constructor_descriptor(record_type)
               let rtd = make_record_type_descriptor(record_type, ctor_desc)
@@ -6182,34 +3182,35 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(6, n)
       }
-    }
-    Primitive::MakeRecordConstructorDescriptor => {
+    Primitive::MakeRecordConstructorDescriptor =>
       match args.length() {
         3 => {
           let rtd = value_as_record_type_descriptor(args[0])
           let record_type = rtd.record_type
           let parent_desc = match args[1] {
-            Value::Datum(Datum::Bool(false)) => {
+            Value::Datum(Datum::Bool(false)) =>
               match record_type.parent {
                 Some(parent) => Some(default_constructor_descriptor(parent))
                 None => None
               }
-            }
             _ => Some(value_as_record_constructor_descriptor(args[1]))
           }
           match record_type.parent {
             Some(parent) =>
               match parent_desc {
-                Some(desc) => {
+                Some(desc) =>
                   if desc.record_type.id != parent.id {
-                    raise @core.EvalError("invalid record constructor descriptor")
+                    raise @core.EvalError(
+                      "invalid record constructor descriptor",
+                    )
                   }
-                }
-                None => raise @core.EvalError("invalid record constructor descriptor")
+                None =>
+                  raise @core.EvalError("invalid record constructor descriptor")
               }
             None =>
               match parent_desc {
-                Some(_) => raise @core.EvalError("invalid record constructor descriptor")
+                Some(_) =>
+                  raise @core.EvalError("invalid record constructor descriptor")
                 None => ()
               }
           }
@@ -6225,18 +3226,20 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           match (protocol, parent_desc) {
             (None, Some(desc)) =>
               match desc.protocol {
-                Some(_) => raise @core.EvalError("invalid record constructor descriptor")
+                Some(_) =>
+                  raise @core.EvalError("invalid record constructor descriptor")
                 None => ()
               }
             _ => ()
           }
           Value::RecordConstructorDescriptor(
-            make_record_constructor_descriptor(record_type, parent_desc, protocol),
+            make_record_constructor_descriptor(
+              record_type, parent_desc, protocol,
+            ),
           )
         }
         n => raise arity_mismatch(3, n)
       }
-    }
     Primitive::Condition => {
       if args.length() == 0 {
         raise arity_mismatch(1, 0)
@@ -6255,7 +3258,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         Value::Datum(Datum::Condition(make_condition(components)))
       }
     }
-    Primitive::ConditionP => {
+    Primitive::ConditionP =>
       match args.length() {
         1 => {
           let base = condition_base_type()
@@ -6264,8 +3267,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::SimpleConditions => {
+    Primitive::SimpleConditions =>
       match args.length() {
         1 => {
           let base = condition_base_type()
@@ -6278,8 +3280,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ConditionPredicate => {
+    Primitive::ConditionPredicate =>
       match args.length() {
         1 => {
           let desc = value_as_condition_type_descriptor(args[0])
@@ -6289,8 +3290,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ConditionAccessor => {
+    Primitive::ConditionAccessor =>
       match args.length() {
         2 => {
           let desc = value_as_condition_type_descriptor(args[0])
@@ -6299,13 +3299,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
             raise @core.EvalError("type error: record accessor expected")
           }
           Value::ConditionProc(
-            make_condition_proc(ConditionProcKind::Accessor(desc.record_type, idx)),
+            make_condition_proc(
+              ConditionProcKind::Accessor(desc.record_type, idx),
+            ),
           )
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::MakeEqHashtable => {
+    Primitive::MakeEqHashtable =>
       match args.length() {
         0 => Value::Hashtable(make_hashtable(HashtableEquiv::Eq, None, true))
         1 => {
@@ -6314,8 +3315,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::MakeEqvHashtable => {
+    Primitive::MakeEqvHashtable =>
       match args.length() {
         0 => Value::Hashtable(make_hashtable(HashtableEquiv::Eqv, None, true))
         1 => {
@@ -6324,8 +3324,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::MakeHashtable => {
+    Primitive::MakeHashtable =>
       match args.length() {
         2 | 3 => {
           let hash = args[0]
@@ -6340,8 +3339,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::HashtableP => {
+    Primitive::HashtableP =>
       match args.length() {
         1 =>
           match args[0] {
@@ -6350,8 +3348,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableSize => {
+    Primitive::HashtableSize =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6359,45 +3356,53 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableRef => {
-      raise @core.EvalError("internal error: hashtable-ref should be handled in apply_proc")
-    }
-    Primitive::HashtableSet => {
-      raise @core.EvalError("internal error: hashtable-set! should be handled in apply_proc")
-    }
-    Primitive::HashtableDelete => {
-      raise @core.EvalError("internal error: hashtable-delete! should be handled in apply_proc")
-    }
-    Primitive::HashtableContainsP => {
-      raise @core.EvalError("internal error: hashtable-contains? should be handled in apply_proc")
-    }
-    Primitive::HashtableUpdate => {
-      raise @core.EvalError("internal error: hashtable-update! should be handled in apply_proc")
-    }
-    Primitive::HashtableCopy => {
+    Primitive::HashtableRef =>
+      raise @core.EvalError(
+        "internal error: hashtable-ref should be handled in apply_proc",
+      )
+    Primitive::HashtableSet =>
+      raise @core.EvalError(
+        "internal error: hashtable-set! should be handled in apply_proc",
+      )
+    Primitive::HashtableDelete =>
+      raise @core.EvalError(
+        "internal error: hashtable-delete! should be handled in apply_proc",
+      )
+    Primitive::HashtableContainsP =>
+      raise @core.EvalError(
+        "internal error: hashtable-contains? should be handled in apply_proc",
+      )
+    Primitive::HashtableUpdate =>
+      raise @core.EvalError(
+        "internal error: hashtable-update! should be handled in apply_proc",
+      )
+    Primitive::HashtableCopy =>
       match args.length() {
         1 | 2 => {
           let table = value_as_hashtable(args[0])
-          let mutable = if args.length() == 2 { value_as_bool(args[1]) } else { table.mutable }
+          let mutable = if args.length() == 2 {
+            value_as_bool(args[1])
+          } else {
+            table.mutable
+          }
           let entries : Array[HashtableEntry] = []
           for entry in table.entries.val {
-            entries.push(HashtableEntry::{ key: entry.key, value: Ref::new(entry.value.val) })
+            entries.push(HashtableEntry::{
+              key: entry.key,
+              value: Ref::new(entry.value.val),
+            })
           }
-          Value::Hashtable(
-            Hashtable::{
-              id: next_hashtable_id(),
-              mutable,
-              equiv: table.equiv,
-              hash: table.hash,
-              entries: Ref::new(entries),
-            },
-          )
+          Value::Hashtable(Hashtable::{
+            id: next_hashtable_id(),
+            mutable,
+            equiv: table.equiv,
+            hash: table.hash,
+            entries: Ref::new(entries),
+          })
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableClear => {
+    Primitive::HashtableClear =>
       match args.length() {
         1 | 2 => {
           let table = value_as_hashtable(args[0])
@@ -6412,8 +3417,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableKeys => {
+    Primitive::HashtableKeys =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6425,8 +3429,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableEntries => {
+    Primitive::HashtableEntries =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6443,8 +3446,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableEquivalenceFunction => {
+    Primitive::HashtableEquivalenceFunction =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6452,8 +3454,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableHashFunction => {
+    Primitive::HashtableHashFunction =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6464,8 +3465,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::HashtableMutableP => {
+    Primitive::HashtableMutableP =>
       match args.length() {
         1 => {
           let table = value_as_hashtable(args[0])
@@ -6473,8 +3473,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::MakeEnumeration => {
+    Primitive::MakeEnumeration =>
       match args.length() {
         1 => {
           let names = enum_set_symbol_list(args[0])
@@ -6484,8 +3483,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetUniverse => {
+    Primitive::EnumSetUniverse =>
       match args.length() {
         1 => {
           let set = value_as_enum_set(args[0])
@@ -6494,8 +3492,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetIndexer => {
+    Primitive::EnumSetIndexer =>
       match args.length() {
         1 => {
           let set = value_as_enum_set(args[0])
@@ -6503,17 +3500,17 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetConstructor => {
+    Primitive::EnumSetConstructor =>
       match args.length() {
         1 => {
           let set = value_as_enum_set(args[0])
-          Value::EnumSetProc(make_enum_set_proc(EnumSetProcKind::Constructor(set)))
+          Value::EnumSetProc(
+            make_enum_set_proc(EnumSetProcKind::Constructor(set)),
+          )
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetP => {
+    Primitive::EnumSetP =>
       match args.length() {
         1 =>
           match args[0] {
@@ -6522,8 +3519,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetMemberP => {
+    Primitive::EnumSetMemberP =>
       match args.length() {
         2 => {
           let name = parse_symbol(value_as_datum(args[0]))
@@ -6532,8 +3528,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetSubsetP => {
+    Primitive::EnumSetSubsetP =>
       match args.length() {
         2 => {
           let left = value_as_enum_set(args[0])
@@ -6550,8 +3545,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetEq => {
+    Primitive::EnumSetEq =>
       match args.length() {
         2 => {
           let left = value_as_enum_set(args[0])
@@ -6568,8 +3562,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetUnion => {
+    Primitive::EnumSetUnion =>
       match args.length() {
         2 => {
           let left = value_as_enum_set(args[0])
@@ -6585,8 +3578,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetIntersection => {
+    Primitive::EnumSetIntersection =>
       match args.length() {
         2 => {
           let left = value_as_enum_set(args[0])
@@ -6602,8 +3594,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetDifference => {
+    Primitive::EnumSetDifference =>
       match args.length() {
         2 => {
           let left = value_as_enum_set(args[0])
@@ -6619,8 +3610,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetComplement => {
+    Primitive::EnumSetComplement =>
       match args.length() {
         1 => {
           let set = value_as_enum_set(args[0])
@@ -6634,8 +3624,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::EnumSetProjection => {
+    Primitive::EnumSetProjection =>
       match args.length() {
         2 => {
           let source = value_as_enum_set(args[0])
@@ -6651,8 +3640,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::EnumSetToList => {
+    Primitive::EnumSetToList =>
       match args.length() {
         1 => {
           let set = value_as_enum_set(args[0])
@@ -6668,29 +3656,36 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharEq => bool_value(compare_chain_char(args, CompareMode::Eq, false))
-    Primitive::CharLess => bool_value(compare_chain_char(args, CompareMode::Lt, false))
-    Primitive::CharGreater => bool_value(compare_chain_char(args, CompareMode::Gt, false))
-    Primitive::CharLessEq => bool_value(compare_chain_char(args, CompareMode::Le, false))
-    Primitive::CharGreaterEq => bool_value(compare_chain_char(args, CompareMode::Ge, false))
-    Primitive::CharCiEq => bool_value(compare_chain_char(args, CompareMode::Eq, true))
-    Primitive::CharCiLess => bool_value(compare_chain_char(args, CompareMode::Lt, true))
-    Primitive::CharCiGreater => bool_value(compare_chain_char(args, CompareMode::Gt, true))
-    Primitive::CharCiLessEq => bool_value(compare_chain_char(args, CompareMode::Le, true))
-    Primitive::CharCiGreaterEq => bool_value(compare_chain_char(args, CompareMode::Ge, true))
-    Primitive::CharP => {
+    Primitive::CharEq =>
+      bool_value(compare_chain_char(args, CompareMode::Eq, false))
+    Primitive::CharLess =>
+      bool_value(compare_chain_char(args, CompareMode::Lt, false))
+    Primitive::CharGreater =>
+      bool_value(compare_chain_char(args, CompareMode::Gt, false))
+    Primitive::CharLessEq =>
+      bool_value(compare_chain_char(args, CompareMode::Le, false))
+    Primitive::CharGreaterEq =>
+      bool_value(compare_chain_char(args, CompareMode::Ge, false))
+    Primitive::CharCiEq =>
+      bool_value(compare_chain_char(args, CompareMode::Eq, true))
+    Primitive::CharCiLess =>
+      bool_value(compare_chain_char(args, CompareMode::Lt, true))
+    Primitive::CharCiGreater =>
+      bool_value(compare_chain_char(args, CompareMode::Gt, true))
+    Primitive::CharCiLessEq =>
+      bool_value(compare_chain_char(args, CompareMode::Le, true))
+    Primitive::CharCiGreaterEq =>
+      bool_value(compare_chain_char(args, CompareMode::Ge, true))
+    Primitive::CharP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Char(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharToInteger => {
+    Primitive::CharToInteger =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6698,8 +3693,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::IntegerToChar => {
+    Primitive::IntegerToChar =>
       match args.length() {
         1 => {
           let ch = char_from_int_value(args[0])
@@ -6707,8 +3701,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharAlphabeticP => {
+    Primitive::CharAlphabeticP =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6716,8 +3709,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharNumericP => {
+    Primitive::CharNumericP =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6725,8 +3717,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharWhitespaceP => {
+    Primitive::CharWhitespaceP =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6734,8 +3725,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharUpperCaseP => {
+    Primitive::CharUpperCaseP =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6743,8 +3733,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharLowerCaseP => {
+    Primitive::CharLowerCaseP =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6752,8 +3741,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharUpcase => {
+    Primitive::CharUpcase =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6761,8 +3749,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharDowncase => {
+    Primitive::CharDowncase =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6770,8 +3757,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharFoldcase => {
+    Primitive::CharFoldcase =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6779,8 +3765,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CharGeneralCategory => {
+    Primitive::CharGeneralCategory =>
       match args.length() {
         1 => {
           let ch = value_as_char(args[0])
@@ -6788,17 +3773,26 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringEq => bool_value(compare_chain_string(args, CompareMode::Eq, false))
-    Primitive::StringLess => bool_value(compare_chain_string(args, CompareMode::Lt, false))
-    Primitive::StringGreater => bool_value(compare_chain_string(args, CompareMode::Gt, false))
-    Primitive::StringLessEq => bool_value(compare_chain_string(args, CompareMode::Le, false))
-    Primitive::StringGreaterEq => bool_value(compare_chain_string(args, CompareMode::Ge, false))
-    Primitive::StringCiEq => bool_value(compare_chain_string(args, CompareMode::Eq, true))
-    Primitive::StringCiLess => bool_value(compare_chain_string(args, CompareMode::Lt, true))
-    Primitive::StringCiGreater => bool_value(compare_chain_string(args, CompareMode::Gt, true))
-    Primitive::StringCiLessEq => bool_value(compare_chain_string(args, CompareMode::Le, true))
-    Primitive::StringCiGreaterEq => bool_value(compare_chain_string(args, CompareMode::Ge, true))
+    Primitive::StringEq =>
+      bool_value(compare_chain_string(args, CompareMode::Eq, false))
+    Primitive::StringLess =>
+      bool_value(compare_chain_string(args, CompareMode::Lt, false))
+    Primitive::StringGreater =>
+      bool_value(compare_chain_string(args, CompareMode::Gt, false))
+    Primitive::StringLessEq =>
+      bool_value(compare_chain_string(args, CompareMode::Le, false))
+    Primitive::StringGreaterEq =>
+      bool_value(compare_chain_string(args, CompareMode::Ge, false))
+    Primitive::StringCiEq =>
+      bool_value(compare_chain_string(args, CompareMode::Eq, true))
+    Primitive::StringCiLess =>
+      bool_value(compare_chain_string(args, CompareMode::Lt, true))
+    Primitive::StringCiGreater =>
+      bool_value(compare_chain_string(args, CompareMode::Gt, true))
+    Primitive::StringCiLessEq =>
+      bool_value(compare_chain_string(args, CompareMode::Le, true))
+    Primitive::StringCiGreaterEq =>
+      bool_value(compare_chain_string(args, CompareMode::Ge, true))
     Primitive::String => {
       let buf = @buffer.new()
       for arg in args {
@@ -6807,20 +3801,20 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::String(Ref::new(buf.to_string())))
     }
-    Primitive::MakeString => {
+    Primitive::MakeString =>
       match args.length() {
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
-          let fill =
-            if args.length() == 2 {
-              value_as_char(args[1])
-            } else {
-              let zero = 0
-              match zero.to_char() {
-                Some(ch) => ch
-                None => raise @core.EvalError("internal error: invalid default char")
-              }
+          let fill = if args.length() == 2 {
+            value_as_char(args[1])
+          } else {
+            let zero = 0
+            match zero.to_char() {
+              Some(ch) => ch
+              None =>
+                raise @core.EvalError("internal error: invalid default char")
             }
+          }
           let buf = @buffer.new()
           let mut i = 0
           while i < len {
@@ -6831,19 +3825,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::StringP => {
+    Primitive::StringP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::String(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringLength => {
+    Primitive::StringLength =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -6851,7 +3842,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::StringAppend => {
       let buf = @buffer.new()
       for arg in args {
@@ -6859,7 +3849,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::String(Ref::new(buf.to_string())))
     }
-    Primitive::StringRef => {
+    Primitive::StringRef =>
       match args.length() {
         2 => {
           let s = value_as_string(args[0])
@@ -6872,8 +3862,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::StringSet => {
+    Primitive::StringSet =>
       match args.length() {
         3 => {
           let sref = value_as_string_ref(args[0])
@@ -6885,8 +3874,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::StringCopy => {
+    Primitive::StringCopy =>
       match args.length() {
         1 | 2 | 3 => {
           let s = value_as_string(args[0])
@@ -6905,14 +3893,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           let view = try? s[start:end]
           match view {
-            Ok(slice) => Value::Datum(Datum::String(Ref::new(slice.to_string())))
+            Ok(slice) =>
+              Value::Datum(Datum::String(Ref::new(slice.to_string())))
             Err(_) => raise @core.EvalError("index out of range")
           }
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::Substring => {
+    Primitive::Substring =>
       match args.length() {
         3 => {
           let s = value_as_string(args[0])
@@ -6923,14 +3911,14 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
           let view = try? s[start:end]
           match view {
-            Ok(slice) => Value::Datum(Datum::String(Ref::new(slice.to_string())))
+            Ok(slice) =>
+              Value::Datum(Datum::String(Ref::new(slice.to_string())))
             Err(_) => raise @core.EvalError("index out of range")
           }
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::StringCopyBang => {
+    Primitive::StringCopyBang =>
       match args.length() {
         3 | 4 | 5 => {
           let to_ref = value_as_string_ref(args[0])
@@ -6959,7 +3947,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           let mut i = 0
           while i < to_len {
             match to_str.get_char(i) {
-              Some(ch) => {
+              Some(ch) =>
                 if i >= at && i < at + count {
                   let from_idx = start + (i - at)
                   match from_str.get_char(from_idx) {
@@ -6969,7 +3957,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
                 } else {
                   buf.write_char(ch)
                 }
-              }
               None => raise @core.EvalError("index out of range")
             }
             i = i + 1
@@ -6979,8 +3966,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
-    }
-    Primitive::StringFill => {
+    Primitive::StringFill =>
       match args.length() {
         2 | 3 | 4 => {
           let sref = value_as_string_ref(args[0])
@@ -7001,8 +3987,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 2 to 4 got \{n}")
       }
-    }
-    Primitive::StringToList => {
+    Primitive::StringToList =>
       match args.length() {
         1 | 2 | 3 => {
           let s = value_as_string(args[0])
@@ -7032,8 +4017,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::ListToString => {
+    Primitive::ListToString =>
       match args.length() {
         1 => {
           let datum = value_as_datum(args[0])
@@ -7049,8 +4033,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringUpcase => {
+    Primitive::StringUpcase =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -7058,8 +4041,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringDowncase => {
+    Primitive::StringDowncase =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -7067,8 +4049,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringFoldcase => {
+    Primitive::StringFoldcase =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -7076,8 +4057,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringNormalizeNfc => {
+    Primitive::StringNormalizeNfc =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -7085,8 +4065,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringNormalizeNfd => {
+    Primitive::StringNormalizeNfd =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
@@ -7094,25 +4073,26 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringNormalizeNfkc => {
+    Primitive::StringNormalizeNfkc =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(Ref::new(unicode_string_normalize_nfkc(s))))
+          Value::Datum(
+            Datum::String(Ref::new(unicode_string_normalize_nfkc(s))),
+          )
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringNormalizeNfkd => {
+    Primitive::StringNormalizeNfkd =>
       match args.length() {
         1 => {
           let s = value_as_string(args[0])
-          Value::Datum(Datum::String(Ref::new(unicode_string_normalize_nfkd(s))))
+          Value::Datum(
+            Datum::String(Ref::new(unicode_string_normalize_nfkd(s))),
+          )
         }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::Vector => {
       let items : Array[Datum] = []
       for arg in args {
@@ -7120,7 +4100,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::Vector(items))
     }
-    Primitive::MakeVector => {
+    Primitive::MakeVector =>
       match args.length() {
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
@@ -7139,19 +4119,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::VectorP => {
+    Primitive::VectorP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::Vector(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::VectorLength => {
+    Primitive::VectorLength =>
       match args.length() {
         1 => {
           let items = value_as_vector(args[0])
@@ -7159,8 +4136,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::VectorRef => {
+    Primitive::VectorRef =>
       match args.length() {
         2 => {
           let items = value_as_vector(args[0])
@@ -7170,8 +4146,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::VectorSet => {
+    Primitive::VectorSet =>
       match args.length() {
         3 => {
           let items = value_as_vector(args[0])
@@ -7182,8 +4157,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::VectorFill => {
+    Primitive::VectorFill =>
       match args.length() {
         2 | 3 | 4 => {
           let items = value_as_vector(args[0])
@@ -7210,8 +4184,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 2 to 4 got \{n}")
       }
-    }
-    Primitive::VectorCopy => {
+    Primitive::VectorCopy =>
       match args.length() {
         1 | 2 | 3 => {
           let items = value_as_vector(args[0])
@@ -7228,13 +4201,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           if start < 0 || end < start || end > items.length() {
             raise @core.EvalError("index out of range")
           }
-          let slice = items.sub(start=start, end=end).to_array()
+          let slice = items.sub(start~, end~).to_array()
           Value::Datum(Datum::Vector(slice))
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::VectorCopyBang => {
+    Primitive::VectorCopyBang =>
       match args.length() {
         3 | 4 | 5 => {
           let to_items = value_as_vector(args[0])
@@ -7272,7 +4244,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
-    }
     Primitive::VectorAppend => {
       let items : Array[Datum] = []
       for arg in args {
@@ -7283,7 +4254,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::Vector(items))
     }
-    Primitive::VectorToList => {
+    Primitive::VectorToList =>
       match args.length() {
         1 | 2 | 3 => {
           let items = value_as_vector(args[0])
@@ -7300,12 +4271,11 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           if start < 0 || end < start || end > items.length() {
             raise @core.EvalError("index out of range")
           }
-          Value::Datum(list_from_array(items.sub(start=start, end=end).to_array()))
+          Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::ListToVector => {
+    Primitive::ListToVector =>
       match args.length() {
         1 => {
           let datum = value_as_datum(args[0])
@@ -7314,7 +4284,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
     Primitive::ByteVector => {
       let items : Array[Int] = []
       for arg in args {
@@ -7322,7 +4291,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::ByteVector(items))
     }
-    Primitive::MakeByteVector => {
+    Primitive::MakeByteVector =>
       match args.length() {
         1 | 2 => {
           let len = value_as_nonnegative_int(args[0])
@@ -7337,19 +4306,16 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::ByteVectorP => {
+    Primitive::ByteVectorP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(Datum::ByteVector(_)) => bool_value(true)
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ByteVectorLength => {
+    Primitive::ByteVectorLength =>
       match args.length() {
         1 => {
           let items = value_as_bytevector(args[0])
@@ -7357,8 +4323,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ByteVectorEq => {
+    Primitive::ByteVectorEq =>
       match args.length() {
         2 => {
           let left = value_as_bytevector(args[0])
@@ -7378,8 +4343,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::ByteVectorU8Ref => {
+    Primitive::ByteVectorU8Ref =>
       match args.length() {
         2 => {
           let items = value_as_bytevector(args[0])
@@ -7389,8 +4353,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::ByteVectorU8Set => {
+    Primitive::ByteVectorU8Set =>
       match args.length() {
         3 => {
           let items = value_as_bytevector(args[0])
@@ -7401,8 +4364,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(3, n)
       }
-    }
-    Primitive::ByteVectorCopy => {
+    Primitive::ByteVectorCopy =>
       match args.length() {
         1 | 2 | 3 => {
           let items = value_as_bytevector(args[0])
@@ -7419,13 +4381,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           if start < 0 || end < start || end > items.length() {
             raise @core.EvalError("index out of range")
           }
-          let slice = items.sub(start=start, end=end).to_array()
+          let slice = items.sub(start~, end~).to_array()
           Value::Datum(Datum::ByteVector(slice))
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::ByteVectorCopyBang => {
+    Primitive::ByteVectorCopyBang =>
       match args.length() {
         3 | 4 | 5 => {
           let to_items = value_as_bytevector(args[0])
@@ -7463,7 +4424,6 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 3 to 5 got \{n}")
       }
-    }
     Primitive::ByteVectorAppend => {
       let items : Array[Int] = []
       for arg in args {
@@ -7474,7 +4434,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
       }
       Value::Datum(Datum::ByteVector(items))
     }
-    Primitive::ByteVectorFill => {
+    Primitive::ByteVectorFill =>
       match args.length() {
         2 | 3 | 4 => {
           let items = value_as_bytevector(args[0])
@@ -7501,8 +4461,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 2 to 4 got \{n}")
       }
-    }
-    Primitive::ByteVectorToU8List => {
+    Primitive::ByteVectorToU8List =>
       match args.length() {
         1 | 2 | 3 => {
           let items = value_as_bytevector(args[0])
@@ -7529,8 +4488,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::U8ListToByteVector => {
+    Primitive::U8ListToByteVector =>
       match args.length() {
         1 => {
           let datum = value_as_datum(args[0])
@@ -7551,8 +4509,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::StringToUtf8 => {
+    Primitive::StringToUtf8 =>
       match args.length() {
         1 | 2 | 3 => {
           let s = value_as_string(args[0])
@@ -7571,8 +4528,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::Utf8ToString => {
+    Primitive::Utf8ToString =>
       match args.length() {
         1 | 2 | 3 => {
           let items = value_as_bytevector(args[0])
@@ -7591,14 +4547,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 to 3 got \{n}")
       }
-    }
-    Primitive::NativeEndianness => {
+    Primitive::NativeEndianness =>
       match args.length() {
         0 => native_endianness_value()
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::ByteVectorUintRef => {
+    Primitive::ByteVectorUintRef =>
       match args.length() {
         4 => {
           let items = value_as_bytevector(args[0])
@@ -7611,8 +4565,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::ByteVectorSintRef => {
+    Primitive::ByteVectorSintRef =>
       match args.length() {
         4 => {
           let items = value_as_bytevector(args[0])
@@ -7625,8 +4578,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(4, n)
       }
-    }
-    Primitive::ByteVectorUintSet => {
+    Primitive::ByteVectorUintSet =>
       match args.length() {
         5 => {
           let items = value_as_bytevector(args[0])
@@ -7640,8 +4592,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(5, n)
       }
-    }
-    Primitive::ByteVectorSintSet => {
+    Primitive::ByteVectorSintSet =>
       match args.length() {
         5 => {
           let items = value_as_bytevector(args[0])
@@ -7656,8 +4607,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(5, n)
       }
-    }
-    Primitive::Display => {
+    Primitive::Display =>
       match args.length() {
         1 => {
           let port = get_current_output_port()
@@ -7671,8 +4621,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::Write => {
+    Primitive::Write =>
       match args.length() {
         1 => {
           let port = get_current_output_port()
@@ -7686,8 +4635,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Primitive::Newline => {
+    Primitive::Newline =>
       match args.length() {
         0 => {
           let port = get_current_output_port()
@@ -7701,14 +4649,12 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise @core.EvalError("arity mismatch: expected 0 or 1 got \{n}")
       }
-    }
-    Primitive::OpenOutputString => {
+    Primitive::OpenOutputString =>
       match args.length() {
         0 => Value::Port(new_output_string_port())
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::GetOutputString => {
+    Primitive::GetOutputString =>
       match args.length() {
         1 => {
           let port = value_as_port(args[0])
@@ -7716,72 +4662,83 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CurrentOutputPort => {
+    Primitive::CurrentOutputPort =>
       match args.length() {
         0 => Value::Port(get_current_output_port())
         n => raise arity_mismatch(0, n)
       }
-    }
-    Primitive::WithExceptionHandler => {
-      raise @core.EvalError("internal error: with-exception-handler should be handled in apply_proc")
-    }
-    Primitive::Raise => {
-      raise @core.EvalError("internal error: raise should be handled in apply_proc")
-    }
-    Primitive::RaiseContinuable => {
-      raise @core.EvalError("internal error: raise-continuable should be handled in apply_proc")
-    }
-    Primitive::Error => {
-      raise @core.EvalError("internal error: error should be handled in apply_proc")
-    }
-    Primitive::AssertionViolation => {
-      raise @core.EvalError("internal error: assertion-violation should be handled in apply_proc")
-    }
-    Primitive::ImplementationRestrictionViolation => {
+    Primitive::WithExceptionHandler =>
+      raise @core.EvalError(
+        "internal error: with-exception-handler should be handled in apply_proc",
+      )
+    Primitive::Raise =>
+      raise @core.EvalError(
+        "internal error: raise should be handled in apply_proc",
+      )
+    Primitive::RaiseContinuable =>
+      raise @core.EvalError(
+        "internal error: raise-continuable should be handled in apply_proc",
+      )
+    Primitive::Error =>
+      raise @core.EvalError(
+        "internal error: error should be handled in apply_proc",
+      )
+    Primitive::AssertionViolation =>
+      raise @core.EvalError(
+        "internal error: assertion-violation should be handled in apply_proc",
+      )
+    Primitive::ImplementationRestrictionViolation =>
       raise @core.EvalError(
         "internal error: implementation-restriction-violation should be handled in apply_proc",
       )
-    }
-    Primitive::UndefinedViolation => {
-      raise @core.EvalError("internal error: undefined-violation should be handled in apply_proc")
-    }
-    Primitive::SyntaxViolation => {
-      raise @core.EvalError("internal error: syntax-violation should be handled in apply_proc")
-    }
-    Primitive::Not => {
+    Primitive::UndefinedViolation =>
+      raise @core.EvalError(
+        "internal error: undefined-violation should be handled in apply_proc",
+      )
+    Primitive::SyntaxViolation =>
+      raise @core.EvalError(
+        "internal error: syntax-violation should be handled in apply_proc",
+      )
+    Primitive::Not =>
       match args.length() {
         1 => bool_value(is_false(args[0]))
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Apply => {
+    Primitive::Apply =>
       // handled by apply_proc to allow proper argument flattening
-      raise @core.EvalError("internal error: apply should be handled in apply_proc")
-    }
-    Primitive::CallCC => {
-      raise @core.EvalError("internal error: call/cc should be handled in apply_proc")
-    }
-    Primitive::Map => {
-      raise @core.EvalError("internal error: map should be handled in apply_proc")
-    }
-    Primitive::ForEach => {
-      raise @core.EvalError("internal error: for-each should be handled in apply_proc")
-    }
-    Primitive::VectorMap => {
-      raise @core.EvalError("internal error: vector-map should be handled in apply_proc")
-    }
-    Primitive::VectorForEach => {
-      raise @core.EvalError("internal error: vector-for-each should be handled in apply_proc")
-    }
-    Primitive::StringMap => {
-      raise @core.EvalError("internal error: string-map should be handled in apply_proc")
-    }
-    Primitive::StringForEach => {
-      raise @core.EvalError("internal error: string-for-each should be handled in apply_proc")
-    }
+      raise @core.EvalError(
+        "internal error: apply should be handled in apply_proc",
+      )
+    Primitive::CallCC =>
+      raise @core.EvalError(
+        "internal error: call/cc should be handled in apply_proc",
+      )
+    Primitive::Map =>
+      raise @core.EvalError(
+        "internal error: map should be handled in apply_proc",
+      )
+    Primitive::ForEach =>
+      raise @core.EvalError(
+        "internal error: for-each should be handled in apply_proc",
+      )
+    Primitive::VectorMap =>
+      raise @core.EvalError(
+        "internal error: vector-map should be handled in apply_proc",
+      )
+    Primitive::VectorForEach =>
+      raise @core.EvalError(
+        "internal error: vector-for-each should be handled in apply_proc",
+      )
+    Primitive::StringMap =>
+      raise @core.EvalError(
+        "internal error: string-map should be handled in apply_proc",
+      )
+    Primitive::StringForEach =>
+      raise @core.EvalError(
+        "internal error: string-for-each should be handled in apply_proc",
+      )
     Primitive::Values => Value::Values(args)
-    Primitive::MakeVariableTransformer => {
+    Primitive::MakeVariableTransformer =>
       match args.length() {
         1 => {
           if !is_procedure_value(args[0]) {
@@ -7791,8 +4748,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::GenerateTemporaries => {
+    Primitive::GenerateTemporaries =>
       match args.length() {
         1 => {
           let datum = value_as_datum(args[0])
@@ -7815,30 +4771,38 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
               _ => raise @core.EvalError("type error: identifier expected")
             }
             let datum = Datum::Symbol(gensym(name))
-            let temp = Value::SyntaxObject(SyntaxObject::{ datum, scopes, binding_id })
+            let temp = Value::SyntaxObject(SyntaxObject::{
+              datum,
+              scopes,
+              binding_id,
+            })
             results.push(value_to_datum_element(temp))
           }
           Value::Datum(list_from_array(results))
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::CallWithValues => {
-      raise @core.EvalError("internal error: call-with-values should be handled in apply_proc")
-    }
-    Primitive::MakeParameter => {
-      raise @core.EvalError("internal error: make-parameter should be handled in apply_proc")
-    }
-    Primitive::DynamicWind => {
-      raise @core.EvalError("internal error: dynamic-wind should be handled in apply_proc")
-    }
-    Primitive::Eval => {
-      raise @core.EvalError("internal error: eval should be handled in apply_proc")
-    }
-    Primitive::Environment => {
-      raise @core.EvalError("internal error: environment should be handled in apply_proc")
-    }
-    Primitive::PromiseP => {
+    Primitive::CallWithValues =>
+      raise @core.EvalError(
+        "internal error: call-with-values should be handled in apply_proc",
+      )
+    Primitive::MakeParameter =>
+      raise @core.EvalError(
+        "internal error: make-parameter should be handled in apply_proc",
+      )
+    Primitive::DynamicWind =>
+      raise @core.EvalError(
+        "internal error: dynamic-wind should be handled in apply_proc",
+      )
+    Primitive::Eval =>
+      raise @core.EvalError(
+        "internal error: eval should be handled in apply_proc",
+      )
+    Primitive::Environment =>
+      raise @core.EvalError(
+        "internal error: environment should be handled in apply_proc",
+      )
+    Primitive::PromiseP =>
       match args.length() {
         1 =>
           match args[0] {
@@ -7847,25 +4811,24 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::MakePromise => {
-      raise @core.EvalError("internal error: make-promise should be handled in apply_proc")
-    }
-    Primitive::Force => {
-      raise @core.EvalError("internal error: force should be handled in apply_proc")
-    }
-    Primitive::ListP => {
+    Primitive::MakePromise =>
+      raise @core.EvalError(
+        "internal error: make-promise should be handled in apply_proc",
+      )
+    Primitive::Force =>
+      raise @core.EvalError(
+        "internal error: force should be handled in apply_proc",
+      )
+    Primitive::ListP =>
       match args.length() {
-        1 => {
+        1 =>
           match args[0] {
             Value::Datum(d) => bool_value(is_proper_list(d))
             _ => bool_value(false)
           }
-        }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Length => {
+    Primitive::Length =>
       match args.length() {
         1 => {
           let datum = match args[0] {
@@ -7877,8 +4840,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Append => {
+    Primitive::Append =>
       match args.length() {
         0 => Value::Datum(Datum::Nil)
         1 => args[0]
@@ -7900,8 +4862,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
           Value::Datum(list_with_tail(items, tail))
         }
       }
-    }
-    Primitive::Reverse => {
+    Primitive::Reverse =>
       match args.length() {
         1 => {
           let datum = match args[0] {
@@ -7917,8 +4878,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::ListRef => {
+    Primitive::ListRef =>
       match args.length() {
         2 => {
           let datum = value_as_datum(args[0])
@@ -7929,8 +4889,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::ListTail => {
+    Primitive::ListTail =>
       match args.length() {
         2 => {
           let datum = value_as_datum(args[0])
@@ -7943,8 +4902,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::ListCopy => {
+    Primitive::ListCopy =>
       match args.length() {
         1 => {
           let datum = value_as_datum(args[0])
@@ -7953,8 +4911,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(1, n)
       }
-    }
-    Primitive::Member => {
+    Primitive::Member =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -7962,8 +4919,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Memq => {
+    Primitive::Memq =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -7971,8 +4927,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Memv => {
+    Primitive::Memv =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -7980,8 +4935,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Assoc => {
+    Primitive::Assoc =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -7989,8 +4943,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Assq => {
+    Primitive::Assq =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -7998,8 +4951,7 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
-    Primitive::Assv => {
+    Primitive::Assv =>
       match args.length() {
         2 => {
           let list = value_as_datum(args[1])
@@ -8007,6 +4959,5 @@ fn apply_primitive(prim : Primitive, args : Array[Value]) -> Value raise EvalErr
         }
         n => raise arity_mismatch(2, n)
       }
-    }
   }
 }

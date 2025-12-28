@@ -4,9 +4,22 @@ fn init_env() -> Env {
   let condition_rtd = match lookup_record_type_descriptor("&condition") {
     Some(desc) => desc
     None => {
-      let condition_type = make_record_type("&condition", None, false, false, None, [])
-      let condition_ctor_desc = make_record_constructor_descriptor(condition_type, None, None)
-      let condition_rtd = make_record_type_descriptor(condition_type, condition_ctor_desc)
+      let condition_type = make_record_type(
+        "&condition",
+        None,
+        false,
+        false,
+        None,
+        [],
+      )
+      let condition_ctor_desc = make_record_constructor_descriptor(
+        condition_type,
+        None,
+        None,
+      )
+      let condition_rtd = make_record_type_descriptor(
+        condition_type, condition_ctor_desc,
+      )
       let _ = register_record_type("&condition", condition_rtd)
       condition_rtd
     }
@@ -32,8 +45,16 @@ fn init_env() -> Env {
   env_define(env, "symbol=?", Value::Primitive(Primitive::SymbolEq))
   env_define(env, "identifier?", Value::Primitive(Primitive::IdentifierP))
   env_define(env, "syntax?", Value::Primitive(Primitive::SyntaxP))
-  env_define(env, "free-identifier=?", Value::Primitive(Primitive::FreeIdentifierEq))
-  env_define(env, "bound-identifier=?", Value::Primitive(Primitive::BoundIdentifierEq))
+  env_define(
+    env,
+    "free-identifier=?",
+    Value::Primitive(Primitive::FreeIdentifierEq),
+  )
+  env_define(
+    env,
+    "bound-identifier=?",
+    Value::Primitive(Primitive::BoundIdentifierEq),
+  )
   env_define(env, "symbol->string", Value::Primitive(Primitive::SymbolToString))
   env_define(env, "string->symbol", Value::Primitive(Primitive::StringToSymbol))
   env_define(env, "string-hash", Value::Primitive(Primitive::StringHash))
@@ -73,22 +94,78 @@ fn init_env() -> Env {
   env_define(env, "procedure?", Value::Primitive(Primitive::ProcedureP))
   env_define(env, "record?", Value::Primitive(Primitive::RecordP))
   env_define(env, "record-rtd", Value::Primitive(Primitive::RecordRtd))
-  env_define(env, "record-type-descriptor?", Value::Primitive(Primitive::RecordTypeDescriptorP))
-  env_define(env, "record-constructor-descriptor?", Value::Primitive(Primitive::RecordConstructorDescriptorP))
-  env_define(env, "record-type-name", Value::Primitive(Primitive::RecordTypeName))
-  env_define(env, "record-type-parent", Value::Primitive(Primitive::RecordTypeParent))
+  env_define(
+    env,
+    "record-type-descriptor?",
+    Value::Primitive(Primitive::RecordTypeDescriptorP),
+  )
+  env_define(
+    env,
+    "record-constructor-descriptor?",
+    Value::Primitive(Primitive::RecordConstructorDescriptorP),
+  )
+  env_define(
+    env,
+    "record-type-name",
+    Value::Primitive(Primitive::RecordTypeName),
+  )
+  env_define(
+    env,
+    "record-type-parent",
+    Value::Primitive(Primitive::RecordTypeParent),
+  )
   env_define(env, "record-type-uid", Value::Primitive(Primitive::RecordTypeUid))
-  env_define(env, "record-type-generative?", Value::Primitive(Primitive::RecordTypeGenerativeP))
-  env_define(env, "record-type-sealed?", Value::Primitive(Primitive::RecordTypeSealedP))
-  env_define(env, "record-type-opaque?", Value::Primitive(Primitive::RecordTypeOpaqueP))
-  env_define(env, "record-type-field-names", Value::Primitive(Primitive::RecordTypeFieldNames))
-  env_define(env, "record-type-field-mutable?", Value::Primitive(Primitive::RecordTypeFieldMutableP))
-  env_define(env, "record-constructor-descriptor", Value::Primitive(Primitive::RecordConstructorDescriptor))
-  env_define(env, "record-constructor", Value::Primitive(Primitive::RecordConstructor))
-  env_define(env, "record-predicate", Value::Primitive(Primitive::RecordPredicate))
-  env_define(env, "record-accessor", Value::Primitive(Primitive::RecordAccessor))
+  env_define(
+    env,
+    "record-type-generative?",
+    Value::Primitive(Primitive::RecordTypeGenerativeP),
+  )
+  env_define(
+    env,
+    "record-type-sealed?",
+    Value::Primitive(Primitive::RecordTypeSealedP),
+  )
+  env_define(
+    env,
+    "record-type-opaque?",
+    Value::Primitive(Primitive::RecordTypeOpaqueP),
+  )
+  env_define(
+    env,
+    "record-type-field-names",
+    Value::Primitive(Primitive::RecordTypeFieldNames),
+  )
+  env_define(
+    env,
+    "record-type-field-mutable?",
+    Value::Primitive(Primitive::RecordTypeFieldMutableP),
+  )
+  env_define(
+    env,
+    "record-constructor-descriptor",
+    Value::Primitive(Primitive::RecordConstructorDescriptor),
+  )
+  env_define(
+    env,
+    "record-constructor",
+    Value::Primitive(Primitive::RecordConstructor),
+  )
+  env_define(
+    env,
+    "record-predicate",
+    Value::Primitive(Primitive::RecordPredicate),
+  )
+  env_define(
+    env,
+    "record-accessor",
+    Value::Primitive(Primitive::RecordAccessor),
+  )
   env_define(env, "record-mutator", Value::Primitive(Primitive::RecordMutator))
-  env_define(env, "make-record-type-descriptor", Value::Primitive(Primitive::MakeRecordTypeDescriptor))
+  env_define(
+    env,
+    "make-record-type-descriptor",
+    Value::Primitive(Primitive::MakeRecordTypeDescriptor),
+  )
   env_define(
     env,
     "make-record-constructor-descriptor",
@@ -96,23 +173,63 @@ fn init_env() -> Env {
   )
   env_define(env, "condition", Value::Primitive(Primitive::Condition))
   env_define(env, "condition?", Value::Primitive(Primitive::ConditionP))
-  env_define(env, "simple-conditions", Value::Primitive(Primitive::SimpleConditions))
-  env_define(env, "condition-predicate", Value::Primitive(Primitive::ConditionPredicate))
-  env_define(env, "condition-accessor", Value::Primitive(Primitive::ConditionAccessor))
-  env_define(env, "make-eq-hashtable", Value::Primitive(Primitive::MakeEqHashtable))
-  env_define(env, "make-eqv-hashtable", Value::Primitive(Primitive::MakeEqvHashtable))
+  env_define(
+    env,
+    "simple-conditions",
+    Value::Primitive(Primitive::SimpleConditions),
+  )
+  env_define(
+    env,
+    "condition-predicate",
+    Value::Primitive(Primitive::ConditionPredicate),
+  )
+  env_define(
+    env,
+    "condition-accessor",
+    Value::Primitive(Primitive::ConditionAccessor),
+  )
+  env_define(
+    env,
+    "make-eq-hashtable",
+    Value::Primitive(Primitive::MakeEqHashtable),
+  )
+  env_define(
+    env,
+    "make-eqv-hashtable",
+    Value::Primitive(Primitive::MakeEqvHashtable),
+  )
   env_define(env, "make-hashtable", Value::Primitive(Primitive::MakeHashtable))
   env_define(env, "hashtable?", Value::Primitive(Primitive::HashtableP))
   env_define(env, "hashtable-size", Value::Primitive(Primitive::HashtableSize))
   env_define(env, "hashtable-ref", Value::Primitive(Primitive::HashtableRef))
   env_define(env, "hashtable-set!", Value::Primitive(Primitive::HashtableSet))
-  env_define(env, "hashtable-delete!", Value::Primitive(Primitive::HashtableDelete))
-  env_define(env, "hashtable-contains?", Value::Primitive(Primitive::HashtableContainsP))
-  env_define(env, "hashtable-update!", Value::Primitive(Primitive::HashtableUpdate))
+  env_define(
+    env,
+    "hashtable-delete!",
+    Value::Primitive(Primitive::HashtableDelete),
+  )
+  env_define(
+    env,
+    "hashtable-contains?",
+    Value::Primitive(Primitive::HashtableContainsP),
+  )
+  env_define(
+    env,
+    "hashtable-update!",
+    Value::Primitive(Primitive::HashtableUpdate),
+  )
   env_define(env, "hashtable-copy", Value::Primitive(Primitive::HashtableCopy))
-  env_define(env, "hashtable-clear!", Value::Primitive(Primitive::HashtableClear))
+  env_define(
+    env,
+    "hashtable-clear!",
+    Value::Primitive(Primitive::HashtableClear),
+  )
   env_define(env, "hashtable-keys", Value::Primitive(Primitive::HashtableKeys))
-  env_define(env, "hashtable-entries", Value::Primitive(Primitive::HashtableEntries))
+  env_define(
+    env,
+    "hashtable-entries",
+    Value::Primitive(Primitive::HashtableEntries),
+  )
   env_define(
     env,
     "hashtable-equivalence-function",
@@ -123,25 +240,73 @@ fn init_env() -> Env {
     "hashtable-hash-function",
     Value::Primitive(Primitive::HashtableHashFunction),
   )
-  env_define(env, "hashtable-mutable?", Value::Primitive(Primitive::HashtableMutableP))
-  env_define(env, "make-enumeration", Value::Primitive(Primitive::MakeEnumeration))
-  env_define(env, "enum-set-universe", Value::Primitive(Primitive::EnumSetUniverse))
-  env_define(env, "enum-set-indexer", Value::Primitive(Primitive::EnumSetIndexer))
-  env_define(env, "enum-set-constructor", Value::Primitive(Primitive::EnumSetConstructor))
+  env_define(
+    env,
+    "hashtable-mutable?",
+    Value::Primitive(Primitive::HashtableMutableP),
+  )
+  env_define(
+    env,
+    "make-enumeration",
+    Value::Primitive(Primitive::MakeEnumeration),
+  )
+  env_define(
+    env,
+    "enum-set-universe",
+    Value::Primitive(Primitive::EnumSetUniverse),
+  )
+  env_define(
+    env,
+    "enum-set-indexer",
+    Value::Primitive(Primitive::EnumSetIndexer),
+  )
+  env_define(
+    env,
+    "enum-set-constructor",
+    Value::Primitive(Primitive::EnumSetConstructor),
+  )
   env_define(env, "enum-set?", Value::Primitive(Primitive::EnumSetP))
-  env_define(env, "enum-set-member?", Value::Primitive(Primitive::EnumSetMemberP))
-  env_define(env, "enum-set-subset?", Value::Primitive(Primitive::EnumSetSubsetP))
+  env_define(
+    env,
+    "enum-set-member?",
+    Value::Primitive(Primitive::EnumSetMemberP),
+  )
+  env_define(
+    env,
+    "enum-set-subset?",
+    Value::Primitive(Primitive::EnumSetSubsetP),
+  )
   env_define(env, "enum-set=?", Value::Primitive(Primitive::EnumSetEq))
   env_define(env, "enum-set-union", Value::Primitive(Primitive::EnumSetUnion))
-  env_define(env, "enum-set-intersection", Value::Primitive(Primitive::EnumSetIntersection))
-  env_define(env, "enum-set-difference", Value::Primitive(Primitive::EnumSetDifference))
-  env_define(env, "enum-set-complement", Value::Primitive(Primitive::EnumSetComplement))
-  env_define(env, "enum-set-projection", Value::Primitive(Primitive::EnumSetProjection))
+  env_define(
+    env,
+    "enum-set-intersection",
+    Value::Primitive(Primitive::EnumSetIntersection),
+  )
+  env_define(
+    env,
+    "enum-set-difference",
+    Value::Primitive(Primitive::EnumSetDifference),
+  )
+  env_define(
+    env,
+    "enum-set-complement",
+    Value::Primitive(Primitive::EnumSetComplement),
+  )
+  env_define(
+    env,
+    "enum-set-projection",
+    Value::Primitive(Primitive::EnumSetProjection),
+  )
   env_define(env, "enum-set->list", Value::Primitive(Primitive::EnumSetToList))
   env_define(env, "not", Value::Primitive(Primitive::Not))
   env_define(env, "apply", Value::Primitive(Primitive::Apply))
   env_define(env, "values", Value::Primitive(Primitive::Values))
-  env_define(env, "call-with-values", Value::Primitive(Primitive::CallWithValues))
+  env_define(
+    env,
+    "call-with-values",
+    Value::Primitive(Primitive::CallWithValues),
+  )
   env_define(env, "make-parameter", Value::Primitive(Primitive::MakeParameter))
   env_define(env, "dynamic-wind", Value::Primitive(Primitive::DynamicWind))
   env_define(env, "promise?", Value::Primitive(Primitive::PromiseP))
@@ -149,11 +314,19 @@ fn init_env() -> Env {
   env_define(env, "force", Value::Primitive(Primitive::Force))
   env_define(env, "exact->inexact", Value::Primitive(Primitive::ExactToInexact))
   env_define(env, "inexact->exact", Value::Primitive(Primitive::InexactToExact))
-  env_define(env, "exact-integer-sqrt", Value::Primitive(Primitive::ExactIntegerSqrt))
+  env_define(
+    env,
+    "exact-integer-sqrt",
+    Value::Primitive(Primitive::ExactIntegerSqrt),
+  )
   env_define(env, "rationalize", Value::Primitive(Primitive::Rationalize))
   env_define(env, "number->string", Value::Primitive(Primitive::NumberToString))
   env_define(env, "string->number", Value::Primitive(Primitive::StringToNumber))
-  env_define(env, "make-rectangular", Value::Primitive(Primitive::MakeRectangular))
+  env_define(
+    env,
+    "make-rectangular",
+    Value::Primitive(Primitive::MakeRectangular),
+  )
   env_define(env, "make-polar", Value::Primitive(Primitive::MakePolar))
   env_define(env, "real-part", Value::Primitive(Primitive::RealPart))
   env_define(env, "imag-part", Value::Primitive(Primitive::ImagPart))
@@ -188,20 +361,60 @@ fn init_env() -> Env {
   env_define(env, "bitwise-xor", Value::Primitive(Primitive::BitwiseXor))
   env_define(env, "bitwise-not", Value::Primitive(Primitive::BitwiseNot))
   env_define(env, "bitwise-if", Value::Primitive(Primitive::BitwiseIf))
-  env_define(env, "arithmetic-shift", Value::Primitive(Primitive::ArithmeticShift))
-  env_define(env, "bitwise-bit-count", Value::Primitive(Primitive::BitwiseBitCount))
+  env_define(
+    env,
+    "arithmetic-shift",
+    Value::Primitive(Primitive::ArithmeticShift),
+  )
+  env_define(
+    env,
+    "bitwise-bit-count",
+    Value::Primitive(Primitive::BitwiseBitCount),
+  )
   env_define(env, "bitwise-length", Value::Primitive(Primitive::BitwiseLength))
-  env_define(env, "bitwise-first-bit-set", Value::Primitive(Primitive::BitwiseFirstBitSet))
-  env_define(env, "bitwise-bit-set?", Value::Primitive(Primitive::BitwiseBitSetP))
-  env_define(env, "bitwise-copy-bit", Value::Primitive(Primitive::BitwiseCopyBit))
-  env_define(env, "bitwise-bit-field", Value::Primitive(Primitive::BitwiseBitField))
-  env_define(env, "bitwise-copy-bit-field", Value::Primitive(Primitive::BitwiseCopyBitField))
-  env_define(env, "bitwise-rotate-bit-field", Value::Primitive(Primitive::BitwiseRotateBitField))
-  env_define(env, "bitwise-reverse-bit-field", Value::Primitive(Primitive::BitwiseReverseBitField))
+  env_define(
+    env,
+    "bitwise-first-bit-set",
+    Value::Primitive(Primitive::BitwiseFirstBitSet),
+  )
+  env_define(
+    env,
+    "bitwise-bit-set?",
+    Value::Primitive(Primitive::BitwiseBitSetP),
+  )
+  env_define(
+    env,
+    "bitwise-copy-bit",
+    Value::Primitive(Primitive::BitwiseCopyBit),
+  )
+  env_define(
+    env,
+    "bitwise-bit-field",
+    Value::Primitive(Primitive::BitwiseBitField),
+  )
+  env_define(
+    env,
+    "bitwise-copy-bit-field",
+    Value::Primitive(Primitive::BitwiseCopyBitField),
+  )
+  env_define(
+    env,
+    "bitwise-rotate-bit-field",
+    Value::Primitive(Primitive::BitwiseRotateBitField),
+  )
+  env_define(
+    env,
+    "bitwise-reverse-bit-field",
+    Value::Primitive(Primitive::BitwiseReverseBitField),
+  )
   env_define(env, "fixnum?", Value::Primitive(Primitive::FixnumP))
   env_define(env, "fixnum-width", Value::Primitive(Primitive::FixnumWidth))
   env_define(env, "least-fixnum", Value::Primitive(Primitive::LeastFixnum))
-  env_define(env, "greatest-fixnum", Value::Primitive(Primitive::GreatestFixnum))
+  env_define(
+    env,
+    "greatest-fixnum",
+    Value::Primitive(Primitive::GreatestFixnum),
+  )
   env_define(env, "fx=?", Value::Primitive(Primitive::FxEq))
   env_define(env, "fx<?", Value::Primitive(Primitive::FxLess))
   env_define(env, "fx>?", Value::Primitive(Primitive::FxGreater))
@@ -235,12 +448,36 @@ fn init_env() -> Env {
   env_define(env, "fxbit-set?", Value::Primitive(Primitive::FxBitSetP))
   env_define(env, "fxcopy-bit", Value::Primitive(Primitive::FxCopyBit))
   env_define(env, "fxbit-field", Value::Primitive(Primitive::FxBitField))
-  env_define(env, "fxcopy-bit-field", Value::Primitive(Primitive::FxCopyBitField))
-  env_define(env, "fxrotate-bit-field", Value::Primitive(Primitive::FxRotateBitField))
-  env_define(env, "fxreverse-bit-field", Value::Primitive(Primitive::FxReverseBitField))
-  env_define(env, "fxarithmetic-shift", Value::Primitive(Primitive::FxArithmeticShift))
-  env_define(env, "fxarithmetic-shift-left", Value::Primitive(Primitive::FxArithmeticShiftLeft))
-  env_define(env, "fxarithmetic-shift-right", Value::Primitive(Primitive::FxArithmeticShiftRight))
+  env_define(
+    env,
+    "fxcopy-bit-field",
+    Value::Primitive(Primitive::FxCopyBitField),
+  )
+  env_define(
+    env,
+    "fxrotate-bit-field",
+    Value::Primitive(Primitive::FxRotateBitField),
+  )
+  env_define(
+    env,
+    "fxreverse-bit-field",
+    Value::Primitive(Primitive::FxReverseBitField),
+  )
+  env_define(
+    env,
+    "fxarithmetic-shift",
+    Value::Primitive(Primitive::FxArithmeticShift),
+  )
+  env_define(
+    env,
+    "fxarithmetic-shift-left",
+    Value::Primitive(Primitive::FxArithmeticShiftLeft),
+  )
+  env_define(
+    env,
+    "fxarithmetic-shift-right",
+    Value::Primitive(Primitive::FxArithmeticShiftRight),
+  )
   env_define(env, "flonum?", Value::Primitive(Primitive::FlonumP))
   env_define(env, "real->flonum", Value::Primitive(Primitive::RealToFlonum))
   env_define(env, "fixnum->flonum", Value::Primitive(Primitive::FixnumToFlonum))
@@ -305,34 +542,9 @@ fn init_env() -> Env {
   env_define(env, "set-cdr!", Value::Primitive(Primitive::SetCdr))
   env_define(env, "list-copy", Value::Primitive(Primitive::ListCopy))
   let cxr_chains : Array[String] = [
-    "aa",
-    "ad",
-    "da",
-    "dd",
-    "aaa",
-    "aad",
-    "ada",
-    "add",
-    "daa",
-    "dad",
-    "dda",
-    "ddd",
-    "aaaa",
-    "aaad",
-    "aada",
-    "aadd",
-    "adaa",
-    "adad",
-    "adda",
-    "addd",
-    "daaa",
-    "daad",
-    "dada",
-    "dadd",
-    "ddaa",
-    "ddad",
-    "ddda",
-    "dddd",
+    "aa", "ad", "da", "dd", "aaa", "aad", "ada", "add", "daa", "dad", "dda", "ddd",
+    "aaaa", "aaad", "aada", "aadd", "adaa", "adad", "adda", "addd", "daaa", "daad",
+    "dada", "dadd", "ddaa", "ddad", "ddda", "dddd",
   ]
   for chain in cxr_chains {
     env_define(env, "c\{chain}r", Value::Primitive(Primitive::Cxr(chain)))
@@ -353,15 +565,35 @@ fn init_env() -> Env {
   env_define(env, "char?", Value::Primitive(Primitive::CharP))
   env_define(env, "char->integer", Value::Primitive(Primitive::CharToInteger))
   env_define(env, "integer->char", Value::Primitive(Primitive::IntegerToChar))
-  env_define(env, "char-alphabetic?", Value::Primitive(Primitive::CharAlphabeticP))
+  env_define(
+    env,
+    "char-alphabetic?",
+    Value::Primitive(Primitive::CharAlphabeticP),
+  )
   env_define(env, "char-numeric?", Value::Primitive(Primitive::CharNumericP))
-  env_define(env, "char-whitespace?", Value::Primitive(Primitive::CharWhitespaceP))
-  env_define(env, "char-upper-case?", Value::Primitive(Primitive::CharUpperCaseP))
-  env_define(env, "char-lower-case?", Value::Primitive(Primitive::CharLowerCaseP))
+  env_define(
+    env,
+    "char-whitespace?",
+    Value::Primitive(Primitive::CharWhitespaceP),
+  )
+  env_define(
+    env,
+    "char-upper-case?",
+    Value::Primitive(Primitive::CharUpperCaseP),
+  )
+  env_define(
+    env,
+    "char-lower-case?",
+    Value::Primitive(Primitive::CharLowerCaseP),
+  )
   env_define(env, "char-upcase", Value::Primitive(Primitive::CharUpcase))
   env_define(env, "char-downcase", Value::Primitive(Primitive::CharDowncase))
   env_define(env, "char-foldcase", Value::Primitive(Primitive::CharFoldcase))
-  env_define(env, "char-general-category", Value::Primitive(Primitive::CharGeneralCategory))
+  env_define(
+    env,
+    "char-general-category",
+    Value::Primitive(Primitive::CharGeneralCategory),
+  )
   env_define(env, "string=?", Value::Primitive(Primitive::StringEq))
   env_define(env, "string<?", Value::Primitive(Primitive::StringLess))
   env_define(env, "string>?", Value::Primitive(Primitive::StringGreater))
@@ -371,7 +603,11 @@ fn init_env() -> Env {
   env_define(env, "string-ci<?", Value::Primitive(Primitive::StringCiLess))
   env_define(env, "string-ci>?", Value::Primitive(Primitive::StringCiGreater))
   env_define(env, "string-ci<=?", Value::Primitive(Primitive::StringCiLessEq))
-  env_define(env, "string-ci>=?", Value::Primitive(Primitive::StringCiGreaterEq))
+  env_define(
+    env,
+    "string-ci>=?",
+    Value::Primitive(Primitive::StringCiGreaterEq),
+  )
   env_define(env, "string", Value::Primitive(Primitive::String))
   env_define(env, "make-string", Value::Primitive(Primitive::MakeString))
   env_define(env, "string?", Value::Primitive(Primitive::StringP))
@@ -388,12 +624,36 @@ fn init_env() -> Env {
   env_define(env, "string-map", Value::Primitive(Primitive::StringMap))
   env_define(env, "string-for-each", Value::Primitive(Primitive::StringForEach))
   env_define(env, "string-upcase", Value::Primitive(Primitive::StringUpcase))
-  env_define(env, "string-downcase", Value::Primitive(Primitive::StringDowncase))
-  env_define(env, "string-foldcase", Value::Primitive(Primitive::StringFoldcase))
-  env_define(env, "string-normalize-nfc", Value::Primitive(Primitive::StringNormalizeNfc))
-  env_define(env, "string-normalize-nfd", Value::Primitive(Primitive::StringNormalizeNfd))
-  env_define(env, "string-normalize-nfkc", Value::Primitive(Primitive::StringNormalizeNfkc))
-  env_define(env, "string-normalize-nfkd", Value::Primitive(Primitive::StringNormalizeNfkd))
+  env_define(
+    env,
+    "string-downcase",
+    Value::Primitive(Primitive::StringDowncase),
+  )
+  env_define(
+    env,
+    "string-foldcase",
+    Value::Primitive(Primitive::StringFoldcase),
+  )
+  env_define(
+    env,
+    "string-normalize-nfc",
+    Value::Primitive(Primitive::StringNormalizeNfc),
+  )
+  env_define(
+    env,
+    "string-normalize-nfd",
+    Value::Primitive(Primitive::StringNormalizeNfd),
+  )
+  env_define(
+    env,
+    "string-normalize-nfkc",
+    Value::Primitive(Primitive::StringNormalizeNfkc),
+  )
+  env_define(
+    env,
+    "string-normalize-nfkd",
+    Value::Primitive(Primitive::StringNormalizeNfkd),
+  )
   env_define(env, "vector", Value::Primitive(Primitive::Vector))
   env_define(env, "make-vector", Value::Primitive(Primitive::MakeVector))
   env_define(env, "vector?", Value::Primitive(Primitive::VectorP))
@@ -409,47 +669,135 @@ fn init_env() -> Env {
   env_define(env, "vector->list", Value::Primitive(Primitive::VectorToList))
   env_define(env, "list->vector", Value::Primitive(Primitive::ListToVector))
   env_define(env, "bytevector", Value::Primitive(Primitive::ByteVector))
-  env_define(env, "make-bytevector", Value::Primitive(Primitive::MakeByteVector))
+  env_define(
+    env,
+    "make-bytevector",
+    Value::Primitive(Primitive::MakeByteVector),
+  )
   env_define(env, "bytevector?", Value::Primitive(Primitive::ByteVectorP))
-  env_define(env, "bytevector-length", Value::Primitive(Primitive::ByteVectorLength))
+  env_define(
+    env,
+    "bytevector-length",
+    Value::Primitive(Primitive::ByteVectorLength),
+  )
   env_define(env, "bytevector=?", Value::Primitive(Primitive::ByteVectorEq))
-  env_define(env, "bytevector-u8-ref", Value::Primitive(Primitive::ByteVectorU8Ref))
-  env_define(env, "bytevector-u8-set!", Value::Primitive(Primitive::ByteVectorU8Set))
-  env_define(env, "bytevector-copy", Value::Primitive(Primitive::ByteVectorCopy))
-  env_define(env, "bytevector-copy!", Value::Primitive(Primitive::ByteVectorCopyBang))
-  env_define(env, "bytevector-append", Value::Primitive(Primitive::ByteVectorAppend))
-  env_define(env, "bytevector-fill!", Value::Primitive(Primitive::ByteVectorFill))
-  env_define(env, "bytevector->u8-list", Value::Primitive(Primitive::ByteVectorToU8List))
-  env_define(env, "u8-list->bytevector", Value::Primitive(Primitive::U8ListToByteVector))
+  env_define(
+    env,
+    "bytevector-u8-ref",
+    Value::Primitive(Primitive::ByteVectorU8Ref),
+  )
+  env_define(
+    env,
+    "bytevector-u8-set!",
+    Value::Primitive(Primitive::ByteVectorU8Set),
+  )
+  env_define(
+    env,
+    "bytevector-copy",
+    Value::Primitive(Primitive::ByteVectorCopy),
+  )
+  env_define(
+    env,
+    "bytevector-copy!",
+    Value::Primitive(Primitive::ByteVectorCopyBang),
+  )
+  env_define(
+    env,
+    "bytevector-append",
+    Value::Primitive(Primitive::ByteVectorAppend),
+  )
+  env_define(
+    env,
+    "bytevector-fill!",
+    Value::Primitive(Primitive::ByteVectorFill),
+  )
+  env_define(
+    env,
+    "bytevector->u8-list",
+    Value::Primitive(Primitive::ByteVectorToU8List),
+  )
+  env_define(
+    env,
+    "u8-list->bytevector",
+    Value::Primitive(Primitive::U8ListToByteVector),
+  )
   env_define(env, "string->utf8", Value::Primitive(Primitive::StringToUtf8))
   env_define(env, "utf8->string", Value::Primitive(Primitive::Utf8ToString))
-  env_define(env, "native-endianness", Value::Primitive(Primitive::NativeEndianness))
-  env_define(env, "bytevector-uint-ref", Value::Primitive(Primitive::ByteVectorUintRef))
-  env_define(env, "bytevector-sint-ref", Value::Primitive(Primitive::ByteVectorSintRef))
-  env_define(env, "bytevector-uint-set!", Value::Primitive(Primitive::ByteVectorUintSet))
-  env_define(env, "bytevector-sint-set!", Value::Primitive(Primitive::ByteVectorSintSet))
+  env_define(
+    env,
+    "native-endianness",
+    Value::Primitive(Primitive::NativeEndianness),
+  )
+  env_define(
+    env,
+    "bytevector-uint-ref",
+    Value::Primitive(Primitive::ByteVectorUintRef),
+  )
+  env_define(
+    env,
+    "bytevector-sint-ref",
+    Value::Primitive(Primitive::ByteVectorSintRef),
+  )
+  env_define(
+    env,
+    "bytevector-uint-set!",
+    Value::Primitive(Primitive::ByteVectorUintSet),
+  )
+  env_define(
+    env,
+    "bytevector-sint-set!",
+    Value::Primitive(Primitive::ByteVectorSintSet),
+  )
   env_define(env, "display", Value::Primitive(Primitive::Display))
   env_define(env, "write", Value::Primitive(Primitive::Write))
   env_define(env, "newline", Value::Primitive(Primitive::Newline))
-  env_define(env, "open-output-string", Value::Primitive(Primitive::OpenOutputString))
-  env_define(env, "get-output-string", Value::Primitive(Primitive::GetOutputString))
-  env_define(env, "current-output-port", Value::Primitive(Primitive::CurrentOutputPort))
+  env_define(
+    env,
+    "open-output-string",
+    Value::Primitive(Primitive::OpenOutputString),
+  )
+  env_define(
+    env,
+    "get-output-string",
+    Value::Primitive(Primitive::GetOutputString),
+  )
+  env_define(
+    env,
+    "current-output-port",
+    Value::Primitive(Primitive::CurrentOutputPort),
+  )
   env_define(
     env,
     "with-exception-handler",
     Value::Primitive(Primitive::WithExceptionHandler),
   )
   env_define(env, "raise", Value::Primitive(Primitive::Raise))
-  env_define(env, "raise-continuable", Value::Primitive(Primitive::RaiseContinuable))
+  env_define(
+    env,
+    "raise-continuable",
+    Value::Primitive(Primitive::RaiseContinuable),
+  )
   env_define(env, "error", Value::Primitive(Primitive::Error))
-  env_define(env, "assertion-violation", Value::Primitive(Primitive::AssertionViolation))
+  env_define(
+    env,
+    "assertion-violation",
+    Value::Primitive(Primitive::AssertionViolation),
+  )
   env_define(
     env,
     "implementation-restriction-violation",
     Value::Primitive(Primitive::ImplementationRestrictionViolation),
   )
-  env_define(env, "undefined-violation", Value::Primitive(Primitive::UndefinedViolation))
-  env_define(env, "syntax-violation", Value::Primitive(Primitive::SyntaxViolation))
+  env_define(
+    env,
+    "undefined-violation",
+    Value::Primitive(Primitive::UndefinedViolation),
+  )
+  env_define(
+    env,
+    "syntax-violation",
+    Value::Primitive(Primitive::SyntaxViolation),
+  )
   env_define(env, "call/cc", Value::Primitive(Primitive::CallCC))
   env_define(
     env,
@@ -482,128 +830,55 @@ fn env_export_map(env : Env) -> Map[String, Binding] {
 fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   let exports = env_export_map(env)
   for name in base_syntax_keywords() {
-    exports[name] = Binding::{ id: next_binding_id(), value: Value::SyntaxKeyword(name) }
+    exports[name] = Binding::{
+      id: next_binding_id(),
+      value: Value::SyntaxKeyword(name),
+    }
   }
   register_library_entry("rnrs.base", Some([6]), exports)
   let eval_exports : Map[String, Binding] = {}
-  eval_exports["eval"] =
-    Binding::{ id: next_binding_id(), value: Value::Primitive(Primitive::Eval) }
-  eval_exports["environment"] =
-    Binding::{ id: next_binding_id(), value: Value::Primitive(Primitive::Environment) }
+  eval_exports["eval"] = Binding::{
+    id: next_binding_id(),
+    value: Value::Primitive(Primitive::Eval),
+  }
+  eval_exports["environment"] = Binding::{
+    id: next_binding_id(),
+    value: Value::Primitive(Primitive::Environment),
+  }
   register_library_entry("rnrs.eval", Some([6]), eval_exports)
   let condition_exports : Map[String, Binding] = {}
   let condition_names : Array[String] = [
-    "condition",
-    "condition?",
-    "simple-conditions",
-    "condition-predicate",
-    "condition-accessor",
-    "&condition",
-    "&message",
-    "make-message-condition",
-    "message-condition?",
-    "condition-message",
-    "&warning",
-    "make-warning",
-    "warning?",
-    "&serious",
-    "make-serious-condition",
-    "serious-condition?",
-    "&error",
-    "make-error",
-    "error?",
-    "&violation",
-    "make-violation",
-    "violation?",
-    "&assertion",
-    "make-assertion-violation",
-    "assertion-violation?",
-    "&irritants",
-    "make-irritants-condition",
-    "irritants-condition?",
-    "condition-irritants",
-    "&who",
-    "make-who-condition",
-    "who-condition?",
-    "condition-who",
-    "&non-continuable",
-    "make-non-continuable-violation",
-    "non-continuable-violation?",
-    "&implementation-restriction",
-    "make-implementation-restriction-violation",
-    "implementation-restriction-violation?",
-    "&lexical",
-    "make-lexical-violation",
-    "lexical-violation?",
-    "&syntax",
-    "make-syntax-violation",
-    "syntax-violation?",
-    "syntax-violation-form",
-    "syntax-violation-subform",
-    "&undefined",
-    "make-undefined-violation",
-    "undefined-violation?",
+    "condition", "condition?", "simple-conditions", "condition-predicate", "condition-accessor",
+    "&condition", "&message", "make-message-condition", "message-condition?", "condition-message",
+    "&warning", "make-warning", "warning?", "&serious", "make-serious-condition",
+    "serious-condition?", "&error", "make-error", "error?", "&violation", "make-violation",
+    "violation?", "&assertion", "make-assertion-violation", "assertion-violation?",
+    "&irritants", "make-irritants-condition", "irritants-condition?", "condition-irritants",
+    "&who", "make-who-condition", "who-condition?", "condition-who", "&non-continuable",
+    "make-non-continuable-violation", "non-continuable-violation?", "&implementation-restriction",
+    "make-implementation-restriction-violation", "implementation-restriction-violation?",
+    "&lexical", "make-lexical-violation", "lexical-violation?", "&syntax", "make-syntax-violation",
+    "syntax-violation?", "syntax-violation-form", "syntax-violation-subform", "&undefined",
+    "make-undefined-violation", "undefined-violation?",
   ]
   for name in condition_names {
     condition_exports[name] = env_lookup_binding(env, name)
   }
-  condition_exports["define-condition-type"] =
-    Binding::{ id: next_binding_id(), value: Value::SyntaxKeyword("define-condition-type") }
+  condition_exports["define-condition-type"] = Binding::{
+    id: next_binding_id(),
+    value: Value::SyntaxKeyword("define-condition-type"),
+  }
   register_library_entry("rnrs.conditions", Some([6]), condition_exports)
   let flonum_exports : Map[String, Binding] = {}
   let flonum_names : Array[String] = [
-    "flonum?",
-    "real->flonum",
-    "fixnum->flonum",
-    "fl=?",
-    "fl<?",
-    "fl>?",
-    "fl<=?",
-    "fl>=?",
-    "flinteger?",
-    "flzero?",
-    "flpositive?",
-    "flnegative?",
-    "flodd?",
-    "fleven?",
-    "flfinite?",
-    "flinfinite?",
-    "flnan?",
-    "flmax",
-    "flmin",
-    "fl+",
-    "fl*",
-    "fl-",
-    "fl/",
-    "flabs",
-    "fldiv-and-mod",
-    "fldiv",
-    "flmod",
-    "fldiv0-and-mod0",
-    "fldiv0",
-    "flmod0",
-    "flnumerator",
-    "fldenominator",
-    "flfloor",
-    "flceiling",
-    "fltruncate",
-    "flround",
-    "flexp",
-    "fllog",
-    "flsin",
-    "flcos",
-    "fltan",
-    "flasin",
-    "flacos",
-    "flatan",
-    "flsqrt",
-    "flexpt",
-    "&no-infinities",
-    "make-no-infinities-violation",
-    "no-infinities-violation?",
-    "&no-nans",
-    "make-no-nans-violation",
-    "no-nans-violation?",
+    "flonum?", "real->flonum", "fixnum->flonum", "fl=?", "fl<?", "fl>?", "fl<=?",
+    "fl>=?", "flinteger?", "flzero?", "flpositive?", "flnegative?", "flodd?", "fleven?",
+    "flfinite?", "flinfinite?", "flnan?", "flmax", "flmin", "fl+", "fl*", "fl-",
+    "fl/", "flabs", "fldiv-and-mod", "fldiv", "flmod", "fldiv0-and-mod0", "fldiv0",
+    "flmod0", "flnumerator", "fldenominator", "flfloor", "flceiling", "fltruncate",
+    "flround", "flexp", "fllog", "flsin", "flcos", "fltan", "flasin", "flacos", "flatan",
+    "flsqrt", "flexpt", "&no-infinities", "make-no-infinities-violation", "no-infinities-violation?",
+    "&no-nans", "make-no-nans-violation", "no-nans-violation?",
   ]
   for name in flonum_names {
     flonum_exports[name] = env_lookup_binding(env, name)
@@ -666,7 +941,11 @@ fn parameter_set(param : Parameter, value : Value) -> Unit {
 
 ///|
 fn parameter_with_converter(value : Value, converter : Value) -> Parameter {
-  { id: next_parameter_id(), value: Ref::new(value), converter: Some(converter) }
+  {
+    id: next_parameter_id(),
+    value: Ref::new(value),
+    converter: Some(converter),
+  }
 }
 
 ///|
@@ -720,7 +999,14 @@ fn make_guard_handler(
   resume_value : Value,
   handlers : Array[Value],
 ) -> GuardHandler {
-  GuardHandler::{ id: next_guard_handler_id(), name, clauses, env, resume_value, handlers }
+  GuardHandler::{
+    id: next_guard_handler_id(),
+    name,
+    clauses,
+    env,
+    resume_value,
+    handlers,
+  }
 }
 
 ///|
@@ -729,7 +1015,12 @@ fn capture_continuation(kont : Kont, handlers : Array[Value]) -> Continuation {
   for item in wind_stack.val {
     winds_copy.push(item)
   }
-  Continuation::{ id: next_continuation_id(), kont, handlers, winds: winds_copy }
+  Continuation::{
+    id: next_continuation_id(),
+    kont,
+    handlers,
+    winds: winds_copy,
+  }
 }
 
 ///|
@@ -763,6 +1054,8 @@ let wind_stack : Ref[Array[Winder]] = Ref::new([])
 
 ///|
 let continuation_counter : Ref[Int] = Ref::new(0)
+
+///|
 let guard_handler_counter : Ref[Int] = Ref::new(0)
 
 ///|
@@ -790,7 +1083,7 @@ fn next_do_name() -> String {
 }
 
 ///|
-///|
+/// Evaluate a Scheme program and return the final value.
 pub fn eval_program(src : String) -> Value raise {
   let results = eval_program_all(src)
   if results.is_empty() {
@@ -801,6 +1094,7 @@ pub fn eval_program(src : String) -> Value raise {
 }
 
 ///|
+/// Evaluate a Scheme program and return all top-level results.
 pub fn eval_program_all(src : String) -> Array[Value] raise {
   let forms = parse_program(src)
   reset_library_registry()
@@ -823,6 +1117,7 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
 let include_registry : Ref[Map[String, String]] = Ref::new({})
 
 ///|
+/// Register an in-memory source for (include ...) by path.
 pub fn register_include_source(path : String, content : String) -> Unit {
   include_registry.val[path] = content
 }
@@ -844,19 +1139,27 @@ fn include_read_text(path : String) -> String raise EvalError {
 }
 
 ///|
-fn include_parse_file(path : String, fold_case : Bool) -> Array[Datum] raise EvalError {
+fn include_parse_file(
+  path : String,
+  fold_case : Bool,
+) -> Array[Datum] raise EvalError {
   let content = include_read_text(path)
   if fold_case {
     parse_program_with_fold_case(content, true) catch {
       _ => raise @core.EvalError("include: parse error: \{path}")
     }
   } else {
-    parse_program(content) catch { _ => raise @core.EvalError("include: parse error: \{path}") }
+    parse_program(content) catch {
+      _ => raise @core.EvalError("include: parse error: \{path}")
+    }
   }
 }
 
 ///|
-fn include_forms(args : Array[Datum], fold_case : Bool) -> Array[Datum] raise EvalError {
+fn include_forms(
+  args : Array[Datum],
+  fold_case : Bool,
+) -> Array[Datum] raise EvalError {
   let forms : Array[Datum] = []
   for arg in args {
     let path = include_path_from_arg(arg)
@@ -883,420 +1186,181 @@ fn eval_include_state(
 ///|
 fn stdlib_source() -> String {
   let lines : Array[String] = [
-    "(define (fold-left f acc lst)",
-    "  (let loop ((acc acc) (lst lst))",
-    "    (if (null? lst) acc",
-    "        (loop (f acc (car lst)) (cdr lst)))))",
-    "(define (fold-right f acc lst)",
-    "  (if (null? lst) acc",
-    "      (f (car lst) (fold-right f acc (cdr lst)))))",
-    "(define (filter pred lst)",
-    "  (cond ((null? lst) '())",
-    "        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))",
-    "        (else (filter pred (cdr lst)))))",
-    "(define (remove pred lst)",
-    "  (filter (lambda (x) (not (pred x))) lst))",
-    "(define (find pred lst)",
-    "  (cond ((null? lst) #f)",
-    "        ((pred (car lst)) (car lst))",
-    "        (else (find pred (cdr lst)))))",
-    "(define (any pred lst)",
-    "  (cond ((null? lst) #f)",
-    "        ((pred (car lst)) #t)",
-    "        (else (any pred (cdr lst)))))",
-    "(define (every pred lst)",
-    "  (cond ((null? lst) #t)",
-    "        ((pred (car lst)) (every pred (cdr lst)))",
-    "        (else #f)))",
-    "(define (take lst n)",
-    "  (if (<= n 0) '()",
-    "      (cons (car lst) (take (cdr lst) (- n 1)))))",
-    "(define (drop lst n)",
-    "  (if (<= n 0) lst",
-    "      (drop (cdr lst) (- n 1))))",
-    "(define (take-while pred lst)",
-    "  (cond ((null? lst) '())",
-    "        ((pred (car lst)) (cons (car lst) (take-while pred (cdr lst))))",
-    "        (else '())))",
-    "(define (drop-while pred lst)",
-    "  (cond ((null? lst) '())",
-    "        ((pred (car lst)) (drop-while pred (cdr lst)))",
-    "        (else lst)))",
-    "(define (append-map f lst)",
-    "  (if (null? lst) '()",
-    "      (append (f (car lst)) (append-map f (cdr lst)))))",
-    "(define (count pred lst)",
-    "  (fold-left (lambda (acc x) (if (pred x) (+ acc 1) acc)) 0 lst))",
-    "(define (list-index pred lst)",
-    "  (let loop ((lst lst) (idx 0))",
-    "    (cond ((null? lst) #f)",
-    "          ((pred (car lst)) idx)",
-    "          (else (loop (cdr lst) (+ idx 1))))))",
-    "(define (partition pred lst)",
-    "  (let loop ((lst lst) (yes '()) (no '()))",
-    "    (if (null? lst)",
-    "        (list (reverse yes) (reverse no))",
-    "        (if (pred (car lst))",
-    "            (loop (cdr lst) (cons (car lst) yes) no)",
-    "            (loop (cdr lst) yes (cons (car lst) no))))))",
-    "(define (zip xs ys)",
-    "  (if (or (null? xs) (null? ys))",
-    "      '()",
-    "      (cons (list (car xs) (car ys)) (zip (cdr xs) (cdr ys)))))",
-    "(define (unzip pairs)",
-    "  (let loop ((pairs pairs) (xs '()) (ys '()))",
-    "    (if (null? pairs)",
-    "        (list (reverse xs) (reverse ys))",
-    "        (let ((p (car pairs)))",
-    "          (loop (cdr pairs) (cons (car p) xs) (cons (cadr p) ys))))))",
-    "(define (last lst)",
-    "  (if (null? (cdr lst)) (car lst) (last (cdr lst))))",
-    "(define (string-join strs sep)",
-    "  (if (null? strs) \"\"",
-    "      (let loop ((rest (cdr strs)) (acc (car strs)))",
-    "        (if (null? rest) acc",
-    "            (loop (cdr rest) (string-append acc sep (car rest)))))))",
-    "(define (list-tabulate n f)",
-    "  (let loop ((idx 0) (acc '()))",
-    "    (if (>= idx n)",
-    "        (reverse acc)",
-    "        (loop (+ idx 1) (cons (f idx) acc)))))",
-    "(define (div x y)",
-    "  (let* ((q (quotient x y))",
-    "         (r (remainder x y)))",
-    "    (if (zero? r) q",
-    "        (if (and (> r 0) (< y 0)) (- q 1)",
-    "            (if (and (< r 0) (> y 0)) (- q 1) q)))))",
-    "(define (mod x y)",
-    "  (let ((r (remainder x y)))",
-    "    (if (zero? r) r",
-    "        (if (and (> r 0) (< y 0)) (+ r y)",
-    "            (if (and (< r 0) (> y 0)) (+ r y) r)))))",
-    "(define (div-and-mod x y)",
-    "  (let* ((q (div x y))",
-    "         (r (- x (* y q))))",
-    "    (values q r)))",
-    "(define (div0 x y) (quotient x y))",
-    "(define (mod0 x y) (remainder x y))",
-    "(define (div0-and-mod0 x y)",
-    "  (values (quotient x y) (remainder x y)))",
-    "(define-condition-type &message &condition",
-    "  make-message-condition message-condition?",
-    "  (message condition-message))",
-    "(define-condition-type &warning &condition",
-    "  make-warning warning?)",
-    "(define-condition-type &serious &condition",
-    "  make-serious-condition serious-condition?)",
-    "(define-condition-type &error &serious",
-    "  make-error error?)",
-    "(define-condition-type &violation &serious",
-    "  make-violation violation?)",
-    "(define-condition-type &assertion &violation",
-    "  make-assertion-violation assertion-violation?)",
-    "(define-condition-type &irritants &condition",
-    "  make-irritants-condition irritants-condition?",
-    "  (irritants condition-irritants))",
-    "(define-condition-type &who &condition",
-    "  make-who-condition who-condition?",
-    "  (who condition-who))",
-    "(define-condition-type &non-continuable &violation",
-    "  make-non-continuable-violation non-continuable-violation?)",
-    "(define-condition-type &implementation-restriction &violation",
-    "  make-implementation-restriction-violation",
-    "  implementation-restriction-violation?)",
-    "(define-condition-type &lexical &violation",
-    "  make-lexical-violation lexical-violation?)",
-    "(define-condition-type &syntax &violation",
-    "  make-syntax-violation syntax-violation?",
-    "  (form syntax-violation-form)",
-    "  (subform syntax-violation-subform))",
-    "(define-condition-type &undefined &violation",
-    "  make-undefined-violation undefined-violation?)",
-    "(define-condition-type &no-infinities &implementation-restriction",
-    "  make-no-infinities-violation no-infinities-violation?)",
-    "(define-condition-type &no-nans &implementation-restriction",
-    "  make-no-nans-violation no-nans-violation?)",
-    "(library (rnrs control (6))",
-    "  (export case-lambda do when unless)",
-    "  (import)",
-    "  (define-syntax when",
-    "    (syntax-rules ()",
-    "      ((_ test body ...) (if test (begin body ...) (begin)))))",
-    "  (define-syntax unless",
-    "    (syntax-rules ()",
-    "      ((_ test body ...) (if (not test) (begin body ...) (begin)))))",
-    ")",
-    "(library (rnrs syntax-case (6))",
-    "  (export syntax-case with-syntax syntax quasisyntax unsyntax unsyntax-splicing ... _",
-    "          make-variable-transformer generate-temporaries",
-    "          syntax->datum datum->syntax free-identifier=? bound-identifier=?",
-    "          identifier? syntax? syntax-violation)",
-    "  (import)",
-    ")",
-    "(library (rnrs arithmetic fixnums (6))",
-    "  (export fixnum? fixnum-width least-fixnum greatest-fixnum",
-    "          fx=? fx<? fx>? fx<=? fx>=?",
-    "          fxzero? fxpositive? fxnegative? fxodd? fxeven?",
-    "          fxmax fxmin",
+    "(define (fold-left f acc lst)", "  (let loop ((acc acc) (lst lst))", "    (if (null? lst) acc",
+    "        (loop (f acc (car lst)) (cdr lst)))))", "(define (fold-right f acc lst)",
+    "  (if (null? lst) acc", "      (f (car lst) (fold-right f acc (cdr lst)))))",
+    "(define (filter pred lst)", "  (cond ((null? lst) '())", "        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))",
+    "        (else (filter pred (cdr lst)))))", "(define (remove pred lst)", "  (filter (lambda (x) (not (pred x))) lst))",
+    "(define (find pred lst)", "  (cond ((null? lst) #f)", "        ((pred (car lst)) (car lst))",
+    "        (else (find pred (cdr lst)))))", "(define (any pred lst)", "  (cond ((null? lst) #f)",
+    "        ((pred (car lst)) #t)", "        (else (any pred (cdr lst)))))", "(define (every pred lst)",
+    "  (cond ((null? lst) #t)", "        ((pred (car lst)) (every pred (cdr lst)))",
+    "        (else #f)))", "(define (take lst n)", "  (if (<= n 0) '()", "      (cons (car lst) (take (cdr lst) (- n 1)))))",
+    "(define (drop lst n)", "  (if (<= n 0) lst", "      (drop (cdr lst) (- n 1))))",
+    "(define (take-while pred lst)", "  (cond ((null? lst) '())", "        ((pred (car lst)) (cons (car lst) (take-while pred (cdr lst))))",
+    "        (else '())))", "(define (drop-while pred lst)", "  (cond ((null? lst) '())",
+    "        ((pred (car lst)) (drop-while pred (cdr lst)))", "        (else lst)))",
+    "(define (append-map f lst)", "  (if (null? lst) '()", "      (append (f (car lst)) (append-map f (cdr lst)))))",
+    "(define (count pred lst)", "  (fold-left (lambda (acc x) (if (pred x) (+ acc 1) acc)) 0 lst))",
+    "(define (list-index pred lst)", "  (let loop ((lst lst) (idx 0))", "    (cond ((null? lst) #f)",
+    "          ((pred (car lst)) idx)", "          (else (loop (cdr lst) (+ idx 1))))))",
+    "(define (partition pred lst)", "  (let loop ((lst lst) (yes '()) (no '()))",
+    "    (if (null? lst)", "        (list (reverse yes) (reverse no))", "        (if (pred (car lst))",
+    "            (loop (cdr lst) (cons (car lst) yes) no)", "            (loop (cdr lst) yes (cons (car lst) no))))))",
+    "(define (zip xs ys)", "  (if (or (null? xs) (null? ys))", "      '()", "      (cons (list (car xs) (car ys)) (zip (cdr xs) (cdr ys)))))",
+    "(define (unzip pairs)", "  (let loop ((pairs pairs) (xs '()) (ys '()))", "    (if (null? pairs)",
+    "        (list (reverse xs) (reverse ys))", "        (let ((p (car pairs)))",
+    "          (loop (cdr pairs) (cons (car p) xs) (cons (cadr p) ys))))))", "(define (last lst)",
+    "  (if (null? (cdr lst)) (car lst) (last (cdr lst))))", "(define (string-join strs sep)",
+    "  (if (null? strs) \"\"", "      (let loop ((rest (cdr strs)) (acc (car strs)))",
+    "        (if (null? rest) acc", "            (loop (cdr rest) (string-append acc sep (car rest)))))))",
+    "(define (list-tabulate n f)", "  (let loop ((idx 0) (acc '()))", "    (if (>= idx n)",
+    "        (reverse acc)", "        (loop (+ idx 1) (cons (f idx) acc)))))", "(define (div x y)",
+    "  (let* ((q (quotient x y))", "         (r (remainder x y)))", "    (if (zero? r) q",
+    "        (if (and (> r 0) (< y 0)) (- q 1)", "            (if (and (< r 0) (> y 0)) (- q 1) q)))))",
+    "(define (mod x y)", "  (let ((r (remainder x y)))", "    (if (zero? r) r", "        (if (and (> r 0) (< y 0)) (+ r y)",
+    "            (if (and (< r 0) (> y 0)) (+ r y) r)))))", "(define (div-and-mod x y)",
+    "  (let* ((q (div x y))", "         (r (- x (* y q))))", "    (values q r)))",
+    "(define (div0 x y) (quotient x y))", "(define (mod0 x y) (remainder x y))",
+    "(define (div0-and-mod0 x y)", "  (values (quotient x y) (remainder x y)))",
+    "(define-condition-type &message &condition", "  make-message-condition message-condition?",
+    "  (message condition-message))", "(define-condition-type &warning &condition",
+    "  make-warning warning?)", "(define-condition-type &serious &condition", "  make-serious-condition serious-condition?)",
+    "(define-condition-type &error &serious", "  make-error error?)", "(define-condition-type &violation &serious",
+    "  make-violation violation?)", "(define-condition-type &assertion &violation",
+    "  make-assertion-violation assertion-violation?)", "(define-condition-type &irritants &condition",
+    "  make-irritants-condition irritants-condition?", "  (irritants condition-irritants))",
+    "(define-condition-type &who &condition", "  make-who-condition who-condition?",
+    "  (who condition-who))", "(define-condition-type &non-continuable &violation",
+    "  make-non-continuable-violation non-continuable-violation?)", "(define-condition-type &implementation-restriction &violation",
+    "  make-implementation-restriction-violation", "  implementation-restriction-violation?)",
+    "(define-condition-type &lexical &violation", "  make-lexical-violation lexical-violation?)",
+    "(define-condition-type &syntax &violation", "  make-syntax-violation syntax-violation?",
+    "  (form syntax-violation-form)", "  (subform syntax-violation-subform))", "(define-condition-type &undefined &violation",
+    "  make-undefined-violation undefined-violation?)", "(define-condition-type &no-infinities &implementation-restriction",
+    "  make-no-infinities-violation no-infinities-violation?)", "(define-condition-type &no-nans &implementation-restriction",
+    "  make-no-nans-violation no-nans-violation?)", "(library (rnrs control (6))",
+    "  (export case-lambda do when unless)", "  (import)", "  (define-syntax when",
+    "    (syntax-rules ()", "      ((_ test body ...) (if test (begin body ...) (begin)))))",
+    "  (define-syntax unless", "    (syntax-rules ()", "      ((_ test body ...) (if (not test) (begin body ...) (begin)))))",
+    ")", "(library (rnrs syntax-case (6))", "  (export syntax-case with-syntax syntax quasisyntax unsyntax unsyntax-splicing ... _",
+    "          make-variable-transformer generate-temporaries", "          syntax->datum datum->syntax free-identifier=? bound-identifier=?",
+    "          identifier? syntax? syntax-violation)", "  (import)", ")", "(library (rnrs arithmetic fixnums (6))",
+    "  (export fixnum? fixnum-width least-fixnum greatest-fixnum", "          fx=? fx<? fx>? fx<=? fx>=?",
+    "          fxzero? fxpositive? fxnegative? fxodd? fxeven?", "          fxmax fxmin",
     "          fx+ fx- fx* fxdiv fxmod fxdiv0 fxmod0 fx+/carry fx-/carry fx*/carry",
-    "          fxnot fxand fxior fxxor fxif",
-    "          fxbit-count fxlength fxfirst-bit-set fxbit-set? fxcopy-bit fxbit-field",
-    "          fxcopy-bit-field fxrotate-bit-field fxreverse-bit-field",
-    "          fxarithmetic-shift fxarithmetic-shift-left fxarithmetic-shift-right)",
-    "  (import)",
-    ")",
-    "(library (rnrs arithmetic bitwise (6))",
-    "  (export bitwise-and bitwise-ior bitwise-xor bitwise-not bitwise-if",
+    "          fxnot fxand fxior fxxor fxif", "          fxbit-count fxlength fxfirst-bit-set fxbit-set? fxcopy-bit fxbit-field",
+    "          fxcopy-bit-field fxrotate-bit-field fxreverse-bit-field", "          fxarithmetic-shift fxarithmetic-shift-left fxarithmetic-shift-right)",
+    "  (import)", ")", "(library (rnrs arithmetic bitwise (6))", "  (export bitwise-and bitwise-ior bitwise-xor bitwise-not bitwise-if",
     "          arithmetic-shift bitwise-bit-count bitwise-length bitwise-first-bit-set",
     "          bitwise-bit-set? bitwise-copy-bit bitwise-bit-field bitwise-copy-bit-field",
-    "          bitwise-rotate-bit-field bitwise-reverse-bit-field)",
-    "  (import)",
-    ")",
-    "(library (rnrs mutable-pairs (6))",
-    "  (export set-car! set-cdr!)",
-    "  (import)",
-    ")",
-    "(library (rnrs mutable-strings (6))",
-    "  (export string-set! string-fill! string-copy!)",
-    "  (import)",
-    ")",
-    "(library (rnrs bytevectors (6))",
-    "  (export bytevector make-bytevector bytevector? bytevector-length",
+    "          bitwise-rotate-bit-field bitwise-reverse-bit-field)", "  (import)",
+    ")", "(library (rnrs mutable-pairs (6))", "  (export set-car! set-cdr!)", "  (import)",
+    ")", "(library (rnrs mutable-strings (6))", "  (export string-set! string-fill! string-copy!)",
+    "  (import)", ")", "(library (rnrs bytevectors (6))", "  (export bytevector make-bytevector bytevector? bytevector-length",
     "          bytevector=? bytevector-u8-ref bytevector-u8-set! bytevector-s8-ref",
-    "          bytevector-s8-set! bytevector-copy",
-    "          bytevector-copy! bytevector-append bytevector-fill!",
-    "          bytevector->u8-list u8-list->bytevector",
-    "          string->utf8 utf8->string",
-    "          endianness native-endianness",
-    "          bytevector-uint-ref bytevector-sint-ref",
-    "          bytevector-uint-set! bytevector-sint-set!",
-    "          bytevector-u16-ref bytevector-u16-native-ref",
-    "          bytevector-u16-set! bytevector-u16-native-set!",
-    "          bytevector-s16-ref bytevector-s16-native-ref",
-    "          bytevector-s16-set! bytevector-s16-native-set!",
-    "          bytevector-u32-ref bytevector-u32-native-ref",
-    "          bytevector-u32-set! bytevector-u32-native-set!",
-    "          bytevector-s32-ref bytevector-s32-native-ref",
-    "          bytevector-s32-set! bytevector-s32-native-set!",
-    "          bytevector-u64-ref bytevector-u64-native-ref",
-    "          bytevector-u64-set! bytevector-u64-native-set!",
-    "          bytevector-s64-ref bytevector-s64-native-ref",
-    "          bytevector-s64-set! bytevector-s64-native-set!)",
-    "  (import)",
-    "  (define-syntax endianness",
-    "    (syntax-rules (big little)",
-    "      ((_ big) 'big)",
-    "      ((_ little) 'little)))",
-    "  (define (bytevector-s8-ref bv k)",
-    "    (let ((v (bytevector-u8-ref bv k)))",
-    "      (if (> v 127) (- v 256) v)))",
-    "  (define (bytevector-s8-set! bv k val)",
-    "    (if (or (< val -128) (> val 127))",
-    "        (assertion-violation 'bytevector-s8-set! \"value out of range\" val)",
-    "        (bytevector-u8-set! bv k (if (< val 0) (+ val 256) val))))",
-    "  (define (bytevector-u16-ref bv k end)",
-    "    (bytevector-uint-ref bv k end 2))",
-    "  (define (bytevector-u16-native-ref bv k)",
-    "    (bytevector-uint-ref bv k (native-endianness) 2))",
-    "  (define (bytevector-u16-set! bv k end val)",
-    "    (bytevector-uint-set! bv k end 2 val))",
-    "  (define (bytevector-u16-native-set! bv k val)",
-    "    (bytevector-uint-set! bv k (native-endianness) 2 val))",
-    "  (define (bytevector-s16-ref bv k end)",
-    "    (bytevector-sint-ref bv k end 2))",
-    "  (define (bytevector-s16-native-ref bv k)",
-    "    (bytevector-sint-ref bv k (native-endianness) 2))",
-    "  (define (bytevector-s16-set! bv k end val)",
-    "    (bytevector-sint-set! bv k end 2 val))",
-    "  (define (bytevector-s16-native-set! bv k val)",
-    "    (bytevector-sint-set! bv k (native-endianness) 2 val))",
-    "  (define (bytevector-u32-ref bv k end)",
-    "    (bytevector-uint-ref bv k end 4))",
-    "  (define (bytevector-u32-native-ref bv k)",
-    "    (bytevector-uint-ref bv k (native-endianness) 4))",
-    "  (define (bytevector-u32-set! bv k end val)",
-    "    (bytevector-uint-set! bv k end 4 val))",
-    "  (define (bytevector-u32-native-set! bv k val)",
-    "    (bytevector-uint-set! bv k (native-endianness) 4 val))",
-    "  (define (bytevector-s32-ref bv k end)",
-    "    (bytevector-sint-ref bv k end 4))",
-    "  (define (bytevector-s32-native-ref bv k)",
-    "    (bytevector-sint-ref bv k (native-endianness) 4))",
-    "  (define (bytevector-s32-set! bv k end val)",
-    "    (bytevector-sint-set! bv k end 4 val))",
-    "  (define (bytevector-s32-native-set! bv k val)",
-    "    (bytevector-sint-set! bv k (native-endianness) 4 val))",
-    "  (define (bytevector-u64-ref bv k end)",
-    "    (bytevector-uint-ref bv k end 8))",
-    "  (define (bytevector-u64-native-ref bv k)",
-    "    (bytevector-uint-ref bv k (native-endianness) 8))",
-    "  (define (bytevector-u64-set! bv k end val)",
-    "    (bytevector-uint-set! bv k end 8 val))",
-    "  (define (bytevector-u64-native-set! bv k val)",
-    "    (bytevector-uint-set! bv k (native-endianness) 8 val))",
-    "  (define (bytevector-s64-ref bv k end)",
-    "    (bytevector-sint-ref bv k end 8))",
-    "  (define (bytevector-s64-native-ref bv k)",
-    "    (bytevector-sint-ref bv k (native-endianness) 8))",
-    "  (define (bytevector-s64-set! bv k end val)",
-    "    (bytevector-sint-set! bv k end 8 val))",
-    "  (define (bytevector-s64-native-set! bv k val)",
-    "    (bytevector-sint-set! bv k (native-endianness) 8 val))",
-    ")",
-    "(library (rnrs hashtables (6))",
-    "  (export make-eq-hashtable make-eqv-hashtable make-hashtable hashtable?",
-    "          hashtable-size hashtable-ref hashtable-set! hashtable-delete!",
+    "          bytevector-s8-set! bytevector-copy", "          bytevector-copy! bytevector-append bytevector-fill!",
+    "          bytevector->u8-list u8-list->bytevector", "          string->utf8 utf8->string",
+    "          endianness native-endianness", "          bytevector-uint-ref bytevector-sint-ref",
+    "          bytevector-uint-set! bytevector-sint-set!", "          bytevector-u16-ref bytevector-u16-native-ref",
+    "          bytevector-u16-set! bytevector-u16-native-set!", "          bytevector-s16-ref bytevector-s16-native-ref",
+    "          bytevector-s16-set! bytevector-s16-native-set!", "          bytevector-u32-ref bytevector-u32-native-ref",
+    "          bytevector-u32-set! bytevector-u32-native-set!", "          bytevector-s32-ref bytevector-s32-native-ref",
+    "          bytevector-s32-set! bytevector-s32-native-set!", "          bytevector-u64-ref bytevector-u64-native-ref",
+    "          bytevector-u64-set! bytevector-u64-native-set!", "          bytevector-s64-ref bytevector-s64-native-ref",
+    "          bytevector-s64-set! bytevector-s64-native-set!)", "  (import)", "  (define-syntax endianness",
+    "    (syntax-rules (big little)", "      ((_ big) 'big)", "      ((_ little) 'little)))",
+    "  (define (bytevector-s8-ref bv k)", "    (let ((v (bytevector-u8-ref bv k)))",
+    "      (if (> v 127) (- v 256) v)))", "  (define (bytevector-s8-set! bv k val)",
+    "    (if (or (< val -128) (> val 127))", "        (assertion-violation 'bytevector-s8-set! \"value out of range\" val)",
+    "        (bytevector-u8-set! bv k (if (< val 0) (+ val 256) val))))", "  (define (bytevector-u16-ref bv k end)",
+    "    (bytevector-uint-ref bv k end 2))", "  (define (bytevector-u16-native-ref bv k)",
+    "    (bytevector-uint-ref bv k (native-endianness) 2))", "  (define (bytevector-u16-set! bv k end val)",
+    "    (bytevector-uint-set! bv k end 2 val))", "  (define (bytevector-u16-native-set! bv k val)",
+    "    (bytevector-uint-set! bv k (native-endianness) 2 val))", "  (define (bytevector-s16-ref bv k end)",
+    "    (bytevector-sint-ref bv k end 2))", "  (define (bytevector-s16-native-ref bv k)",
+    "    (bytevector-sint-ref bv k (native-endianness) 2))", "  (define (bytevector-s16-set! bv k end val)",
+    "    (bytevector-sint-set! bv k end 2 val))", "  (define (bytevector-s16-native-set! bv k val)",
+    "    (bytevector-sint-set! bv k (native-endianness) 2 val))", "  (define (bytevector-u32-ref bv k end)",
+    "    (bytevector-uint-ref bv k end 4))", "  (define (bytevector-u32-native-ref bv k)",
+    "    (bytevector-uint-ref bv k (native-endianness) 4))", "  (define (bytevector-u32-set! bv k end val)",
+    "    (bytevector-uint-set! bv k end 4 val))", "  (define (bytevector-u32-native-set! bv k val)",
+    "    (bytevector-uint-set! bv k (native-endianness) 4 val))", "  (define (bytevector-s32-ref bv k end)",
+    "    (bytevector-sint-ref bv k end 4))", "  (define (bytevector-s32-native-ref bv k)",
+    "    (bytevector-sint-ref bv k (native-endianness) 4))", "  (define (bytevector-s32-set! bv k end val)",
+    "    (bytevector-sint-set! bv k end 4 val))", "  (define (bytevector-s32-native-set! bv k val)",
+    "    (bytevector-sint-set! bv k (native-endianness) 4 val))", "  (define (bytevector-u64-ref bv k end)",
+    "    (bytevector-uint-ref bv k end 8))", "  (define (bytevector-u64-native-ref bv k)",
+    "    (bytevector-uint-ref bv k (native-endianness) 8))", "  (define (bytevector-u64-set! bv k end val)",
+    "    (bytevector-uint-set! bv k end 8 val))", "  (define (bytevector-u64-native-set! bv k val)",
+    "    (bytevector-uint-set! bv k (native-endianness) 8 val))", "  (define (bytevector-s64-ref bv k end)",
+    "    (bytevector-sint-ref bv k end 8))", "  (define (bytevector-s64-native-ref bv k)",
+    "    (bytevector-sint-ref bv k (native-endianness) 8))", "  (define (bytevector-s64-set! bv k end val)",
+    "    (bytevector-sint-set! bv k end 8 val))", "  (define (bytevector-s64-native-set! bv k val)",
+    "    (bytevector-sint-set! bv k (native-endianness) 8 val))", ")", "(library (rnrs hashtables (6))",
+    "  (export make-eq-hashtable make-eqv-hashtable make-hashtable hashtable?", "          hashtable-size hashtable-ref hashtable-set! hashtable-delete!",
     "          hashtable-contains? hashtable-update! hashtable-copy hashtable-clear!",
     "          hashtable-keys hashtable-entries hashtable-equivalence-function",
-    "          hashtable-hash-function hashtable-mutable?",
-    "          equal-hash string-hash string-ci-hash symbol-hash)",
-    "  (import)",
-    ")",
-    "(library (rnrs enums (6))",
-    "  (export define-enumeration make-enumeration enum-set-universe enum-set-indexer",
+    "          hashtable-hash-function hashtable-mutable?", "          equal-hash string-hash string-ci-hash symbol-hash)",
+    "  (import)", ")", "(library (rnrs enums (6))", "  (export define-enumeration make-enumeration enum-set-universe enum-set-indexer",
     "          enum-set-constructor enum-set? enum-set-member? enum-set-subset?",
     "          enum-set=? enum-set-union enum-set-intersection enum-set-difference",
-    "          enum-set-complement enum-set-projection enum-set->list)",
-    "  (import)",
-    ")",
-    "(library (rnrs unicode (6))",
-    "  (export char-alphabetic? char-numeric? char-whitespace?",
-    "          char-upper-case? char-lower-case? char-upcase char-downcase",
-    "          char-foldcase char-general-category",
-    "          string-upcase string-downcase string-foldcase",
-    "          string-normalize-nfc string-normalize-nfd",
-    "          string-normalize-nfkc string-normalize-nfkd)",
-    "  (import)",
-    ")",
-    "(library (rnrs exceptions (6))",
-    "  (export guard with-exception-handler raise raise-continuable error",
-    "          assertion-violation implementation-restriction-violation",
-    "          undefined-violation syntax-violation)",
-    "  (import)",
-    ")",
-    "(library (rnrs records syntactic (6))",
-    "  (export define-record-type fields immutable mutable nongenerative opaque",
-    "          parent parent-rtd protocol record-constructor-descriptor",
-    "          record-type-descriptor sealed)",
-    "  (import)",
-    ")",
-    "(library (rnrs records procedural (6))",
-    "  (export make-record-type-descriptor record-type-descriptor?",
-    "          record-type-name record-type-parent record-type-uid",
-    "          record-type-generative? record-type-sealed? record-type-opaque?",
-    "          record-type-field-names record-type-field-mutable?",
-    "          make-record-constructor-descriptor record-constructor-descriptor?",
+    "          enum-set-complement enum-set-projection enum-set->list)", "  (import)",
+    ")", "(library (rnrs unicode (6))", "  (export char-alphabetic? char-numeric? char-whitespace?",
+    "          char-upper-case? char-lower-case? char-upcase char-downcase", "          char-foldcase char-general-category",
+    "          string-upcase string-downcase string-foldcase", "          string-normalize-nfc string-normalize-nfd",
+    "          string-normalize-nfkc string-normalize-nfkd)", "  (import)", ")",
+    "(library (rnrs exceptions (6))", "  (export guard with-exception-handler raise raise-continuable error",
+    "          assertion-violation implementation-restriction-violation", "          undefined-violation syntax-violation)",
+    "  (import)", ")", "(library (rnrs records syntactic (6))", "  (export define-record-type fields immutable mutable nongenerative opaque",
+    "          parent parent-rtd protocol record-constructor-descriptor", "          record-type-descriptor sealed)",
+    "  (import)", ")", "(library (rnrs records procedural (6))", "  (export make-record-type-descriptor record-type-descriptor?",
+    "          record-type-name record-type-parent record-type-uid", "          record-type-generative? record-type-sealed? record-type-opaque?",
+    "          record-type-field-names record-type-field-mutable?", "          make-record-constructor-descriptor record-constructor-descriptor?",
     "          record-constructor record-predicate record-accessor record-mutator)",
-    "  (import)",
-    ")",
-    "(library (rnrs records inspection (6))",
-    "  (export record? record-rtd record-type-name record-type-parent record-type-uid",
+    "  (import)", ")", "(library (rnrs records inspection (6))", "  (export record? record-rtd record-type-name record-type-parent record-type-uid",
     "          record-type-generative? record-type-sealed? record-type-opaque?",
-    "          record-type-field-names record-type-field-mutable?)",
-    "  (import)",
-    ")",
-    "(library (rnrs lists (6))",
-    "  (export find find-tail for-all exists filter partition fold-left fold-right",
-    "          remp remove remq remv memp memq memv assp assq assv assoc",
-    "          member cons*)",
-    "  (import)",
-    "  (define (fold-left f acc lst)",
-    "    (let loop ((acc acc) (lst lst))",
-    "      (if (null? lst) acc",
-    "          (loop (f acc (car lst)) (cdr lst)))))",
-    "  (define (fold-right f acc lst)",
-    "    (if (null? lst) acc",
-    "        (f (car lst) (fold-right f acc (cdr lst)))))",
-    "  (define (filter pred lst)",
-    "    (cond ((null? lst) '())",
-    "          ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))",
-    "          (else (filter pred (cdr lst)))))",
-    "  (define (remove pred lst)",
-    "    (filter (lambda (x) (not (pred x))) lst))",
-    "  (define (remp pred lst)",
-    "    (remove pred lst))",
-    "  (define (remq obj lst)",
-    "    (remp (lambda (x) (eq? x obj)) lst))",
-    "  (define (remv obj lst)",
-    "    (remp (lambda (x) (eqv? x obj)) lst))",
-    "  (define (find pred lst)",
-    "    (cond ((null? lst) #f)",
-    "          ((pred (car lst)) (car lst))",
-    "          (else (find pred (cdr lst)))))",
-    "  (define (find-tail pred lst)",
-    "    (cond ((null? lst) #f)",
-    "          ((pred (car lst)) lst)",
-    "          (else (find-tail pred (cdr lst)))))",
-    "  (define (partition pred lst)",
-    "    (let loop ((lst lst) (yes '()) (no '()))",
-    "      (if (null? lst)",
-    "          (list (reverse yes) (reverse no))",
-    "          (if (pred (car lst))",
-    "              (loop (cdr lst) (cons (car lst) yes) no)",
-    "              (loop (cdr lst) yes (cons (car lst) no))))))",
-    "  (define (any-null? lists)",
-    "    (cond ((null? lists) #f)",
-    "          ((null? (car lists)) #t)",
-    "          (else (any-null? (cdr lists)))))",
-    "  (define (for-all pred . lists)",
-    "    (if (null? lists) #t",
-    "        (let loop ((lists lists))",
-    "          (if (any-null? lists)",
-    "              #t",
-    "              (and (apply pred (map car lists))",
-    "                   (loop (map cdr lists)))))))",
-    "  (define (exists pred . lists)",
-    "    (if (null? lists) #f",
-    "        (let loop ((lists lists))",
-    "          (if (any-null? lists)",
-    "              #f",
-    "              (let ((value (apply pred (map car lists))))",
-    "                (if value value (loop (map cdr lists))))))))",
-    "  (define (memp pred lst)",
-    "    (cond ((null? lst) #f)",
-    "          ((pred (car lst)) lst)",
-    "          (else (memp pred (cdr lst)))))",
-    "  (define (assp pred alist)",
-    "    (cond ((null? alist) #f)",
-    "          ((pred (caar alist)) (car alist))",
-    "          (else (assp pred (cdr alist)))))",
-    "  (define (cons* . args)",
-    "    (cond ((null? args) '())",
-    "          ((null? (cdr args)) (car args))",
-    "          (else (cons (car args) (apply cons* (cdr args))))))",
-    ")",
-    "(library (rnrs sorting (6))",
-    "  (export list-sort vector-sort vector-sort!)",
-    "  (import)",
-    "  (define (list-sort less? lst)",
-    "    (define (merge a b)",
-    "      (cond ((null? a) b)",
-    "            ((null? b) a)",
-    "            ((less? (car b) (car a))",
-    "             (cons (car b) (merge a (cdr b))))",
-    "            (else",
-    "             (cons (car a) (merge (cdr a) b)))))",
-    "    (define (split lst)",
-    "      (let loop ((slow lst) (fast lst) (acc '()))",
-    "        (if (or (null? fast) (null? (cdr fast)))",
-    "            (list (reverse acc) slow)",
-    "            (loop (cdr slow) (cddr fast) (cons (car slow) acc)))))",
-    "    (define (sort lst)",
-    "      (if (or (null? lst) (null? (cdr lst)))",
-    "          lst",
-    "          (let* ((parts (split lst))",
-    "                 (left (car parts))",
-    "                 (right (cadr parts)))",
-    "            (merge (sort left) (sort right)))))",
-    "    (sort lst))",
-    "  (define (vector-sort less? vec)",
-    "    (list->vector (list-sort less? (vector->list vec))))",
-    "  (define (vector-sort! less? vec)",
-    "    (let* ((sorted (vector-sort less? vec))",
-    "           (len (vector-length sorted)))",
-    "      (vector-copy! vec 0 sorted 0 len)",
-    "      vec))",
-    ")",
+    "          record-type-field-names record-type-field-mutable?)", "  (import)",
+    ")", "(library (rnrs lists (6))", "  (export find find-tail for-all exists filter partition fold-left fold-right",
+    "          remp remove remq remv memp memq memv assp assq assv assoc", "          member cons*)",
+    "  (import)", "  (define (fold-left f acc lst)", "    (let loop ((acc acc) (lst lst))",
+    "      (if (null? lst) acc", "          (loop (f acc (car lst)) (cdr lst)))))",
+    "  (define (fold-right f acc lst)", "    (if (null? lst) acc", "        (f (car lst) (fold-right f acc (cdr lst)))))",
+    "  (define (filter pred lst)", "    (cond ((null? lst) '())", "          ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))",
+    "          (else (filter pred (cdr lst)))))", "  (define (remove pred lst)",
+    "    (filter (lambda (x) (not (pred x))) lst))", "  (define (remp pred lst)",
+    "    (remove pred lst))", "  (define (remq obj lst)", "    (remp (lambda (x) (eq? x obj)) lst))",
+    "  (define (remv obj lst)", "    (remp (lambda (x) (eqv? x obj)) lst))", "  (define (find pred lst)",
+    "    (cond ((null? lst) #f)", "          ((pred (car lst)) (car lst))", "          (else (find pred (cdr lst)))))",
+    "  (define (find-tail pred lst)", "    (cond ((null? lst) #f)", "          ((pred (car lst)) lst)",
+    "          (else (find-tail pred (cdr lst)))))", "  (define (partition pred lst)",
+    "    (let loop ((lst lst) (yes '()) (no '()))", "      (if (null? lst)", "          (list (reverse yes) (reverse no))",
+    "          (if (pred (car lst))", "              (loop (cdr lst) (cons (car lst) yes) no)",
+    "              (loop (cdr lst) yes (cons (car lst) no))))))", "  (define (any-null? lists)",
+    "    (cond ((null? lists) #f)", "          ((null? (car lists)) #t)", "          (else (any-null? (cdr lists)))))",
+    "  (define (for-all pred . lists)", "    (if (null? lists) #t", "        (let loop ((lists lists))",
+    "          (if (any-null? lists)", "              #t", "              (and (apply pred (map car lists))",
+    "                   (loop (map cdr lists)))))))", "  (define (exists pred . lists)",
+    "    (if (null? lists) #f", "        (let loop ((lists lists))", "          (if (any-null? lists)",
+    "              #f", "              (let ((value (apply pred (map car lists))))",
+    "                (if value value (loop (map cdr lists))))))))", "  (define (memp pred lst)",
+    "    (cond ((null? lst) #f)", "          ((pred (car lst)) lst)", "          (else (memp pred (cdr lst)))))",
+    "  (define (assp pred alist)", "    (cond ((null? alist) #f)", "          ((pred (caar alist)) (car alist))",
+    "          (else (assp pred (cdr alist)))))", "  (define (cons* . args)", "    (cond ((null? args) '())",
+    "          ((null? (cdr args)) (car args))", "          (else (cons (car args) (apply cons* (cdr args))))))",
+    ")", "(library (rnrs sorting (6))", "  (export list-sort vector-sort vector-sort!)",
+    "  (import)", "  (define (list-sort less? lst)", "    (define (merge a b)", "      (cond ((null? a) b)",
+    "            ((null? b) a)", "            ((less? (car b) (car a))", "             (cons (car b) (merge a (cdr b))))",
+    "            (else", "             (cons (car a) (merge (cdr a) b)))))", "    (define (split lst)",
+    "      (let loop ((slow lst) (fast lst) (acc '()))", "        (if (or (null? fast) (null? (cdr fast)))",
+    "            (list (reverse acc) slow)", "            (loop (cdr slow) (cddr fast) (cons (car slow) acc)))))",
+    "    (define (sort lst)", "      (if (or (null? lst) (null? (cdr lst)))", "          lst",
+    "          (let* ((parts (split lst))", "                 (left (car parts))",
+    "                 (right (cadr parts)))", "            (merge (sort left) (sort right)))))",
+    "    (sort lst))", "  (define (vector-sort less? vec)", "    (list->vector (list-sort less? (vector->list vec))))",
+    "  (define (vector-sort! less? vec)", "    (let* ((sorted (vector-sort less? vec))",
+    "           (len (vector-length sorted)))", "      (vector-copy! vec 0 sorted 0 len)",
+    "      vec))", ")",
   ]
   lines.join("\n")
 }
@@ -1306,6 +1370,7 @@ fn load_stdlib(env : Env) -> Unit raise {
   let forms = parse_program(stdlib_source())
   for form in forms {
     let _ = eval_expr(form, env)
+
   }
 }
 
@@ -1317,6 +1382,7 @@ fn captures_is_empty(captures : Map[String, Value]) -> Bool {
   true
 }
 
+///|
 fn env_with_captures(env : Env, captures : Map[String, Value]) -> Env {
   if captures_is_empty(captures) {
     return env
@@ -1342,12 +1408,11 @@ fn eval_expr_impl(
   let mut state = MachineState::Eval(expr, env, Kont::Halt, handlers)
   while true {
     match state {
-      MachineState::Eval(current_expr, current_env, kont, handlers) => {
+      MachineState::Eval(current_expr, current_env, kont, handlers) =>
         match current_expr {
-          Datum::Label(_, cell) => {
+          Datum::Label(_, cell) =>
             state = MachineState::Eval(cell.val, current_env, kont, handlers)
-          }
-          Datum::Value(Value::SyntaxObject(obj)) => {
+          Datum::Value(Value::SyntaxObject(obj)) =>
             if unwrap_syntax {
               state = MachineState::Eval(obj.datum, current_env, kont, handlers)
             } else {
@@ -1356,9 +1421,12 @@ fn eval_expr_impl(
               } else {
                 current_expr
               }
-              state = MachineState::Apply(value_from_datum(literal), kont, handlers)
+              state = MachineState::Apply(
+                value_from_datum(literal),
+                kont,
+                handlers,
+              )
             }
-          }
           Datum::Nil
           | Datum::Bool(_)
           | Datum::Int(_)
@@ -1379,25 +1447,40 @@ fn eval_expr_impl(
             } else {
               current_expr
             }
-            state = MachineState::Apply(value_from_datum(literal), kont, handlers)
+            state = MachineState::Apply(
+              value_from_datum(literal),
+              kont,
+              handlers,
+            )
           }
-          Datum::Symbol(name) => {
+          Datum::Symbol(name) =>
             match env_get_macro(current_env, name) {
               Some(transformer) => {
-                let expansion = expand_macro(transformer, Datum::Symbol(name), current_env)
-                let next_env = env_with_captures(current_env, expansion.captures)
-                state = MachineState::Eval(expansion.datum, next_env, kont, handlers)
+                let expansion = expand_macro(
+                  transformer,
+                  Datum::Symbol(name),
+                  current_env,
+                )
+                let next_env = env_with_captures(
+                  current_env,
+                  expansion.captures,
+                )
+                state = MachineState::Eval(
+                  expansion.datum,
+                  next_env,
+                  kont,
+                  handlers,
+                )
               }
               None => {
                 let value = env_lookup(current_env, name)
                 state = MachineState::Apply(value, kont, handlers)
               }
             }
-          }
-          Datum::Pair(_, _) => state = eval_pair(current_expr, current_env, kont, handlers)
+          Datum::Pair(_, _) =>
+            state = eval_pair(current_expr, current_env, kont, handlers)
         }
-      }
-      MachineState::Apply(value, kont, handlers) => {
+      MachineState::Apply(value, kont, handlers) =>
         match kont {
           Kont::Halt => return value
           Kont::If(then_expr, else_expr, env, next) => {
@@ -1408,14 +1491,18 @@ fn eval_expr_impl(
               state = MachineState::Eval(then_expr, env, next, handlers)
             }
           }
-          Kont::Begin(rest, env, next) => {
+          Kont::Begin(rest, env, next) =>
             if rest.is_empty() {
               state = MachineState::Apply(value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::Begin(tail, env, next), handlers)
+              state = MachineState::Eval(
+                rest[0],
+                env,
+                Kont::Begin(tail, env, next),
+                handlers,
+              )
             }
-          }
           Kont::Set(name, env, next) => {
             let single = expect_single(value)
             env_set(env, name, single)
@@ -1467,7 +1554,12 @@ fn eval_expr_impl(
               state = MachineState::Apply(test_value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::And(tail, env, next), handlers)
+              state = MachineState::Eval(
+                rest[0],
+                env,
+                Kont::And(tail, env, next),
+                handlers,
+              )
             }
           }
           Kont::Or(rest, env, next) => {
@@ -1478,7 +1570,12 @@ fn eval_expr_impl(
               state = MachineState::Apply(test_value, next, handlers)
             } else {
               let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(rest[0], env, Kont::Or(tail, env, next), handlers)
+              state = MachineState::Eval(
+                rest[0],
+                env,
+                Kont::Or(tail, env, next),
+                handlers,
+              )
             }
           }
           Kont::Cond(parts, rest, env, next) => {
@@ -1491,7 +1588,12 @@ fn eval_expr_impl(
               if parts.length() != 3 {
                 raise @core.EvalError("invalid cond")
               }
-              state = MachineState::Eval(parts[2], env, Kont::CondArrow(test_value, next), handlers)
+              state = MachineState::Eval(
+                parts[2],
+                env,
+                Kont::CondArrow(test_value, next),
+                handlers,
+              )
             } else {
               let body = parts.sub(start=1).to_array()
               state = eval_sequence_state(body, env, next, handlers)
@@ -1576,7 +1678,9 @@ fn eval_expr_impl(
               state = MachineState::Eval(
                 expr,
                 env,
-                Kont::LetRecInit(bindings, next_index, next_values, env, body, next),
+                Kont::LetRecInit(
+                  bindings, next_index, next_values, env, body, next,
+                ),
                 handlers,
               )
             } else {
@@ -1604,7 +1708,9 @@ fn eval_expr_impl(
               state = MachineState::Eval(
                 expr,
                 env,
-                Kont::LetValues(bindings, next_index, next_collected, env, body, next),
+                Kont::LetValues(
+                  bindings, next_index, next_collected, env, body, next,
+                ),
                 handlers,
               )
             } else {
@@ -1661,14 +1767,26 @@ fn eval_expr_impl(
             let clauses = rest.sub(start=1).to_array()
             let rules = parse_syntax_case_rules(literals_expr, clauses, env)
             let call = value_to_syntax_datum(input)
-            let expansion = expand_macro(MacroTransformer::Rules(rules), call, env)
+            let expansion = expand_macro(
+              MacroTransformer::Rules(rules),
+              call,
+              env,
+            )
             let result = match expansion.datum {
               Datum::Value(Value::SyntaxObject(obj)) => Value::SyntaxObject(obj)
               _ => Value::Datum(expansion.datum)
             }
             state = MachineState::Apply(result, next, handlers)
           }
-          Kont::ParameterizeParam(bindings, index, params, values, env, body, next) => {
+          Kont::ParameterizeParam(
+            bindings,
+            index,
+            params,
+            values,
+            env,
+            body,
+            next
+          ) => {
             let param_value = expect_single(value)
             let param = value_as_parameter(param_value)
             let next_params : Array[Parameter] = []
@@ -1680,11 +1798,21 @@ fn eval_expr_impl(
             state = MachineState::Eval(
               expr,
               env,
-              Kont::ParameterizeValue(bindings, index, next_params, values, env, body, next),
+              Kont::ParameterizeValue(
+                bindings, index, next_params, values, env, body, next,
+              ),
               handlers,
             )
           }
-          Kont::ParameterizeValue(bindings, index, params, values, env, body, next) => {
+          Kont::ParameterizeValue(
+            bindings,
+            index,
+            params,
+            values,
+            env,
+            body,
+            next
+          ) => {
             let new_value = expect_single(value)
             let param = params[index]
             match param.converter {
@@ -1692,7 +1820,9 @@ fn eval_expr_impl(
                 state = apply_proc(
                   converter,
                   [new_value],
-                  Kont::ParameterizeConvert(bindings, index, params, values, env, body, next),
+                  Kont::ParameterizeConvert(
+                    bindings, index, params, values, env, body, next,
+                  ),
                   handlers,
                 )
               None => {
@@ -1708,13 +1838,7 @@ fn eval_expr_impl(
                     param_expr,
                     env,
                     Kont::ParameterizeParam(
-                      bindings,
-                      next_index,
-                      params,
-                      next_values,
-                      env,
-                      body,
-                      next,
+                      bindings, next_index, params, next_values, env, body, next,
                     ),
                     handlers,
                   )
@@ -1725,20 +1849,35 @@ fn eval_expr_impl(
                     let current = params[i]
                     let old_value = parameter_get(current)
                     let new_val = next_values[i]
-                    bindings_info.push(
-                      ParamBinding::{ param: current, old_value: old_value, new_value: new_val },
-                    )
+                    bindings_info.push(ParamBinding::{
+                      param: current,
+                      old_value,
+                      new_value: new_val,
+                    })
                     parameter_set(current, new_val)
                     i = i + 1
                   }
                   let winder = make_param_winder(bindings_info)
                   wind_push(winder)
-                  state = eval_sequence_state(body, env, Kont::WindExit(winder, next), handlers)
+                  state = eval_sequence_state(
+                    body,
+                    env,
+                    Kont::WindExit(winder, next),
+                    handlers,
+                  )
                 }
               }
             }
           }
-          Kont::ParameterizeConvert(bindings, index, params, values, env, body, next) => {
+          Kont::ParameterizeConvert(
+            bindings,
+            index,
+            params,
+            values,
+            env,
+            body,
+            next
+          ) => {
             let converted = expect_single(value)
             let next_values : Array[Value] = []
             for item in values {
@@ -1752,13 +1891,7 @@ fn eval_expr_impl(
                 param_expr,
                 env,
                 Kont::ParameterizeParam(
-                  bindings,
-                  next_index,
-                  params,
-                  next_values,
-                  env,
-                  body,
-                  next,
+                  bindings, next_index, params, next_values, env, body, next,
                 ),
                 handlers,
               )
@@ -1769,15 +1902,22 @@ fn eval_expr_impl(
                 let current = params[i]
                 let old_value = parameter_get(current)
                 let new_val = next_values[i]
-                bindings_info.push(
-                  ParamBinding::{ param: current, old_value: old_value, new_value: new_val },
-                )
+                bindings_info.push(ParamBinding::{
+                  param: current,
+                  old_value,
+                  new_value: new_val,
+                })
                 parameter_set(current, new_val)
                 i = i + 1
               }
               let winder = make_param_winder(bindings_info)
               wind_push(winder)
-              state = eval_sequence_state(body, env, Kont::WindExit(winder, next), handlers)
+              state = eval_sequence_state(
+                body,
+                env,
+                Kont::WindExit(winder, next),
+                handlers,
+              )
             }
           }
           Kont::MakeParameter(converter, next) => {
@@ -1792,27 +1932,52 @@ fn eval_expr_impl(
           }
           Kont::GuardResult(info) => {
             let guard_value = expect_single(value)
-            state = apply_proc(info.resume_value, [guard_value], kont, info.handlers)
+            state = apply_proc(
+              info.resume_value,
+              [guard_value],
+              kont,
+              info.handlers,
+            )
           }
           Kont::GuardCond(parts, rest, env, info) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = guard_start(rest, env, info, handlers)
             } else if parts.length() == 1 {
-              state = apply_proc(info.resume_value, [test_value], kont, info.handlers)
+              state = apply_proc(
+                info.resume_value,
+                [test_value],
+                kont,
+                info.handlers,
+              )
             } else if parts.length() >= 2 && symbol_name(parts[1]) is Some("=>") {
               if parts.length() != 3 {
                 raise @core.EvalError("invalid guard")
               }
-              state = MachineState::Eval(parts[2], env, Kont::GuardCondArrow(test_value, info), handlers)
+              state = MachineState::Eval(
+                parts[2],
+                env,
+                Kont::GuardCondArrow(test_value, info),
+                handlers,
+              )
             } else {
               let body = parts.sub(start=1).to_array()
-              state = eval_sequence_state(body, env, Kont::GuardResult(info), handlers)
+              state = eval_sequence_state(
+                body,
+                env,
+                Kont::GuardResult(info),
+                handlers,
+              )
             }
           }
           Kont::GuardCondArrow(test_value, info) => {
             let proc_value = expect_single(value)
-            state = apply_proc(proc_value, [test_value], Kont::GuardResult(info), handlers)
+            state = apply_proc(
+              proc_value,
+              [test_value],
+              Kont::GuardResult(info),
+              handlers,
+            )
           }
           Kont::Case(clauses, env, next) => {
             let key_value = expect_single(value)
@@ -1847,21 +2012,33 @@ fn eval_expr_impl(
             let record = value_as_record(record_value)
             let parent_type = match record_type.parent {
               Some(parent) => parent
-              None => raise @core.EvalError("invalid record constructor descriptor")
+              None =>
+                raise @core.EvalError("invalid record constructor descriptor")
             }
             if !record_type_is_a(record.record_type, parent_type) {
-              raise @core.EvalError("type error: record type mismatch: expected \{parent_type.name}")
+              raise @core.EvalError(
+                "type error: record type mismatch: expected \{parent_type.name}",
+              )
             }
             let parent_values : Array[Value] = []
             for field in record.fields {
               parent_values.push(field.val)
             }
             let proc = Value::RecordProc(
-              make_record_proc(RecordProcKind::ProtocolP(record_type, parent_values)),
+              make_record_proc(
+                RecordProcKind::ProtocolP(record_type, parent_values),
+              ),
             )
             state = MachineState::Apply(proc, next, handlers)
           }
-          Kont::DefineRecordType(ctor_name, pred_name, record_type, bindings, env, next) => {
+          Kont::DefineRecordType(
+            ctor_name,
+            pred_name,
+            record_type,
+            bindings,
+            env,
+            next
+          ) => {
             let ctor_value = expect_single(value)
             if !is_procedure_value(ctor_value) {
               raise @core.EvalError("type error: procedure expected")
@@ -1870,30 +2047,44 @@ fn eval_expr_impl(
             env_define(
               env,
               pred_name,
-              Value::RecordProc(make_record_proc(RecordProcKind::Predicate(record_type))),
+              Value::RecordProc(
+                make_record_proc(RecordProcKind::Predicate(record_type)),
+              ),
             )
             for binding in bindings {
               env_define(
                 env,
                 binding.accessor,
-                Value::RecordProc(make_record_proc(RecordProcKind::Accessor(record_type, binding.index))),
+                Value::RecordProc(
+                  make_record_proc(
+                    RecordProcKind::Accessor(record_type, binding.index),
+                  ),
+                ),
               )
               match binding.mutator {
-                Some(mut_name) => {
+                Some(mut_name) =>
                   env_define(
                     env,
                     mut_name,
                     Value::RecordProc(
-                      make_record_proc(RecordProcKind::Mutator(record_type, binding.index)),
+                      make_record_proc(
+                        RecordProcKind::Mutator(record_type, binding.index),
+                      ),
                     ),
                   )
-                }
                 None => ()
               }
             }
             state = MachineState::Apply(Value::Void, next, handlers)
           }
-          Kont::DefineConditionType(ctor_name, pred_name, record_type, bindings, env, next) => {
+          Kont::DefineConditionType(
+            ctor_name,
+            pred_name,
+            record_type,
+            bindings,
+            env,
+            next
+          ) => {
             let ctor_value = expect_single(value)
             if !is_procedure_value(ctor_value) {
               raise @core.EvalError("type error: procedure expected")
@@ -1922,7 +2113,14 @@ fn eval_expr_impl(
           Kont::HashtableFindResult(table, key, idx, op, next) => {
             let result_value = expect_single(value)
             if is_false(result_value) {
-              state = hashtable_find_state(table, key, idx + 1, op, next, handlers)
+              state = hashtable_find_state(
+                table,
+                key,
+                idx + 1,
+                op,
+                next,
+                handlers,
+              )
             } else {
               state = hashtable_found_state(table, key, idx, op, next, handlers)
             }
@@ -1948,24 +2146,36 @@ fn eval_expr_impl(
             if !for_each {
               next_results.push(value_to_datum_element(single))
             }
-            state = map_step(proc, lists, next_results, for_each, next, handlers)
+            state = map_step(
+              proc, lists, next_results, for_each, next, handlers,
+            )
           }
           Kont::VectorMapFinalize(next) => {
             let single = expect_single(value)
             let result_datum = value_as_datum(single)
             let items = datum_list_to_array(result_datum)
-            state = MachineState::Apply(Value::Datum(Datum::Vector(items)), next, handlers)
+            state = MachineState::Apply(
+              Value::Datum(Datum::Vector(items)),
+              next,
+              handlers,
+            )
           }
           Kont::StringMapFinalize(next) => {
             let single = expect_single(value)
             let result_datum = value_as_datum(single)
-            let string_value =
-              apply_primitive(Primitive::ListToString, [Value::Datum(result_datum)])
+            let string_value = apply_primitive(Primitive::ListToString, [
+              Value::Datum(result_datum),
+            ])
             state = MachineState::Apply(string_value, next, handlers)
           }
           Kont::WindEnter(thunk, winder, next) => {
             wind_push(winder)
-            state = apply_proc(thunk, [], Kont::WindExit(winder, next), handlers)
+            state = apply_proc(
+              thunk,
+              [],
+              Kont::WindExit(winder, next),
+              handlers,
+            )
           }
           Kont::WindExit(winder, next) => {
             let actions = [WindAction::After(winder)]
@@ -1973,23 +2183,34 @@ fn eval_expr_impl(
           }
           Kont::WindActions(actions, resume_value, final_kont, final_handlers) => {
             let _ = value
-            state = run_wind_actions(actions, resume_value, final_kont, final_handlers, handlers)
+            state = run_wind_actions(
+              actions, resume_value, final_kont, final_handlers, handlers,
+            )
           }
-          Kont::WindPush(winder, actions, resume_value, final_kont, final_handlers) => {
+          Kont::WindPush(
+            winder,
+            actions,
+            resume_value,
+            final_kont,
+            final_handlers
+          ) => {
             let _ = value
             wind_push(winder)
-            state = run_wind_actions(actions, resume_value, final_kont, final_handlers, handlers)
+            state = run_wind_actions(
+              actions, resume_value, final_kont, final_handlers, handlers,
+            )
           }
           Kont::ForcePromise(promise, next) => {
             promise.state.val = PromiseState::Value(value)
             state = MachineState::Apply(value, next, handlers)
           }
-          Kont::RaiseNonCont => raise @core.EvalError("non-continuable exception")
-          Kont::RaiseCont(next) => state = MachineState::Apply(value, next, handlers)
+          Kont::RaiseNonCont =>
+            raise @core.EvalError("non-continuable exception")
+          Kont::RaiseCont(next) =>
+            state = MachineState::Apply(value, next, handlers)
           Kont::RestoreHandlers(prev_handlers, next) =>
             state = MachineState::Apply(value, next, prev_handlers)
         }
-      }
     }
   }
   Value::Void
@@ -2006,6 +2227,7 @@ fn eval_expr_transformer(expr : Datum, env : Env) -> Value raise EvalError {
 }
 
 ///|
+
 ///|
 fn eval_quote(args : Array[Datum]) -> Value raise EvalError {
   match args.length() {
@@ -2082,7 +2304,12 @@ fn eval_syntax_case_state(
     raise arity_mismatch(3, args.length())
   } else {
     let rest = args.sub(start=1).to_array()
-    MachineState::Eval(args[0], env, Kont::SyntaxCase(rest, env, kont), handlers)
+    MachineState::Eval(
+      args[0],
+      env,
+      Kont::SyntaxCase(rest, env, kont),
+      handlers,
+    )
   }
 }
 
@@ -2118,24 +2345,33 @@ fn unwrap_form(expr : Datum, name : String) -> Datum? {
 }
 
 ///|
-fn quasiquote_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalError {
+fn quasiquote_expand(
+  expr : Datum,
+  env : Env,
+  depth : Int,
+) -> Datum raise EvalError {
   match unwrap_form(expr, "quasiquote") {
     Some(arg) =>
-      return list_from_array([Datum::Symbol("quasiquote"), quasiquote_expand(arg, env, depth + 1)])
+      return list_from_array([
+        Datum::Symbol("quasiquote"),
+        quasiquote_expand(arg, env, depth + 1),
+      ])
     None => ()
   }
   match unwrap_form(expr, "unquote") {
-    Some(arg) => {
+    Some(arg) =>
       if depth == 1 {
         return value_to_datum_element(eval_expr(arg, env))
       } else {
-        return list_from_array([Datum::Symbol("unquote"), quasiquote_expand(arg, env, depth - 1)])
+        return list_from_array([
+          Datum::Symbol("unquote"),
+          quasiquote_expand(arg, env, depth - 1),
+        ])
       }
-    }
     None => ()
   }
   match unwrap_form(expr, "unquote-splicing") {
-    Some(arg) => {
+    Some(arg) =>
       if depth == 1 {
         raise @core.EvalError("unquote-splicing not in list context")
       } else {
@@ -2144,7 +2380,6 @@ fn quasiquote_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalEr
           quasiquote_expand(arg, env, depth - 1),
         ])
       }
-    }
     None => ()
   }
   match expr {
@@ -2194,24 +2429,33 @@ fn quasiquote_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalEr
 }
 
 ///|
-fn quasisyntax_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalError {
+fn quasisyntax_expand(
+  expr : Datum,
+  env : Env,
+  depth : Int,
+) -> Datum raise EvalError {
   match unwrap_form(expr, "quasisyntax") {
     Some(arg) =>
-      return list_from_array([Datum::Symbol("quasisyntax"), quasisyntax_expand(arg, env, depth + 1)])
+      return list_from_array([
+        Datum::Symbol("quasisyntax"),
+        quasisyntax_expand(arg, env, depth + 1),
+      ])
     None => ()
   }
   match unwrap_form(expr, "unsyntax") {
-    Some(arg) => {
+    Some(arg) =>
       if depth == 1 {
         return value_to_datum_element(eval_expr(arg, env))
       } else {
-        return list_from_array([Datum::Symbol("unsyntax"), quasisyntax_expand(arg, env, depth - 1)])
+        return list_from_array([
+          Datum::Symbol("unsyntax"),
+          quasisyntax_expand(arg, env, depth - 1),
+        ])
       }
-    }
     None => ()
   }
   match unwrap_form(expr, "unsyntax-splicing") {
-    Some(arg) => {
+    Some(arg) =>
       if depth == 1 {
         raise @core.EvalError("unsyntax-splicing not in list context")
       } else {
@@ -2220,7 +2464,6 @@ fn quasisyntax_expand(expr : Datum, env : Env, depth : Int) -> Datum raise EvalE
           quasisyntax_expand(arg, env, depth - 1),
         ])
       }
-    }
     None => ()
   }
   match expr {
@@ -2283,6 +2526,7 @@ fn list_with_tail(items : Array[Datum], tail : Datum) -> Datum {
   }
   result
 }
+
 ///|
 fn parse_formals(expr : Datum) -> Formals raise EvalError {
   let names : Array[String] = []
@@ -2317,7 +2561,10 @@ fn values_to_list_value(values : Array[Value]) -> Value {
 }
 
 ///|
-fn formals_bindings(formals : Formals, values : Array[Value]) -> Array[(String, Value)] raise EvalError {
+fn formals_bindings(
+  formals : Formals,
+  values : Array[Value],
+) -> Array[(String, Value)] raise EvalError {
   let params = formals.params
   let min_len = params.length()
   match formals.rest {
@@ -2391,7 +2638,11 @@ fn eval_case_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
     }
     let formals = parse_formals(parts[0])
     let body = parts.sub(start=1).to_array()
-    clauses.push(CaseClause::{ params: formals.params, rest: formals.rest, body })
+    clauses.push(CaseClause::{
+      params: formals.params,
+      rest: formals.rest,
+      body,
+    })
   }
   Value::CaseClosure(make_case_closure(clauses, env))
 }
@@ -2446,7 +2697,9 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
 }
 
 ///|
-fn parse_value_bindings(expr : Datum) -> Array[(Formals, Datum)] raise EvalError {
+fn parse_value_bindings(
+  expr : Datum,
+) -> Array[(Formals, Datum)] raise EvalError {
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(Formals, Datum)] = []
   for binding in bindings {
@@ -2462,7 +2715,9 @@ fn parse_value_bindings(expr : Datum) -> Array[(Formals, Datum)] raise EvalError
 }
 
 ///|
-fn parse_parameterize_bindings(expr : Datum) -> Array[(Datum, Datum)] raise EvalError {
+fn parse_parameterize_bindings(
+  expr : Datum,
+) -> Array[(Datum, Datum)] raise EvalError {
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(Datum, Datum)] = []
   for binding in bindings {
@@ -2477,6 +2732,7 @@ fn parse_parameterize_bindings(expr : Datum) -> Array[(Datum, Datum)] raise Eval
 }
 
 ///|
+
 ///|
 fn parse_symbol(expr : Datum) -> String raise EvalError {
   match symbol_name(datum_unwrap_syntax(expr)) {
@@ -2505,13 +2761,12 @@ fn parse_symbol_list(items : Array[Datum]) -> Array[String] raise EvalError {
 ///|
 fn expect_single(value : Value) -> Value raise EvalError {
   match value {
-    Value::Values(values) => {
+    Value::Values(values) =>
       if values.length() == 1 {
         values[0]
       } else {
         raise @core.EvalError("multiple values in single-value context")
       }
-    }
     _ => value
   }
 }
@@ -2566,11 +2821,21 @@ fn guard_start(
         return eval_sequence_state(body, env, Kont::GuardResult(info), handlers)
       } else {
         let rest = clauses.sub(start=i + 1).to_array()
-        return MachineState::Eval(parts[0], env, Kont::GuardCond(parts, rest, env, info), handlers)
+        return MachineState::Eval(
+          parts[0],
+          env,
+          Kont::GuardCond(parts, rest, env, info),
+          handlers,
+        )
       }
     }
   }
-  raise_to_handlers(info.condition, info.handlers, info.raise_kont, info.continuable)
+  raise_to_handlers(
+    info.condition,
+    info.handlers,
+    info.raise_kont,
+    info.continuable,
+  )
 }
 
 ///|
@@ -2659,6 +2924,7 @@ fn common_wind_prefix(current : Array[Winder], target : Array[Winder]) -> Int {
 }
 
 ///|
+
 ///|
 fn run_wind_actions(
   actions : Array[WindAction],
@@ -2680,13 +2946,16 @@ fn run_wind_actions(
           handlers,
         )
       }
-      WindAction::Before(winder) => apply_winder_before(
-        winder,
-        Kont::WindPush(winder, rest, resume_value, final_kont, final_handlers),
-        handlers,
-      )
+      WindAction::Before(winder) =>
+        apply_winder_before(
+          winder,
+          Kont::WindPush(winder, rest, resume_value, final_kont, final_handlers),
+          handlers,
+        )
       WindAction::SwitchHandlers(next_handlers) =>
-        run_wind_actions(rest, resume_value, final_kont, final_handlers, next_handlers)
+        run_wind_actions(
+          rest, resume_value, final_kont, final_handlers, next_handlers,
+        )
     }
   }
 }
@@ -2716,6 +2985,7 @@ fn eval_begin_for_syntax_state(
   let syntax_env = env_clone(env)
   for form in args {
     let _ = eval_expr(form, syntax_env)
+
   }
   let frame = syntax_env[syntax_env.length() - 1]
   for key in frame.keys() {
@@ -2741,7 +3011,12 @@ fn eval_if_state(
   if args.length() != 3 {
     raise arity_mismatch(3, args.length())
   } else {
-    MachineState::Eval(args[0], env, Kont::If(args[1], args[2], env, kont), handlers)
+    MachineState::Eval(
+      args[0],
+      env,
+      Kont::If(args[1], args[2], env, kont),
+      handlers,
+    )
   }
 }
 
@@ -2759,7 +3034,13 @@ fn eval_define_state(
       Datum::Symbol(_) => {
         let name = parse_symbol(args[0])
         match args.length() {
-          2 => MachineState::Eval(args[1], env, Kont::Define(name, env, kont), handlers)
+          2 =>
+            MachineState::Eval(
+              args[1],
+              env,
+              Kont::Define(name, env, kont),
+              handlers,
+            )
           n => raise arity_mismatch(2, n)
         }
       }
@@ -2767,7 +3048,11 @@ fn eval_define_state(
         let name = parse_symbol(head.val)
         let formals = parse_formals(tail.val)
         let body = args.sub(start=1).to_array()
-        env_define(env, name, Value::Closure(make_closure(formals.params, formals.rest, body, env)))
+        env_define(
+          env,
+          name,
+          Value::Closure(make_closure(formals.params, formals.rest, body, env)),
+        )
         MachineState::Apply(Value::Void, kont, handlers)
       }
       _ => raise @core.EvalError("type error: symbol expected")
@@ -2785,7 +3070,12 @@ fn eval_define_values_state(
   match args.length() {
     2 => {
       let formals = parse_formals(args[0])
-      MachineState::Eval(args[1], env, Kont::DefineValues(formals, env, kont), handlers)
+      MachineState::Eval(
+        args[1],
+        env,
+        Kont::DefineValues(formals, env, kont),
+        handlers,
+      )
     }
     n => raise arity_mismatch(2, n)
   }
@@ -2821,7 +3111,12 @@ fn eval_guard_state(
       next_handlers.push(item)
     }
     next_handlers.push(handler)
-    eval_sequence_state(body, env, Kont::RestoreHandlers(handlers, kont), next_handlers)
+    eval_sequence_state(
+      body,
+      env,
+      Kont::RestoreHandlers(handlers, kont),
+      next_handlers,
+    )
   }
 }
 
@@ -2865,13 +3160,18 @@ fn eval_set_state(
         Some(transformer) => {
           let expansion = expand_macro(
             transformer,
-            list_from_array([Datum::Symbol("set!"), Datum::Symbol(name), args[1]]),
+            list_from_array([
+              Datum::Symbol("set!"),
+              Datum::Symbol(name),
+              args[1],
+            ]),
             env,
           )
           let next_env = env_with_captures(env, expansion.captures)
           MachineState::Eval(expansion.datum, next_env, kont, handlers)
         }
-        None => MachineState::Eval(args[1], env, Kont::Set(name, env, kont), handlers)
+        None =>
+          MachineState::Eval(args[1], env, Kont::Set(name, env, kont), handlers)
       }
     }
     n => raise arity_mismatch(2, n)
@@ -2905,7 +3205,12 @@ fn eval_let_state(
           eval_sequence_state(body, env, kont, handlers)
         } else {
           let (_, expr) = bindings[0]
-          MachineState::Eval(expr, env, Kont::Let(bindings, 0, [], env, body, kont), handlers)
+          MachineState::Eval(
+            expr,
+            env,
+            Kont::Let(bindings, 0, [], env, body, kont),
+            handlers,
+          )
         }
       }
     }
@@ -2913,6 +3218,7 @@ fn eval_let_state(
 }
 
 ///|
+
 ///|
 fn eval_let_values_state(
   args : Array[Datum],
@@ -2929,7 +3235,12 @@ fn eval_let_values_state(
       eval_sequence_state(body, env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::LetValues(bindings, 0, [], env, body, kont), handlers)
+      MachineState::Eval(
+        expr,
+        env,
+        Kont::LetValues(bindings, 0, [], env, body, kont),
+        handlers,
+      )
     }
   }
 }
@@ -2950,7 +3261,12 @@ fn eval_let_star_values_state(
       eval_sequence_state(body, env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::LetStarValues(bindings, 0, env, body, kont), handlers)
+      MachineState::Eval(
+        expr,
+        env,
+        Kont::LetStarValues(bindings, 0, env, body, kont),
+        handlers,
+      )
     }
   }
 }
@@ -2971,7 +3287,12 @@ fn eval_let_star_state(
       eval_sequence_state(body, env, kont, handlers)
     } else {
       let (_, expr) = bindings[0]
-      MachineState::Eval(expr, env, Kont::LetStar(bindings, 0, env, body, kont), handlers)
+      MachineState::Eval(
+        expr,
+        env,
+        Kont::LetStar(bindings, 0, env, body, kont),
+        handlers,
+      )
     }
   }
 }
@@ -3039,7 +3360,11 @@ fn eval_letrec_star_state(
 }
 
 ///|
-fn expand_named_let(name : String, bindings : Array[(String, Datum)], body : Array[Datum]) -> Datum {
+fn expand_named_let(
+  name : String,
+  bindings : Array[(String, Datum)],
+  body : Array[Datum],
+) -> Datum {
   let param_items : Array[Datum] = []
   let arg_items : Array[Datum] = []
   for binding in bindings {
@@ -3105,15 +3430,13 @@ fn eval_letrec_syntax_state(
         raise @core.EvalError("type error: syntax binding expected")
       }
       let name = parse_symbol(parts[0])
-      let placeholder = MacroTransformer::Rules(
-        SyntaxRules::{
-          literals: [],
-          rules: [],
-          ellipsis: "...",
-          kind: SyntaxRulesKind::SyntaxRules,
-          def_env: new_env,
-        },
-      )
+      let placeholder = MacroTransformer::Rules(SyntaxRules::{
+        literals: [],
+        rules: [],
+        ellipsis: "...",
+        kind: SyntaxRulesKind::SyntaxRules,
+        def_env: new_env,
+      })
       env_define(new_env, name, Value::Macro(placeholder))
       i = i + 1
     }
@@ -3138,7 +3461,9 @@ fn build_begin(exprs : Array[Datum]) -> Datum {
 }
 
 ///|
-fn parse_do_bindings(expr : Datum) -> (Array[String], Array[Datum], Array[Datum]) raise EvalError {
+fn parse_do_bindings(
+  expr : Datum,
+) -> (Array[String], Array[Datum], Array[Datum]) raise EvalError {
   let bindings = datum_list_to_array(expr)
   let names : Array[String] = []
   let inits : Array[Datum] = []
@@ -3267,11 +3592,19 @@ fn eval_define_record_type_state(
           continue
         }
         Some("sealed") => {
-          is_sealed = if parts.length() == 1 { true } else { parse_bool(parts[1]) }
+          is_sealed = if parts.length() == 1 {
+            true
+          } else {
+            parse_bool(parts[1])
+          }
           continue
         }
         Some("opaque") => {
-          is_opaque = if parts.length() == 1 { true } else { parse_bool(parts[1]) }
+          is_opaque = if parts.length() == 1 {
+            true
+          } else {
+            parse_bool(parts[1])
+          }
           continue
         }
         Some("nongenerative") => {
@@ -3303,11 +3636,10 @@ fn eval_define_record_type_state(
     None => None
   }
   match parent_type {
-    Some(parent) => {
+    Some(parent) =>
       if parent.is_sealed {
         raise @core.EvalError("invalid define-record-type")
       }
-    }
     None => ()
   }
   let parent_fields = match parent_type {
@@ -3350,10 +3682,8 @@ fn eval_define_record_type_state(
     if ctor_fields.length() != new_field_names.length() {
       raise @core.EvalError("invalid define-record-type")
     }
-  } else {
-    if ctor_fields.length() != parent_count + new_field_names.length() {
-      raise @core.EvalError("invalid define-record-type")
-    }
+  } else if ctor_fields.length() != parent_count + new_field_names.length() {
+    raise @core.EvalError("invalid define-record-type")
   }
   let fields : Array[RecordField] = []
   let field_index : Map[String, Int] = {}
@@ -3390,9 +3720,11 @@ fn eval_define_record_type_state(
       None => raise @core.EvalError("invalid define-record-type")
     }
     let mutator_name = mutators.get(field_name)
-    bindings.push(
-      RecordFieldBinding::{ accessor: accessor_name, index: idx, mutator: mutator_name },
-    )
+    bindings.push(RecordFieldBinding::{
+      accessor: accessor_name,
+      index: idx,
+      mutator: mutator_name,
+    })
   }
   let existing_desc = match uid {
     Some(uid_name) => lookup_record_type_descriptor_by_uid(uid_name)
@@ -3400,7 +3732,13 @@ fn eval_define_record_type_state(
   }
   let (record_type, ctor_desc) = match existing_desc {
     Some(desc) => {
-      if !record_type_matches(desc.record_type, parent_type, is_sealed, is_opaque, fields) {
+      if !record_type_matches(
+          desc.record_type,
+          parent_type,
+          is_sealed,
+          is_opaque,
+          fields,
+        ) {
         raise @core.EvalError("invalid define-record-type")
       }
       if protocol_expr is Some(_) {
@@ -3415,12 +3753,7 @@ fn eval_define_record_type_state(
         None => is_opaque
       }
       let record_type = make_record_type(
-        record_name,
-        parent_type,
-        is_sealed,
-        effective_opaque,
-        uid,
-        fields,
+        record_name, parent_type, is_sealed, effective_opaque, uid, fields,
       )
       let protocol_value = match protocol_expr {
         Some(expr) => {
@@ -3436,14 +3769,17 @@ fn eval_define_record_type_state(
         Some(desc) => Some(desc.constructor_desc)
         None => None
       }
-      let ctor_desc = make_record_constructor_descriptor(record_type, parent_ctor_desc, protocol_value)
+      let ctor_desc = make_record_constructor_descriptor(
+        record_type, parent_ctor_desc, protocol_value,
+      )
       let rtd = make_record_type_descriptor(record_type, ctor_desc)
       let _ = register_record_type(record_name, rtd)
       (record_type, ctor_desc)
     }
   }
-  let next_kont =
-    Kont::DefineRecordType(ctor_name, pred_name, record_type, bindings, env, kont)
+  let next_kont = Kont::DefineRecordType(
+    ctor_name, pred_name, record_type, bindings, env, kont,
+  )
   record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
 }
 
@@ -3517,9 +3853,11 @@ fn eval_define_condition_type_state(
       Some(name) => name
       None => raise @core.EvalError("invalid define-condition-type")
     }
-    bindings.push(
-      RecordFieldBinding::{ accessor: accessor_name, index: parent_count + i, mutator: None },
-    )
+    bindings.push(RecordFieldBinding::{
+      accessor: accessor_name,
+      index: parent_count + i,
+      mutator: None,
+    })
     i = i + 1
   }
   let record_type = make_record_type(
@@ -3530,13 +3868,17 @@ fn eval_define_condition_type_state(
     None,
     fields,
   )
-  let ctor_desc =
-    make_record_constructor_descriptor(record_type, Some(parent_desc.constructor_desc), None)
+  let ctor_desc = make_record_constructor_descriptor(
+    record_type,
+    Some(parent_desc.constructor_desc),
+    None,
+  )
   let rtd = make_record_type_descriptor(record_type, ctor_desc)
   let _ = register_record_type(record_name, rtd)
   env_define(env, record_name, Value::RecordTypeDescriptor(rtd))
-  let next_kont =
-    Kont::DefineConditionType(ctor_name, pred_name, record_type, bindings, env, kont)
+  let next_kont = Kont::DefineConditionType(
+    ctor_name, pred_name, record_type, bindings, env, kont,
+  )
   record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
 }
 
@@ -3563,12 +3905,20 @@ fn eval_define_enumeration_state(
   let members = enum_set_members_all_true(symbols)
   let universe = make_enum_set(symbols, members)
   env_define(env, type_name, Value::EnumSet(universe))
-  env_define(env, ctor_name, Value::EnumSetProc(make_enum_set_proc(EnumSetProcKind::Constructor(universe))))
+  env_define(
+    env,
+    ctor_name,
+    Value::EnumSetProc(
+      make_enum_set_proc(EnumSetProcKind::Constructor(universe)),
+    ),
+  )
   MachineState::Apply(Value::Void, kont, handlers)
 }
 
 ///|
+
 ///|
+
 ///|
 fn array_contains_name(items : Array[String], name : String) -> Bool {
   for item in items {
@@ -3595,7 +3945,9 @@ fn record_constructor_from_descriptor(
 ) -> MachineState raise EvalError {
   match desc.protocol {
     None => {
-      let ctor = Value::RecordProc(make_record_proc(RecordProcKind::Constructor(desc.record_type)))
+      let ctor = Value::RecordProc(
+        make_record_proc(RecordProcKind::Constructor(desc.record_type)),
+      )
       MachineState::Apply(ctor, kont, handlers)
     }
     Some(protocol) => {
@@ -3603,13 +3955,20 @@ fn record_constructor_from_descriptor(
         raise @core.EvalError("type error: procedure expected")
       }
       let arg = match desc.record_type.parent {
-        None => Value::RecordProc(make_record_proc(RecordProcKind::Constructor(desc.record_type)))
+        None =>
+          Value::RecordProc(
+            make_record_proc(RecordProcKind::Constructor(desc.record_type)),
+          )
         Some(parent) => {
           let parent_desc = match desc.parent_desc {
             Some(p) => p
             None => default_constructor_descriptor(parent)
           }
-          Value::RecordProc(make_record_proc(RecordProcKind::ProtocolN(desc.record_type, parent_desc)))
+          Value::RecordProc(
+            make_record_proc(
+              RecordProcKind::ProtocolN(desc.record_type, parent_desc),
+            ),
+          )
         }
       }
       apply_proc(protocol, [arg], Kont::RecordConstructorDone(kont), handlers)
@@ -3634,35 +3993,38 @@ fn apply_record_proc(
         MachineState::Apply(Value::Record(record), kont, handlers)
       }
     }
-    RecordProcKind::Predicate(record_type) => {
+    RecordProcKind::Predicate(record_type) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         let result = match args[0] {
-          Value::Record(record) => record_type_is_a(record.record_type, record_type)
+          Value::Record(record) =>
+            record_type_is_a(record.record_type, record_type)
           _ => false
         }
         MachineState::Apply(bool_value(result), kont, handlers)
       }
-    }
-    RecordProcKind::Accessor(record_type, idx) => {
+    RecordProcKind::Accessor(record_type, idx) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         let record = value_as_record(args[0])
         if !record_type_is_a(record.record_type, record_type) {
-          raise @core.EvalError("type error: record type mismatch: expected \{record_type.name}")
+          raise @core.EvalError(
+            "type error: record type mismatch: expected \{record_type.name}",
+          )
         }
         MachineState::Apply(record.fields[idx].val, kont, handlers)
       }
-    }
-    RecordProcKind::Mutator(record_type, idx) => {
+    RecordProcKind::Mutator(record_type, idx) =>
       if args.length() != 2 {
         raise arity_mismatch(2, args.length())
       } else {
         let record = value_as_record(args[0])
         if !record_type_is_a(record.record_type, record_type) {
-          raise @core.EvalError("type error: record type mismatch: expected \{record_type.name}")
+          raise @core.EvalError(
+            "type error: record type mismatch: expected \{record_type.name}",
+          )
         }
         let field = record.record_type.fields[idx]
         if !field.mutable {
@@ -3671,7 +4033,6 @@ fn apply_record_proc(
         record.fields[idx].val = args[1]
         MachineState::Apply(Value::Void, kont, handlers)
       }
-    }
     RecordProcKind::ProtocolN(record_type, parent_desc) => {
       let parent_type = match record_type.parent {
         Some(parent) => parent
@@ -3687,7 +4048,9 @@ fn apply_record_proc(
             parent_values.push(arg)
           }
           let proc = Value::RecordProc(
-            make_record_proc(RecordProcKind::ProtocolP(record_type, parent_values)),
+            make_record_proc(
+              RecordProcKind::ProtocolP(record_type, parent_values),
+            ),
           )
           MachineState::Apply(proc, kont, handlers)
         }
@@ -3734,27 +4097,25 @@ fn apply_condition_proc(
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
   match proc.kind {
-    ConditionProcKind::Predicate(record_type) => {
+    ConditionProcKind::Predicate(record_type) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         let base = condition_base_type()
         let mut ok = false
         match condition_components_opt(args[0], base) {
-          Some(components) => {
+          Some(components) =>
             for record in components {
               if record_type_is_a(record.record_type, record_type) {
                 ok = true
                 break
               }
             }
-          }
           None => ()
         }
         MachineState::Apply(bool_value(ok), kont, handlers)
       }
-    }
-    ConditionProcKind::Accessor(record_type, idx) => {
+    ConditionProcKind::Accessor(record_type, idx) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
@@ -3768,13 +4129,14 @@ fn apply_condition_proc(
           }
         }
         match found {
-          Some(record) => MachineState::Apply(record.fields[idx].val, kont, handlers)
-          None => raise @core.EvalError(
-            "type error: condition type mismatch: expected \{record_type.name}",
-          )
+          Some(record) =>
+            MachineState::Apply(record.fields[idx].val, kont, handlers)
+          None =>
+            raise @core.EvalError(
+              "type error: condition type mismatch: expected \{record_type.name}",
+            )
         }
       }
-    }
   }
 }
 
@@ -3792,15 +4154,19 @@ fn apply_enum_set_proc(
       }
       let name = parse_symbol(value_as_datum(args[0]))
       match enum_set_index_of(set.universe, name) {
-        Some(idx) => MachineState::Apply(Value::Datum(Datum::Int(idx)), kont, handlers)
-        None => MachineState::Apply(Value::Datum(Datum::Bool(false)), kont, handlers)
+        Some(idx) =>
+          MachineState::Apply(Value::Datum(Datum::Int(idx)), kont, handlers)
+        None =>
+          MachineState::Apply(Value::Datum(Datum::Bool(false)), kont, handlers)
       }
     }
     EnumSetProcKind::Constructor(set) => {
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       }
-      let names = parse_symbol_list(datum_list_to_array(value_as_datum(args[0])))
+      let names = parse_symbol_list(
+        datum_list_to_array(value_as_datum(args[0])),
+      )
       let subset = enum_set_from_names(set.universe, names)
       MachineState::Apply(Value::EnumSet(subset), kont, handlers)
     }
@@ -3825,7 +4191,10 @@ fn lookup_condition_record_type(name : String) -> RecordType raise EvalError {
 }
 
 ///|
-fn make_condition_record(name : String, values : Array[Value]) -> Record raise EvalError {
+fn make_condition_record(
+  name : String,
+  values : Array[Value],
+) -> Record raise EvalError {
   let record_type = lookup_condition_record_type(name)
   if record_type.fields.length() != values.length() {
     raise @core.EvalError("type error: condition field count mismatch")
@@ -3849,7 +4218,11 @@ fn raise_condition(
 }
 
 ///|
-fn hashtable_key_equal(equiv : HashtableEquiv, left : Value, right : Value) -> Bool {
+fn hashtable_key_equal(
+  equiv : HashtableEquiv,
+  left : Value,
+  right : Value,
+) -> Bool {
   match equiv {
     HashtableEquiv::Eq => value_eqv(left, right)
     HashtableEquiv::Eqv => value_eqv(left, right)
@@ -3874,7 +4247,12 @@ fn hashtable_find_state(
   let entry = entries[idx]
   match table.equiv {
     HashtableEquiv::Proc(proc) =>
-      apply_proc(proc, [key, entry.key], Kont::HashtableFindResult(table, key, idx, op, kont), handlers)
+      apply_proc(
+        proc,
+        [key, entry.key],
+        Kont::HashtableFindResult(table, key, idx, op, kont),
+        handlers,
+      )
     _ =>
       if hashtable_key_equal(table.equiv, key, entry.key) {
         hashtable_found_state(table, key, idx, op, kont, handlers)
@@ -3897,7 +4275,8 @@ fn hashtable_found_state(
   let entry = entries[idx]
   match op {
     HashtableOp::Ref(_) => MachineState::Apply(entry.value.val, kont, handlers)
-    HashtableOp::Contains => MachineState::Apply(bool_value(true), kont, handlers)
+    HashtableOp::Contains =>
+      MachineState::Apply(bool_value(true), kont, handlers)
     HashtableOp::Set(value) => {
       if !table.mutable {
         raise @core.EvalError("hashtable is immutable")
@@ -3943,8 +4322,10 @@ fn hashtable_not_found_state(
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
   match op {
-    HashtableOp::Ref(default_value) => MachineState::Apply(default_value, kont, handlers)
-    HashtableOp::Contains => MachineState::Apply(bool_value(false), kont, handlers)
+    HashtableOp::Ref(default_value) =>
+      MachineState::Apply(default_value, kont, handlers)
+    HashtableOp::Contains =>
+      MachineState::Apply(bool_value(false), kont, handlers)
     HashtableOp::Set(value) => {
       if !table.mutable {
         raise @core.EvalError("hashtable is immutable")
@@ -3985,7 +4366,14 @@ fn apply_hashtable_ref(
   let table = value_as_hashtable(args[0])
   let key = args[1]
   let default_value = args[2]
-  hashtable_find_state(table, key, 0, HashtableOp::Ref(default_value), kont, handlers)
+  hashtable_find_state(
+    table,
+    key,
+    0,
+    HashtableOp::Ref(default_value),
+    kont,
+    handlers,
+  )
 }
 
 ///|
@@ -4057,11 +4445,13 @@ fn apply_hashtable_update(
   )
 }
 
+///|
 priv struct LibraryNameSpec {
   base : String
   version : Array[Int]?
 }
 
+///|
 priv enum VersionRef {
   Exact(Array[Int])
   Gt(Array[Int])
@@ -4073,18 +4463,22 @@ priv enum VersionRef {
   Not(Ref[VersionRef])
 }
 
+///|
 priv struct LibraryRef {
   base : String
   version_ref : VersionRef?
 }
 
+///|
 priv struct LibraryVersionInfo {
   name : String
   version : Array[Int]
   has_version : Bool
 }
 
-let library_versions_registry : Ref[Map[String, Array[LibraryVersionInfo]]] = Ref::new({})
+///|
+let library_versions_registry : Ref[Map[String, Array[LibraryVersionInfo]]] = Ref::new({},
+)
 
 ///|
 fn reset_library_version_registry() -> Unit {
@@ -4161,7 +4555,9 @@ fn parse_version_list(expr : Datum) -> Array[Int] raise EvalError {
 }
 
 ///|
-fn parse_version_ref_version(items : Array[Datum]) -> Array[Int] raise EvalError {
+fn parse_version_ref_version(
+  items : Array[Datum],
+) -> Array[Int] raise EvalError {
   if items.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -4212,10 +4608,14 @@ fn parse_version_ref(expr : Datum) -> VersionRef raise EvalError {
       }
       VersionRef::Not(Ref::new(parse_version_ref(items[1])))
     }
-    Datum::Symbol(">") => VersionRef::Gt(parse_version_ref_version(items.sub(start=1).to_array()))
-    Datum::Symbol(">=") => VersionRef::Ge(parse_version_ref_version(items.sub(start=1).to_array()))
-    Datum::Symbol("<") => VersionRef::Lt(parse_version_ref_version(items.sub(start=1).to_array()))
-    Datum::Symbol("<=") => VersionRef::Le(parse_version_ref_version(items.sub(start=1).to_array()))
+    Datum::Symbol(">") =>
+      VersionRef::Gt(parse_version_ref_version(items.sub(start=1).to_array()))
+    Datum::Symbol(">=") =>
+      VersionRef::Ge(parse_version_ref_version(items.sub(start=1).to_array()))
+    Datum::Symbol("<") =>
+      VersionRef::Lt(parse_version_ref_version(items.sub(start=1).to_array()))
+    Datum::Symbol("<=") =>
+      VersionRef::Le(parse_version_ref_version(items.sub(start=1).to_array()))
     Datum::Int(_) => VersionRef::Exact(parse_version_items(items))
     _ => raise @core.EvalError("invalid library name")
   }
@@ -4366,7 +4766,7 @@ fn select_library_for_ref(reference : LibraryRef) -> LibraryVersionInfo? {
         }
         match best {
           None => best = Some(entry)
-          Some(current) => {
+          Some(current) =>
             if version_ref is None {
               if entry.has_version && !current.has_version {
                 best = Some(entry)
@@ -4378,7 +4778,6 @@ fn select_library_for_ref(reference : LibraryRef) -> LibraryVersionInfo? {
             } else if compare_versions(entry.version, current.version) > 0 {
               best = Some(entry)
             }
-          }
         }
       }
       best
@@ -4387,7 +4786,9 @@ fn select_library_for_ref(reference : LibraryRef) -> LibraryVersionInfo? {
 }
 
 ///|
-fn library_exports_from_ref(reference : LibraryRef) -> Map[String, Binding] raise EvalError {
+fn library_exports_from_ref(
+  reference : LibraryRef,
+) -> Map[String, Binding] raise EvalError {
   match select_library_for_ref(reference) {
     Some(entry) => library_exports(entry.name)
     None => raise @core.EvalError("unknown library: \{reference.base}")
@@ -4442,47 +4843,17 @@ fn parse_export_clause(expr : Datum) -> Array[(String, String)] raise EvalError 
 ///|
 fn base_syntax_keywords() -> Array[String] {
   [
-    "...",
-    "_",
-    "=>",
-    "and",
-    "begin",
-    "case",
-    "cond",
-    "define",
-    "define-syntax",
-    "else",
-    "identifier-syntax",
-    "if",
-    "lambda",
-    "let",
-    "let*",
-    "let*-values",
-    "let-syntax",
-    "let-values",
-    "letrec",
-    "letrec*",
-    "letrec-syntax",
-    "or",
-    "quasiquote",
-    "quote",
-    "set!",
-    "syntax-rules",
-    "unquote",
-    "unquote-splicing",
+    "...", "_", "=>", "and", "begin", "case", "cond", "define", "define-syntax",
+    "else", "identifier-syntax", "if", "lambda", "let", "let*", "let*-values", "let-syntax",
+    "let-values", "letrec", "letrec*", "letrec-syntax", "or", "quasiquote", "quote",
+    "set!", "syntax-rules", "unquote", "unquote-splicing",
   ]
 }
 
 ///|
 fn syntax_case_keywords() -> Array[String] {
   [
-    "...",
-    "_",
-    "with-syntax",
-    "syntax",
-    "quasisyntax",
-    "unsyntax",
-    "unsyntax-splicing",
+    "...", "_", "with-syntax", "syntax", "quasisyntax", "unsyntax", "unsyntax-splicing",
     "syntax-case",
   ]
 }
@@ -4505,17 +4876,8 @@ fn enums_syntax_keywords() -> Array[String] {
 ///|
 fn records_syntax_keywords() -> Array[String] {
   [
-    "define-record-type",
-    "fields",
-    "immutable",
-    "mutable",
-    "nongenerative",
-    "opaque",
-    "parent",
-    "parent-rtd",
-    "protocol",
-    "record-constructor-descriptor",
-    "record-type-descriptor",
+    "define-record-type", "fields", "immutable", "mutable", "nongenerative", "opaque",
+    "parent", "parent-rtd", "protocol", "record-constructor-descriptor", "record-type-descriptor",
     "sealed",
   ]
 }
@@ -4653,7 +5015,10 @@ fn import_set_rename(
 }
 
 ///|
-fn import_set_prefix(exports : Map[String, Binding], prefix : String) -> Map[String, Binding] {
+fn import_set_prefix(
+  exports : Map[String, Binding],
+  prefix : String,
+) -> Map[String, Binding] {
   let result : Map[String, Binding] = {}
   for key in exports.keys() {
     match exports.get(key) {
@@ -4665,7 +5030,9 @@ fn import_set_prefix(exports : Map[String, Binding], prefix : String) -> Map[Str
 }
 
 ///|
-fn parse_rename_specs(items : Array[Datum]) -> Array[(String, String)] raise EvalError {
+fn parse_rename_specs(
+  items : Array[Datum],
+) -> Array[(String, String)] raise EvalError {
   let renames : Array[(String, String)] = []
   for item in items {
     let parts = datum_list_to_array(item)
@@ -4679,6 +5046,7 @@ fn parse_rename_specs(items : Array[Datum]) -> Array[(String, String)] raise Eva
   renames
 }
 
+///|
 priv struct ImportPhases {
   run : Bool
   expand : Bool
@@ -4701,7 +5069,7 @@ fn parse_for_phases(items : Array[Datum]) -> ImportPhases raise EvalError {
           raise @core.EvalError("invalid import set")
         }
         match parts[0] {
-          Datum::Symbol("meta") => {
+          Datum::Symbol("meta") =>
             match parts[1] {
               Datum::Int(n) =>
                 if n == 0 {
@@ -4713,7 +5081,6 @@ fn parse_for_phases(items : Array[Datum]) -> ImportPhases raise EvalError {
                 }
               _ => raise @core.EvalError("invalid import set")
             }
-          }
           _ => raise @core.EvalError("invalid import set")
         }
       }
@@ -4739,18 +5106,12 @@ fn filter_exports_by_phase(
     match exports.get(key) {
       Some(binding) =>
         match binding.value {
-          Value::Macro(_) =>
-            if phases.expand {
-              result[key] = exports[key]
-            }
+          Value::Macro(_) => if phases.expand { result[key] = exports[key] }
           Value::SyntaxKeyword(_) =>
             if phases.expand {
               result[key] = exports[key]
             }
-          _ =>
-            if phases.run {
-              result[key] = exports[key]
-            }
+          _ => if phases.run { result[key] = exports[key] }
         }
       None => ()
     }
@@ -4843,13 +5204,16 @@ fn eval_library_state(
   }
   for form in body {
     let _ = eval_expr(form, lib_env)
+
   }
   let export_map : Map[String, Binding] = {}
   for export_spec in exports {
     let (external, internal) = export_spec
     if is_syntax_keyword(internal) {
-      export_map[external] =
-        Binding::{ id: next_binding_id(), value: Value::SyntaxKeyword(external) }
+      export_map[external] = Binding::{
+        id: next_binding_id(),
+        value: Value::SyntaxKeyword(external),
+      }
     } else {
       export_map[external] = env_lookup_binding(lib_env, internal)
     }
@@ -4949,7 +5313,12 @@ fn case_dispatch(
           if parts.length() != 3 {
             raise @core.EvalError("invalid case")
           }
-          return MachineState::Eval(parts[2], env, Kont::CaseArrow(key, kont), handlers)
+          return MachineState::Eval(
+            parts[2],
+            env,
+            Kont::CaseArrow(key, kont),
+            handlers,
+          )
         }
         let body = parts.sub(start=1).to_array()
         return eval_sequence_state(body, env, kont, handlers)
@@ -4979,7 +5348,12 @@ fn cond_start(
         return eval_sequence_state(body, env, kont, handlers)
       } else {
         let rest = clauses.sub(start=i + 1).to_array()
-        return MachineState::Eval(parts[0], env, Kont::Cond(parts, rest, env, kont), handlers)
+        return MachineState::Eval(
+          parts[0],
+          env,
+          Kont::Cond(parts, rest, env, kont),
+          handlers,
+        )
       }
     }
   }
@@ -5009,7 +5383,7 @@ fn cond_expand_feature(expr : Datum) -> Bool raise EvalError {
         raise @core.EvalError("invalid cond-expand")
       }
       match items[0] {
-        Datum::Symbol("and") => {
+        Datum::Symbol("and") =>
           if items.length() == 1 {
             true
           } else {
@@ -5022,7 +5396,6 @@ fn cond_expand_feature(expr : Datum) -> Bool raise EvalError {
             }
             true
           }
-        }
         Datum::Symbol("or") => {
           let mut i = 1
           while i < items.length() {
@@ -5074,12 +5447,11 @@ fn eval_cond_expand_state(
         let body = parts.sub(start=1).to_array()
         return eval_sequence_state(body, env, kont, handlers)
       }
-      _ => {
+      _ =>
         if cond_expand_feature(parts[0]) {
           let body = parts.sub(start=1).to_array()
           return eval_sequence_state(body, env, kont, handlers)
         }
-      }
     }
     i = i + 1
   }
@@ -5101,39 +5473,53 @@ fn eval_pair(
     let head = items[0]
     let args = items.sub(start=1).to_array()
     match symbol_name(datum_unwrap_syntax(head)) {
-      Some("define-syntax") => MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
+      Some("define-syntax") =>
+        MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
       Some("library") => eval_library_state(args, env, kont, handlers)
       Some("import") => eval_import_state(args, env, kont, handlers)
       Some("include") => eval_include_state(args, env, kont, handlers, false)
       Some("include-ci") => eval_include_state(args, env, kont, handlers, true)
       Some("include-library-declarations") =>
         eval_include_state(args, env, kont, handlers, false)
-      Some("define-record-type") => eval_define_record_type_state(args, env, kont, handlers)
-      Some("define-condition-type") => eval_define_condition_type_state(args, env, kont, handlers)
-      Some("define-enumeration") => eval_define_enumeration_state(args, env, kont, handlers)
+      Some("define-record-type") =>
+        eval_define_record_type_state(args, env, kont, handlers)
+      Some("define-condition-type") =>
+        eval_define_condition_type_state(args, env, kont, handlers)
+      Some("define-enumeration") =>
+        eval_define_enumeration_state(args, env, kont, handlers)
       Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
-      Some("quasiquote") => MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
-      Some("syntax") => MachineState::Apply(eval_syntax(args, env), kont, handlers)
-      Some("quasisyntax") => MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
+      Some("quasiquote") =>
+        MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
+      Some("syntax") =>
+        MachineState::Apply(eval_syntax(args, env), kont, handlers)
+      Some("quasisyntax") =>
+        MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
       Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
-      Some("delay") => MachineState::Apply(eval_delay(args, env), kont, handlers)
+      Some("delay") =>
+        MachineState::Apply(eval_delay(args, env), kont, handlers)
       Some("if") => eval_if_state(args, env, kont, handlers)
       Some("begin") => eval_sequence_state(args, env, kont, handlers)
-      Some("begin-for-syntax") => eval_begin_for_syntax_state(args, env, kont, handlers)
-      Some("lambda") => MachineState::Apply(eval_lambda(args, env), kont, handlers)
-      Some("case-lambda") => MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
+      Some("begin-for-syntax") =>
+        eval_begin_for_syntax_state(args, env, kont, handlers)
+      Some("lambda") =>
+        MachineState::Apply(eval_lambda(args, env), kont, handlers)
+      Some("case-lambda") =>
+        MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
       Some("define") => eval_define_state(args, env, kont, handlers)
-      Some("define-values") => eval_define_values_state(args, env, kont, handlers)
+      Some("define-values") =>
+        eval_define_values_state(args, env, kont, handlers)
       Some("set!") => eval_set_state(args, env, kont, handlers)
       Some("let") => eval_let_state(args, env, kont, handlers)
       Some("let-values") => eval_let_values_state(args, env, kont, handlers)
-      Some("let*-values") => eval_let_star_values_state(args, env, kont, handlers)
+      Some("let*-values") =>
+        eval_let_star_values_state(args, env, kont, handlers)
       Some("let*") => eval_let_star_state(args, env, kont, handlers)
       Some("letrec") => eval_letrec_state(args, env, kont, handlers)
       Some("letrec*") => eval_letrec_star_state(args, env, kont, handlers)
       Some("parameterize") => eval_parameterize_state(args, env, kont, handlers)
       Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
-      Some("letrec-syntax") => eval_letrec_syntax_state(args, env, kont, handlers)
+      Some("letrec-syntax") =>
+        eval_letrec_syntax_state(args, env, kont, handlers)
       Some("and") => eval_and_state(args, env, kont, handlers)
       Some("or") => eval_or_state(args, env, kont, handlers)
       Some("cond") => cond_start(args, env, kont, handlers)
@@ -5141,17 +5527,23 @@ fn eval_pair(
       Some("guard") => eval_guard_state(args, env, kont, handlers)
       Some("do") => eval_do_state(args, env, kont, handlers)
       Some("case") => eval_case_state(args, env, kont, handlers)
-      Some(name) => {
+      Some(name) =>
         match env_get_macro(env, name) {
           Some(transformer) => {
             let expansion = expand_macro(transformer, expr_unwrapped, env)
             let next_env = env_with_captures(env, expansion.captures)
             MachineState::Eval(expansion.datum, next_env, kont, handlers)
           }
-          None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)
+          None =>
+            MachineState::Eval(
+              head,
+              env,
+              Kont::AppFun(args, env, kont),
+              handlers,
+            )
         }
-      }
-      None => MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)
+      None =>
+        MachineState::Eval(head, env, Kont::AppFun(args, env, kont), handlers)
     }
   }
 }
@@ -5176,7 +5568,11 @@ fn map_step(
         if for_each {
           return MachineState::Apply(Value::Void, kont, handlers)
         }
-        return MachineState::Apply(Value::Datum(list_from_array(results)), kont, handlers)
+        return MachineState::Apply(
+          Value::Datum(list_from_array(results)),
+          kont,
+          handlers,
+        )
       }
       Datum::Pair(car, cdr) => {
         args.push(value_from_datum(car.val))
@@ -5185,7 +5581,12 @@ fn map_step(
       _ => raise @core.EvalError("type error: proper list expected")
     }
   }
-  apply_proc(proc, args, Kont::MapStep(proc, next_lists, results, for_each, kont), handlers)
+  apply_proc(
+    proc,
+    args,
+    Kont::MapStep(proc, next_lists, results, for_each, kont),
+    handlers,
+  )
 }
 
 ///|
@@ -5211,7 +5612,7 @@ fn apply_proc(
 ) -> MachineState raise EvalError {
   match proc {
     Value::Primitive(Primitive::Apply) => apply_apply(args, kont, handlers)
-    Value::Primitive(Primitive::CallWithValues) => {
+    Value::Primitive(Primitive::CallWithValues) =>
       if args.length() != 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5219,15 +5620,13 @@ fn apply_proc(
         let consumer = args[1]
         apply_proc(producer, [], Kont::CallWithValues(consumer, kont), handlers)
       }
-    }
-    Value::Primitive(Primitive::RecordConstructor) => {
+    Value::Primitive(Primitive::RecordConstructor) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         let desc = value_as_record_constructor_descriptor(args[0])
         record_constructor_from_descriptor(desc, kont, handlers)
       }
-    }
     Value::Primitive(Primitive::HashtableRef) =>
       apply_hashtable_ref(args, kont, handlers)
     Value::Primitive(Primitive::HashtableSet) =>
@@ -5238,17 +5637,26 @@ fn apply_proc(
       apply_hashtable_contains(args, kont, handlers)
     Value::Primitive(Primitive::HashtableUpdate) =>
       apply_hashtable_update(args, kont, handlers)
-    Value::Primitive(Primitive::MakeParameter) => {
+    Value::Primitive(Primitive::MakeParameter) =>
       match args.length() {
-        1 => MachineState::Apply(Value::Parameter(make_parameter(args[0])), kont, handlers)
+        1 =>
+          MachineState::Apply(
+            Value::Parameter(make_parameter(args[0])),
+            kont,
+            handlers,
+          )
         2 => {
           let converter = args[1]
-          apply_proc(converter, [args[0]], Kont::MakeParameter(converter, kont), handlers)
+          apply_proc(
+            converter,
+            [args[0]],
+            Kont::MakeParameter(converter, kont),
+            handlers,
+          )
         }
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
-    }
-    Value::Primitive(Primitive::DynamicWind) => {
+    Value::Primitive(Primitive::DynamicWind) =>
       if args.length() != 3 {
         raise arity_mismatch(3, args.length())
       } else {
@@ -5256,10 +5664,13 @@ fn apply_proc(
         let thunk = args[1]
         let after = args[2]
         let winder = make_proc_winder(before, after)
-        apply_winder_before(winder, Kont::WindEnter(thunk, winder, kont), handlers)
+        apply_winder_before(
+          winder,
+          Kont::WindEnter(thunk, winder, kont),
+          handlers,
+        )
       }
-    }
-    Value::Primitive(Primitive::Eval) => {
+    Value::Primitive(Primitive::Eval) =>
       if args.length() != 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5267,7 +5678,6 @@ fn apply_proc(
         let eval_env = value_as_eval_env(args[1])
         MachineState::Eval(expr, eval_env.env, kont, handlers)
       }
-    }
     Value::Primitive(Primitive::Environment) => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
@@ -5279,7 +5689,7 @@ fn apply_proc(
       }
       MachineState::Apply(Value::EvalEnv(make_eval_env(env)), kont, handlers)
     }
-    Value::Primitive(Primitive::MakePromise) => {
+    Value::Primitive(Primitive::MakePromise) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
@@ -5289,23 +5699,27 @@ fn apply_proc(
         }
         MachineState::Apply(Value::Promise(make_promise(thunk)), kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::Force) => {
+    Value::Primitive(Primitive::Force) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         match args[0] {
           Value::Promise(promise) =>
             match promise.state.val {
-              PromiseState::Value(result) => MachineState::Apply(result, kont, handlers)
+              PromiseState::Value(result) =>
+                MachineState::Apply(result, kont, handlers)
               PromiseState::Thunk(thunk) =>
-                apply_proc(thunk, [], Kont::ForcePromise(promise, kont), handlers)
+                apply_proc(
+                  thunk,
+                  [],
+                  Kont::ForcePromise(promise, kont),
+                  handlers,
+                )
             }
           _ => raise @core.EvalError("type error: promise expected")
         }
       }
-    }
-    Value::Primitive(Primitive::WithExceptionHandler) => {
+    Value::Primitive(Primitive::WithExceptionHandler) =>
       if args.length() != 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5319,8 +5733,7 @@ fn apply_proc(
         let restore = Kont::RestoreHandlers(handlers, kont)
         apply_proc(thunk, [], restore, next_handlers)
       }
-    }
-    Value::Primitive(Primitive::Error) => {
+    Value::Primitive(Primitive::Error) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5331,11 +5744,12 @@ fn apply_proc(
         components.push(make_condition_record("&error", []))
         components.push(make_condition_record("&message", [message]))
         components.push(make_condition_record("&who", [who]))
-        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        components.push(
+          make_condition_record("&irritants", [irritants_list_value(irritants)]),
+        )
         raise_condition(components, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::AssertionViolation) => {
+    Value::Primitive(Primitive::AssertionViolation) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5346,11 +5760,12 @@ fn apply_proc(
         components.push(make_condition_record("&assertion", []))
         components.push(make_condition_record("&message", [message]))
         components.push(make_condition_record("&who", [who]))
-        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        components.push(
+          make_condition_record("&irritants", [irritants_list_value(irritants)]),
+        )
         raise_condition(components, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::ImplementationRestrictionViolation) => {
+    Value::Primitive(Primitive::ImplementationRestrictionViolation) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5358,14 +5773,17 @@ fn apply_proc(
         let message = args[1]
         let irritants = args.sub(start=2).to_array()
         let components : Array[Record] = []
-        components.push(make_condition_record("&implementation-restriction", []))
+        components.push(
+          make_condition_record("&implementation-restriction", []),
+        )
         components.push(make_condition_record("&message", [message]))
         components.push(make_condition_record("&who", [who]))
-        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        components.push(
+          make_condition_record("&irritants", [irritants_list_value(irritants)]),
+        )
         raise_condition(components, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::UndefinedViolation) => {
+    Value::Primitive(Primitive::UndefinedViolation) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5376,28 +5794,38 @@ fn apply_proc(
         components.push(make_condition_record("&undefined", []))
         components.push(make_condition_record("&message", [message]))
         components.push(make_condition_record("&who", [who]))
-        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        components.push(
+          make_condition_record("&irritants", [irritants_list_value(irritants)]),
+        )
         raise_condition(components, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::SyntaxViolation) => {
+    Value::Primitive(Primitive::SyntaxViolation) =>
       if args.length() < 3 {
         raise arity_mismatch(3, args.length())
       } else {
         let who = args[0]
         let message = args[1]
         let form = args[2]
-        let subform = if args.length() >= 4 { args[3] } else { Value::Datum(Datum::Bool(false)) }
-        let irritants = if args.length() >= 4 { args.sub(start=4).to_array() } else { [] }
+        let subform = if args.length() >= 4 {
+          args[3]
+        } else {
+          Value::Datum(Datum::Bool(false))
+        }
+        let irritants = if args.length() >= 4 {
+          args.sub(start=4).to_array()
+        } else {
+          []
+        }
         let components : Array[Record] = []
         components.push(make_condition_record("&syntax", [form, subform]))
         components.push(make_condition_record("&message", [message]))
         components.push(make_condition_record("&who", [who]))
-        components.push(make_condition_record("&irritants", [irritants_list_value(irritants)]))
+        components.push(
+          make_condition_record("&irritants", [irritants_list_value(irritants)]),
+        )
         raise_condition(components, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::Raise) => {
+    Value::Primitive(Primitive::Raise) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else if handlers.is_empty() {
@@ -5405,12 +5833,12 @@ fn apply_proc(
       } else {
         let handler = handlers[handlers.length() - 1]
         match handler {
-          Value::GuardHandler(guard_handler) => handle_guard(guard_handler, args[0], kont, false)
+          Value::GuardHandler(guard_handler) =>
+            handle_guard(guard_handler, args[0], kont, false)
           _ => apply_proc(handler, [args[0]], Kont::RaiseNonCont, handlers)
         }
       }
-    }
-    Value::Primitive(Primitive::RaiseContinuable) => {
+    Value::Primitive(Primitive::RaiseContinuable) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else if handlers.is_empty() {
@@ -5418,20 +5846,19 @@ fn apply_proc(
       } else {
         let handler = handlers[handlers.length() - 1]
         match handler {
-          Value::GuardHandler(guard_handler) => handle_guard(guard_handler, args[0], kont, true)
+          Value::GuardHandler(guard_handler) =>
+            handle_guard(guard_handler, args[0], kont, true)
           _ => apply_proc(handler, [args[0]], Kont::RaiseCont(kont), handlers)
         }
       }
-    }
-    Value::Primitive(Primitive::CallCC) => {
+    Value::Primitive(Primitive::CallCC) =>
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
         let cont = capture_continuation(kont, handlers)
         apply_proc(args[0], [Value::Continuation(cont)], kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::Map) => {
+    Value::Primitive(Primitive::Map) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5444,8 +5871,7 @@ fn apply_proc(
         }
         map_step(proc_value, lists, [], false, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::ForEach) => {
+    Value::Primitive(Primitive::ForEach) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5458,8 +5884,7 @@ fn apply_proc(
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::VectorMap) => {
+    Value::Primitive(Primitive::VectorMap) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5484,10 +5909,16 @@ fn apply_proc(
           lists.push(list_from_array(vectors[k]))
           k = k + 1
         }
-        map_step(proc_value, lists, [], false, Kont::VectorMapFinalize(kont), handlers)
+        map_step(
+          proc_value,
+          lists,
+          [],
+          false,
+          Kont::VectorMapFinalize(kont),
+          handlers,
+        )
       }
-    }
-    Value::Primitive(Primitive::VectorForEach) => {
+    Value::Primitive(Primitive::VectorForEach) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5514,8 +5945,7 @@ fn apply_proc(
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
-    }
-    Value::Primitive(Primitive::StringMap) => {
+    Value::Primitive(Primitive::StringMap) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5533,10 +5963,16 @@ fn apply_proc(
           lists.push(string_to_char_list(s))
           i = i + 1
         }
-        map_step(proc_value, lists, [], false, Kont::StringMapFinalize(kont), handlers)
+        map_step(
+          proc_value,
+          lists,
+          [],
+          false,
+          Kont::StringMapFinalize(kont),
+          handlers,
+        )
       }
-    }
-    Value::Primitive(Primitive::StringForEach) => {
+    Value::Primitive(Primitive::StringForEach) =>
       if args.length() < 2 {
         raise arity_mismatch(2, args.length())
       } else {
@@ -5556,8 +5992,8 @@ fn apply_proc(
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
-    }
-    Value::Primitive(prim) => MachineState::Apply(apply_primitive(prim, args), kont, handlers)
+    Value::Primitive(prim) =>
+      MachineState::Apply(apply_primitive(prim, args), kont, handlers)
     Value::Closure(cl) => {
       let formals = Formals::{ params: cl.params, rest: cl.rest }
       let bindings = formals_bindings(formals, args)
@@ -5573,7 +6009,10 @@ fn apply_proc(
       let mut matched_formals : Formals? = None
       let mut matched_body : Array[Datum] = []
       for clause in cl.clauses {
-        let clause_formals = Formals::{ params: clause.params, rest: clause.rest }
+        let clause_formals = Formals::{
+          params: clause.params,
+          rest: clause.rest,
+        }
         if formals_accept_len(clause_formals, args.length()) {
           matched = true
           matched_formals = Some(clause_formals)
@@ -5586,16 +6025,25 @@ fn apply_proc(
           let clause = cl.clauses[0]
           match clause.rest {
             None => raise arity_mismatch(clause.params.length(), args.length())
-            Some(_) => raise arity_mismatch_at_least(clause.params.length(), args.length())
+            Some(_) =>
+              raise arity_mismatch_at_least(
+                clause.params.length(),
+                args.length(),
+              )
           }
         }
         let expected_parts : Array[String] = []
         for clause in cl.clauses {
-          let clause_formals = Formals::{ params: clause.params, rest: clause.rest }
+          let clause_formals = Formals::{
+            params: clause.params,
+            rest: clause.rest,
+          }
           expected_parts.push(formals_expected_desc(clause_formals))
         }
         let expected = expected_parts.join(", ")
-        raise @core.EvalError("arity mismatch: expected one of \{expected} got \{args.length()}")
+        raise @core.EvalError(
+          "arity mismatch: expected one of \{expected} got \{args.length()}",
+        )
       }
       let new_env = env_extend(cl.env)
       match matched_formals {
@@ -5610,13 +6058,18 @@ fn apply_proc(
       }
       eval_sequence_state(matched_body, new_env, kont, handlers)
     }
-    Value::Parameter(param) => {
+    Value::Parameter(param) =>
       match args.length() {
         0 => MachineState::Apply(parameter_get(param), kont, handlers)
         1 =>
           match param.converter {
             Some(converter) =>
-              apply_proc(converter, [args[0]], Kont::SetParameter(param, kont), handlers)
+              apply_proc(
+                converter,
+                [args[0]],
+                Kont::SetParameter(param, kont),
+                handlers,
+              )
             None => {
               parameter_set(param, args[0])
               MachineState::Apply(Value::Void, kont, handlers)
@@ -5624,7 +6077,6 @@ fn apply_proc(
           }
         n => raise @core.EvalError("arity mismatch: expected 0 or 1 got \{n}")
       }
-    }
     Value::Continuation(cont) => {
       let resume_value = if args.length() == 1 {
         args[0]
@@ -5646,10 +6098,17 @@ fn apply_proc(
         actions.push(WindAction::Before(target_winds[i]))
         i = i + 1
       }
-      run_wind_actions(actions, resume_value, cont.kont, cont.handlers, handlers)
+      run_wind_actions(
+        actions,
+        resume_value,
+        cont.kont,
+        cont.handlers,
+        handlers,
+      )
     }
     Value::RecordProc(proc) => apply_record_proc(proc, args, kont, handlers)
-    Value::ConditionProc(proc) => apply_condition_proc(proc, args, kont, handlers)
+    Value::ConditionProc(proc) =>
+      apply_condition_proc(proc, args, kont, handlers)
     Value::EnumSetProc(proc) => apply_enum_set_proc(proc, args, kont, handlers)
     _ => raise @core.EvalError("type error: procedure expected")
   }

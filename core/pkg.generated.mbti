@@ -1,0 +1,785 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "dii/scheme-r6rs/core"
+
+import(
+  "moonbitlang/core/bigint"
+)
+
+// Values
+pub let general_category_ranges : Map[String, Array[Char]]
+
+pub fn unicode_char_downcase(Char) -> Char
+
+pub fn unicode_char_foldcase(Char) -> Char
+
+pub fn unicode_char_general_category(Char) -> String
+
+pub fn unicode_char_is_alphabetic(Char) -> Bool
+
+pub fn unicode_char_is_lowercase(Char) -> Bool
+
+pub fn unicode_char_is_uppercase(Char) -> Bool
+
+pub fn unicode_char_upcase(Char) -> Char
+
+pub fn unicode_string_downcase(String) -> String
+
+pub fn unicode_string_foldcase(String) -> String
+
+pub fn unicode_string_normalize_nfc(String) -> String
+
+pub fn unicode_string_normalize_nfd(String) -> String
+
+pub fn unicode_string_normalize_nfkc(String) -> String
+
+pub fn unicode_string_normalize_nfkd(String) -> String
+
+pub fn unicode_string_upcase(String) -> String
+
+// Errors
+pub(all) suberror EvalError String
+pub impl Eq for EvalError
+pub impl Show for EvalError
+
+pub(all) suberror ParseError String
+pub impl Eq for ParseError
+pub impl Show for ParseError
+
+// Types and methods
+pub(all) struct Binding {
+  id : Int
+  value : Value
+}
+
+pub(all) struct CaseClause {
+  params : Array[String]
+  rest : String?
+  body : Array[Datum]
+}
+
+pub(all) struct CaseClosure {
+  id : Int
+  clauses : Array[CaseClause]
+  env : Array[Map[String, Binding]]
+}
+
+pub(all) struct Closure {
+  id : Int
+  params : Array[String]
+  rest : String?
+  body : Array[Datum]
+  env : Array[Map[String, Binding]]
+}
+
+pub(all) struct Condition {
+  id : Int
+  components : Array[Record]
+}
+
+pub(all) struct ConditionProc {
+  id : Int
+  kind : ConditionProcKind
+}
+
+pub(all) enum ConditionProcKind {
+  Predicate(RecordType)
+  Accessor(RecordType, Int)
+}
+
+pub(all) struct Continuation {
+  id : Int
+  kont : Kont
+  handlers : Array[Value]
+  winds : Array[Winder]
+}
+
+pub(all) enum Datum {
+  Nil
+  Bool(Bool)
+  Int(Int)
+  BigInt(@bigint.BigInt)
+  Rat(Int, Int)
+  BigRat(@bigint.BigInt, @bigint.BigInt)
+  Float(Float)
+  Complex(Ref[Datum], Ref[Datum])
+  Label(Int, Ref[Datum])
+  Char(Char)
+  String(Ref[String])
+  Symbol(String)
+  Pair(Ref[Datum], Ref[Datum])
+  Vector(Array[Datum])
+  ByteVector(Array[Int])
+  Record(Record)
+  Condition(Condition)
+  Value(Value)
+}
+
+pub(all) struct EnumSet {
+  id : Int
+  universe : Array[String]
+  members : Array[Bool]
+}
+
+pub(all) struct EnumSetProc {
+  id : Int
+  kind : EnumSetProcKind
+}
+
+pub(all) enum EnumSetProcKind {
+  Constructor(EnumSet)
+  Indexer(EnumSet)
+}
+
+pub(all) struct EvalEnv {
+  id : Int
+  env : Array[Map[String, Binding]]
+}
+
+pub(all) struct Formals {
+  params : Array[String]
+  rest : String?
+}
+
+pub(all) struct GuardHandler {
+  id : Int
+  name : String
+  clauses : Array[Datum]
+  env : Array[Map[String, Binding]]
+  resume_value : Value
+  handlers : Array[Value]
+}
+
+pub(all) struct GuardInfo {
+  condition : Value
+  resume_value : Value
+  handlers : Array[Value]
+  raise_kont : Kont
+  continuable : Bool
+}
+
+pub(all) struct Hashtable {
+  id : Int
+  mutable : Bool
+  equiv : HashtableEquiv
+  hash : Value?
+  entries : Ref[Array[HashtableEntry]]
+}
+
+pub(all) struct HashtableEntry {
+  key : Value
+  value : Ref[Value]
+}
+
+pub(all) enum HashtableEquiv {
+  Eq
+  Eqv
+  Equal
+  Proc(Value)
+}
+
+pub(all) enum HashtableOp {
+  Ref(Value)
+  Contains
+  Set(Value)
+  Delete
+  Update(Value, Value)
+}
+
+pub(all) enum Kont {
+  Halt
+  If(Datum, Datum, Array[Map[String, Binding]], Kont)
+  Begin(Array[Datum], Array[Map[String, Binding]], Kont)
+  Set(String, Array[Map[String, Binding]], Kont)
+  Define(String, Array[Map[String, Binding]], Kont)
+  AppFun(Array[Datum], Array[Map[String, Binding]], Kont)
+  AppArgs(Value, Array[Value], Array[Datum], Array[Map[String, Binding]], Kont)
+  And(Array[Datum], Array[Map[String, Binding]], Kont)
+  Or(Array[Datum], Array[Map[String, Binding]], Kont)
+  Cond(Array[Datum], Array[Datum], Array[Map[String, Binding]], Kont)
+  CondArrow(Value, Kont)
+  Let(Array[(String, Datum)], Int, Array[Value], Array[Map[String, Binding]], Array[Datum], Kont)
+  LetStar(Array[(String, Datum)], Int, Array[Map[String, Binding]], Array[Datum], Kont)
+  LetRec(Array[(String, Datum)], Int, Array[Map[String, Binding]], Array[Datum], Kont)
+  LetRecInit(Array[(String, Datum)], Int, Array[Value], Array[Map[String, Binding]], Array[Datum], Kont)
+  LetValues(Array[(Formals, Datum)], Int, Array[Array[(String, Value)]], Array[Map[String, Binding]], Array[Datum], Kont)
+  LetStarValues(Array[(Formals, Datum)], Int, Array[Map[String, Binding]], Array[Datum], Kont)
+  DefineValues(Formals, Array[Map[String, Binding]], Kont)
+  SyntaxCase(Array[Datum], Array[Map[String, Binding]], Kont)
+  ParameterizeParam(Array[(Datum, Datum)], Int, Array[Parameter], Array[Value], Array[Map[String, Binding]], Array[Datum], Kont)
+  ParameterizeValue(Array[(Datum, Datum)], Int, Array[Parameter], Array[Value], Array[Map[String, Binding]], Array[Datum], Kont)
+  ParameterizeConvert(Array[(Datum, Datum)], Int, Array[Parameter], Array[Value], Array[Map[String, Binding]], Array[Datum], Kont)
+  MakeParameter(Value, Kont)
+  SetParameter(Parameter, Kont)
+  GuardResult(GuardInfo)
+  GuardCond(Array[Datum], Array[Datum], Array[Map[String, Binding]], GuardInfo)
+  GuardCondArrow(Value, GuardInfo)
+  Case(Array[Datum], Array[Map[String, Binding]], Kont)
+  CaseArrow(Value, Kont)
+  CallWithValues(Value, Kont)
+  RecordConstructorDone(Kont)
+  RecordProtocolNApply(RecordType, Array[Value], Kont)
+  RecordProtocolNResult(RecordType, Kont)
+  DefineRecordType(String, String, RecordType, Array[RecordFieldBinding], Array[Map[String, Binding]], Kont)
+  DefineConditionType(String, String, RecordType, Array[RecordFieldBinding], Array[Map[String, Binding]], Kont)
+  HashtableFindResult(Hashtable, Value, Int, HashtableOp, Kont)
+  HashtableUpdateApply(Hashtable, Value, Int, Bool, Kont)
+  MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
+  VectorMapFinalize(Kont)
+  StringMapFinalize(Kont)
+  WindEnter(Value, Winder, Kont)
+  WindExit(Winder, Kont)
+  WindActions(Array[WindAction], Value, Kont, Array[Value])
+  WindPush(Winder, Array[WindAction], Value, Kont, Array[Value])
+  ForcePromise(Promise, Kont)
+  RaiseNonCont
+  RaiseCont(Kont)
+  RestoreHandlers(Array[Value], Kont)
+}
+
+pub(all) enum MacroTransformer {
+  Rules(SyntaxRules)
+  Procedure(Value, Array[Map[String, Binding]])
+}
+
+pub(all) struct ParamBinding {
+  param : Parameter
+  old_value : Value
+  new_value : Value
+}
+
+pub(all) struct Parameter {
+  id : Int
+  value : Ref[Value]
+  converter : Value?
+}
+
+pub(all) struct Port {
+  id : Int
+  kind : PortKind
+}
+
+pub(all) enum PortKind {
+  OutputString(Ref[String])
+}
+
+pub(all) enum Primitive {
+  Add
+  Sub
+  Mul
+  Div
+  NumEq
+  Less
+  Greater
+  LessEq
+  GreaterEq
+  Eq
+  Eqv
+  Equal
+  Cons
+  Car
+  Cdr
+  List
+  NullP
+  PairP
+  SymbolP
+  SymbolEq
+  IdentifierP
+  SyntaxP
+  FreeIdentifierEq
+  BoundIdentifierEq
+  SymbolToString
+  StringToSymbol
+  StringHash
+  StringCiHash
+  SymbolHash
+  EqualHash
+  SyntaxToDatum
+  DatumToSyntax
+  BooleanP
+  BooleanEq
+  NumberP
+  IntegerP
+  ExactIntegerP
+  RationalP
+  RealP
+  ComplexP
+  ExactP
+  InexactP
+  ZeroP
+  PositiveP
+  NegativeP
+  OddP
+  EvenP
+  FiniteP
+  InfiniteP
+  NanP
+  ProcedureP
+  RecordP
+  RecordRtd
+  RecordTypeDescriptorP
+  RecordConstructorDescriptorP
+  RecordTypeName
+  RecordTypeParent
+  RecordTypeUid
+  RecordTypeGenerativeP
+  RecordTypeSealedP
+  RecordTypeOpaqueP
+  RecordTypeFieldNames
+  RecordTypeFieldMutableP
+  RecordConstructorDescriptor
+  RecordConstructor
+  RecordPredicate
+  RecordAccessor
+  RecordMutator
+  MakeRecordTypeDescriptor
+  MakeRecordConstructorDescriptor
+  Condition
+  ConditionP
+  SimpleConditions
+  ConditionPredicate
+  ConditionAccessor
+  MakeEqHashtable
+  MakeEqvHashtable
+  MakeHashtable
+  HashtableP
+  HashtableSize
+  HashtableRef
+  HashtableSet
+  HashtableDelete
+  HashtableContainsP
+  HashtableUpdate
+  HashtableCopy
+  HashtableClear
+  HashtableKeys
+  HashtableEntries
+  HashtableEquivalenceFunction
+  HashtableHashFunction
+  HashtableMutableP
+  MakeEnumeration
+  EnumSetUniverse
+  EnumSetIndexer
+  EnumSetConstructor
+  EnumSetP
+  EnumSetMemberP
+  EnumSetSubsetP
+  EnumSetEq
+  EnumSetUnion
+  EnumSetIntersection
+  EnumSetDifference
+  EnumSetComplement
+  EnumSetProjection
+  EnumSetToList
+  Not
+  Apply
+  CallCC
+  Values
+  CallWithValues
+  MakeParameter
+  DynamicWind
+  Eval
+  Environment
+  PromiseP
+  MakePromise
+  Force
+  ExactToInexact
+  InexactToExact
+  ExactIntegerSqrt
+  Rationalize
+  NumberToString
+  StringToNumber
+  MakeRectangular
+  MakePolar
+  RealPart
+  ImagPart
+  Magnitude
+  Angle
+  Sqrt
+  Exp
+  Log
+  Expt
+  Sin
+  Cos
+  Tan
+  Asin
+  Acos
+  Atan
+  Numerator
+  Denominator
+  Abs
+  Quotient
+  Remainder
+  Modulo
+  Gcd
+  Lcm
+  Max
+  Min
+  Floor
+  Ceiling
+  Truncate
+  Round
+  BitwiseAnd
+  BitwiseIor
+  BitwiseXor
+  BitwiseNot
+  BitwiseIf
+  ArithmeticShift
+  BitwiseBitCount
+  BitwiseLength
+  BitwiseFirstBitSet
+  BitwiseBitSetP
+  BitwiseCopyBit
+  BitwiseBitField
+  BitwiseCopyBitField
+  BitwiseRotateBitField
+  BitwiseReverseBitField
+  FixnumP
+  FixnumWidth
+  LeastFixnum
+  GreatestFixnum
+  FxEq
+  FxLess
+  FxGreater
+  FxLessEq
+  FxGreaterEq
+  FxZeroP
+  FxPositiveP
+  FxNegativeP
+  FxOddP
+  FxEvenP
+  FxMin
+  FxMax
+  FxAdd
+  FxSub
+  FxMul
+  FxDiv
+  FxMod
+  FxDiv0
+  FxMod0
+  FxAddCarry
+  FxSubCarry
+  FxMulCarry
+  FxNot
+  FxAnd
+  FxIor
+  FxXor
+  FxIf
+  FxBitCount
+  FxLength
+  FxFirstBitSet
+  FxBitSetP
+  FxCopyBit
+  FxBitField
+  FxCopyBitField
+  FxRotateBitField
+  FxReverseBitField
+  FxArithmeticShift
+  FxArithmeticShiftLeft
+  FxArithmeticShiftRight
+  FlonumP
+  RealToFlonum
+  FixnumToFlonum
+  FlEq
+  FlLess
+  FlGreater
+  FlLessEq
+  FlGreaterEq
+  FlIntegerP
+  FlZeroP
+  FlPositiveP
+  FlNegativeP
+  FlOddP
+  FlEvenP
+  FlFiniteP
+  FlInfiniteP
+  FlNanP
+  FlMax
+  FlMin
+  FlAdd
+  FlMul
+  FlSub
+  FlDiv
+  FlAbs
+  FlDivAndMod
+  FlDivInt
+  FlMod
+  FlDiv0AndMod0
+  FlDiv0
+  FlMod0
+  FlNumerator
+  FlDenominator
+  FlFloor
+  FlCeiling
+  FlTruncate
+  FlRound
+  FlExp
+  FlLog
+  FlSin
+  FlCos
+  FlTan
+  FlAsin
+  FlAcos
+  FlAtan
+  FlSqrt
+  FlExpt
+  MakeVariableTransformer
+  GenerateTemporaries
+  ListP
+  MakeList
+  Length
+  Append
+  Reverse
+  ListRef
+  ListTail
+  Cxr(String)
+  Member
+  Memq
+  Memv
+  Assoc
+  Assq
+  Assv
+  Map
+  ForEach
+  SetCar
+  SetCdr
+  ListCopy
+  CharEq
+  CharLess
+  CharGreater
+  CharLessEq
+  CharGreaterEq
+  CharCiEq
+  CharCiLess
+  CharCiGreater
+  CharCiLessEq
+  CharCiGreaterEq
+  CharP
+  CharToInteger
+  IntegerToChar
+  CharAlphabeticP
+  CharNumericP
+  CharWhitespaceP
+  CharUpperCaseP
+  CharLowerCaseP
+  CharUpcase
+  CharDowncase
+  CharFoldcase
+  CharGeneralCategory
+  StringEq
+  StringLess
+  StringGreater
+  StringLessEq
+  StringGreaterEq
+  StringCiEq
+  StringCiLess
+  StringCiGreater
+  StringCiLessEq
+  StringCiGreaterEq
+  String
+  MakeString
+  StringP
+  StringLength
+  StringAppend
+  StringRef
+  StringSet
+  StringCopy
+  Substring
+  StringCopyBang
+  StringFill
+  StringToList
+  ListToString
+  StringMap
+  StringForEach
+  StringUpcase
+  StringDowncase
+  StringFoldcase
+  StringNormalizeNfc
+  StringNormalizeNfd
+  StringNormalizeNfkc
+  StringNormalizeNfkd
+  Vector
+  MakeVector
+  VectorP
+  VectorLength
+  VectorRef
+  VectorSet
+  VectorFill
+  VectorToList
+  ListToVector
+  VectorCopy
+  VectorCopyBang
+  VectorAppend
+  VectorMap
+  VectorForEach
+  ByteVector
+  MakeByteVector
+  ByteVectorP
+  ByteVectorLength
+  ByteVectorEq
+  ByteVectorU8Ref
+  ByteVectorU8Set
+  ByteVectorCopy
+  ByteVectorCopyBang
+  ByteVectorAppend
+  ByteVectorFill
+  ByteVectorToU8List
+  U8ListToByteVector
+  StringToUtf8
+  Utf8ToString
+  NativeEndianness
+  ByteVectorUintRef
+  ByteVectorSintRef
+  ByteVectorUintSet
+  ByteVectorSintSet
+  Display
+  Write
+  Newline
+  OpenOutputString
+  GetOutputString
+  CurrentOutputPort
+  WithExceptionHandler
+  Raise
+  RaiseContinuable
+  Error
+  AssertionViolation
+  ImplementationRestrictionViolation
+  UndefinedViolation
+  SyntaxViolation
+}
+pub impl Eq for Primitive
+
+pub(all) struct Promise {
+  id : Int
+  state : Ref[PromiseState]
+}
+
+pub(all) enum PromiseState {
+  Thunk(Value)
+  Value(Value)
+}
+
+pub(all) struct Record {
+  id : Int
+  record_type : RecordType
+  fields : Array[Ref[Value]]
+}
+
+pub(all) struct RecordConstructorDescriptor {
+  id : Int
+  record_type : RecordType
+  parent_desc : RecordConstructorDescriptor?
+  protocol : Value?
+}
+
+pub(all) struct RecordField {
+  name : String
+  mutable : Bool
+}
+
+pub(all) struct RecordFieldBinding {
+  accessor : String
+  index : Int
+  mutator : String?
+}
+
+pub(all) struct RecordProc {
+  id : Int
+  kind : RecordProcKind
+}
+
+pub(all) enum RecordProcKind {
+  Constructor(RecordType)
+  Predicate(RecordType)
+  Accessor(RecordType, Int)
+  Mutator(RecordType, Int)
+  ProtocolN(RecordType, RecordConstructorDescriptor)
+  ProtocolP(RecordType, Array[Value])
+}
+
+pub(all) struct RecordType {
+  id : Int
+  name : String
+  parent : RecordType?
+  is_sealed : Bool
+  is_opaque : Bool
+  uid : String?
+  fields : Array[RecordField]
+}
+
+pub(all) struct RecordTypeDescriptor {
+  id : Int
+  record_type : RecordType
+  constructor_desc : RecordConstructorDescriptor
+}
+
+pub(all) struct SyntaxObject {
+  datum : Datum
+  scopes : Array[Int]
+  binding_id : Int?
+}
+
+pub(all) struct SyntaxRule {
+  pattern : Datum
+  template : Datum
+  fender : Datum?
+}
+
+pub(all) struct SyntaxRules {
+  literals : Array[String]
+  rules : Array[SyntaxRule]
+  ellipsis : String
+  kind : SyntaxRulesKind
+  def_env : Array[Map[String, Binding]]
+}
+
+pub(all) enum SyntaxRulesKind {
+  SyntaxRules
+  SyntaxCase
+}
+
+pub(all) enum Value {
+  Void
+  Datum(Datum)
+  Primitive(Primitive)
+  Closure(Closure)
+  CaseClosure(CaseClosure)
+  Values(Array[Value])
+  GuardHandler(GuardHandler)
+  Parameter(Parameter)
+  Promise(Promise)
+  EvalEnv(EvalEnv)
+  Continuation(Continuation)
+  Port(Port)
+  Record(Record)
+  RecordProc(RecordProc)
+  ConditionProc(ConditionProc)
+  Hashtable(Hashtable)
+  EnumSet(EnumSet)
+  EnumSetProc(EnumSetProc)
+  RecordTypeDescriptor(RecordTypeDescriptor)
+  RecordConstructorDescriptor(RecordConstructorDescriptor)
+  SyntaxObject(SyntaxObject)
+  SyntaxKeyword(String)
+  Macro(MacroTransformer)
+}
+
+pub(all) enum WindAction {
+  After(Winder)
+  Before(Winder)
+  SwitchHandlers(Array[Value])
+}
+
+pub(all) struct Winder {
+  id : Int
+  kind : WinderKind
+}
+
+pub(all) enum WinderKind {
+  Proc(Value, Value)
+  Params(Array[ParamBinding])
+}
+
+// Type aliases
+pub type Env = Array[Map[String, Binding]]
+
+// Traits
+

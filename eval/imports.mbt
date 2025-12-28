@@ -60,6 +60,8 @@ using @core {
   unicode_string_normalize_nfkd,
   unicode_string_upcase,
 }
+
+///|
 using @runtime {
   bigint_abs,
   bigint_from_int,
@@ -140,6 +142,8 @@ using @runtime {
   value_to_datum_element,
   value_to_string,
 }
+
+///|
 using @parser {
   parse_program,
   parse_program_with_fold_case,

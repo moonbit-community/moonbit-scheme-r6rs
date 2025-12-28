@@ -1,30 +1,52 @@
 ///|
 const HANGUL_S_BASE : Int = 0xAC00
+
 ///|
 const HANGUL_L_BASE : Int = 0x1100
+
 ///|
 const HANGUL_V_BASE : Int = 0x1161
+
 ///|
 const HANGUL_T_BASE : Int = 0x11A7
+
 ///|
 const HANGUL_L_COUNT : Int = 19
+
 ///|
 const HANGUL_V_COUNT : Int = 21
+
 ///|
 const HANGUL_T_COUNT : Int = 28
+
 ///|
 const HANGUL_N_COUNT : Int = HANGUL_V_COUNT * HANGUL_T_COUNT
+
 ///|
 const HANGUL_S_COUNT : Int = HANGUL_L_COUNT * HANGUL_N_COUNT
 
 ///|
-let canon_decomp_data : Array[Char] = DECOMP_CANON_DATA.iter().collect()
+fn data_chars(data : String) -> Array[Char] {
+  let out : Array[Char] = []
+  for ch in data {
+    if ch != '\n' && ch != '\r' {
+      out.push(ch)
+    }
+  }
+  out
+}
+
 ///|
-let compat_decomp_data : Array[Char] = DECOMP_COMPAT_DATA.iter().collect()
+let canon_decomp_data : Array[Char] = data_chars(DECOMP_CANON_DATA)
+
 ///|
-let combining_class_data : Array[Char] = COMBINING_CLASS_DATA.iter().collect()
+let compat_decomp_data : Array[Char] = data_chars(DECOMP_COMPAT_DATA)
+
 ///|
-let composition_data : Array[Char] = COMPOSITION_DATA.iter().collect()
+let combining_class_data : Array[Char] = data_chars(COMBINING_CLASS_DATA)
+
+///|
+let composition_data : Array[Char] = data_chars(COMPOSITION_DATA)
 
 ///|
 fn build_decomp_map(data : Array[Char], count : Int) -> Map[Char, Array[Char]] {
@@ -74,17 +96,28 @@ fn build_composition_map(data : Array[Char], count : Int) -> Map[UInt, Char] {
 }
 
 ///|
-let canon_decomp_map : Map[Char, Array[Char]] =
-  build_decomp_map(canon_decomp_data, DECOMP_CANON_COUNT)
+let canon_decomp_map : Map[Char, Array[Char]] = build_decomp_map(
+  canon_decomp_data,
+  DECOMP_CANON_COUNT,
+)
+
 ///|
-let compat_decomp_map : Map[Char, Array[Char]] =
-  build_decomp_map(compat_decomp_data, DECOMP_COMPAT_COUNT)
+let compat_decomp_map : Map[Char, Array[Char]] = build_decomp_map(
+  compat_decomp_data,
+  DECOMP_COMPAT_COUNT,
+)
+
 ///|
-let combining_class_map : Map[Char, Int] =
-  build_combining_class_map(combining_class_data, COMBINING_CLASS_COUNT)
+let combining_class_map : Map[Char, Int] = build_combining_class_map(
+  combining_class_data,
+  COMBINING_CLASS_COUNT,
+)
+
 ///|
-let composition_map : Map[UInt, Char] =
-  build_composition_map(composition_data, COMPOSITION_COUNT)
+let composition_map : Map[UInt, Char] = build_composition_map(
+  composition_data,
+  COMPOSITION_COUNT,
+)
 
 ///|
 fn combining_class(ch : Char) -> Int {
@@ -112,7 +145,7 @@ fn hangul_decompose(ch : Char, compat : Bool, out : Array[Char]) -> Bool {
   }
   let s_index = ch.to_int() - HANGUL_S_BASE
   let l_index = s_index / HANGUL_N_COUNT
-  let v_index = (s_index % HANGUL_N_COUNT) / HANGUL_T_COUNT
+  let v_index = s_index % HANGUL_N_COUNT / HANGUL_T_COUNT
   let t_index = s_index % HANGUL_T_COUNT
   let l = (HANGUL_L_BASE + l_index).unsafe_to_char()
   let v = (HANGUL_V_BASE + v_index).unsafe_to_char()
@@ -130,15 +163,14 @@ fn decompose_char(ch : Char, compat : Bool, out : Array[Char]) -> Unit {
   if hangul_decompose(ch, compat, out) {
     return
   }
-  let mapping =
-    if compat {
-      match compat_decomp_map.get(ch) {
-        Some(seq) => Some(seq)
-        None => canon_decomp_map.get(ch)
-      }
-    } else {
-      canon_decomp_map.get(ch)
+  let mapping = if compat {
+    match compat_decomp_map.get(ch) {
+      Some(seq) => Some(seq)
+      None => canon_decomp_map.get(ch)
     }
+  } else {
+    canon_decomp_map.get(ch)
+  }
   match mapping {
     Some(seq) =>
       for item in seq {
@@ -230,7 +262,8 @@ fn hangul_compose(starter : Char, combining : Char) -> Char? {
   if is_hangul_l_jamo(starter) && is_hangul_v_jamo(combining) {
     let l_index = starter.to_int() - HANGUL_L_BASE
     let v_index = combining.to_int() - HANGUL_V_BASE
-    let s = HANGUL_S_BASE + (l_index * HANGUL_V_COUNT + v_index) * HANGUL_T_COUNT
+    let s = HANGUL_S_BASE +
+      (l_index * HANGUL_V_COUNT + v_index) * HANGUL_T_COUNT
     return Some(s.unsafe_to_char())
   }
   if is_hangul_lv_syllable(starter) && is_hangul_t_jamo(combining) {
@@ -242,7 +275,12 @@ fn hangul_compose(starter : Char, combining : Char) -> Char? {
 }
 
 ///|
-fn try_compose(starter : Char, combining : Char, last_ccc : Int, ccc : Int) -> Char? {
+fn try_compose(
+  starter : Char,
+  combining : Char,
+  last_ccc : Int,
+  ccc : Int,
+) -> Char? {
   if last_ccc != 0 && last_ccc >= ccc {
     return None
   }
@@ -294,21 +332,25 @@ fn normalize_string(s : String, compat : Bool, compose_output : Bool) -> String 
 }
 
 ///|
+/// Normalize a string to Unicode NFD.
 pub fn unicode_string_normalize_nfd(s : String) -> String {
   normalize_string(s, false, false)
 }
 
 ///|
+/// Normalize a string to Unicode NFC.
 pub fn unicode_string_normalize_nfc(s : String) -> String {
   normalize_string(s, false, true)
 }
 
 ///|
+/// Normalize a string to Unicode NFKD.
 pub fn unicode_string_normalize_nfkd(s : String) -> String {
   normalize_string(s, true, false)
 }
 
 ///|
+/// Normalize a string to Unicode NFKC.
 pub fn unicode_string_normalize_nfkc(s : String) -> String {
   normalize_string(s, true, true)
 }

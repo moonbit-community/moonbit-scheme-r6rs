@@ -70,6 +70,7 @@
 /// - printing via value_to_string (booleans as #t/#f, empty list as ())
 ///
 /// Out of scope for now: full numeric tower.
+
 ///|
 pub(all) suberror ParseError String derive(Show, Eq)
 
@@ -80,6 +81,7 @@ pub(all) suberror EvalError String derive(Show, Eq)
 /// Datum is the reader-level data representation used by quote.
 /// It is also used to store list/vector elements, so it includes runtime-only
 /// variants for records/conditions even though the reader never produces them.
+
 ///|
 pub(all) enum Datum {
   Nil
@@ -104,6 +106,7 @@ pub(all) enum Datum {
 
 ///|
 /// Primitive procedures provided by the base environment.
+
 ///|
 pub(all) enum Primitive {
   Add
@@ -487,21 +490,24 @@ pub(all) enum Primitive {
   ImplementationRestrictionViolation
   UndefinedViolation
   SyntaxViolation
-}
+} derive(Eq)
 
 ///|
 /// Lexical environment (stack of frames) captured by closures.
 /// The implementation treats this as an internal detail.
+
 ///|
 pub(all) struct Binding {
   id : Int
   value : Value
 }
 
+///|
 pub type Env = Array[Map[String, Binding]]
 
 ///|
 /// A syntax-rules transformer.
+
 ///|
 pub(all) struct SyntaxRule {
   pattern : Datum
@@ -511,6 +517,7 @@ pub(all) struct SyntaxRule {
 
 ///|
 /// A collection of syntax-rules with literal identifiers.
+
 ///|
 pub(all) enum SyntaxRulesKind {
   SyntaxRules
@@ -535,6 +542,7 @@ pub(all) enum MacroTransformer {
 ///|
 /// Closure is an opaque procedure value produced by lambda.
 /// The interpreter may store extra data internally; tests treat it as opaque.
+
 ///|
 pub(all) struct Closure {
   id : Int
@@ -602,6 +610,7 @@ pub(all) struct SyntaxObject {
 
 ///|
 /// Runtime values produced by evaluation.
+
 ///|
 pub(all) enum Value {
   Void

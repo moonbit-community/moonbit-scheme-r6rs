@@ -17,11 +17,14 @@ def chunk_tokens(tokens: list[str], chunk_size: int) -> list[str]:
     return ["".join(tokens[i : i + chunk_size]) for i in range(0, len(tokens), chunk_size)]
 
 
-def format_string_const(name: str, tokens: list[str]) -> str:
+def format_string_const(name: str, tokens: list[str], chunk_size: int = 256) -> str:
     if not tokens:
         return f"const {name} : String = \"\""
-    data = "".join(tokens)
-    return f"const {name} : String =\n  $|{data}"
+    chunks = chunk_tokens(tokens, chunk_size)
+    if len(chunks) == 1:
+        return f"const {name} : String =\n  $|{chunks[0]}"
+    body = "\n  ".join(f"$|{chunk}" for chunk in chunks)
+    return f"const {name} : String =\n  {body}"
 
 
 canon_entries: list[tuple[int, list[int]]] = []

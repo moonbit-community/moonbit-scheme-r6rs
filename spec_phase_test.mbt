@@ -1,12 +1,9 @@
 ///|
 test "begin-for-syntax defines macros" {
-  let program = (
-    (
-      #|(begin-for-syntax
-      #|  (define-syntax mk (syntax-rules () ((_ x) x))))
-      #|(mk 7)
-    )
-  )
+  let program =
+    #|(begin-for-syntax
+    #|  (define-syntax mk (syntax-rules () ((_ x) x))))
+    #|(mk 7)
   inspect(value_to_string(eval_program(program)), content="7")
 }
 
@@ -16,7 +13,7 @@ test "begin-for-syntax does not export values" {
     (
       #|(begin-for-syntax (define x 1))
       #|x
-    )
+    ),
   )
   match bad {
     Err(err) => inspect(err, content="EvalError(\"unbound variable: x\")")
@@ -26,17 +23,14 @@ test "begin-for-syntax does not export values" {
 
 ///|
 test "import for run filters macros" {
-  let program = (
-    (
-      #|(library (phase-lib)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib) run))
-      #|val
-    )
-  )
+  let program =
+    #|(library (phase-lib)
+    #|  (export val m)
+    #|  (import)
+    #|  (define val 5)
+    #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+    #|(import (for (phase-lib) run))
+    #|val
   inspect(value_to_string(eval_program(program)), content="5")
   let bad = try? eval_program(
     (
@@ -47,7 +41,7 @@ test "import for run filters macros" {
       #|  (define-syntax m (syntax-rules () ((_ ) 42))))
       #|(import (for (phase-lib) run))
       #|(m)
-    )
+    ),
   )
   match bad {
     Err(err) => inspect(err, content="EvalError(\"unbound variable: m\")")
@@ -57,17 +51,14 @@ test "import for run filters macros" {
 
 ///|
 test "import for expand filters values" {
-  let program = (
-    (
-      #|(library (phase-lib)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib) expand))
-      #|(m)
-    )
-  )
+  let program =
+    #|(library (phase-lib)
+    #|  (export val m)
+    #|  (import)
+    #|  (define val 5)
+    #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+    #|(import (for (phase-lib) expand))
+    #|(m)
   inspect(value_to_string(eval_program(program)), content="42")
   let bad = try? eval_program(
     (
@@ -78,7 +69,7 @@ test "import for expand filters values" {
       #|  (define-syntax m (syntax-rules () ((_ ) 42))))
       #|(import (for (phase-lib) expand))
       #|val
-    )
+    ),
   )
   match bad {
     Err(err) => inspect(err, content="EvalError(\"unbound variable: val\")")
@@ -88,17 +79,14 @@ test "import for expand filters values" {
 
 ///|
 test "import for meta 2 behaves like expand" {
-  let program = (
-    (
-      #|(library (phase-lib2)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib2) (meta 2)))
-      #|(m)
-    )
-  )
+  let program =
+    #|(library (phase-lib2)
+    #|  (export val m)
+    #|  (import)
+    #|  (define val 5)
+    #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+    #|(import (for (phase-lib2) (meta 2)))
+    #|(m)
   inspect(value_to_string(eval_program(program)), content="42")
   let bad = try? eval_program(
     (
@@ -109,7 +97,7 @@ test "import for meta 2 behaves like expand" {
       #|  (define-syntax m (syntax-rules () ((_ ) 42))))
       #|(import (for (phase-lib2) (meta 2)))
       #|val
-    )
+    ),
   )
   match bad {
     Err(err) => inspect(err, content="EvalError(\"unbound variable: val\")")
@@ -119,16 +107,13 @@ test "import for meta 2 behaves like expand" {
 
 ///|
 test "import for run expand includes macros and values" {
-  let program = (
-    (
-      #|(library (phase-both)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 7)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-both) run expand))
-      #|(list val (m))
-    )
-  )
+  let program =
+    #|(library (phase-both)
+    #|  (export val m)
+    #|  (import)
+    #|  (define val 7)
+    #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+    #|(import (for (phase-both) run expand))
+    #|(list val (m))
   inspect(value_to_string(eval_program(program)), content="(7 42)")
 }

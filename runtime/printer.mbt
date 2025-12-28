@@ -60,7 +60,8 @@ fn datum_to_string_state(datum : Datum, state : PrinterState) -> String {
     Datum::Rat(n, d) => "\{n}/\{d}"
     Datum::BigRat(n, d) => "\{n.to_string()}/\{d.to_string()}"
     Datum::Float(f) => f.to_string()
-    Datum::Complex(real, imag) => complex_to_string_state(real.val, imag.val, state)
+    Datum::Complex(real, imag) =>
+      complex_to_string_state(real.val, imag.val, state)
     Datum::Char(ch) => char_to_string(ch)
     Datum::String(s) => "\"\{escape_string(s.val)}\""
     Datum::Symbol(name) => name
@@ -96,27 +97,29 @@ fn datum_abs(value : Datum) -> Datum {
   match datum_unlabel(value) {
     Datum::Int(n) => Datum::Int(if n < 0 { -n } else { n })
     Datum::Rat(n, d) => Datum::Rat(if n < 0 { -n } else { n }, d)
-    Datum::BigInt(n) => {
+    Datum::BigInt(n) =>
       if n.compare_int(0) < 0 {
         Datum::BigInt(-n)
       } else {
         Datum::BigInt(n)
       }
-    }
-    Datum::BigRat(n, d) => {
+    Datum::BigRat(n, d) =>
       if n.compare_int(0) < 0 {
         Datum::BigRat(-n, d)
       } else {
         Datum::BigRat(n, d)
       }
-    }
     Datum::Float(f) => Datum::Float(if f < 0.0 { -f } else { f })
     _ => value
   }
 }
 
 ///|
-fn complex_to_string_state(real : Datum, imag : Datum, state : PrinterState) -> String {
+fn complex_to_string_state(
+  real : Datum,
+  imag : Datum,
+  state : PrinterState,
+) -> String {
   let real_str = datum_to_string_state(real, state)
   let negative = datum_is_negative(imag)
   let imag_abs = if negative { datum_abs(imag) } else { imag }
@@ -173,6 +176,7 @@ fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
 }
 
 ///|
+/// Render a value using Scheme write/display conventions.
 pub fn value_to_string(value : Value) -> String {
   match value {
     Value::Void => "#<void>"

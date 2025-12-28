@@ -30,62 +30,36 @@ fn unicode_category_has(ch : Char, category : String) -> Bool {
 }
 
 ///|
+/// Return true if the character is alphabetic.
 pub fn unicode_char_is_alphabetic(ch : Char) -> Bool {
   unicode_category_has(ch, "L") || unicode_category_has(ch, "Nl")
 }
 
 ///|
+/// Return true if the character is uppercase.
 pub fn unicode_char_is_uppercase(ch : Char) -> Bool {
   unicode_category_has(ch, "Lu")
 }
 
 ///|
+/// Return true if the character is lowercase.
 pub fn unicode_char_is_lowercase(ch : Char) -> Bool {
   unicode_category_has(ch, "Ll")
 }
 
 ///|
 let unicode_general_category_order : Array[String] = [
-  "Lu",
-  "Ll",
-  "Lt",
-  "Lm",
-  "Lo",
-  "Mn",
-  "Mc",
-  "Me",
-  "Nd",
-  "Nl",
-  "No",
-  "Pc",
-  "Pd",
-  "Ps",
-  "Pe",
-  "Pi",
-  "Pf",
-  "Po",
-  "Sm",
-  "Sc",
-  "Sk",
-  "So",
-  "Zs",
-  "Zl",
-  "Zp",
-  "Cc",
-  "Cf",
-  "Cs",
-  "Co",
-  "Cn",
+  "Lu", "Ll", "Lt", "Lm", "Lo", "Mn", "Mc", "Me", "Nd", "Nl", "No", "Pc", "Pd", "Ps",
+  "Pe", "Pi", "Pf", "Po", "Sm", "Sc", "Sk", "So", "Zs", "Zl", "Zp", "Cc", "Cf", "Cs",
+  "Co", "Cn",
 ]
 
 ///|
+/// Return the general category tag for the character.
 pub fn unicode_char_general_category(ch : Char) -> String {
   for category in unicode_general_category_order {
     match general_category_ranges.get(category) {
-      Some(ranges) =>
-        if char_in_ranges(ch, ranges) {
-          return category
-        }
+      Some(ranges) => if char_in_ranges(ch, ranges) { return category }
       None => ()
     }
   }
@@ -117,7 +91,10 @@ fn unicode_case_equivalents(ch : Char) -> Array[Char] {
 }
 
 ///|
-fn unicode_pick_equivalent_category(chars : Array[Char], category : String) -> Char? {
+fn unicode_pick_equivalent_category(
+  chars : Array[Char],
+  category : String,
+) -> Char? {
   let ranges = match category {
     "Lu" => unicode_ranges_LU
     "Ll" => unicode_ranges_LL
@@ -150,6 +127,7 @@ fn unicode_min_equivalent(chars : Array[Char], fallback : Char) -> Char {
 }
 
 ///|
+/// Uppercase a character using Unicode case mapping.
 pub fn unicode_char_upcase(ch : Char) -> Char {
   let equiv = unicode_case_equivalents(ch)
   match unicode_pick_equivalent_category(equiv, "Lu") {
@@ -163,6 +141,7 @@ pub fn unicode_char_upcase(ch : Char) -> Char {
 }
 
 ///|
+/// Lowercase a character using Unicode case mapping.
 pub fn unicode_char_downcase(ch : Char) -> Char {
   let equiv = unicode_case_equivalents(ch)
   match unicode_pick_equivalent_category(equiv, "Ll") {
@@ -172,6 +151,7 @@ pub fn unicode_char_downcase(ch : Char) -> Char {
 }
 
 ///|
+/// Case-fold a character for case-insensitive comparison.
 pub fn unicode_char_foldcase(ch : Char) -> Char {
   let equiv = unicode_case_equivalents(ch)
   match unicode_pick_equivalent_category(equiv, "Ll") {
@@ -181,6 +161,7 @@ pub fn unicode_char_foldcase(ch : Char) -> Char {
 }
 
 ///|
+/// Uppercase a string using Unicode case mapping.
 pub fn unicode_string_upcase(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
@@ -190,6 +171,7 @@ pub fn unicode_string_upcase(s : String) -> String {
 }
 
 ///|
+/// Lowercase a string using Unicode case mapping.
 pub fn unicode_string_downcase(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
@@ -199,6 +181,7 @@ pub fn unicode_string_downcase(s : String) -> String {
 }
 
 ///|
+/// Case-fold a string for case-insensitive comparison.
 pub fn unicode_string_foldcase(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {

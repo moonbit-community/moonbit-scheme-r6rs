@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "dii/scheme-r6rs"
+
+import(
+  "dii/scheme-r6rs/core"
+)
+
+// Values
+pub fn eval_program(String) -> @core.Value raise
+
+pub fn eval_program_all(String) -> Array[@core.Value] raise
+
+pub fn parse_number_token(String) -> @core.Datum?
+
+pub fn parse_number_token_with_radix(String, Int) -> @core.Datum?
+
+pub fn parse_program(String) -> Array[@core.Datum] raise @core.ParseError
+
+pub fn register_include_source(String, String) -> Unit
+
+pub fn value_to_string(@core.Value) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @core {type Datum}
+
+pub using @core {type EvalError}
+
+pub using @core {type ParseError}
+
+pub using @core {type Primitive}
+
+pub using @core {type Value}
+
+// Traits
+

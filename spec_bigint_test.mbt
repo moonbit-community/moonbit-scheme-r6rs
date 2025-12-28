@@ -84,8 +84,5 @@ test "r6rs bigints: exact-integer-sqrt" {
     #|    (lambda () (exact-integer-sqrt 18446744073709551616))
     #|    (lambda (s r) (list s r))))
     #|
-  inspect(
-    value_to_string(eval_program(program)),
-    content="(4294967296 0)",
-  )
+  inspect(value_to_string(eval_program(program)), content="(4294967296 0)")
 }

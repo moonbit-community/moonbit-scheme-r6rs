@@ -10,6 +10,7 @@ pub(all) struct Reader {
 }
 
 ///|
+/// Create a reader over the given source string.
 pub fn make_reader(src : String) -> Reader {
   let chars : Array[Char] = []
   for ch in src {
@@ -19,6 +20,7 @@ pub fn make_reader(src : String) -> Reader {
 }
 
 ///|
+/// Peek the next character without consuming it.
 pub fn reader_peek(r : Reader) -> Char? {
   if r.pos < r.chars.length() {
     Some(r.chars[r.pos])
@@ -28,6 +30,7 @@ pub fn reader_peek(r : Reader) -> Char? {
 }
 
 ///|
+/// Consume and return the next character.
 pub fn reader_next(r : Reader) -> Char? {
   let ch = reader_peek(r)
   match ch {
@@ -42,11 +45,18 @@ fn is_delim(ch : Char) -> Bool {
   if ch.is_ascii_whitespace() {
     true
   } else {
-    ch == '(' || ch == ')' || ch == '\'' || ch == '`' || ch == ',' || ch == '"' || ch == ';'
+    ch == '(' ||
+    ch == ')' ||
+    ch == '\'' ||
+    ch == '`' ||
+    ch == ',' ||
+    ch == '"' ||
+    ch == ';'
   }
 }
 
 ///|
+/// Skip whitespace and comments, leaving the next token ready to read.
 pub fn skip_ws_and_comments(r : Reader) -> Unit raise ParseError {
   while true {
     match reader_peek(r) {
@@ -92,12 +102,16 @@ fn skip_block_comment(r : Reader) -> Unit raise ParseError {
     if r.pos >= r.chars.length() {
       raise @core.ParseError("unterminated block comment")
     }
-    if r.chars[r.pos] == '#' && r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '|' {
+    if r.chars[r.pos] == '#' &&
+      r.pos + 1 < r.chars.length() &&
+      r.chars[r.pos + 1] == '|' {
       depth = depth + 1
       r.pos = r.pos + 2
       continue
     }
-    if r.chars[r.pos] == '|' && r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '#' {
+    if r.chars[r.pos] == '|' &&
+      r.pos + 1 < r.chars.length() &&
+      r.chars[r.pos + 1] == '#' {
       depth = depth - 1
       r.pos = r.pos + 2
       continue
@@ -107,10 +121,13 @@ fn skip_block_comment(r : Reader) -> Unit raise ParseError {
 }
 
 ///|
+/// Return true if the reader is positioned at an ellipsis token.
 pub fn is_ellipsis_start(r : Reader) -> Bool {
   if r.pos + 2 >= r.chars.length() {
     false
-  } else if r.chars[r.pos] == '.' && r.chars[r.pos + 1] == '.' && r.chars[r.pos + 2] == '.' {
+  } else if r.chars[r.pos] == '.' &&
+    r.chars[r.pos + 1] == '.' &&
+    r.chars[r.pos + 2] == '.' {
     if r.pos + 3 >= r.chars.length() {
       true
     } else {
@@ -122,11 +139,13 @@ pub fn is_ellipsis_start(r : Reader) -> Bool {
 }
 
 ///|
+/// Return true if the reader is positioned at a vector literal start.
 pub fn is_vector_start(r : Reader) -> Bool {
   r.pos + 1 < r.chars.length() && r.chars[r.pos + 1] == '('
 }
 
 ///|
+/// Return true if the reader is positioned at a bytevector literal start.
 pub fn is_bytevector_start(r : Reader) -> Bool {
   if r.pos + 4 >= r.chars.length() {
     false
@@ -140,6 +159,7 @@ pub fn is_bytevector_start(r : Reader) -> Bool {
 }
 
 ///|
+/// Read the next token from the reader.
 pub fn read_token(r : Reader) -> String raise ParseError {
   let chars : Array[Char] = []
   let mut in_bar = false
@@ -166,21 +186,24 @@ pub fn read_token(r : Reader) -> String raise ParseError {
           } else {
             chars.push(ch)
           }
-        } else {
-          if ch == '|' {
-            in_bar = true
-          } else if ch == '\\' {
-            if chars.length() == 1 && chars[0] == '#' {
-              chars.push(ch)
-            } else {
-              let escaped = read_identifier_escape(r)
-              chars.push(if fold_case { unicode_char_foldcase(escaped) } else { escaped })
-            }
+        } else if ch == '|' {
+          in_bar = true
+        } else if ch == '\\' {
+          if chars.length() == 1 && chars[0] == '#' {
+            chars.push(ch)
           } else {
-            let next_char =
-              if fold_case { unicode_char_foldcase(ch) } else { ch }
-            chars.push(next_char)
+            let escaped = read_identifier_escape(r)
+            chars.push(
+              if fold_case {
+                unicode_char_foldcase(escaped)
+              } else {
+                escaped
+              },
+            )
           }
+        } else {
+          let next_char = if fold_case { unicode_char_foldcase(ch) } else { ch }
+          chars.push(next_char)
         }
         continue
       }
@@ -206,6 +229,7 @@ fn read_identifier_escape(r : Reader) -> Char raise ParseError {
 }
 
 ///|
+/// Convert a digit character to its numeric value.
 pub fn digit_value(ch : Char) -> Int? {
   if ch.is_ascii_digit() {
     Some(ch.to_int() - '0'.to_int())
@@ -219,13 +243,14 @@ pub fn digit_value(ch : Char) -> Int? {
 }
 
 ///|
+/// Read a string literal, handling escapes.
 pub fn read_string(r : Reader) -> String raise ParseError {
   let chars : Array[Char] = []
   while true {
     match reader_next(r) {
       None => raise @core.ParseError("unterminated string")
       Some('"') => break
-      Some('\\') => {
+      Some('\\') =>
         match reader_next(r) {
           Some('\n') => skip_string_line_continuation(r)
           Some('\r') => {
@@ -247,7 +272,6 @@ pub fn read_string(r : Reader) -> String raise ParseError {
           Some(ch) => chars.push(ch)
           None => raise @core.ParseError("unterminated string")
         }
-      }
       Some(ch) => chars.push(ch)
     }
   }
