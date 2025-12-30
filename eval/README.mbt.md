@@ -28,6 +28,12 @@ test "evaluate program" {
 }
 
 ///|
+test "evaluate program returns last value" {
+  let value = eval_program("(begin (define x 1) (+ x 4))")
+  inspect(@runtime.value_to_string(value), content="5")
+}
+
+///|
 test "include source" {
   register_include_source("mem.scm", "(+ 1 2)")
   let value = eval_program("(include \"mem.scm\")")

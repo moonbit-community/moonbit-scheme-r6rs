@@ -214,3 +214,30 @@ Quick checks:
 moon ide find-references @core.unicode_string_foldcase
 moon info
 ```
+
+## Chained comparisons without mut
+- Use functional `for` loops with `(index, prev)` state to replace `mut` when comparing adjacent values.
+- Add small helpers (like `foldcase_*_if`) to keep case-insensitive logic centralized.
+
+Example:
+```mbt
+fn foldcase_char_if(ch : Char, case_insensitive : Bool) -> Char {
+  if case_insensitive { unicode_char(ch).foldcase() } else { ch }
+}
+
+fn compare_chain_char(args : Array[Value], mode : CompareMode, case_insensitive : Bool) -> Bool raise EvalError {
+  if args.length() <= 1 {
+    return true
+  }
+  let prev = foldcase_char_if(value_as_char(args[0]), case_insensitive)
+  for i = 1, prev = prev; i < args.length(); {
+    let cur = foldcase_char_if(value_as_char(args[i]), case_insensitive)
+    if !compare_ok(mode, prev.to_int().compare(cur.to_int())) {
+      return false
+    }
+    continue i + 1, cur
+  } else {
+    true
+  }
+}
+```

@@ -1878,6 +1878,16 @@ fn check_index(idx : Int, len : Int) -> Unit raise EvalError {
 }
 
 ///|
+fn foldcase_char_if(ch : Char, case_insensitive : Bool) -> Char {
+  if case_insensitive { unicode_char(ch).foldcase() } else { ch }
+}
+
+///|
+fn foldcase_string_if(s : String, case_insensitive : Bool) -> String {
+  if case_insensitive { unicode_string(s).foldcase().into_string() } else { s }
+}
+
+///|
 fn compare_chain_char(
   args : Array[Value],
   mode : CompareMode,
@@ -1886,24 +1896,17 @@ fn compare_chain_char(
   if args.length() <= 1 {
     return true
   }
-  let mut prev = value_as_char(args[0])
-  if case_insensitive {
-    prev = unicode_char(prev).foldcase()
-  }
-  let mut i = 1
-  while i < args.length() {
-    let mut cur = value_as_char(args[i])
-    if case_insensitive {
-      cur = unicode_char(cur).foldcase()
-    }
+  let prev = foldcase_char_if(value_as_char(args[0]), case_insensitive)
+  for i = 1, prev = prev; i < args.length(); {
+    let cur = foldcase_char_if(value_as_char(args[i]), case_insensitive)
     let cmp = prev.to_int().compare(cur.to_int())
     if !compare_ok(mode, cmp) {
       return false
     }
-    prev = cur
-    i = i + 1
+    continue i + 1, cur
+  } else {
+    true
   }
-  true
 }
 
 ///|
@@ -1915,24 +1918,17 @@ fn compare_chain_string(
   if args.length() <= 1 {
     return true
   }
-  let mut prev = value_as_string(args[0])
-  if case_insensitive {
-    prev = unicode_string(prev).foldcase().into_string()
-  }
-  let mut i = 1
-  while i < args.length() {
-    let mut cur = value_as_string(args[i])
-    if case_insensitive {
-      cur = unicode_string(cur).foldcase().into_string()
-    }
+  let prev = foldcase_string_if(value_as_string(args[0]), case_insensitive)
+  for i = 1, prev = prev; i < args.length(); {
+    let cur = foldcase_string_if(value_as_string(args[i]), case_insensitive)
     let cmp = prev.lexical_compare(cur)
     if !compare_ok(mode, cmp) {
       return false
     }
-    prev = cur
-    i = i + 1
+    continue i + 1, cur
+  } else {
+    true
   }
-  true
 }
 
 ///|
@@ -1940,17 +1936,16 @@ fn compare_chain_bool(args : Array[Value]) -> Bool raise EvalError {
   if args.length() <= 1 {
     return true
   }
-  let mut prev = value_as_bool(args[0])
-  let mut i = 1
-  while i < args.length() {
+  let prev = value_as_bool(args[0])
+  for i = 1, prev = prev; i < args.length(); {
     let cur = value_as_bool(args[i])
     if prev != cur {
       return false
     }
-    prev = cur
-    i = i + 1
+    continue i + 1, cur
+  } else {
+    true
   }
-  true
 }
 
 ///|
@@ -1958,36 +1953,34 @@ fn compare_chain_symbol(args : Array[Value]) -> Bool raise EvalError {
   if args.length() <= 1 {
     return true
   }
-  let mut prev = value_as_symbol(args[0])
-  let mut i = 1
-  while i < args.length() {
+  let prev = value_as_symbol(args[0])
+  for i = 1, prev = prev; i < args.length(); {
     let cur = value_as_symbol(args[i])
     if prev != cur {
       return false
     }
-    prev = cur
-    i = i + 1
+    continue i + 1, cur
+  } else {
+    true
   }
-  true
 }
 
 ///|
 fn hash_string_value(s : String) -> Int {
   let modulus = 2147483647
   let factor = 65599
-  let mut hash = 0
-  let mut i = 0
-  while i < s.length() {
+  for i = 0, hash = 0; i < s.length(); {
     match s.get_char(i) {
       Some(ch) => {
         let next = (hash * factor + ch.to_int()) % modulus
-        hash = if next < 0 { next + modulus } else { next }
+        let next_hash = if next < 0 { next + modulus } else { next }
+        continue i + 1, next_hash
       }
       None => return hash
     }
-    i = i + 1
+  } else {
+    hash
   }
-  hash
 }
 
 ///|
