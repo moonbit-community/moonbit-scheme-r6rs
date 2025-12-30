@@ -159,6 +159,9 @@ moon check
 ## Reverse scans
 - Isolate right-to-left split detection into a helper to keep main parsers linear.
 
+## Unique delimiter lookup
+- Extract a helper like `find_unique_char` when multiple parsers need the same delimiter scan logic.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {

@@ -252,26 +252,32 @@ fn parse_integer_token_radix(tok : String, radix : Int) -> Datum? {
 }
 
 ///|
-fn parse_rat_token(tok : String) -> Datum? {
-  let chars = string_to_chars(tok)
-  let mut slash = -1
+fn find_unique_char(chars : Array[Char], target : Char) -> Int? {
+  let mut found : Int? = None
   for i, ch in chars {
-    if ch == '/' {
-      if slash != -1 {
+    if ch == target {
+      if found is Some(_) {
         return None
       }
-      slash = i
+      found = Some(i)
     }
   }
-  if slash <= 0 || slash >= chars.length() - 1 {
-    None
-  } else {
-    let num_str = String::from_array(chars.sub(end=slash).to_array())
-    let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
-    match (parse_integer_token(num_str), parse_integer_token(den_str)) {
-      (Some(num), Some(den)) => normalize_rat_datum(num, den)
-      _ => None
+  found
+}
+
+///|
+fn parse_rat_token(tok : String) -> Datum? {
+  let chars = string_to_chars(tok)
+  match find_unique_char(chars, '/') {
+    Some(slash) if slash > 0 && slash < chars.length() - 1 => {
+      let num_str = String::from_array(chars.sub(end=slash).to_array())
+      let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
+      match (parse_integer_token(num_str), parse_integer_token(den_str)) {
+        (Some(num), Some(den)) => normalize_rat_datum(num, den)
+        _ => None
+      }
     }
+    _ => None
   }
 }
 
@@ -453,28 +459,20 @@ fn parse_exact_decimal(tok : String) -> Datum? {
 ///|
 fn parse_rat_token_radix(tok : String, radix : Int) -> Datum? {
   let chars = string_to_chars(tok)
-  let mut slash = -1
-  for i, ch in chars {
-    if ch == '/' {
-      if slash != -1 {
-        return None
+  match find_unique_char(chars, '/') {
+    Some(slash) if slash > 0 && slash < chars.length() - 1 => {
+      let num_str = String::from_array(chars.sub(end=slash).to_array())
+      let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
+      match
+        (
+          parse_integer_token_radix(num_str, radix),
+          parse_integer_token_radix(den_str, radix),
+        ) {
+        (Some(num), Some(den)) => normalize_rat_datum(num, den)
+        _ => None
       }
-      slash = i
     }
-  }
-  if slash <= 0 || slash >= chars.length() - 1 {
-    None
-  } else {
-    let num_str = String::from_array(chars.sub(end=slash).to_array())
-    let den_str = String::from_array(chars.sub(start=slash + 1).to_array())
-    match
-      (
-        parse_integer_token_radix(num_str, radix),
-        parse_integer_token_radix(den_str, radix),
-      ) {
-      (Some(num), Some(den)) => normalize_rat_datum(num, den)
-      _ => None
-    }
+    _ => None
   }
 }
 
