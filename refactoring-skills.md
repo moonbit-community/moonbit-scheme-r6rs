@@ -114,6 +114,7 @@ moon check
 
 ## Match simplification
 - Group enum variants with `|` patterns when they map to the same output to reduce duplication.
+- For tuple matches, only group variants when the bound variables share the same type.
 
 ## Indexing helpers
 - Extract tiny helpers (like "last frame") to avoid repeated index math and keep mutations localized.
