@@ -146,6 +146,9 @@ moon check
 ## Prefix tag scanning
 - Use functional `for` with `continue` to advance by fixed steps (like `#`-prefixed numeric tags).
 
+## Reverse scans
+- Isolate right-to-left split detection into a helper to keep main parsers linear.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {

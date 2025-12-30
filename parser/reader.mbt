@@ -670,6 +670,29 @@ fn parse_real_token_with_settings(
 }
 
 ///|
+fn find_complex_split(core_chars : Array[Char], radix : Int) -> Int? {
+  if core_chars.length() <= 1 {
+    return None
+  }
+  for i = core_chars.length(); i > 1; {
+    let idx = i - 1
+    let ch = core_chars[idx]
+    if ch == '+' || ch == '-' {
+      if radix == 10 {
+        let prev = core_chars[idx - 1]
+        if prev == 'e' || prev == 'E' {
+          continue i - 1
+        }
+      }
+      return Some(idx)
+    }
+    continue i - 1
+  } else {
+    None
+  }
+}
+
+///|
 fn parse_complex_token(
   tok : String,
   radix : Int,
@@ -731,54 +754,39 @@ fn parse_complex_token(
     return Some(make_complex_datum(Datum::Int(0), imag))
   }
   let core_chars = string_to_chars(core)
-  let mut split = -1
-  if core_chars.length() > 1 {
-    let mut i = core_chars.length() - 1
-    while i > 0 {
-      let ch = core_chars[i]
-      if ch == '+' || ch == '-' {
-        if radix == 10 && i > 0 {
-          let prev = core_chars[i - 1]
-          if prev == 'e' || prev == 'E' {
-            i = i - 1
-            continue
-          }
-        }
-        split = i
-        break
-      }
-      i = i - 1
-    }
-  }
-  if split != -1 {
-    let real_str = String::from_array(core_chars.sub(end=split).to_array())
-    let imag_str = String::from_array(core_chars.sub(start=split).to_array())
-    let real = match
-      parse_real_token_with_settings(real_str, radix, exactness, allow_rat) {
-      Some(value) => value
-      None => return None
-    }
-    let imag = if imag_str == "+" || imag_str == "-" {
-      let sign = if imag_str == "-" { -1 } else { 1 }
-      match exactness {
-        Some('i') | Some('I') => Datum::Float(Float::from_int(sign))
-        _ => Datum::Int(sign)
-      }
-    } else {
-      match
-        parse_real_token_with_settings(imag_str, radix, exactness, allow_rat) {
+  match find_complex_split(core_chars, radix) {
+    Some(split) => {
+      let real_str = String::from_array(core_chars.sub(end=split).to_array())
+      let imag_str = String::from_array(core_chars.sub(start=split).to_array())
+      let real = match
+        parse_real_token_with_settings(real_str, radix, exactness, allow_rat) {
         Some(value) => value
         None => return None
       }
+      let imag = if imag_str == "+" || imag_str == "-" {
+        let sign = if imag_str == "-" { -1 } else { 1 }
+        match exactness {
+          Some('i') | Some('I') => Datum::Float(Float::from_int(sign))
+          _ => Datum::Int(sign)
+        }
+      } else {
+        match
+          parse_real_token_with_settings(imag_str, radix, exactness, allow_rat) {
+          Some(value) => value
+          None => return None
+        }
+      }
+      Some(make_complex_datum(real, imag))
     }
-    return Some(make_complex_datum(real, imag))
+    None => {
+      let imag = match
+        parse_real_token_with_settings(core, radix, exactness, allow_rat) {
+        Some(value) => value
+        None => return None
+      }
+      Some(make_complex_datum(Datum::Int(0), imag))
+    }
   }
-  let imag = match
-    parse_real_token_with_settings(core, radix, exactness, allow_rat) {
-    Some(value) => value
-    None => return None
-  }
-  Some(make_complex_datum(Datum::Int(0), imag))
 }
 
 ///|
