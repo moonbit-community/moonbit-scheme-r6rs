@@ -32,12 +32,8 @@ pub fn env_clone(env : Env) -> Env {
   let new_env : Env = []
   for frame in env {
     let new_frame : Map[String, Binding] = {}
-    for key in frame.keys() {
-      match frame.get(key) {
-        Some(binding) =>
-          new_frame[key] = Binding::{ id: binding.id, value: binding.value }
-        None => ()
-      }
+    for key, binding in frame {
+      new_frame[key] = Binding::{ id: binding.id, value: binding.value }
     }
     new_env.push(new_frame)
   }

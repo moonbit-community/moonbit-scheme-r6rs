@@ -121,6 +121,9 @@ moon check
 ## Constructor helpers
 - Factor repeated "pair of symbol + expr" patterns into a small helper to keep syntax builders consistent.
 
+## Map iteration simplification
+- Iterate with `for key, value in map` to avoid extra `get`/`keys` loops.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {
