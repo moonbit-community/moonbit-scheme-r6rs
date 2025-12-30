@@ -20,8 +20,6 @@ pub fn read_string(Reader) -> String raise @core.ParseError
 
 pub fn read_token(Reader) -> String raise @core.ParseError
 
-pub fn reader_next(Reader) -> Char?
-
 pub fn reader_peek(Reader) -> Char?
 
 pub fn skip_ws_and_comments(Reader) -> Unit raise @core.ParseError
@@ -35,6 +33,7 @@ pub(all) struct Reader {
   mut fold_case : Bool
   labels : Map[Int, Ref[@core.Datum]]
 }
+pub fn Reader::next(Self) -> Char?
 
 // Type aliases
 

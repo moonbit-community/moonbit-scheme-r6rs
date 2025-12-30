@@ -31,10 +31,10 @@ pub fn reader_peek(r : Reader) -> Char? {
 
 ///|
 /// Consume and return the next character.
-pub fn reader_next(r : Reader) -> Char? {
-  let ch = reader_peek(r)
+pub fn Reader::next(self : Reader) -> Char? {
+  let ch = reader_peek(self)
   match ch {
-    Some(_) => r.pos = r.pos + 1
+    Some(_) => self.pos = self.pos + 1
     None => ()
   }
   ch
@@ -221,7 +221,7 @@ pub fn read_token(r : Reader) -> String raise ParseError {
 
 ///|
 fn read_identifier_escape(r : Reader) -> Char raise ParseError {
-  match reader_next(r) {
+  match r.next() {
     Some('x') | Some('X') => read_hex_escape(r)
     Some(ch) => ch
     None => raise @core.ParseError("unterminated identifier")
@@ -247,11 +247,11 @@ pub fn digit_value(ch : Char) -> Int? {
 pub fn read_string(r : Reader) -> String raise ParseError {
   let chars : Array[Char] = []
   while true {
-    match reader_next(r) {
+    match r.next() {
       None => raise @core.ParseError("unterminated string")
       Some('"') => break
       Some('\\') =>
-        match reader_next(r) {
+        match r.next() {
           Some('\n') => skip_string_line_continuation(r)
           Some('\r') => {
             if reader_peek(r) == Some('\n') {
@@ -296,7 +296,7 @@ fn read_hex_escape(r : Reader) -> Char raise ParseError {
   let mut acc = 0
   let mut has_digit = false
   while true {
-    match reader_next(r) {
+    match r.next() {
       None => raise @core.ParseError("unterminated string")
       Some(';') => {
         if !has_digit {
