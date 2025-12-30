@@ -12,18 +12,18 @@ using @lexer {
 fn parse_int_token(tok : String) -> Int? {
   let mut sign = 1
   let mut acc = 0
-  let mut i = 0
+  let mut first = true
   let mut has_digit = false
   for ch in tok {
-    if i == 0 && (ch == '+' || ch == '-') {
+    if first && (ch == '+' || ch == '-') {
       sign = if ch == '-' { -1 } else { 1 }
-      i = i + 1
+      first = false
       continue
     }
+    first = false
     if ch.is_ascii_digit() {
       acc = acc * 10 + (ch.to_int() - '0'.to_int())
       has_digit = true
-      i = i + 1
       continue
     }
     return None
@@ -51,14 +51,12 @@ fn parse_label_token(tok : String) -> (Bool, Int)? {
     return None
   }
   let mut acc = 0
-  let mut i = 1
-  while i < chars.length() - 1 {
-    let ch = chars[i]
+  let end = chars.length() - 1
+  for ch in chars.sub(start=1, end=end) {
     if !ch.is_ascii_digit() {
       return None
     }
     acc = acc * 10 + (ch.to_int() - '0'.to_int())
-    i = i + 1
   }
   Some((last == '=', acc))
 }
@@ -196,14 +194,15 @@ fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
   }
   let mut sign = 1
   let mut acc = bigint_from_int(0)
-  let mut i = 0
+  let mut first = true
   let mut has_digit = false
   for ch in tok {
-    if i == 0 && (ch == '+' || ch == '-') {
+    if first && (ch == '+' || ch == '-') {
       sign = if ch == '-' { -1 } else { 1 }
-      i = i + 1
+      first = false
       continue
     }
+    first = false
     match digit_value(ch) {
       Some(digit) => {
         if digit >= radix {
@@ -211,7 +210,6 @@ fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
         }
         acc = acc * bigint_from_int(radix) + bigint_from_int(digit)
         has_digit = true
-        i = i + 1
       }
       None => return None
     }
@@ -254,15 +252,13 @@ fn parse_rat_token(tok : String) -> Datum? {
     chars.push(ch)
   }
   let mut slash = -1
-  let mut i = 0
-  while i < chars.length() {
-    if chars[i] == '/' {
+  for i, ch in chars {
+    if ch == '/' {
       if slash != -1 {
         return None
       }
       slash = i
     }
-    i = i + 1
   }
   if slash <= 0 || slash >= chars.length() - 1 {
     None
@@ -284,19 +280,19 @@ fn parse_float_token(tok : String) -> Float? {
   let mut frac_div = 1
   let mut seen_dot = false
   let mut seen_digit = false
-  let mut i = 0
+  let mut first = true
   for ch in tok {
-    if i == 0 && (ch == '+' || ch == '-') {
+    if first && (ch == '+' || ch == '-') {
       sign = if ch == '-' { Float::from_int(-1) } else { Float::from_int(1) }
-      i = i + 1
+      first = false
       continue
     }
+    first = false
     if ch == '.' {
       if seen_dot {
         return None
       }
       seen_dot = true
-      i = i + 1
       continue
     }
     if ch.is_ascii_digit() {
@@ -308,7 +304,6 @@ fn parse_float_token(tok : String) -> Float? {
       } else {
         int_part = int_part * 10 + digit
       }
-      i = i + 1
       continue
     }
     return None
@@ -360,14 +355,11 @@ fn split_exp_token(tok : String) -> (String, Int)? {
     chars.push(ch)
   }
   let mut idx = -1
-  let mut i = 0
-  while i < chars.length() {
-    let ch = chars[i]
+  for i, ch in chars {
     if ch == 'e' || ch == 'E' {
       idx = i
       break
     }
-    i = i + 1
   }
   if idx == -1 {
     None
@@ -423,16 +415,15 @@ fn parse_exact_decimal(tok : String) -> Datum? {
     return None
   }
   let mut sign = 1
-  let mut i = 0
+  let mut start = 0
   if chars[0] == '+' || chars[0] == '-' {
     sign = if chars[0] == '-' { -1 } else { 1 }
-    i = 1
+    start = 1
   }
   let mut seen_dot = false
   let mut frac_len = 0
   let digits : Array[Char] = []
-  while i < chars.length() {
-    let ch = chars[i]
+  for ch in chars.sub(start=start) {
     if ch == '.' {
       if seen_dot {
         return None
@@ -446,7 +437,6 @@ fn parse_exact_decimal(tok : String) -> Datum? {
     } else {
       return None
     }
-    i = i + 1
   }
   if digits.is_empty() {
     return None
@@ -473,15 +463,13 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> Datum? {
     chars.push(ch)
   }
   let mut slash = -1
-  let mut i = 0
-  while i < chars.length() {
-    if chars[i] == '/' {
+  for i, ch in chars {
+    if ch == '/' {
       if slash != -1 {
         return None
       }
       slash = i
     }
-    i = i + 1
   }
   if slash <= 0 || slash >= chars.length() - 1 {
     None

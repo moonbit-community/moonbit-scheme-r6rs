@@ -130,6 +130,9 @@ moon check
 ## Reader consumption
 - Use `Reader::next()` (with `ignore(...)` if needed) to advance instead of direct `pos` mutation.
 
+## First-token handling
+- Replace manual index counters with a `first` flag when parsing optional leading signs.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {
