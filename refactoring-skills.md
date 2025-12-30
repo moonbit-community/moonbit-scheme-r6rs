@@ -287,3 +287,25 @@ fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
   }
 }
 ```
+
+## Reader-friendly indexing helpers
+- Use `String::to_array()` for fast Char arrays instead of manual pushes.
+- Replace manual bounds checks with `Array::get` and reuse peek helpers.
+- Demonstrate `..` chaining on mutating reader methods in docs/tests.
+
+Example:
+```mbt
+pub fn make_reader(src : String) -> Reader {
+  let chars = src.to_array()
+  { chars, pos: 0, fold_case: false, labels: Map::new() }
+}
+
+fn reader_peek_offset(r : Reader, offset : Int) -> Char? {
+  r.chars.get(r.pos + offset)
+}
+
+let token =
+  make_reader(" ;c\nfoo")
+    ..skip_ws_and_comments()
+    .read_token()
+```

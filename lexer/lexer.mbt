@@ -20,10 +20,7 @@ pub(all) struct Reader {
 /// }
 /// ```
 pub fn make_reader(src : String) -> Reader {
-  let chars : Array[Char] = []
-  for ch in src {
-    chars.push(ch)
-  }
+  let chars = src.to_array()
   { chars, pos: 0, fold_case: false, labels: Map::new() }
 }
 
@@ -39,21 +36,12 @@ pub fn make_reader(src : String) -> Reader {
 /// }
 /// ```
 pub fn Reader::peek(self : Reader) -> Char? {
-  if self.pos < self.chars.length() {
-    Some(self.chars[self.pos])
-  } else {
-    None
-  }
+  self.chars.get(self.pos)
 }
 
 ///|
 fn reader_peek_offset(r : Reader, offset : Int) -> Char? {
-  let idx = r.pos + offset
-  if idx < r.chars.length() {
-    Some(r.chars[idx])
-  } else {
-    None
-  }
+  r.chars.get(r.pos + offset)
 }
 
 ///|
@@ -123,7 +111,7 @@ pub fn Reader::skip_ws_and_comments(self : Reader) -> Unit raise ParseError {
         continue
       }
       Some('#') =>
-        if self.pos + 1 < self.chars.length() && self.chars[self.pos + 1] == '|' {
+        if reader_peek_offset(self, 1) == Some('|') {
           skip_block_comment(self)
           continue
         } else {
@@ -173,18 +161,17 @@ fn skip_block_comment(r : Reader) -> Unit raise ParseError {
 /// }
 /// ```
 pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
-  if self.pos + 2 >= self.chars.length() {
-    false
-  } else if self.chars[self.pos] == '.' &&
-    self.chars[self.pos + 1] == '.' &&
-    self.chars[self.pos + 2] == '.' {
-    if self.pos + 3 >= self.chars.length() {
-      true
-    } else {
-      is_delim(self.chars[self.pos + 3])
-    }
-  } else {
-    false
+  match (
+    self.peek(),
+    reader_peek_offset(self, 1),
+    reader_peek_offset(self, 2),
+  ) {
+    (Some('.'), Some('.'), Some('.')) =>
+      match reader_peek_offset(self, 3) {
+        None => true
+        Some(ch) => is_delim(ch)
+      }
+    _ => false
   }
 }
 
@@ -199,7 +186,7 @@ pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
 /// }
 /// ```
 pub fn Reader::is_vector_start(self : Reader) -> Bool {
-  self.pos + 1 < self.chars.length() && self.chars[self.pos + 1] == '('
+  reader_peek_offset(self, 1) == Some('(')
 }
 
 ///|
@@ -213,14 +200,14 @@ pub fn Reader::is_vector_start(self : Reader) -> Bool {
 /// }
 /// ```
 pub fn Reader::is_bytevector_start(self : Reader) -> Bool {
-  let len = self.chars.length()
-  if self.pos + 4 >= len {
-    false
-  } else {
-    self.chars[self.pos + 1] == 'v' &&
-    self.chars[self.pos + 2] == 'u' &&
-    self.chars[self.pos + 3] == '8' &&
-    self.chars[self.pos + 4] == '('
+  match (
+    reader_peek_offset(self, 1),
+    reader_peek_offset(self, 2),
+    reader_peek_offset(self, 3),
+    reader_peek_offset(self, 4),
+  ) {
+    (Some('v'), Some('u'), Some('8'), Some('(')) => true
+    _ => false
   }
 }
 

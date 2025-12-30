@@ -35,4 +35,13 @@ test "reader helpers" {
   ignore(r3.next())
   inspect(r3.read_string(), content="hi")
 }
+
+///|
+test "reader chaining" {
+  let token =
+    make_reader("  ; comment\nfoo")
+      ..skip_ws_and_comments()
+      .read_token()
+  inspect(token, content="foo")
+}
 ```
