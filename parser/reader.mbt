@@ -403,14 +403,9 @@ fn parse_float_token_with_exp(tok : String) -> Float? {
 
 ///|
 fn parse_exact_decimal(tok : String) -> Datum? {
-  let mut base = tok
-  let mut exp = 0
-  match split_exp_token(tok) {
-    Some((b, e)) => {
-      base = b
-      exp = e
-    }
-    None => ()
+  let (base, exp) = match split_exp_token(tok) {
+    Some((b, e)) => (b, e)
+    None => (tok, 0)
   }
   let chars = string_to_chars(base)
   if chars.is_empty() {

@@ -168,6 +168,9 @@ moon check
 ## Unique delimiter lookup
 - Extract a helper like `find_unique_char` when multiple parsers need the same delimiter scan logic.
 
+## Tuple destructuring
+- Replace `mut` temporaries with a single `let (a, b) = match ...` when branching sets both.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {
