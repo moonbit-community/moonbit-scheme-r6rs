@@ -134,6 +134,9 @@ moon check
 ## Shared constants
 - Lift repeated lookup tables (like radix digit arrays) to a single `let` to avoid duplication.
 
+## Reverse assembly
+- Extract a small helper for reversing `Array[Char]` into a `String` to cut repeated loops.
+
 ## Reader consumption
 - Use `Reader::next()` (with `ignore(...)` if needed) to advance instead of direct `pos` mutation.
 

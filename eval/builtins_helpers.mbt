@@ -992,6 +992,15 @@ let radix_digits : ReadOnlyArray[Char] = [
 ]
 
 ///|
+fn chars_rev_to_string(chars : Array[Char]) -> String {
+  let out : Array[Char] = []
+  for ch in chars.rev_iter() {
+    out.push(ch)
+  }
+  String::from_array(out)
+}
+
+///|
 fn int_to_string_radix(value : Int, radix : Int) -> String {
   if value == 0 {
     return "0"
@@ -1006,11 +1015,7 @@ fn int_to_string_radix(value : Int, radix : Int) -> String {
   if value < 0 {
     chars.push('-')
   }
-  let out : Array[Char] = []
-  for ch in chars.rev_iter() {
-    out.push(ch)
-  }
-  String::from_array(out)
+  chars_rev_to_string(chars)
 }
 
 ///|
@@ -1029,11 +1034,7 @@ fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
   if value.compare_int(0) < 0 {
     chars.push('-')
   }
-  let out : Array[Char] = []
-  for ch in chars.rev_iter() {
-    out.push(ch)
-  }
-  String::from_array(out)
+  chars_rev_to_string(chars)
 }
 
 ///|
