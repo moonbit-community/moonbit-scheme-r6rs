@@ -45,12 +45,28 @@ pub fn unicode_char_is_alphabetic(ch : Char) -> Bool {
 
 ///|
 /// Return true if the character is uppercase.
+///
+/// # Example
+/// ```mbt check
+/// test "uppercase predicate" {
+///   inspect(unicode_char_is_uppercase('A'), content="true")
+///   inspect(unicode_char_is_uppercase('a'), content="false")
+/// }
+/// ```
 pub fn unicode_char_is_uppercase(ch : Char) -> Bool {
   unicode_category_has(ch, "Lu")
 }
 
 ///|
 /// Return true if the character is lowercase.
+///
+/// # Example
+/// ```mbt check
+/// test "lowercase predicate" {
+///   inspect(unicode_char_is_lowercase('a'), content="true")
+///   inspect(unicode_char_is_lowercase('A'), content="false")
+/// }
+/// ```
 pub fn unicode_char_is_lowercase(ch : Char) -> Bool {
   unicode_category_has(ch, "Ll")
 }
@@ -191,6 +207,13 @@ pub fn unicode_char_foldcase(ch : Char) -> Char {
 
 ///|
 /// Uppercase a string using Unicode case mapping.
+///
+/// # Example
+/// ```mbt check
+/// test "string upcase" {
+///   inspect(unicode_string_upcase("abc"), content="ABC")
+/// }
+/// ```
 pub fn unicode_string_upcase(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
@@ -201,6 +224,13 @@ pub fn unicode_string_upcase(s : String) -> String {
 
 ///|
 /// Lowercase a string using Unicode case mapping.
+///
+/// # Example
+/// ```mbt check
+/// test "string downcase" {
+///   inspect(unicode_string_downcase("ABC"), content="abc")
+/// }
+/// ```
 pub fn unicode_string_downcase(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
