@@ -106,6 +106,9 @@ moon check
 ## Facade-level docs
 - Add small examples on re-exported APIs so module users see usage without diving into subpackages.
 
+## Boolean API examples
+- Use `inspect(..., content="true"|"false")` in doctests to make expectations explicit.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {

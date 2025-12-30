@@ -31,6 +31,14 @@ fn unicode_category_has(ch : Char, category : String) -> Bool {
 
 ///|
 /// Return true if the character is alphabetic.
+///
+/// # Example
+/// ```mbt check
+/// test "alphabetic predicate" {
+///   inspect(unicode_char_is_alphabetic('A'), content="true")
+///   inspect(unicode_char_is_alphabetic('1'), content="false")
+/// }
+/// ```
 pub fn unicode_char_is_alphabetic(ch : Char) -> Bool {
   unicode_category_has(ch, "L") || unicode_category_has(ch, "Nl")
 }
@@ -135,6 +143,13 @@ fn unicode_min_equivalent(chars : Array[Char], fallback : Char) -> Char {
 
 ///|
 /// Uppercase a character using Unicode case mapping.
+///
+/// # Example
+/// ```mbt check
+/// test "char upcase" {
+///   inspect(unicode_char_upcase('a'), content="A")
+/// }
+/// ```
 pub fn unicode_char_upcase(ch : Char) -> Char {
   let equiv = unicode_case_equivalents(ch)
   match unicode_pick_equivalent_category(equiv, "Lu") {
@@ -149,6 +164,13 @@ pub fn unicode_char_upcase(ch : Char) -> Char {
 
 ///|
 /// Lowercase a character using Unicode case mapping.
+///
+/// # Example
+/// ```mbt check
+/// test "char downcase" {
+///   inspect(unicode_char_downcase('A'), content="a")
+/// }
+/// ```
 pub fn unicode_char_downcase(ch : Char) -> Char {
   let equiv = unicode_case_equivalents(ch)
   match unicode_pick_equivalent_category(equiv, "Ll") {
