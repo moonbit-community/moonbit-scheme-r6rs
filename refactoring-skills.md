@@ -143,6 +143,9 @@ moon check
 ## Lookahead helpers
 - Add a small `reader_peek_offset` helper to centralize bounded lookahead when scanning delimiters.
 
+## Reader access
+- Prefer `Reader::peek()` over manual `pos` bounds checks when only looking ahead one char.
+
 ## First-token handling
 - Replace manual index counters with a `first` flag when parsing optional leading signs.
 

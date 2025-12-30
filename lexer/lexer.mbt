@@ -248,7 +248,7 @@ pub fn Reader::read_token(self : Reader) -> String raise ParseError {
         started = true
         ignore(self.next())
         if !in_bar && chars.is_empty() && ch == '#' {
-          if self.pos < self.chars.length() && self.chars[self.pos] == '\\' {
+          if self.peek() == Some('\\') {
             fold_case = false
           }
         }
