@@ -40,11 +40,7 @@ fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
 
 ///|
 fn string_to_chars(value : String) -> Array[Char] {
-  let chars : Array[Char] = []
-  for ch in value {
-    chars.push(ch)
-  }
-  chars
+  value.to_array()
 }
 
 ///|
@@ -456,32 +452,23 @@ fn float_to_int_exact(value : Float) -> Int? {
 
 ///|
 fn pow_int(base : Int, exp : Int) -> Int {
-  let mut result = 1
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
+  for result = 1, b = base, e = exp; e > 0; {
+    let next_result = if e % 2 != 0 { result * b } else { result }
+    continue next_result, b * b, e / 2
+  } else {
+    result
   }
-  result
 }
 
 ///|
 fn pow_bigint_int(base : @bigint.BigInt, exp : Int) -> @bigint.BigInt {
-  let mut result = bigint_from_int(1)
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
+  let one = bigint_from_int(1)
+  for result = one, b = base, e = exp; e > 0; {
+    let next_result = if e % 2 != 0 { result * b } else { result }
+    continue next_result, b * b, e / 2
+  } else {
+    result
   }
-  result
 }
 
 ///|
@@ -489,33 +476,24 @@ fn pow_bigint_bigint(
   base : @bigint.BigInt,
   exp : @bigint.BigInt,
 ) -> @bigint.BigInt {
-  let mut result = bigint_from_int(1)
-  let mut b = base
-  let mut e = exp
+  let one = bigint_from_int(1)
   let two = bigint_from_int(2)
-  while e.compare_int(0) > 0 {
-    if !bigint_is_zero(e % two) {
-      result = result * b
-    }
-    b = b * b
-    e = e / two
+  for result = one, b = base, e = exp; e.compare_int(0) > 0; {
+    let next_result = if !bigint_is_zero(e % two) { result * b } else { result }
+    continue next_result, b * b, e / two
+  } else {
+    result
   }
-  result
 }
 
 ///|
 fn pow_float_int(base : Float, exp : Int) -> Float {
-  let mut result = Float::from_int(1)
-  let mut b = base
-  let mut e = exp
-  while e > 0 {
-    if e % 2 != 0 {
-      result = result * b
-    }
-    b = b * b
-    e = e / 2
+  for result = Float::from_int(1), b = base, e = exp; e > 0; {
+    let next_result = if e % 2 != 0 { result * b } else { result }
+    continue next_result, b * b, e / 2
+  } else {
+    result
   }
-  result
 }
 
 ///|

@@ -307,6 +307,21 @@ Example:
 let winds_copy = wind_stack.val.copy()
 ```
 
+## Fast exponent loops without mut
+- Use functional `for` state to implement exponentiation by squaring without mutable variables.
+
+Example:
+```mbt
+fn pow_int(base : Int, exp : Int) -> Int {
+  for result = 1, b = base, e = exp; e > 0; {
+    let next_result = if e % 2 != 0 { result * b } else { result }
+    continue next_result, b * b, e / 2
+  } else {
+    result
+  }
+}
+```
+
 ## Reader-friendly indexing helpers
 - Use `String::to_array()` for fast Char arrays instead of manual pushes.
 - Replace manual bounds checks with `Array::get` and reuse peek helpers.
