@@ -88,6 +88,7 @@ pub fn Port::write(self : Port, text : String) -> Unit { ... }
 
 ## Reduce counter boilerplate
 - Centralize `Ref[Int]` increment logic in a private helper, then reuse across `next_*` functions.
+- Apply the same helper to eval counters (closure/parameter/promise/winder) to keep patterns consistent.
 
 Example:
 ```mbt

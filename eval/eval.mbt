@@ -887,13 +887,18 @@ fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
 }
 
 ///|
+fn next_counter_id(counter : Ref[Int]) -> Int {
+  let id = counter.val
+  counter.val = id + 1
+  id
+}
+
+///|
 let closure_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_closure_id() -> Int {
-  let id = closure_counter.val
-  closure_counter.val = id + 1
-  id
+  next_counter_id(closure_counter)
 }
 
 ///|
@@ -911,9 +916,7 @@ let parameter_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_parameter_id() -> Int {
-  let id = parameter_counter.val
-  parameter_counter.val = id + 1
-  id
+  next_counter_id(parameter_counter)
 }
 
 ///|
@@ -953,9 +956,7 @@ let promise_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_promise_id() -> Int {
-  let id = promise_counter.val
-  promise_counter.val = id + 1
-  id
+  next_counter_id(promise_counter)
 }
 
 ///|
@@ -968,9 +969,7 @@ let eval_env_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_eval_env_id() -> Int {
-  let id = eval_env_counter.val
-  eval_env_counter.val = id + 1
-  id
+  next_counter_id(eval_env_counter)
 }
 
 ///|
@@ -1034,9 +1033,7 @@ let winder_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_winder_id() -> Int {
-  let id = winder_counter.val
-  winder_counter.val = id + 1
-  id
+  next_counter_id(winder_counter)
 }
 
 ///|
@@ -1060,16 +1057,12 @@ let guard_handler_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_continuation_id() -> Int {
-  let id = continuation_counter.val
-  continuation_counter.val = id + 1
-  id
+  next_counter_id(continuation_counter)
 }
 
 ///|
 fn next_guard_handler_id() -> Int {
-  let id = guard_handler_counter.val
-  guard_handler_counter.val = id + 1
-  id
+  next_counter_id(guard_handler_counter)
 }
 
 ///|
@@ -1077,8 +1070,7 @@ let do_counter : Ref[Int] = Ref::new(0)
 
 ///|
 fn next_do_name() -> String {
-  let id = do_counter.val
-  do_counter.val = id + 1
+  let id = next_counter_id(do_counter)
   "__do_loop__\{id}"
 }
 
