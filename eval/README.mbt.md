@@ -26,4 +26,11 @@ test "evaluate program" {
   inspect(values.length(), content="2")
   inspect(@runtime.value_to_string(values[1]), content="3")
 }
+
+///|
+test "include source" {
+  register_include_source("mem.scm", "(+ 1 2)")
+  let value = eval_program("(include \"mem.scm\")")
+  inspect(@runtime.value_to_string(value), content="3")
+}
 ```

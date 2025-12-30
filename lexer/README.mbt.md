@@ -24,6 +24,10 @@ test "reader helpers" {
   inspect(digit_value('9'), content="Some(9)")
   let r = make_reader("#(1 2)")
   inspect(r.is_vector_start(), content="true")
+  let ellipsis = make_reader("...")
+  inspect(ellipsis.is_ellipsis_start(), content="true")
+  let bytevector = make_reader("#vu8(1)")
+  inspect(bytevector.is_bytevector_start(), content="true")
   let r2 = make_reader("  ; comment\nfoo")
   r2.skip_ws_and_comments()
   guard r2.peek() is Some('f') else { fail("expected f") }

@@ -158,6 +158,14 @@ fn skip_block_comment(r : Reader) -> Unit raise ParseError {
 
 ///|
 /// Return true if the reader is positioned at an ellipsis token.
+///
+/// # Example
+/// ```mbt check
+/// test "ellipsis start" {
+///   let r = make_reader("...")
+///   inspect(r.is_ellipsis_start(), content="true")
+/// }
+/// ```
 pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
   if self.pos + 2 >= self.chars.length() {
     false
@@ -176,12 +184,28 @@ pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
 
 ///|
 /// Return true if the reader is positioned at a vector literal start.
+///
+/// # Example
+/// ```mbt check
+/// test "vector start" {
+///   let r = make_reader("#(1)")
+///   inspect(r.is_vector_start(), content="true")
+/// }
+/// ```
 pub fn Reader::is_vector_start(self : Reader) -> Bool {
   self.pos + 1 < self.chars.length() && self.chars[self.pos + 1] == '('
 }
 
 ///|
 /// Return true if the reader is positioned at a bytevector literal start.
+///
+/// # Example
+/// ```mbt check
+/// test "bytevector start" {
+///   let r = make_reader("#vu8(1)")
+///   inspect(r.is_bytevector_start(), content="true")
+/// }
+/// ```
 pub fn Reader::is_bytevector_start(self : Reader) -> Bool {
   if self.pos + 4 >= self.chars.length() {
     false

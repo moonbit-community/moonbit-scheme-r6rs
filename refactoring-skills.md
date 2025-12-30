@@ -99,6 +99,10 @@ Quick check:
 moon check
 ```
 
+## Docstring tests for stateful APIs
+- Keep examples self-contained so they do not rely on shared state between tests.
+- Prefer minimal inputs (short strings, small data) to keep doctests fast.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {

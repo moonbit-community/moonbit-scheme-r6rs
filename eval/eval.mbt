@@ -1127,6 +1127,15 @@ let include_registry : Ref[Map[String, String]] = Ref::new({})
 
 ///|
 /// Register an in-memory source for (include ...) by path.
+///
+/// # Example
+/// ```mbt check
+/// test "include registry" {
+///   register_include_source("mem.scm", "(+ 1 2)")
+///   let value = eval_program("(include \"mem.scm\")")
+///   inspect(@runtime.value_to_string(value), content="3")
+/// }
+/// ```
 pub fn register_include_source(path : String, content : String) -> Unit {
   include_registry.val[path] = content
 }
