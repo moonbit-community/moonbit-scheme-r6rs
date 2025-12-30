@@ -419,7 +419,9 @@ fn parse_exact_decimal(tok : String) -> Datum? {
   }
   let mut seen_dot = false
   let mut frac_len = 0
-  let digits : Array[Char] = []
+  let mut acc = bigint_from_int(0)
+  let mut has_digit = false
+  let ten = bigint_from_int(10)
   for ch in chars.sub(start=start) {
     if ch == '.' {
       if seen_dot {
@@ -427,7 +429,8 @@ fn parse_exact_decimal(tok : String) -> Datum? {
       }
       seen_dot = true
     } else if ch.is_ascii_digit() {
-      digits.push(ch)
+      has_digit = true
+      acc = acc * ten + bigint_from_int(ch.to_int() - '0'.to_int())
       if seen_dot {
         frac_len = frac_len + 1
       }
@@ -435,13 +438,8 @@ fn parse_exact_decimal(tok : String) -> Datum? {
       return None
     }
   }
-  if digits.is_empty() {
+  if !has_digit {
     return None
-  }
-  let mut acc = bigint_from_int(0)
-  for ch in digits {
-    acc = acc * bigint_from_int(10) +
-      bigint_from_int(ch.to_int() - '0'.to_int())
   }
   let mut num = if sign < 0 { -acc } else { acc }
   let mut den = pow10_bigint(frac_len)

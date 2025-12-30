@@ -140,6 +140,9 @@ moon check
 ## String conversion helper
 - Use a single `string_to_chars` helper for repeated String → Array[Char] conversions.
 
+## Streamed digit accumulation
+- Accumulate numeric values during parsing instead of collecting digits into an array first.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {
