@@ -75,3 +75,29 @@ Follow-up checks:
 moon ide find-references @lexer.reader_peek
 moon info
 ```
+
+## Foreign types and methods
+- You cannot define methods on types from other packages (e.g., `@core.Port`).
+- Keep helper functions or introduce a local wrapper type if you need chaining.
+
+Example failure mode:
+```mbt
+pub fn Port::write(self : Port, text : String) -> Unit { ... }
+// error: Cannot define method write for foreign type @dii/scheme-r6rs/core.Port
+```
+
+## Reduce counter boilerplate
+- Centralize `Ref[Int]` increment logic in a private helper, then reuse across `next_*` functions.
+
+Example:
+```mbt
+fn next_counter_id(counter : Ref[Int]) -> Int {
+  let id = counter.val
+  counter.val = id + 1
+  id
+}
+
+pub fn next_binding_id() -> Int {
+  next_counter_id(binding_counter)
+}
+```

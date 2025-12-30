@@ -65,105 +65,85 @@ let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new
 let record_type_id_registry : Ref[Map[Int, RecordTypeDescriptor]] = Ref::new({})
 
 ///|
+fn next_counter_id(counter : Ref[Int]) -> Int {
+  let id = counter.val
+  counter.val = id + 1
+  id
+}
+
+///|
 /// Generate a fresh symbol name with a gensym suffix.
 pub fn gensym(base : String) -> String {
-  let idx = gensym_counter.val
-  gensym_counter.val = idx + 1
+  let idx = next_counter_id(gensym_counter)
   "\{base}__gs\{idx}"
 }
 
 ///|
 /// Allocate a new syntax context id.
 pub fn next_syntax_context() -> Int {
-  let id = syntax_context_counter.val
-  syntax_context_counter.val = id + 1
-  id
+  next_counter_id(syntax_context_counter)
 }
 
 ///|
 /// Allocate a new binding id.
 pub fn next_binding_id() -> Int {
-  let id = binding_counter.val
-  binding_counter.val = id + 1
-  id
+  next_counter_id(binding_counter)
 }
 
 ///|
 fn next_port_id() -> Int {
-  let id = port_counter.val
-  port_counter.val = id + 1
-  id
+  next_counter_id(port_counter)
 }
 
 ///|
 fn next_record_type_id() -> Int {
-  let id = record_type_counter.val
-  record_type_counter.val = id + 1
-  id
+  next_counter_id(record_type_counter)
 }
 
 ///|
 fn next_record_id() -> Int {
-  let id = record_counter.val
-  record_counter.val = id + 1
-  id
+  next_counter_id(record_counter)
 }
 
 ///|
 fn next_record_proc_id() -> Int {
-  let id = record_proc_counter.val
-  record_proc_counter.val = id + 1
-  id
+  next_counter_id(record_proc_counter)
 }
 
 ///|
 fn next_record_type_desc_id() -> Int {
-  let id = record_type_desc_counter.val
-  record_type_desc_counter.val = id + 1
-  id
+  next_counter_id(record_type_desc_counter)
 }
 
 ///|
 fn next_record_ctor_desc_id() -> Int {
-  let id = record_ctor_desc_counter.val
-  record_ctor_desc_counter.val = id + 1
-  id
+  next_counter_id(record_ctor_desc_counter)
 }
 
 ///|
 fn next_condition_id() -> Int {
-  let id = condition_counter.val
-  condition_counter.val = id + 1
-  id
+  next_counter_id(condition_counter)
 }
 
 ///|
 fn next_condition_proc_id() -> Int {
-  let id = condition_proc_counter.val
-  condition_proc_counter.val = id + 1
-  id
+  next_counter_id(condition_proc_counter)
 }
 
 ///|
 /// Allocate a new hashtable id.
 pub fn next_hashtable_id() -> Int {
-  let id = hashtable_counter.val
-  hashtable_counter.val = id + 1
-  id
+  next_counter_id(hashtable_counter)
 }
 
 ///|
 fn next_enum_set_id() -> Int {
-  let id = enum_set_counter.val
-  enum_set_counter.val = id + 1
-  id
+  next_counter_id(enum_set_counter)
 }
 
 ///|
 fn next_enum_set_proc_id() -> Int {
-  let id = enum_set_proc_counter.val
-  enum_set_proc_counter.val = id + 1
-  id
+  next_counter_id(enum_set_proc_counter)
 }
 
 ///|
