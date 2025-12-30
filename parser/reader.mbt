@@ -959,43 +959,48 @@ fn ascii_lower_string(value : String) -> String {
 }
 
 ///|
+fn make_unary_form(name : String, expr : Datum) -> Datum {
+  pair_new(Datum::Symbol(name), pair_new(expr, Datum::Nil))
+}
+
+///|
 fn make_quote(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("quote"), pair_new(expr, Datum::Nil))
+  make_unary_form("quote", expr)
 }
 
 ///|
 fn make_quasiquote(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("quasiquote"), pair_new(expr, Datum::Nil))
+  make_unary_form("quasiquote", expr)
 }
 
 ///|
 fn make_unquote(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("unquote"), pair_new(expr, Datum::Nil))
+  make_unary_form("unquote", expr)
 }
 
 ///|
 fn make_unquote_splicing(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("unquote-splicing"), pair_new(expr, Datum::Nil))
+  make_unary_form("unquote-splicing", expr)
 }
 
 ///|
 fn make_syntax(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("syntax"), pair_new(expr, Datum::Nil))
+  make_unary_form("syntax", expr)
 }
 
 ///|
 fn make_quasisyntax(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("quasisyntax"), pair_new(expr, Datum::Nil))
+  make_unary_form("quasisyntax", expr)
 }
 
 ///|
 fn make_unsyntax(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("unsyntax"), pair_new(expr, Datum::Nil))
+  make_unary_form("unsyntax", expr)
 }
 
 ///|
 fn make_unsyntax_splicing(expr : Datum) -> Datum {
-  pair_new(Datum::Symbol("unsyntax-splicing"), pair_new(expr, Datum::Nil))
+  make_unary_form("unsyntax-splicing", expr)
 }
 
 ///|

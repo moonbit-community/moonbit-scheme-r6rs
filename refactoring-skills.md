@@ -118,6 +118,9 @@ moon check
 ## Indexing helpers
 - Extract tiny helpers (like "last frame") to avoid repeated index math and keep mutations localized.
 
+## Constructor helpers
+- Factor repeated "pair of symbol + expr" patterns into a small helper to keep syntax builders consistent.
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {
