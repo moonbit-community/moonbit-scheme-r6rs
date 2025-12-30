@@ -987,20 +987,22 @@ fn float_is_finite(value : Float) -> Bool {
 }
 
 ///|
+let radix_digits : ReadOnlyArray[Char] = [
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+  'w', 'x', 'y', 'z',
+]
+
+///|
 fn int_to_string_radix(value : Int, radix : Int) -> String {
   if value == 0 {
     return "0"
   }
-  let digits : Array[Char] = [
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z',
-  ]
   let mut n = if value < 0 { -value } else { value }
   let chars : Array[Char] = []
   while n > 0 {
     let rem = n % radix
-    chars.push(digits[rem])
+    chars.push(radix_digits[rem])
     n = n / radix
   }
   if value < 0 {
@@ -1018,17 +1020,12 @@ fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
   if value.is_zero() {
     return "0"
   }
-  let digits : Array[Char] = [
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z',
-  ]
   let mut n = if value.compare_int(0) < 0 { -value } else { value }
   let radix_big = bigint_from_int(radix)
   let chars : Array[Char] = []
   while n.compare_int(0) > 0 {
     let rem = n % radix_big
-    chars.push(digits[rem.to_int()])
+    chars.push(radix_digits[rem.to_int()])
     n = n / radix_big
   }
   if value.compare_int(0) < 0 {

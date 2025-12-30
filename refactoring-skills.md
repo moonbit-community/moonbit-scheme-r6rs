@@ -131,6 +131,9 @@ moon check
 ## Multi-state loops
 - Use functional `for` with multiple state variables to replace `mut` accumulators in small numeric loops.
 
+## Shared constants
+- Lift repeated lookup tables (like radix digit arrays) to a single `let` to avoid duplication.
+
 ## Reader consumption
 - Use `Reader::next()` (with `ignore(...)` if needed) to advance instead of direct `pos` mutation.
 
