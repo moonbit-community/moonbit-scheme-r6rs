@@ -592,6 +592,21 @@ for i = 0; i < rules.rules.length(); {
 }
 ```
 
+## Repeat binding accumulation
+- Use a functional `for` when collecting per-item bindings, returning early on mismatch.
+
+Example:
+```mbt
+for i = 0; i < count; {
+  let iter_bindings : Map[String, BindingVal] = {}
+  if !match_pattern(repeat_pat, inputs[start + i], ...) {
+    return None
+  }
+  // merge iter_bindings into repeated
+  continue i + 1
+}
+```
+
 ## Prefix tag scanning
 - Use functional `for` with `continue` to advance by fixed steps (like `#`-prefixed numeric tags).
 

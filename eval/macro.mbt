@@ -1279,8 +1279,7 @@ fn collect_repeat_bindings(
     return Some(result)
   }
   let repeated : Map[String, Array[BindingVal]] = {}
-  let mut i = 0
-  while i < count {
+  for i = 0; i < count; {
     let iter_bindings : Map[String, BindingVal] = {}
     if !match_pattern(
         repeat_pat,
@@ -1308,7 +1307,7 @@ fn collect_repeat_bindings(
         None => ()
       }
     }
-    i = i + 1
+    continue i + 1
   }
   for name in repeated.keys() {
     match repeated.get(name) {
