@@ -205,6 +205,7 @@ for i = 0; i < clauses.length(); {
 - Keep the fallback `_` branch so you can report `arity_mismatch` with `args.length()`.
 - For variadic primitives, capture the first required arguments and iterate the rest to avoid manual index math.
 - Preserve existing error strings by reusing `args.length()` in formatted messages when tests assert exact text.
+- For `append`-style APIs, match `[]` and `[single]` first, then keep the "all but last" loop for the tail case.
 
 Example:
 ```mbt

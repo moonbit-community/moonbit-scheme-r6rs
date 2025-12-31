@@ -6,58 +6,58 @@ fn apply_pair_list_primitive(
 ) -> Value? raise EvalError {
   match prim {
     Primitive::Cons =>
-      match args.length() {
-        2 =>
+      match args {
+        [car_value, cdr_value] =>
           Some({
-            let car = value_to_datum_element(args[0])
-            let cdr = value_to_datum_element(args[1])
+            let car = value_to_datum_element(car_value)
+            let cdr = value_to_datum_element(cdr_value)
             Value::Datum(pair_new(car, cdr))
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::SetCar =>
-      match args.length() {
-        2 =>
+      match args {
+        [pair_value, item_value] =>
           Some({
-            let (car_cell, _) = value_as_pair_cells(args[0])
-            car_cell.val = value_to_datum_element(args[1])
+            let (car_cell, _) = value_as_pair_cells(pair_value)
+            car_cell.val = value_to_datum_element(item_value)
             Value::Void
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::SetCdr =>
-      match args.length() {
-        2 =>
+      match args {
+        [pair_value, item_value] =>
           Some({
-            let (_, cdr_cell) = value_as_pair_cells(args[0])
-            cdr_cell.val = value_to_datum_element(args[1])
+            let (_, cdr_cell) = value_as_pair_cells(pair_value)
+            cdr_cell.val = value_to_datum_element(item_value)
             Value::Void
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Car =>
-      match args.length() {
-        1 =>
+      match args {
+        [pair_value] =>
           Some({
-            let (car, _) = value_as_pair(args[0])
+            let (car, _) = value_as_pair(pair_value)
             value_from_datum(car)
           })
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Cdr =>
-      match args.length() {
-        1 =>
+      match args {
+        [pair_value] =>
           Some({
-            let (_, cdr) = value_as_pair(args[0])
+            let (_, cdr) = value_as_pair(pair_value)
             value_from_datum(cdr)
           })
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Cxr(chain) =>
-      match args.length() {
-        1 =>
+      match args {
+        [datum_value] =>
           Some({
-            let cur = value_as_datum(args[0])
+            let cur = value_as_datum(datum_value)
             let cur = for i = chain.length(), cur = cur; i > 0; {
               // invariant : i >= 0 && i <= chain.length()
               // decreases : i
@@ -82,7 +82,7 @@ fn apply_pair_list_primitive(
             }
             value_from_datum(cur)
           })
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::List => {
       let items : Array[Datum] = []
@@ -95,15 +95,11 @@ fn apply_pair_list_primitive(
       Some(Value::Datum(list_from_array(items)))
     }
     Primitive::MakeList =>
-      match args.length() {
-        1 | 2 =>
+      match args {
+        [len_value] =>
           Some({
-            let len = value_as_nonnegative_int(args[0])
-            let fill = if args.length() == 2 {
-              value_to_datum_element(args[1])
-            } else {
-              Datum::Nil
-            }
+            let len = value_as_nonnegative_int(len_value)
+            let fill = Datum::Nil
             let items : Array[Datum] = []
             for i = 0; i < len; {
               // invariant : i >= 0 && i <= len
@@ -114,7 +110,24 @@ fn apply_pair_list_primitive(
             }
             Value::Datum(list_from_array(items))
           })
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
+        [len_value, fill_value] =>
+          Some({
+            let len = value_as_nonnegative_int(len_value)
+            let fill = value_to_datum_element(fill_value)
+            let items : Array[Datum] = []
+            for i = 0; i < len; {
+              // invariant : i >= 0 && i <= len
+              // decreases : len - i
+              // assert : i <= len
+              items.push(fill)
+              continue i + 1
+            }
+            Value::Datum(list_from_array(items))
+          })
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
       }
     Primitive::NullP =>
       match args {
@@ -146,9 +159,9 @@ fn apply_pair_list_primitive(
       }
     Primitive::Append =>
       Some(
-        match args.length() {
-          0 => Value::Datum(Datum::Nil)
-          1 => args[0]
+        match args {
+          [] => Value::Datum(Datum::Nil)
+          [single] => single
           _ => {
             let items : Array[Datum] = []
             for i = 0; i < args.length() - 1; {
@@ -192,94 +205,94 @@ fn apply_pair_list_primitive(
         _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ListRef =>
-      match args.length() {
-        2 =>
+      match args {
+        [list_value, idx_value] =>
           Some({
-            let datum = value_as_datum(args[0])
-            let idx = value_as_int_index(args[1])
+            let datum = value_as_datum(list_value)
+            let idx = value_as_int_index(idx_value)
             let items = datum_list_to_array(datum)
             check_index(idx, items.length())
             value_from_datum(items[idx])
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::ListTail =>
-      match args.length() {
-        2 =>
+      match args {
+        [list_value, idx_value] =>
           Some({
-            let datum = value_as_datum(args[0])
-            let idx = value_as_int_index(args[1])
+            let datum = value_as_datum(list_value)
+            let idx = value_as_int_index(idx_value)
             let items = datum_list_to_array(datum)
             if idx < 0 || idx > items.length() {
               raise @core.EvalError("index out of range")
             }
             Value::Datum(list_from_array(items.sub(start=idx).to_array()))
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::ListCopy =>
-      match args.length() {
-        1 =>
+      match args {
+        [list_value] =>
           Some({
-            let datum = value_as_datum(args[0])
+            let datum = value_as_datum(list_value)
             let items = datum_list_to_array(datum)
             Value::Datum(list_from_array(items))
           })
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Member =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_member(EqualityMode::Equal, args[0], list)
+            let list = value_as_datum(list_value)
+            list_member(EqualityMode::Equal, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Memq =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_member(EqualityMode::Eqv, args[0], list)
+            let list = value_as_datum(list_value)
+            list_member(EqualityMode::Eqv, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Memv =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_member(EqualityMode::Eqv, args[0], list)
+            let list = value_as_datum(list_value)
+            list_member(EqualityMode::Eqv, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Assoc =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_assoc(EqualityMode::Equal, args[0], list)
+            let list = value_as_datum(list_value)
+            list_assoc(EqualityMode::Equal, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Assq =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_assoc(EqualityMode::Eqv, args[0], list)
+            let list = value_as_datum(list_value)
+            list_assoc(EqualityMode::Eqv, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Assv =>
-      match args.length() {
-        2 =>
+      match args {
+        [item, list_value] =>
           Some({
-            let list = value_as_datum(args[1])
-            list_assoc(EqualityMode::Eqv, args[0], list)
+            let list = value_as_datum(list_value)
+            list_assoc(EqualityMode::Eqv, item, list)
           })
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     _ => None
   }
