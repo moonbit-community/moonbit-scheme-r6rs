@@ -3801,6 +3801,9 @@ fn eval_define_record_type_state(
       is_opaque = false,
       uid = None;
       i < raw_specs.length(); {
+      // invariant : i >= 0 && i <= raw_specs.length()
+      // decreases : raw_specs.length() - i
+      // assert : i <= raw_specs.length()
       let spec = raw_specs[i]
       let parts = datum_list_to_array(spec)
       if parts.length() >= 1 && parts.length() <= 2 {
@@ -3880,6 +3883,9 @@ fn eval_define_record_type_state(
   let parent_count = parent_fields.length()
   let parent_field_names : Array[String] = []
   for field in parent_fields {
+    // invariant : parent_fields.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : parent_fields.length() >= 0
     parent_field_names.push(field.name)
   }
   let accessors : Map[String, String] = {}
@@ -3887,6 +3893,9 @@ fn eval_define_record_type_state(
   let mutable : Map[String, Bool] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
+    // invariant : field_specs.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : field_specs.length() >= 0
     let parts = datum_list_to_array(spec)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid define-record-type")
@@ -3919,6 +3928,9 @@ fn eval_define_record_type_state(
   let fields : Array[RecordField] = []
   let field_index : Map[String, Int] = {}
   for i = 0; i < ctor_fields.length(); {
+    // invariant : i >= 0 && i <= ctor_fields.length()
+    // decreases : ctor_fields.length() - i
+    // assert : i <= ctor_fields.length()
     let field_name = ctor_fields[i]
     if field_index.contains(field_name) {
       raise @core.EvalError("invalid define-record-type")
@@ -3941,6 +3953,9 @@ fn eval_define_record_type_state(
   }
   let bindings : Array[RecordFieldBinding] = []
   for field_name in new_field_names {
+    // invariant : new_field_names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : new_field_names.length() >= 0
     let idx = match field_index.get(field_name) {
       Some(value) => value
       None => raise @core.EvalError("invalid define-record-type")
@@ -4047,11 +4062,17 @@ fn eval_define_condition_type_state(
   let parent_fields = parent_type.fields
   let parent_field_names : Array[String] = []
   for field in parent_fields {
+    // invariant : parent_fields.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : parent_fields.length() >= 0
     parent_field_names.push(field.name)
   }
   let accessors : Map[String, String] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
+    // invariant : field_specs.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : field_specs.length() >= 0
     let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
       raise @core.EvalError("invalid define-condition-type")
@@ -4069,14 +4090,23 @@ fn eval_define_condition_type_state(
   }
   let fields : Array[RecordField] = []
   for field in parent_fields {
+    // invariant : parent_fields.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : parent_fields.length() >= 0
     fields.push(field)
   }
   for field_name in new_field_names {
+    // invariant : new_field_names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : new_field_names.length() >= 0
     fields.push(RecordField::{ name: field_name, mutable: false })
   }
   let bindings : Array[RecordFieldBinding] = []
   let parent_count = parent_fields.length()
   for i = 0; i < new_field_names.length(); {
+    // invariant : i >= 0 && i <= new_field_names.length()
+    // decreases : new_field_names.length() - i
+    // assert : i <= new_field_names.length()
     let field_name = new_field_names[i]
     let accessor_name = match accessors.get(field_name) {
       Some(name) => name
@@ -4126,6 +4156,9 @@ fn eval_define_enumeration_state(
   let ctor_name = parse_symbol(args[2])
   let seen : Map[String, Bool] = {}
   for name in symbols {
+    // invariant : symbols.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : symbols.length() >= 0
     if seen.contains(name) {
       raise @core.EvalError("invalid define-enumeration")
     }
