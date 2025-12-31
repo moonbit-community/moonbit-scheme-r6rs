@@ -15,6 +15,7 @@ pub fn bool_value(value : Bool) -> Value {
 }
 
 ///|
+/// Registry entry for a library's exported bindings.
 pub(all) struct Library {
   exports : Map[String, Binding]
 }

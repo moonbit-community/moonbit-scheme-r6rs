@@ -62,6 +62,14 @@ test "env clone" {
 }
 
 ///|
+test "gensym unique suffix" {
+  let a = gensym("x")
+  let b = gensym("x")
+  inspect(a != b, content="true")
+  guard a is [.."x__gs", .._rest] else { fail("expected gensym prefix") }
+}
+
+///|
 test "list from array" {
   let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
   let value = @core.Value::Datum(list)
@@ -73,6 +81,11 @@ test "enum set from names" {
   let set = enum_set_from_names(["a", "b"], ["b"])
   inspect(enum_set_member_by_name(set, "b"), content="true")
   inspect(enum_set_member_by_name(set, "a"), content="false")
+}
+
+///|
+test "enum set index" {
+  inspect(enum_set_index_of(["a", "b"], "b"), content="Some(1)")
 }
 
 ///|

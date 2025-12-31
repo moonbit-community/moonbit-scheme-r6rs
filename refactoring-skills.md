@@ -135,6 +135,7 @@ moon check
 ## Match simplification
 - Group enum variants with `|` patterns when they map to the same output to reduce duplication.
 - For tuple matches, only group variants when the bound variables share the same type.
+- Use string prefix patterns like `[..\"x__gs\", .._rest]` in tests to avoid helper functions.
 
 ## Recursive parent traversal
 - Prefer simple recursion over `mut` state when walking a parent chain.
