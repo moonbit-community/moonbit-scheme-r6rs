@@ -2130,6 +2130,9 @@ fn parse_field_specs(
 ) -> Array[RecordField] raise EvalError {
   let fields : Array[RecordField] = []
   for item in items {
+    // invariant : items.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : items.length() >= 0
     fields.push(parse_field_spec(item))
   }
   fields
@@ -2258,6 +2261,9 @@ fn string_to_utf8_bytes(
   }
   let bytes : Array[Int] = []
   for i, ch in chars {
+    // invariant : i >= 0 && i < chars.length()
+    // decreases : chars.length() - i
+    // assert : i < chars.length()
     if i >= start && i < end {
       utf8_encode_char(ch.to_int(), bytes)
     }
@@ -2276,6 +2282,9 @@ fn utf8_decode_to_string(
   }
   let buf = @buffer.new()
   let result = for i = start; i < end; {
+    // invariant : i >= start && i <= end
+    // decreases : end - i
+    // assert : i <= end
     let b0 = items[i]
     if b0 < 0 || b0 > 255 {
       utf8_raise_invalid()
