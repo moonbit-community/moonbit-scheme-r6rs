@@ -40,8 +40,8 @@ pub fn Reader::peek(self : Reader) -> Char? {
 }
 
 ///|
-fn reader_peek_offset(r : Reader, offset : Int) -> Char? {
-  r.chars.get(r.pos + offset)
+fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
+  self.chars.get(self.pos + offset)
 }
 
 ///|
@@ -111,8 +111,8 @@ pub fn Reader::skip_ws_and_comments(self : Reader) -> Unit raise ParseError {
         continue
       }
       Some('#') =>
-        if reader_peek_offset(self, 1) == Some('|') {
-          skip_block_comment(self)
+        if self.peek_offset(1) == Some('|') {
+          self.skip_block_comment()
           continue
         } else {
           break
@@ -123,27 +123,27 @@ pub fn Reader::skip_ws_and_comments(self : Reader) -> Unit raise ParseError {
 }
 
 ///|
-fn skip_block_comment(r : Reader) -> Unit raise ParseError {
-  ignore(r.next())
-  ignore(r.next())
+fn Reader::skip_block_comment(self : Reader) -> Unit raise ParseError {
+  ignore(self.next())
+  ignore(self.next())
   let mut depth = 1
   while depth > 0 {
-    match (r.peek(), reader_peek_offset(r, 1)) {
+    match (self.peek(), self.peek_offset(1)) {
       (None, _) => raise @core.ParseError("unterminated block comment")
       (Some('#'), Some('|')) => {
         depth = depth + 1
-        ignore(r.next())
-        ignore(r.next())
+        ignore(self.next())
+        ignore(self.next())
         continue
       }
       (Some('|'), Some('#')) => {
         depth = depth - 1
-        ignore(r.next())
-        ignore(r.next())
+        ignore(self.next())
+        ignore(self.next())
         continue
       }
       _ => {
-        ignore(r.next())
+        ignore(self.next())
         continue
       }
     }
@@ -163,11 +163,11 @@ fn skip_block_comment(r : Reader) -> Unit raise ParseError {
 pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
   match (
     self.peek(),
-    reader_peek_offset(self, 1),
-    reader_peek_offset(self, 2),
+    self.peek_offset(1),
+    self.peek_offset(2),
   ) {
     (Some('.'), Some('.'), Some('.')) =>
-      match reader_peek_offset(self, 3) {
+      match self.peek_offset(3) {
         None => true
         Some(ch) => is_delim(ch)
       }
@@ -186,7 +186,7 @@ pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
 /// }
 /// ```
 pub fn Reader::is_vector_start(self : Reader) -> Bool {
-  reader_peek_offset(self, 1) == Some('(')
+  self.peek_offset(1) == Some('(')
 }
 
 ///|
@@ -201,10 +201,10 @@ pub fn Reader::is_vector_start(self : Reader) -> Bool {
 /// ```
 pub fn Reader::is_bytevector_start(self : Reader) -> Bool {
   match (
-    reader_peek_offset(self, 1),
-    reader_peek_offset(self, 2),
-    reader_peek_offset(self, 3),
-    reader_peek_offset(self, 4),
+    self.peek_offset(1),
+    self.peek_offset(2),
+    self.peek_offset(3),
+    self.peek_offset(4),
   ) {
     (Some('v'), Some('u'), Some('8'), Some('(')) => true
     _ => false
@@ -243,7 +243,7 @@ pub fn Reader::read_token(self : Reader) -> String raise ParseError {
           if ch == '|' {
             in_bar = false
           } else if ch == '\\' {
-            chars.push(read_identifier_escape(self))
+            chars.push(self.read_identifier_escape())
           } else {
             chars.push(ch)
           }
@@ -253,7 +253,7 @@ pub fn Reader::read_token(self : Reader) -> String raise ParseError {
           if chars.length() == 1 && chars[0] == '#' {
             chars.push(ch)
           } else {
-            let escaped = read_identifier_escape(self)
+            let escaped = self.read_identifier_escape()
             chars.push(
               if fold_case {
                 unicode_char(escaped).foldcase()
@@ -281,9 +281,9 @@ pub fn Reader::read_token(self : Reader) -> String raise ParseError {
 }
 
 ///|
-fn read_identifier_escape(r : Reader) -> Char raise ParseError {
-  match r.next() {
-    Some('x') | Some('X') => read_hex_escape(r)
+fn Reader::read_identifier_escape(self : Reader) -> Char raise ParseError {
+  match self.next() {
+    Some('x') | Some('X') => self.read_hex_escape()
     Some(ch) => ch
     None => raise @core.ParseError("unterminated identifier")
   }
@@ -330,12 +330,12 @@ pub fn Reader::read_string(self : Reader) -> String raise ParseError {
       Some('"') => break
       Some('\\') =>
         match self.next() {
-          Some('\n') => skip_string_line_continuation(self)
+          Some('\n') => self.skip_string_line_continuation()
           Some('\r') => {
             if self.peek() == Some('\n') {
               ignore(self.next())
             }
-            skip_string_line_continuation(self)
+            self.skip_string_line_continuation()
           }
           Some('n') => chars.push('\n')
           Some('t') => chars.push('\t')
@@ -344,7 +344,7 @@ pub fn Reader::read_string(self : Reader) -> String raise ParseError {
           Some('b') => chars.push('\u{8}')
           Some('v') => chars.push('\u{0b}')
           Some('f') => chars.push('\u{0c}')
-          Some('x') | Some('X') => chars.push(read_hex_escape(self))
+          Some('x') | Some('X') => chars.push(self.read_hex_escape())
           Some('"') => chars.push('"')
           Some('\\') => chars.push('\\')
           Some(ch) => chars.push(ch)
@@ -357,11 +357,11 @@ pub fn Reader::read_string(self : Reader) -> String raise ParseError {
 }
 
 ///|
-fn skip_string_line_continuation(r : Reader) -> Unit {
+fn Reader::skip_string_line_continuation(self : Reader) -> Unit {
   while true {
-    match r.peek() {
+    match self.peek() {
       Some(ch) if ch.is_ascii_whitespace() => {
-        ignore(r.next())
+        ignore(self.next())
         continue
       }
       _ => break
@@ -370,11 +370,11 @@ fn skip_string_line_continuation(r : Reader) -> Unit {
 }
 
 ///|
-fn read_hex_escape(r : Reader) -> Char raise ParseError {
+fn Reader::read_hex_escape(self : Reader) -> Char raise ParseError {
   let mut acc = 0
   let mut has_digit = false
   while true {
-    match r.next() {
+    match self.next() {
       None => raise @core.ParseError("unterminated string")
       Some(';') => {
         if !has_digit {

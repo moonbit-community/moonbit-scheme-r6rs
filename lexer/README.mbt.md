@@ -31,6 +31,9 @@ test "reader helpers" {
   let r2 = make_reader("  ; comment\nfoo")
   r2.skip_ws_and_comments()
   guard r2.peek() is Some('f') else { fail("expected f") }
+  let r4 = make_reader("#| block |#foo")
+  r4.skip_ws_and_comments()
+  inspect(r4.read_token(), content="foo")
   let r3 = make_reader("\"hi\"")
   ignore(r3.next())
   inspect(r3.read_string(), content="hi")

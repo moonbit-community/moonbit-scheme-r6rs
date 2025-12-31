@@ -76,6 +76,25 @@ moon ide find-references @lexer.reader_peek
 moon info
 ```
 
+## Private helper methods on Reader
+- Convert `Reader`-only helpers to private methods to keep lookahead and escape logic local to the reader API.
+
+Example:
+```mbt
+fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
+  self.chars.get(self.pos + offset)
+}
+
+if self.peek_offset(1) == Some('|') {
+  self.skip_block_comment()
+}
+```
+
+Tooling:
+```bash
+moon ide find-references read_hex_escape
+```
+
 ## Foreign types and methods
 - You cannot define methods on types from other packages (e.g., `@core.Port`).
 - Keep helper functions or introduce a local wrapper type if you need chaining.
