@@ -3020,6 +3020,9 @@ fn handle_guard(
 fn wind_push(winder : Winder) -> Unit {
   let next : Array[Winder] = []
   for item in wind_stack.val {
+    // invariant : wind_stack.val.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : wind_stack.val.length() >= 0
     next.push(item)
   }
   next.push(winder)
@@ -3046,6 +3049,9 @@ fn apply_winder_before(
     WinderKind::Proc(before, _) => apply_proc(before, [], kont, handlers)
     WinderKind::Params(bindings) => {
       for binding in bindings {
+        // invariant : bindings.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : bindings.length() >= 0
         parameter_set(binding.param, binding.new_value)
       }
       MachineState::Apply(Value::Void, kont, handlers)
@@ -3063,6 +3069,9 @@ fn apply_winder_after(
     WinderKind::Proc(_, after) => apply_proc(after, [], kont, handlers)
     WinderKind::Params(bindings) => {
       for binding in bindings {
+        // invariant : bindings.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : bindings.length() >= 0
         parameter_set(binding.param, binding.old_value)
       }
       MachineState::Apply(Value::Void, kont, handlers)
@@ -3073,6 +3082,10 @@ fn apply_winder_after(
 ///|
 fn common_wind_prefix(current : Array[Winder], target : Array[Winder]) -> Int {
   for i = 0; i < current.length() && i < target.length(); {
+    // invariant : i >= 0 && i <= current.length()
+    // invariant : i >= 0 && i <= target.length()
+    // decreases : (if current.length() < target.length() { current.length() } else { target.length() }) - i
+    // assert : i <= current.length() && i <= target.length()
     if current[i].id != target[i].id {
       break i
     }
