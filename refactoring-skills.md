@@ -1517,3 +1517,12 @@ let (num, den) = if exp_adjusted >= 0 {
 }
 let num = if sign_bit != 0U { -num } else { num }
 ```
+
+## Normalize with rebind
+- When a single value needs adjustment, rebind it with `let` instead of using `mut`.
+
+Example:
+```mbt
+let shift = count % width
+let shift = if shift < 0 { shift + width } else { shift }
+```

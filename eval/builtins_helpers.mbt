@@ -1764,10 +1764,8 @@ fn datum_bitwise_rotate_bit_field(
   if width == 0 {
     return value
   }
-  let mut shift = count % width
-  if shift < 0 {
-    shift = shift + width
-  }
+  let shift = count % width
+  let shift = if shift < 0 { shift + width } else { shift }
   let field = datum_bitwise_bit_field(value, start, end)
   let mask = bigint_pow2(width) - bigint_from_int(1)
   let field_big = datum_to_bigint(field)
