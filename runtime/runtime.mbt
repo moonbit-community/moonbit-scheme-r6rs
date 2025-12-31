@@ -5,13 +5,13 @@
 /// ```mbt check
 /// test "bool value helper" {
 ///   match bool_value(true) {
-///     @core.Value::Datum(@core.Datum::Bool(true)) => ()
+///     Datum(Bool(true)) => ()
 ///     _ => fail("expected bool value")
 ///   }
 /// }
 /// ```
 pub fn bool_value(value : Bool) -> Value {
-  Value::Datum(Datum::Bool(value))
+  Datum(Bool(value))
 }
 
 ///|
@@ -450,14 +450,14 @@ pub fn default_constructor_descriptor(
 /// Return true if the value is a callable procedure.
 pub fn is_procedure_value(value : Value) -> Bool {
   match value {
-    Value::Primitive(_)
-    | Value::Closure(_)
-    | Value::CaseClosure(_)
-    | Value::Parameter(_)
-    | Value::Continuation(_)
-    | Value::RecordProc(_)
-    | Value::ConditionProc(_)
-    | Value::EnumSetProc(_) => true
+    Primitive(_)
+    | Closure(_)
+    | CaseClosure(_)
+    | Parameter(_)
+    | Continuation(_)
+    | RecordProc(_)
+    | ConditionProc(_)
+    | EnumSetProc(_) => true
     _ => false
   }
 }
@@ -551,7 +551,7 @@ pub fn lookup_library(name : String) -> Library? {
 /// ```
 pub fn new_output_string_port() -> Port {
   let buffer = Ref::new("")
-  Port::{ id: next_port_id(), kind: PortKind::OutputString(buffer) }
+  Port::{ id: next_port_id(), kind: OutputString(buffer) }
 }
 
 ///|
@@ -582,7 +582,7 @@ pub fn set_current_output_port(port : Port) -> Unit {
 /// ```
 pub fn port_write(port : Port, text : String) -> Unit {
   match port.kind {
-    PortKind::OutputString(buffer) => buffer.val = buffer.val + text
+    OutputString(buffer) => buffer.val = buffer.val + text
   }
 }
 
@@ -598,7 +598,7 @@ pub fn port_write(port : Port, text : String) -> Unit {
 /// ```
 pub fn port_get_output_string(port : Port) -> String {
   match port.kind {
-    PortKind::OutputString(buffer) => buffer.val
+    OutputString(buffer) => buffer.val
   }
 }
 
@@ -606,7 +606,7 @@ pub fn port_get_output_string(port : Port) -> String {
 /// Scheme false predicate for values.
 pub fn is_false(value : Value) -> Bool {
   match value {
-    Value::Datum(Datum::Bool(false)) => true
+    Datum(Bool(false)) => true
     _ => false
   }
 }
@@ -615,8 +615,8 @@ pub fn is_false(value : Value) -> Bool {
 /// Convert a Value into a Datum or raise on type mismatch.
 pub fn value_as_datum(value : Value) -> Datum raise EvalError {
   match value {
-    Value::Datum(d) => d
-    Value::Record(record) => Datum::Record(record)
+    Datum(d) => d
+    Record(record) => Record(record)
     _ => raise @core.EvalError("type error: datum expected")
   }
 }
@@ -625,9 +625,9 @@ pub fn value_as_datum(value : Value) -> Datum raise EvalError {
 /// Convert a Value into a Datum suitable for list/vector elements.
 pub fn value_to_datum_element(value : Value) -> Datum {
   match value {
-    Value::Datum(d) => d
-    Value::Record(record) => Datum::Record(record)
-    _ => Datum::Value(value)
+    Datum(d) => d
+    Record(record) => Record(record)
+    _ => Value(value)
   }
 }
 
@@ -635,9 +635,9 @@ pub fn value_to_datum_element(value : Value) -> Datum {
 /// Convert a Datum back to a Value.
 pub fn value_from_datum(datum : Datum) -> Value {
   match datum {
-    Datum::Record(record) => Value::Record(record)
-    Datum::Value(value) => value
-    _ => Value::Datum(datum)
+    Record(record) => Record(record)
+    Value(value) => value
+    _ => Datum(datum)
   }
 }
 
@@ -653,13 +653,13 @@ pub fn condition_base_type() -> RecordType raise EvalError {
 ///|
 fn value_as_condition_record(value : Value, base : RecordType) -> Record? {
   match value {
-    Value::Record(record) =>
+    Record(record) =>
       if record_type_is_a(record.record_type, base) {
         Some(record)
       } else {
         None
       }
-    Value::Datum(Datum::Record(record)) =>
+    Datum(Record(record)) =>
       if record_type_is_a(record.record_type, base) {
         Some(record)
       } else {
@@ -676,7 +676,7 @@ pub fn condition_components_opt(
   base : RecordType,
 ) -> Array[Record]? {
   match value {
-    Value::Datum(Datum::Condition(cond)) => Some(cond.components)
+    Datum(Condition(cond)) => Some(cond.components)
     _ =>
       match value_as_condition_record(value, base) {
         Some(record) => Some([record])
@@ -734,7 +734,7 @@ pub fn gcd(a : Int, b : Int) -> Int {
 /// ```mbt check
 /// test "normalize rat" {
 ///   match normalize_rat(2, 4) {
-///     Some(@core.Datum::Rat(1, 2)) => ()
+///     Some(Rat(1, 2)) => ()
 ///     _ => fail("expected reduced ratio")
 ///   }
 /// }
@@ -743,16 +743,16 @@ pub fn normalize_rat(num : Int, den : Int) -> Datum? {
   if den == 0 {
     None
   } else if num == 0 {
-    Some(Datum::Int(0))
+    Some(Int(0))
   } else {
     let (n, d) = if den < 0 { (-num, -den) } else { (num, den) }
     let g = gcd(n, d)
     let nn = n / g
     let dd = d / g
     if dd == 1 {
-      Some(Datum::Int(nn))
+      Some(Int(nn))
     } else {
-      Some(Datum::Rat(nn, dd))
+      Some(Rat(nn, dd))
     }
   }
 }
@@ -810,7 +810,7 @@ pub fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
   if bigint_is_zero(den) {
     None
   } else if bigint_is_zero(num) {
-    Some(Datum::Int(0))
+    Some(Int(0))
   } else {
     let (n, d) = if den.compare_int(0) < 0 {
       (-num, -den)
@@ -823,14 +823,14 @@ pub fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
     if dd.compare_int(1) == 0 {
       Some(
         match bigint_to_int_option(nn) {
-          Some(v) => Datum::Int(v)
-          None => Datum::BigInt(nn)
+          Some(v) => Int(v)
+          None => BigInt(nn)
         },
       )
     } else {
       match (bigint_to_int_option(nn), bigint_to_int_option(dd)) {
-        (Some(nv), Some(dv)) => Some(Datum::Rat(nv, dv))
-        _ => Some(Datum::BigRat(nn, dd))
+        (Some(nv), Some(dv)) => Some(Rat(nv, dv))
+        _ => Some(BigRat(nn, dd))
       }
     }
   }
@@ -845,7 +845,7 @@ pub fn datum_unlabel(value : Datum) -> Datum {
     // TODO(decreases) : list length not explicit; possible bug
     // assert : seen.length() >= 0
     match cur {
-      Datum::Label(id, cell) => {
+      Label(id, cell) => {
         if seen.contains(id) {
           break cur
         }
@@ -863,9 +863,9 @@ pub fn datum_unlabel(value : Datum) -> Datum {
 /// Extract pair elements as datums or raise on type mismatch.
 pub fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
   match value {
-    Value::Datum(datum) =>
+    Datum(datum) =>
       match datum_unlabel(datum) {
-        Datum::Pair(a, b) => (a.val, b.val)
+        Pair(a, b) => (a.val, b.val)
         _ => raise @core.EvalError("type error: pair expected")
       }
     _ => raise @core.EvalError("type error: pair expected")
@@ -878,9 +878,9 @@ pub fn value_as_pair_cells(
   value : Value,
 ) -> (Ref[Datum], Ref[Datum]) raise EvalError {
   match value {
-    Value::Datum(datum) =>
+    Datum(datum) =>
       match datum_unlabel(datum) {
-        Datum::Pair(a, b) => (a, b)
+        Pair(a, b) => (a, b)
         _ => raise @core.EvalError("type error: pair expected")
       }
     _ => raise @core.EvalError("type error: pair expected")
@@ -890,7 +890,7 @@ pub fn value_as_pair_cells(
 ///|
 /// Allocate a new pair datum.
 pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
-  Datum::Pair(Ref::new(car), Ref::new(cdr))
+  Pair(Ref::new(car), Ref::new(cdr))
 }
 
 ///|
@@ -899,7 +899,7 @@ pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
 /// # Example
 /// ```mbt check
 /// test "datum list to array" {
-///   let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+///   let list = list_from_array([Int(1), Int(2)])
 ///   inspect(datum_list_to_array(list).length(), content="2")
 /// }
 /// ```
@@ -910,12 +910,12 @@ pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
     // TODO(decreases) : list length not explicit; possible bug
     // assert :
     //   match datum_unlabel(cur) {
-    //     Datum::Pair(_, _) | Datum::Nil => true
+    //     Pair(_, _) | Nil => true
     //     _ => false
     //   }
     match datum_unlabel(cur) {
-      Datum::Nil => break
-      Datum::Pair(a, b) => {
+      Nil => break
+      Pair(a, b) => {
         items.push(a.val)
         continue b.val
       }
@@ -939,9 +939,9 @@ pub fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
 /// # Example
 /// ```mbt check
 /// test "list from array" {
-///   let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+///   let list = list_from_array([Int(1), Int(2)])
 ///   match list {
-///     @core.Datum::Pair(_, _) => ()
+///     Pair(_, _) => ()
 ///     _ => fail("expected list")
 ///   }
 /// }
@@ -962,8 +962,8 @@ pub fn list_from_array(items : Array[Datum]) -> Datum {
 /// Extract a symbol name from a datum when possible.
 pub fn symbol_name(expr : Datum) -> String? {
   match expr {
-    Datum::Symbol(name) => Some(name)
-    Datum::Value(Value::SyntaxObject(obj)) => symbol_name(obj.datum)
+    Symbol(name) => Some(name)
+    Value(SyntaxObject(obj)) => symbol_name(obj.datum)
     _ => None
   }
 }
@@ -984,13 +984,13 @@ fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
 /// Remove syntax wrappers from a datum tree.
 pub fn strip_syntax_datum(datum : Datum) -> Datum {
   match datum {
-    Datum::Value(Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
-    Datum::Pair(a, b) =>
+    Value(SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
+    Pair(a, b) =>
       pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
-    Datum::Vector(items) =>
-      Datum::Vector(items.map((item) => strip_syntax_datum(item)))
-    Datum::Complex(real, imag) =>
-      Datum::Complex(
+    Vector(items) =>
+      Vector(items.map((item) => strip_syntax_datum(item)))
+    Complex(real, imag) =>
+      Complex(
         Ref::new(strip_syntax_datum(real.val)),
         Ref::new(strip_syntax_datum(imag.val)),
       )
@@ -1002,27 +1002,27 @@ pub fn strip_syntax_datum(datum : Datum) -> Datum {
 /// Wrap datum leaves in syntax objects with given scopes.
 pub fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
   match datum {
-    Datum::Symbol(name) =>
-      Datum::Value(
-        Value::SyntaxObject(SyntaxObject::{
-          datum: Datum::Symbol(name),
+    Symbol(name) =>
+      Value(
+        SyntaxObject(SyntaxObject::{
+          datum: Symbol(name),
           scopes,
           binding_id: None,
         }),
       )
-    Datum::Pair(a, b) =>
+    Pair(a, b) =>
       pair_new(
         syntax_wrap_datum(a.val, scopes),
         syntax_wrap_datum(b.val, scopes),
       )
-    Datum::Vector(items) =>
-      Datum::Vector(items.map((item) => syntax_wrap_datum(item, scopes)))
-    Datum::Complex(real, imag) =>
-      Datum::Complex(
+    Vector(items) =>
+      Vector(items.map((item) => syntax_wrap_datum(item, scopes)))
+    Complex(real, imag) =>
+      Complex(
         Ref::new(syntax_wrap_datum(real.val, scopes)),
         Ref::new(syntax_wrap_datum(imag.val, scopes)),
       )
-    Datum::Value(Value::SyntaxObject(_)) => datum
+    Value(SyntaxObject(_)) => datum
     _ => datum
   }
 }
@@ -1031,8 +1031,8 @@ pub fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
 /// Wrap a datum in syntax objects unless already wrapped.
 pub fn syntax_wrap_root(datum : Datum, scopes : Array[Int]) -> Datum {
   match datum {
-    Datum::Symbol(_) => datum
-    Datum::Value(Value::SyntaxObject(_)) => datum
+    Symbol(_) => datum
+    Value(SyntaxObject(_)) => datum
     _ => syntax_wrap_datum(datum, scopes)
   }
 }
@@ -1041,34 +1041,34 @@ pub fn syntax_wrap_root(datum : Datum, scopes : Array[Int]) -> Datum {
 /// Add a scope to every syntax object within a datum.
 pub fn syntax_add_scope(datum : Datum, scope : Int) -> Datum {
   match datum {
-    Datum::Symbol(name) =>
-      Datum::Value(
-        Value::SyntaxObject(SyntaxObject::{
-          datum: Datum::Symbol(name),
+    Symbol(name) =>
+      Value(
+        SyntaxObject(SyntaxObject::{
+          datum: Symbol(name),
           scopes: [scope],
           binding_id: None,
         }),
       )
-    Datum::Value(Value::SyntaxObject(obj)) => {
+    Value(SyntaxObject(obj)) => {
       let next_scopes = scopes_with_added(obj.scopes, scope)
       let inner = match obj.datum {
-        Datum::Symbol(_) => obj.datum
+        Symbol(_) => obj.datum
         _ => syntax_add_scope(obj.datum, scope)
       }
-      Datum::Value(
-        Value::SyntaxObject(SyntaxObject::{
+      Value(
+        SyntaxObject(SyntaxObject::{
           datum: inner,
           scopes: next_scopes,
           binding_id: obj.binding_id,
         }),
       )
     }
-    Datum::Pair(a, b) =>
+    Pair(a, b) =>
       pair_new(syntax_add_scope(a.val, scope), syntax_add_scope(b.val, scope))
-    Datum::Vector(items) =>
-      Datum::Vector(items.map((item) => syntax_add_scope(item, scope)))
-    Datum::Complex(real, imag) =>
-      Datum::Complex(
+    Vector(items) =>
+      Vector(items.map((item) => syntax_add_scope(item, scope)))
+    Complex(real, imag) =>
+      Complex(
         Ref::new(syntax_add_scope(real.val, scope)),
         Ref::new(syntax_add_scope(imag.val, scope)),
       )

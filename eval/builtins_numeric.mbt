@@ -5,155 +5,155 @@ fn apply_numeric_primitive(
   args : Array[Value],
 ) -> Value? raise EvalError {
   match prim {
-    Primitive::Add
-    | Primitive::Sub
-    | Primitive::Mul
-    | Primitive::Div
-    | Primitive::NumEq
-    | Primitive::Less
-    | Primitive::Greater
-    | Primitive::LessEq
-    | Primitive::GreaterEq
-    | Primitive::ExactToInexact
-    | Primitive::InexactToExact
-    | Primitive::ExactIntegerSqrt
-    | Primitive::Rationalize
-    | Primitive::NumberToString
-    | Primitive::StringToNumber
-    | Primitive::MakeRectangular
-    | Primitive::MakePolar
-    | Primitive::RealPart
-    | Primitive::ImagPart
-    | Primitive::Magnitude
-    | Primitive::Angle
-    | Primitive::Sqrt
-    | Primitive::Exp
-    | Primitive::Log
-    | Primitive::Expt
-    | Primitive::Sin
-    | Primitive::Cos
-    | Primitive::Tan
-    | Primitive::Asin
-    | Primitive::Acos
-    | Primitive::Atan
-    | Primitive::Numerator
-    | Primitive::Denominator
-    | Primitive::Abs
-    | Primitive::Quotient
-    | Primitive::Remainder
-    | Primitive::Modulo
-    | Primitive::Gcd
-    | Primitive::Lcm
-    | Primitive::Max
-    | Primitive::Min
-    | Primitive::Floor
-    | Primitive::Ceiling
-    | Primitive::Truncate
-    | Primitive::Round
-    | Primitive::BitwiseAnd
-    | Primitive::BitwiseIor
-    | Primitive::BitwiseXor
-    | Primitive::BitwiseNot
-    | Primitive::BitwiseIf
-    | Primitive::ArithmeticShift
-    | Primitive::BitwiseBitCount
-    | Primitive::BitwiseLength
-    | Primitive::BitwiseFirstBitSet
-    | Primitive::BitwiseBitSetP
-    | Primitive::BitwiseCopyBit
-    | Primitive::BitwiseBitField
-    | Primitive::BitwiseCopyBitField
-    | Primitive::BitwiseRotateBitField
-    | Primitive::BitwiseReverseBitField
-    | Primitive::FixnumP
-    | Primitive::FixnumWidth
-    | Primitive::LeastFixnum
-    | Primitive::GreatestFixnum
-    | Primitive::FxEq
-    | Primitive::FxLess
-    | Primitive::FxGreater
-    | Primitive::FxLessEq
-    | Primitive::FxGreaterEq
-    | Primitive::FxZeroP
-    | Primitive::FxPositiveP
-    | Primitive::FxNegativeP
-    | Primitive::FxOddP
-    | Primitive::FxEvenP
-    | Primitive::FxMin
-    | Primitive::FxMax
-    | Primitive::FxAdd
-    | Primitive::FxSub
-    | Primitive::FxMul
-    | Primitive::FxDiv
-    | Primitive::FxMod
-    | Primitive::FxDiv0
-    | Primitive::FxMod0
-    | Primitive::FxAddCarry
-    | Primitive::FxSubCarry
-    | Primitive::FxMulCarry
-    | Primitive::FxNot
-    | Primitive::FxAnd
-    | Primitive::FxIor
-    | Primitive::FxXor
-    | Primitive::FxIf
-    | Primitive::FxBitCount
-    | Primitive::FxLength
-    | Primitive::FxFirstBitSet
-    | Primitive::FxBitSetP
-    | Primitive::FxCopyBit
-    | Primitive::FxBitField
-    | Primitive::FxCopyBitField
-    | Primitive::FxRotateBitField
-    | Primitive::FxReverseBitField
-    | Primitive::FxArithmeticShift
-    | Primitive::FxArithmeticShiftLeft
-    | Primitive::FxArithmeticShiftRight
-    | Primitive::FlonumP
-    | Primitive::RealToFlonum
-    | Primitive::FixnumToFlonum
-    | Primitive::FlEq
-    | Primitive::FlLess
-    | Primitive::FlGreater
-    | Primitive::FlLessEq
-    | Primitive::FlGreaterEq
-    | Primitive::FlIntegerP
-    | Primitive::FlZeroP
-    | Primitive::FlPositiveP
-    | Primitive::FlNegativeP
-    | Primitive::FlOddP
-    | Primitive::FlEvenP
-    | Primitive::FlFiniteP
-    | Primitive::FlInfiniteP
-    | Primitive::FlNanP
-    | Primitive::FlMax
-    | Primitive::FlMin
-    | Primitive::FlAdd
-    | Primitive::FlMul
-    | Primitive::FlSub
-    | Primitive::FlDiv
-    | Primitive::FlAbs
-    | Primitive::FlDivAndMod
-    | Primitive::FlDivInt
-    | Primitive::FlMod
-    | Primitive::FlDiv0AndMod0
-    | Primitive::FlDiv0
-    | Primitive::FlMod0
-    | Primitive::FlNumerator
-    | Primitive::FlDenominator
-    | Primitive::FlFloor
-    | Primitive::FlCeiling
-    | Primitive::FlTruncate
-    | Primitive::FlRound
-    | Primitive::FlExp
-    | Primitive::FlLog
-    | Primitive::FlSin
-    | Primitive::FlCos
-    | Primitive::FlTan
-    | Primitive::FlAsin
-    | Primitive::FlAcos
-    | Primitive::FlAtan
-    | Primitive::FlSqrt
-    | Primitive::FlExpt
+    Add
+    | Sub
+    | Mul
+    | Div
+    | NumEq
+    | Less
+    | Greater
+    | LessEq
+    | GreaterEq
+    | ExactToInexact
+    | InexactToExact
+    | ExactIntegerSqrt
+    | Rationalize
+    | NumberToString
+    | StringToNumber
+    | MakeRectangular
+    | MakePolar
+    | RealPart
+    | ImagPart
+    | Magnitude
+    | Angle
+    | Sqrt
+    | Exp
+    | Log
+    | Expt
+    | Sin
+    | Cos
+    | Tan
+    | Asin
+    | Acos
+    | Atan
+    | Numerator
+    | Denominator
+    | Abs
+    | Quotient
+    | Remainder
+    | Modulo
+    | Gcd
+    | Lcm
+    | Max
+    | Min
+    | Floor
+    | Ceiling
+    | Truncate
+    | Round
+    | BitwiseAnd
+    | BitwiseIor
+    | BitwiseXor
+    | BitwiseNot
+    | BitwiseIf
+    | ArithmeticShift
+    | BitwiseBitCount
+    | BitwiseLength
+    | BitwiseFirstBitSet
+    | BitwiseBitSetP
+    | BitwiseCopyBit
+    | BitwiseBitField
+    | BitwiseCopyBitField
+    | BitwiseRotateBitField
+    | BitwiseReverseBitField
+    | FixnumP
+    | FixnumWidth
+    | LeastFixnum
+    | GreatestFixnum
+    | FxEq
+    | FxLess
+    | FxGreater
+    | FxLessEq
+    | FxGreaterEq
+    | FxZeroP
+    | FxPositiveP
+    | FxNegativeP
+    | FxOddP
+    | FxEvenP
+    | FxMin
+    | FxMax
+    | FxAdd
+    | FxSub
+    | FxMul
+    | FxDiv
+    | FxMod
+    | FxDiv0
+    | FxMod0
+    | FxAddCarry
+    | FxSubCarry
+    | FxMulCarry
+    | FxNot
+    | FxAnd
+    | FxIor
+    | FxXor
+    | FxIf
+    | FxBitCount
+    | FxLength
+    | FxFirstBitSet
+    | FxBitSetP
+    | FxCopyBit
+    | FxBitField
+    | FxCopyBitField
+    | FxRotateBitField
+    | FxReverseBitField
+    | FxArithmeticShift
+    | FxArithmeticShiftLeft
+    | FxArithmeticShiftRight
+    | FlonumP
+    | RealToFlonum
+    | FixnumToFlonum
+    | FlEq
+    | FlLess
+    | FlGreater
+    | FlLessEq
+    | FlGreaterEq
+    | FlIntegerP
+    | FlZeroP
+    | FlPositiveP
+    | FlNegativeP
+    | FlOddP
+    | FlEvenP
+    | FlFiniteP
+    | FlInfiniteP
+    | FlNanP
+    | FlMax
+    | FlMin
+    | FlAdd
+    | FlMul
+    | FlSub
+    | FlDiv
+    | FlAbs
+    | FlDivAndMod
+    | FlDivInt
+    | FlMod
+    | FlDiv0AndMod0
+    | FlDiv0
+    | FlMod0
+    | FlNumerator
+    | FlDenominator
+    | FlFloor
+    | FlCeiling
+    | FlTruncate
+    | FlRound
+    | FlExp
+    | FlLog
+    | FlSin
+    | FlCos
+    | FlTan
+    | FlAsin
+    | FlAcos
+    | FlAtan
+    | FlSqrt
+    | FlExpt
     => Some(apply_numeric_primitive_core(prim, args))
     _ => None
   }
@@ -166,7 +166,7 @@ fn apply_numeric_primitive_core(
   args : Array[Value],
 ) -> Value raise EvalError {
   match prim {
-    Primitive::Add => {
+    Add => {
       let acc = for i = 0, acc = Datum::Int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -175,14 +175,14 @@ fn apply_numeric_primitive_core(
       } else {
         acc
       }
-      Value::Datum(acc)
+      Datum(acc)
     }
-    Primitive::Sub =>
+    Sub =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
           let number = value_as_number(value)
-          Value::Datum(num_sub(Datum::Int(0), number))
+          Datum(num_sub(Int(0), number))
         }
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
@@ -194,10 +194,10 @@ fn apply_numeric_primitive_core(
             } else {
               result
             }
-          Value::Datum(result)
+          Datum(result)
         }
       }
-    Primitive::Mul => {
+    Mul => {
       let product = for i = 0, product = Datum::Int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -206,14 +206,14 @@ fn apply_numeric_primitive_core(
       } else {
         product
       }
-      Value::Datum(product)
+      Datum(product)
     }
-    Primitive::Div =>
+    Div =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
           let number = value_as_number(value)
-          Value::Datum(num_div(Datum::Int(1), number))
+          Datum(num_div(Int(1), number))
         }
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
@@ -225,10 +225,10 @@ fn apply_numeric_primitive_core(
             } else {
               result
             }
-          Value::Datum(result)
+          Datum(result)
         }
       }
-    Primitive::NumEq =>
+    NumEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -246,7 +246,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::Less =>
+    Less =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -265,7 +265,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::Greater =>
+    Greater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -284,7 +284,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::LessEq =>
+    LessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -303,7 +303,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::GreaterEq =>
+    GreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -322,66 +322,66 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::ExactToInexact =>
+    ExactToInexact =>
       match args {
-        [Value::Datum(Datum::Float(f))] => Value::Datum(Datum::Float(f))
-        [Value::Datum(Datum::Complex(real, imag))] => {
+        [Datum(Float(f))] => Datum(Float(f))
+        [Datum(Complex(real, imag))] => {
           let real_f = number_to_float(real.val)
           let imag_f = number_to_float(imag.val)
-          Value::Datum(
-            make_complex(Datum::Float(real_f), Datum::Float(imag_f)),
+          Datum(
+            make_complex(Float(real_f), Float(imag_f)),
           )
         }
         [value] => {
           let value = value_as_number(value)
-          Value::Datum(Datum::Float(number_to_float(value)))
+          Datum(Float(number_to_float(value)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::InexactToExact =>
+    InexactToExact =>
       match args {
-        [Value::Datum(Datum::Float(f))] =>
-          Value::Datum(float_to_exact_datum(f))
-        [Value::Datum(Datum::Complex(real, imag))] => {
+        [Datum(Float(f))] =>
+          Datum(float_to_exact_datum(f))
+        [Datum(Complex(real, imag))] => {
           let real_exact = inexact_component_to_exact(real.val)
           let imag_exact = inexact_component_to_exact(imag.val)
-          Value::Datum(make_complex(real_exact, imag_exact))
+          Datum(make_complex(real_exact, imag_exact))
         }
-        [Value::Datum(Datum::Int(n))] => Value::Datum(Datum::Int(n))
-        [Value::Datum(Datum::BigInt(n))] => Value::Datum(Datum::BigInt(n))
-        [Value::Datum(Datum::Rat(n, d))] => Value::Datum(Datum::Rat(n, d))
-        [Value::Datum(Datum::BigRat(n, d))] =>
-          Value::Datum(Datum::BigRat(n, d))
+        [Datum(Int(n))] => Datum(Int(n))
+        [Datum(BigInt(n))] => Datum(BigInt(n))
+        [Datum(Rat(n, d))] => Datum(Rat(n, d))
+        [Datum(BigRat(n, d))] =>
+          Datum(BigRat(n, d))
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::ExactIntegerSqrt =>
+    ExactIntegerSqrt =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
           match value {
-            Datum::Int(n) => {
+            Int(n) => {
               if n < 0 {
                 raise @core.EvalError(
                   "type error: exact nonnegative integer expected",
                 )
               }
               let (s, r) = exact_integer_sqrt(n)
-              Value::Values([
-                Value::Datum(Datum::Int(s)),
-                Value::Datum(Datum::Int(r)),
+              Values([
+                Datum(Int(s)),
+                Datum(Int(r)),
               ])
             }
-            Datum::BigInt(n) => {
+            BigInt(n) => {
               if n.compare_int(0) < 0 {
                 raise @core.EvalError(
                   "type error: exact nonnegative integer expected",
                 )
               }
               let (s, r) = exact_integer_sqrt_bigint(n)
-              Value::Values([
-                Value::Datum(Datum::BigInt(s)),
-                Value::Datum(Datum::BigInt(r)),
+              Values([
+                Datum(BigInt(s)),
+                Datum(BigInt(r)),
               ])
             }
             _ => raise @core.EvalError("type error: exact integer expected")
@@ -389,7 +389,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Rationalize =>
+    Rationalize =>
       match args {
         [x_value, tol_value] => {
           let x = value_as_number(x_value)
@@ -399,20 +399,20 @@ fn apply_numeric_primitive_core(
             raise @core.EvalError("type error: nonnegative real expected")
           }
           match x {
-            Datum::Int(_)
-            | Datum::BigInt(_)
-            | Datum::Rat(_, _)
-            | Datum::BigRat(_, _) => Value::Datum(x)
-            Datum::Float(f) => {
+            Int(_)
+            | BigInt(_)
+            | Rat(_, _)
+            | BigRat(_, _) => Datum(x)
+            Float(f) => {
               let (n, d) = rationalize_float(f, tol)
-              Value::Datum(normalize_rat_or_error(n, d))
+              Datum(normalize_rat_or_error(n, d))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::NumberToString =>
+    NumberToString =>
       match args {
         [num_value] => {
           let num = value_as_number(num_value)
@@ -421,23 +421,23 @@ fn apply_numeric_primitive_core(
             raise @core.EvalError("radix out of range")
           }
           match num {
-            Datum::Int(n) => {
+            Int(n) => {
               let text = int_to_string_radix(n, radix)
-              Value::Datum(Datum::String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             }
-            Datum::BigInt(n) => {
+            BigInt(n) => {
               let text = bigint_to_string_radix(n, radix)
-              Value::Datum(Datum::String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             }
-            Datum::Rat(_, _)
-            | Datum::BigRat(_, _)
-            | Datum::Float(_)
-            | Datum::Complex(_, _) => {
+            Rat(_, _)
+            | BigRat(_, _)
+            | Float(_)
+            | Complex(_, _) => {
               if radix != 10 {
                 raise @core.EvalError("type error: exact integer expected")
               }
-              let text = value_to_string(Value::Datum(num))
-              Value::Datum(Datum::String(Ref::new(text)))
+              let text = value_to_string(Datum(num))
+              Datum(String(Ref::new(text)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
@@ -449,23 +449,23 @@ fn apply_numeric_primitive_core(
             raise @core.EvalError("radix out of range")
           }
           match num {
-            Datum::Int(n) => {
+            Int(n) => {
               let text = int_to_string_radix(n, radix)
-              Value::Datum(Datum::String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             }
-            Datum::BigInt(n) => {
+            BigInt(n) => {
               let text = bigint_to_string_radix(n, radix)
-              Value::Datum(Datum::String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             }
-            Datum::Rat(_, _)
-            | Datum::BigRat(_, _)
-            | Datum::Float(_)
-            | Datum::Complex(_, _) => {
+            Rat(_, _)
+            | BigRat(_, _)
+            | Float(_)
+            | Complex(_, _) => {
               if radix != 10 {
                 raise @core.EvalError("type error: exact integer expected")
               }
-              let text = value_to_string(Value::Datum(num))
-              Value::Datum(Datum::String(Ref::new(text)))
+              let text = value_to_string(Datum(num))
+              Datum(String(Ref::new(text)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
@@ -475,7 +475,7 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::StringToNumber =>
+    StringToNumber =>
       match args {
         [string_value] => {
           let s = value_as_string(string_value)
@@ -485,8 +485,8 @@ fn apply_numeric_primitive_core(
           }
           let parsed = parse_number_token(s)
           match parsed {
-            Some(num) => Value::Datum(num)
-            None => Value::Datum(Datum::Bool(false))
+            Some(num) => Datum(num)
+            None => Datum(Bool(false))
           }
         }
         [string_value, radix_value] => {
@@ -497,8 +497,8 @@ fn apply_numeric_primitive_core(
           }
           let parsed = parse_number_token_with_radix(s, radix)
           match parsed {
-            Some(num) => Value::Datum(num)
-            None => Value::Datum(Datum::Bool(false))
+            Some(num) => Datum(num)
+            None => Datum(Bool(false))
           }
         }
         _ =>
@@ -506,97 +506,97 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::MakeRectangular =>
+    MakeRectangular =>
       match args {
         [real_value, imag_value] => {
           let real = datum_to_real(value_as_number(real_value))
           let imag = datum_to_real(value_as_number(imag_value))
-          Value::Datum(make_complex(real, imag))
+          Datum(make_complex(real, imag))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::MakePolar =>
+    MakePolar =>
       match args {
         [r_value, theta_value] => {
           let r = number_to_float(datum_to_real(value_as_number(r_value)))
           let theta = number_to_float(datum_to_real(value_as_number(theta_value)))
           let real = Datum::Float(r * @math.cosf(theta))
           let imag = Datum::Float(r * @math.sinf(theta))
-          Value::Datum(make_complex(real, imag))
+          Datum(make_complex(real, imag))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::RealPart =>
+    RealPart =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
-            Datum::Complex(real, _) => Value::Datum(real.val)
-            datum => Value::Datum(datum)
+            Complex(real, _) => Datum(real.val)
+            datum => Datum(datum)
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::ImagPart =>
+    ImagPart =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
-            Datum::Complex(_, imag) => Value::Datum(imag.val)
-            Datum::Float(_) => Value::Datum(Datum::Float(0.0))
-            Datum::Int(_)
-            | Datum::BigInt(_)
-            | Datum::Rat(_, _)
-            | Datum::BigRat(_, _) => Value::Datum(Datum::Int(0))
+            Complex(_, imag) => Datum(imag.val)
+            Float(_) => Datum(Float(0.0))
+            Int(_)
+            | BigInt(_)
+            | Rat(_, _)
+            | BigRat(_, _) => Datum(Int(0))
             _ => raise @core.EvalError("type error: number expected")
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Magnitude =>
+    Magnitude =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
-            Datum::Complex(real, imag) => {
+            Complex(real, imag) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
               let mag = (real_f * real_f + imag_f * imag_f).sqrt()
-              Value::Datum(Datum::Float(mag))
+              Datum(Float(mag))
             }
-            Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
-            Datum::Rat(n, d) =>
-              Value::Datum(normalize_rat_or_error(int_abs(n), d))
-            Datum::BigInt(n) => Value::Datum(Datum::BigInt(bigint_abs(n)))
-            Datum::BigRat(n, d) =>
-              Value::Datum(normalize_big_rat_or_error(bigint_abs(n), d))
-            Datum::Float(f) =>
+            Int(n) => Datum(Int(int_abs(n)))
+            Rat(n, d) =>
+              Datum(normalize_rat_or_error(int_abs(n), d))
+            BigInt(n) => Datum(BigInt(bigint_abs(n)))
+            BigRat(n, d) =>
+              Datum(normalize_big_rat_or_error(bigint_abs(n), d))
+            Float(f) =>
               if f < 0.0 {
-                Value::Datum(Datum::Float(-f))
+                Datum(Float(-f))
               } else {
-                Value::Datum(Datum::Float(f))
+                Datum(Float(f))
               }
             _ => raise @core.EvalError("type error: number expected")
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Angle =>
+    Angle =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
-            Datum::Complex(real, imag) => {
+            Complex(real, imag) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
-              Value::Datum(Datum::Float(@math.atan2f(imag_f, real_f)))
+              Datum(Float(@math.atan2f(imag_f, real_f)))
             }
             datum => {
               let real_f = number_to_float(datum)
-              Value::Datum(Datum::Float(@math.atan2f(0.0, real_f)))
+              Datum(Float(@math.atan2f(0.0, real_f)))
             }
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Sqrt =>
+    Sqrt =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_value, is_real) = match datum_unlabel(value) {
-            Datum::Complex(real, imag) =>
+            Complex(real, imag) =>
               if datum_is_zero(imag.val) {
                 (real.val, true)
               } else {
@@ -610,67 +610,67 @@ fn apply_numeric_primitive_core(
             None
           }
           match exact_opt {
-            Some(result) => Value::Datum(result)
+            Some(result) => Datum(result)
             None => {
               let (real_f, imag_f) = datum_to_complex_float(value)
               if imag_f == 0.0 && real_f >= 0.0 {
-                Value::Datum(Datum::Float(real_f.sqrt()))
+                Datum(Float(real_f.sqrt()))
               } else {
                 let (sr, si) = complex_sqrt_f(real_f, imag_f)
-                Value::Datum(complex_from_float(sr, si))
+                Datum(complex_from_float(sr, si))
               }
             }
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Exp =>
+    Exp =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
-            Value::Datum(Datum::Float(@math.expf(real_f)))
+            Datum(Float(@math.expf(real_f)))
           } else {
             let (er, ei) = complex_exp_f(real_f, imag_f)
-            Value::Datum(complex_from_float(er, ei))
+            Datum(complex_from_float(er, ei))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Log =>
+    Log =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= 0.0 {
-            Value::Datum(Datum::Float(@math.lnf(real_f)))
+            Datum(Float(@math.lnf(real_f)))
           } else {
             let (lr, li) = complex_log_f(real_f, imag_f)
-            Value::Datum(complex_from_float(lr, li))
+            Datum(complex_from_float(lr, li))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Expt =>
+    Expt =>
       match args {
         [base_value, exponent_value] => {
           let base = value_as_number(base_value)
           let exponent = value_as_number(exponent_value)
           match exponent {
-            Datum::Int(exp_int) =>
+            Int(exp_int) =>
               match base {
-                Datum::Int(base_int) =>
+                Int(base_int) =>
                   if exp_int >= 0 {
-                    Value::Datum(Datum::Int(pow_int(base_int, exp_int)))
+                    Datum(Int(pow_int(base_int, exp_int)))
                   } else {
-                    Value::Datum(
+                    Datum(
                       normalize_rat_or_error(1, pow_int(base_int, -exp_int)),
                     )
                   }
-                Datum::BigInt(base_big) =>
+                BigInt(base_big) =>
                   if exp_int >= 0 {
-                    Value::Datum(
+                    Datum(
                       bigint_to_integer_datum(pow_bigint_int(base_big, exp_int)),
                     )
                   } else {
@@ -678,42 +678,42 @@ fn apply_numeric_primitive_core(
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_int(base_big, -exp_int)
-                    Value::Datum(
+                    Datum(
                       normalize_big_rat_or_error(bigint_from_int(1), denom),
                     )
                   }
-                Datum::Rat(n, d) =>
+                Rat(n, d) =>
                   if exp_int >= 0 {
                     let num = pow_int(n, exp_int)
                     let den = pow_int(d, exp_int)
-                    Value::Datum(normalize_rat_or_error(num, den))
+                    Datum(normalize_rat_or_error(num, den))
                   } else {
                     let num = pow_int(d, -exp_int)
                     let den = pow_int(n, -exp_int)
-                    Value::Datum(normalize_rat_or_error(num, den))
+                    Datum(normalize_rat_or_error(num, den))
                   }
-                Datum::BigRat(n, d) =>
+                BigRat(n, d) =>
                   if exp_int >= 0 {
                     let num = pow_bigint_int(n, exp_int)
                     let den = pow_bigint_int(d, exp_int)
-                    Value::Datum(normalize_big_rat_or_error(num, den))
+                    Datum(normalize_big_rat_or_error(num, den))
                   } else {
                     if bigint_is_zero(n) {
                       raise @core.EvalError("division by zero")
                     }
                     let num = pow_bigint_int(d, -exp_int)
                     let den = pow_bigint_int(n, -exp_int)
-                    Value::Datum(normalize_big_rat_or_error(num, den))
+                    Datum(normalize_big_rat_or_error(num, den))
                   }
-                Datum::Float(f) => {
+                Float(f) => {
                   let pow = if exp_int >= 0 {
                     pow_float_int(f, exp_int)
                   } else {
                     1.0 / pow_float_int(f, -exp_int)
                   }
-                  Value::Datum(Datum::Float(pow))
+                  Datum(Float(pow))
                 }
-                Datum::Complex(_, _) => {
+                Complex(_, _) => {
                   let (br, bi) = datum_to_complex_float(base)
                   let (rr, ri) = complex_expt_f(
                     br,
@@ -721,11 +721,11 @@ fn apply_numeric_primitive_core(
                     Float::from_int(exp_int),
                     0.0,
                   )
-                  Value::Datum(complex_from_float(rr, ri))
+                  Datum(complex_from_float(rr, ri))
                 }
                 _ => raise @core.EvalError("type error: number expected")
               }
-            Datum::BigInt(exp_big) => {
+            BigInt(exp_big) => {
               let exp_sign = exp_big.compare_int(0)
               let abs_exp = if exp_sign < 0 {
                 bigint_abs(exp_big)
@@ -734,95 +734,95 @@ fn apply_numeric_primitive_core(
               }
               let exp_is_odd = !bigint_is_zero(abs_exp % bigint_from_int(2))
               match base {
-                Datum::Int(base_int) => {
+                Int(base_int) => {
                   let base_big = bigint_from_int(base_int)
                   if exp_sign == 0 {
-                    Value::Datum(Datum::Int(1))
+                    Datum(Int(1))
                   } else if exp_sign > 0 {
                     let result = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(bigint_to_integer_datum(result))
+                    Datum(bigint_to_integer_datum(result))
                   } else {
                     if bigint_is_zero(base_big) {
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(
+                    Datum(
                       normalize_big_rat_or_error(bigint_from_int(1), denom),
                     )
                   }
                 }
-                Datum::BigInt(base_big) =>
+                BigInt(base_big) =>
                   if exp_sign == 0 {
-                    Value::Datum(Datum::Int(1))
+                    Datum(Int(1))
                   } else if exp_sign > 0 {
                     let result = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(bigint_to_integer_datum(result))
+                    Datum(bigint_to_integer_datum(result))
                   } else {
                     if bigint_is_zero(base_big) {
                       raise @core.EvalError("division by zero")
                     }
                     let denom = pow_bigint_bigint(base_big, abs_exp)
-                    Value::Datum(
+                    Datum(
                       normalize_big_rat_or_error(bigint_from_int(1), denom),
                     )
                   }
-                Datum::Rat(n, d) => {
+                Rat(n, d) => {
                   let num = bigint_from_int(n)
                   let den = bigint_from_int(d)
                   if exp_sign == 0 {
-                    Value::Datum(Datum::Int(1))
+                    Datum(Int(1))
                   } else if exp_sign > 0 {
                     let num_pow = pow_bigint_bigint(num, abs_exp)
                     let den_pow = pow_bigint_bigint(den, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(num_pow, den_pow))
+                    Datum(normalize_big_rat_or_error(num_pow, den_pow))
                   } else {
                     if bigint_is_zero(num) {
                       raise @core.EvalError("division by zero")
                     }
                     let num_pow = pow_bigint_bigint(num, abs_exp)
                     let den_pow = pow_bigint_bigint(den, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(den_pow, num_pow))
+                    Datum(normalize_big_rat_or_error(den_pow, num_pow))
                   }
                 }
-                Datum::BigRat(n, d) =>
+                BigRat(n, d) =>
                   if exp_sign == 0 {
-                    Value::Datum(Datum::Int(1))
+                    Datum(Int(1))
                   } else if exp_sign > 0 {
                     let num_pow = pow_bigint_bigint(n, abs_exp)
                     let den_pow = pow_bigint_bigint(d, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(num_pow, den_pow))
+                    Datum(normalize_big_rat_or_error(num_pow, den_pow))
                   } else {
                     if bigint_is_zero(n) {
                       raise @core.EvalError("division by zero")
                     }
                     let num_pow = pow_bigint_bigint(n, abs_exp)
                     let den_pow = pow_bigint_bigint(d, abs_exp)
-                    Value::Datum(normalize_big_rat_or_error(den_pow, num_pow))
+                    Datum(normalize_big_rat_or_error(den_pow, num_pow))
                   }
-                Datum::Float(f) => {
+                Float(f) => {
                   let exp_f = bigint_to_float(abs_exp)
                   let abs_base = if f < 0.0 { -f } else { f }
                   let pow = @math.powf(abs_base, exp_f)
                   let pow = if exp_sign < 0 { Float::from_int(1) / pow } else { pow }
                   let pow = if f < 0.0 && exp_is_odd { -pow } else { pow }
-                  Value::Datum(Datum::Float(pow))
+                  Datum(Float(pow))
                 }
-                Datum::Complex(_, _) => {
+                Complex(_, _) => {
                   let exp_f = bigint_to_float(abs_exp)
                   let (br, bi) = datum_to_complex_float(base)
                   let exp_real = if exp_sign < 0 { -exp_f } else { exp_f }
                   let (rr, ri) = complex_expt_f(br, bi, exp_real, 0.0)
-                  Value::Datum(complex_from_float(rr, ri))
+                  Datum(complex_from_float(rr, ri))
                 }
                 _ => raise @core.EvalError("type error: number expected")
               }
             }
-            Datum::Float(exp_f) =>
+            Float(exp_f) =>
               match base {
-                Datum::Complex(_, _) => {
+                Complex(_, _) => {
                   let (br, bi) = datum_to_complex_float(base)
                   let (rr, ri) = complex_expt_f(br, bi, exp_f, 0.0)
-                  Value::Datum(complex_from_float(rr, ri))
+                  Datum(complex_from_float(rr, ri))
                 }
                 _ => {
                   let base_f = number_to_float(base)
@@ -833,128 +833,128 @@ fn apply_numeric_primitive_core(
                       } else {
                         1.0 / pow_float_int(base_f, -exp_int)
                       }
-                      Value::Datum(Datum::Float(pow))
+                      Datum(Float(pow))
                     }
                     None =>
                       if base_f >= 0.0 {
-                        Value::Datum(Datum::Float(@math.powf(base_f, exp_f)))
+                        Datum(Float(@math.powf(base_f, exp_f)))
                       } else {
                         let (rr, ri) = complex_expt_f(base_f, 0.0, exp_f, 0.0)
-                        Value::Datum(complex_from_float(rr, ri))
+                        Datum(complex_from_float(rr, ri))
                       }
                   }
                 }
               }
-            Datum::Rat(_, _) | Datum::BigRat(_, _) => {
+            Rat(_, _) | BigRat(_, _) => {
               let exp_f = number_to_float(exponent)
               match base {
-                Datum::Complex(_, _) => {
+                Complex(_, _) => {
                   let (br, bi) = datum_to_complex_float(base)
                   let (rr, ri) = complex_expt_f(br, bi, exp_f, 0.0)
-                  Value::Datum(complex_from_float(rr, ri))
+                  Datum(complex_from_float(rr, ri))
                 }
                 _ => {
                   let base_f = number_to_float(base)
                   if base_f >= 0.0 {
-                    Value::Datum(Datum::Float(@math.powf(base_f, exp_f)))
+                    Datum(Float(@math.powf(base_f, exp_f)))
                   } else {
                     let (rr, ri) = complex_expt_f(base_f, 0.0, exp_f, 0.0)
-                    Value::Datum(complex_from_float(rr, ri))
+                    Datum(complex_from_float(rr, ri))
                   }
                 }
               }
             }
-            Datum::Complex(_, _) => {
+            Complex(_, _) => {
               let (br, bi) = datum_to_complex_float(base)
               let (er, ei) = datum_to_complex_float(exponent)
               let (rr, ri) = complex_expt_f(br, bi, er, ei)
-              Value::Datum(complex_from_float(rr, ri))
+              Datum(complex_from_float(rr, ri))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::Sin =>
+    Sin =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
-            Value::Datum(Datum::Float(@math.sinf(real_f)))
+            Datum(Float(@math.sinf(real_f)))
           } else {
             let (sr, si) = complex_sin_f(real_f, imag_f)
-            Value::Datum(complex_from_float(sr, si))
+            Datum(complex_from_float(sr, si))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Cos =>
+    Cos =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
-            Value::Datum(Datum::Float(@math.cosf(real_f)))
+            Datum(Float(@math.cosf(real_f)))
           } else {
             let (cr, ci) = complex_cos_f(real_f, imag_f)
-            Value::Datum(complex_from_float(cr, ci))
+            Datum(complex_from_float(cr, ci))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Tan =>
+    Tan =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
-            Value::Datum(Datum::Float(@math.tanf(real_f)))
+            Datum(Float(@math.tanf(real_f)))
           } else {
             let (tr, ti) = complex_tan_f(real_f, imag_f)
-            Value::Datum(complex_from_float(tr, ti))
+            Datum(complex_from_float(tr, ti))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Asin =>
+    Asin =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
-            Value::Datum(Datum::Float(@math.asinf(real_f)))
+            Datum(Float(@math.asinf(real_f)))
           } else {
             let (ar, ai) = complex_asin_f(real_f, imag_f)
-            Value::Datum(complex_from_float(ar, ai))
+            Datum(complex_from_float(ar, ai))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Acos =>
+    Acos =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
-            Value::Datum(Datum::Float(@math.acosf(real_f)))
+            Datum(Float(@math.acosf(real_f)))
           } else {
             let (ar, ai) = complex_acos_f(real_f, imag_f)
-            Value::Datum(complex_from_float(ar, ai))
+            Datum(complex_from_float(ar, ai))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Atan =>
+    Atan =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
-            Value::Datum(Datum::Float(@math.atanf(real_f)))
+            Datum(Float(@math.atanf(real_f)))
           } else {
             let (ar, ai) = complex_atan_f(real_f, imag_f)
-            Value::Datum(complex_from_float(ar, ai))
+            Datum(complex_from_float(ar, ai))
           }
         }
         [y_value, x_value] => {
@@ -962,76 +962,76 @@ fn apply_numeric_primitive_core(
           let x = datum_to_real(value_as_number(x_value))
           let y_f = number_to_float(y)
           let x_f = number_to_float(x)
-          Value::Datum(Datum::Float(@math.atan2f(y_f, x_f)))
+          Datum(Float(@math.atan2f(y_f, x_f)))
         }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::Numerator =>
+    Numerator =>
       match args {
         [value] =>
           match value {
-            Value::Datum(Datum::Int(n)) => Value::Datum(Datum::Int(n))
-            Value::Datum(Datum::Rat(n, _)) => Value::Datum(Datum::Int(n))
-            Value::Datum(Datum::BigInt(n)) => Value::Datum(Datum::BigInt(n))
-            Value::Datum(Datum::BigRat(n, _)) => Value::Datum(Datum::BigInt(n))
+            Datum(Int(n)) => Datum(Int(n))
+            Datum(Rat(n, _)) => Datum(Int(n))
+            Datum(BigInt(n)) => Datum(BigInt(n))
+            Datum(BigRat(n, _)) => Datum(BigInt(n))
             _ => raise @core.EvalError("type error: rational expected")
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Denominator =>
+    Denominator =>
       match args {
         [value] =>
           match value {
-            Value::Datum(Datum::Int(_)) => Value::Datum(Datum::Int(1))
-            Value::Datum(Datum::Rat(_, d)) => Value::Datum(Datum::Int(d))
-            Value::Datum(Datum::BigInt(_)) => Value::Datum(Datum::Int(1))
-            Value::Datum(Datum::BigRat(_, d)) => Value::Datum(Datum::BigInt(d))
+            Datum(Int(_)) => Datum(Int(1))
+            Datum(Rat(_, d)) => Datum(Int(d))
+            Datum(BigInt(_)) => Datum(Int(1))
+            Datum(BigRat(_, d)) => Datum(BigInt(d))
             _ => raise @core.EvalError("type error: rational expected")
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Abs =>
+    Abs =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           match value {
-            Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
-            Datum::Rat(n, d) =>
-              Value::Datum(normalize_rat_or_error(int_abs(n), d))
-            Datum::BigInt(n) => Value::Datum(Datum::BigInt(bigint_abs(n)))
-            Datum::BigRat(n, d) =>
-              Value::Datum(normalize_big_rat_or_error(bigint_abs(n), d))
-            Datum::Float(f) =>
+            Int(n) => Datum(Int(int_abs(n)))
+            Rat(n, d) =>
+              Datum(normalize_rat_or_error(int_abs(n), d))
+            BigInt(n) => Datum(BigInt(bigint_abs(n)))
+            BigRat(n, d) =>
+              Datum(normalize_big_rat_or_error(bigint_abs(n), d))
+            Float(f) =>
               if f < 0.0 {
-                Value::Datum(Datum::Float(-f))
+                Datum(Float(-f))
               } else {
-                Value::Datum(Datum::Float(f))
+                Datum(Float(f))
               }
-            Datum::Complex(real, imag) => {
+            Complex(real, imag) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
               let mag = (real_f * real_f + imag_f * imag_f).sqrt()
-              Value::Datum(Datum::Float(mag))
+              Datum(Float(mag))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Quotient =>
+    Quotient =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
           let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
-            (Datum::Int(left), Datum::Int(right)) => {
+            (Int(left), Int(right)) => {
               if right == 0 {
                 raise @core.EvalError("division by zero")
               }
-              Value::Datum(Datum::Int(left / right))
+              Datum(Int(left / right))
             }
             _ => {
               let left = datum_to_bigint(left_val)
@@ -1039,23 +1039,23 @@ fn apply_numeric_primitive_core(
               if right.is_zero() {
                 raise @core.EvalError("division by zero")
               }
-              Value::Datum(Datum::BigInt(left / right))
+              Datum(BigInt(left / right))
             }
           }
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::Remainder =>
+    Remainder =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
           let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
-            (Datum::Int(left), Datum::Int(right)) => {
+            (Int(left), Int(right)) => {
               if right == 0 {
                 raise @core.EvalError("division by zero")
               }
-              Value::Datum(Datum::Int(left % right))
+              Datum(Int(left % right))
             }
             _ => {
               let left = datum_to_bigint(left_val)
@@ -1063,19 +1063,19 @@ fn apply_numeric_primitive_core(
               if right.is_zero() {
                 raise @core.EvalError("division by zero")
               }
-              Value::Datum(Datum::BigInt(left % right))
+              Datum(BigInt(left % right))
             }
           }
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::Modulo =>
+    Modulo =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
           let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
-            (Datum::Int(left), Datum::Int(right)) => {
+            (Int(left), Int(right)) => {
               if right == 0 {
                 raise @core.EvalError("division by zero")
               }
@@ -1087,7 +1087,7 @@ fn apply_numeric_primitive_core(
               } else {
                 rem + right
               }
-              Value::Datum(Datum::Int(result))
+              Datum(Int(result))
             }
             _ => {
               let left = datum_to_bigint(left_val)
@@ -1105,13 +1105,13 @@ fn apply_numeric_primitive_core(
               } else {
                 rem + right
               }
-              Value::Datum(Datum::BigInt(result))
+              Datum(BigInt(result))
             }
           }
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::Gcd => {
+    Gcd => {
       // invariant : i >= 0 && i <= args.length()
       // decreases : args.length() - i
       // assert : use_big || acc_big == bigint_from_int(0)
@@ -1123,7 +1123,7 @@ fn apply_numeric_primitive_core(
           i < args.length(); {
           let value = value_as_exact_integer(args[i])
           match value {
-            Datum::Int(n) =>
+            Int(n) =>
               if use_big {
                 let next_acc_big = bigint_gcd(acc_big, bigint_from_int(n))
                 continue i + 1, true, acc_int, next_acc_big
@@ -1131,7 +1131,7 @@ fn apply_numeric_primitive_core(
                 let next_acc_int = gcd(acc_int, n)
                 continue i + 1, false, next_acc_int, acc_big
               }
-            Datum::BigInt(n) => {
+            BigInt(n) => {
               let base_big = if use_big { acc_big } else { bigint_from_int(acc_int) }
               let next_acc_big = bigint_gcd(base_big, n)
               continue i + 1, true, acc_int, next_acc_big
@@ -1142,17 +1142,17 @@ fn apply_numeric_primitive_core(
           (use_big, acc_int, acc_big)
         }
       if use_big {
-        Value::Datum(
+        Datum(
           match bigint_to_int_option(acc_big) {
-            Some(v) => Datum::Int(v)
-            None => Datum::BigInt(acc_big)
+            Some(v) => Int(v)
+            None => BigInt(acc_big)
           },
         )
       } else {
-        Value::Datum(Datum::Int(acc_int))
+        Datum(Int(acc_int))
       }
     }
-    Primitive::Lcm => {
+    Lcm => {
       // invariant : i >= 0 && i <= args.length()
       // decreases : args.length() - i
       // assert : use_big || acc_big == bigint_from_int(1)
@@ -1164,7 +1164,7 @@ fn apply_numeric_primitive_core(
           i < args.length(); {
           let value = value_as_exact_integer(args[i])
           match value {
-            Datum::Int(n) =>
+            Int(n) =>
               if use_big {
                 let n_big = bigint_from_int(n)
                 let next_acc_big =
@@ -1182,7 +1182,7 @@ fn apply_numeric_primitive_core(
                 let next_acc_int = int_abs(acc_int / g * n)
                 continue i + 1, false, next_acc_int, acc_big
               }
-            Datum::BigInt(n) => {
+            BigInt(n) => {
               let base_big = if use_big { acc_big } else { bigint_from_int(acc_int) }
               let next_acc_big =
                 if base_big.is_zero() || n.is_zero() {
@@ -1199,22 +1199,22 @@ fn apply_numeric_primitive_core(
           (use_big, acc_int, acc_big)
         }
       if use_big {
-        Value::Datum(
+        Datum(
           match bigint_to_int_option(acc_big) {
-            Some(v) => Datum::Int(v)
-            None => Datum::BigInt(acc_big)
+            Some(v) => Int(v)
+            None => BigInt(acc_big)
           },
         )
       } else {
-        Value::Datum(Datum::Int(acc_int))
+        Datum(Int(acc_int))
       }
     }
-    Primitive::Max => {
+    Max => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
       let best = value_as_number(args[0])
-      let has_inexact = best is Datum::Float(_)
+      let has_inexact = best is Float(_)
       let (best, has_inexact) =
         for i = 1, best = best, has_inexact = has_inexact; i < args.length(); {
           // invariant : i >= 1 && i <= args.length()
@@ -1222,23 +1222,23 @@ fn apply_numeric_primitive_core(
           // assert : i <= args.length()
           let cur = value_as_number(args[i])
           let next_best = if num_less(best, cur) { cur } else { best }
-          let next_has_inexact = has_inexact || cur is Datum::Float(_)
+          let next_has_inexact = has_inexact || cur is Float(_)
           continue i + 1, next_best, next_has_inexact
         } else {
           (best, has_inexact)
         }
       if has_inexact {
-        Value::Datum(Datum::Float(number_to_float(best)))
+        Datum(Float(number_to_float(best)))
       } else {
-        Value::Datum(best)
+        Datum(best)
       }
     }
-    Primitive::Min => {
+    Min => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
       let best = value_as_number(args[0])
-      let has_inexact = best is Datum::Float(_)
+      let has_inexact = best is Float(_)
       let (best, has_inexact) =
         for i = 1, best = best, has_inexact = has_inexact; i < args.length(); {
           // invariant : i >= 1 && i <= args.length()
@@ -1246,104 +1246,104 @@ fn apply_numeric_primitive_core(
           // assert : i <= args.length()
           let cur = value_as_number(args[i])
           let next_best = if num_greater(best, cur) { cur } else { best }
-          let next_has_inexact = has_inexact || cur is Datum::Float(_)
+          let next_has_inexact = has_inexact || cur is Float(_)
           continue i + 1, next_best, next_has_inexact
         } else {
           (best, has_inexact)
         }
       if has_inexact {
-        Value::Datum(Datum::Float(number_to_float(best)))
+        Datum(Float(number_to_float(best)))
       } else {
-        Value::Datum(best)
+        Datum(best)
       }
     }
-    Primitive::Floor =>
+    Floor =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           match value {
-            Datum::Int(n) => Value::Datum(Datum::Int(n))
-            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_floor(n, d)))
-            Datum::BigInt(n) => Value::Datum(bigint_to_integer_datum(n))
-            Datum::BigRat(n, d) => {
+            Int(n) => Datum(Int(n))
+            Rat(n, d) => Datum(Int(rat_floor(n, d)))
+            BigInt(n) => Datum(bigint_to_integer_datum(n))
+            BigRat(n, d) => {
               let q = bigrat_floor(n, d)
-              Value::Datum(bigint_to_integer_datum(q))
+              Datum(bigint_to_integer_datum(q))
             }
-            Datum::Float(f) => {
+            Float(f) => {
               let n = float_floor_int(f)
-              Value::Datum(Datum::Float(Float::from_int(n)))
+              Datum(Float(Float::from_int(n)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Ceiling =>
+    Ceiling =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           match value {
-            Datum::Int(n) => Value::Datum(Datum::Int(n))
-            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_ceiling(n, d)))
-            Datum::BigInt(n) => Value::Datum(bigint_to_integer_datum(n))
-            Datum::BigRat(n, d) => {
+            Int(n) => Datum(Int(n))
+            Rat(n, d) => Datum(Int(rat_ceiling(n, d)))
+            BigInt(n) => Datum(bigint_to_integer_datum(n))
+            BigRat(n, d) => {
               let q = bigrat_ceiling(n, d)
-              Value::Datum(bigint_to_integer_datum(q))
+              Datum(bigint_to_integer_datum(q))
             }
-            Datum::Float(f) => {
+            Float(f) => {
               let n = float_ceiling_int(f)
-              Value::Datum(Datum::Float(Float::from_int(n)))
+              Datum(Float(Float::from_int(n)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Truncate =>
+    Truncate =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           match value {
-            Datum::Int(n) => Value::Datum(Datum::Int(n))
-            Datum::Rat(n, d) => Value::Datum(Datum::Int(n / d))
-            Datum::BigInt(n) => Value::Datum(bigint_to_integer_datum(n))
-            Datum::BigRat(n, d) => {
+            Int(n) => Datum(Int(n))
+            Rat(n, d) => Datum(Int(n / d))
+            BigInt(n) => Datum(bigint_to_integer_datum(n))
+            BigRat(n, d) => {
               let q = n / d
-              Value::Datum(bigint_to_integer_datum(q))
+              Datum(bigint_to_integer_datum(q))
             }
-            Datum::Float(f) => {
+            Float(f) => {
               let n = f.to_int()
-              Value::Datum(Datum::Float(Float::from_int(n)))
+              Datum(Float(Float::from_int(n)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Round =>
+    Round =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
           match value {
-            Datum::Int(n) => Value::Datum(Datum::Int(n))
-            Datum::Rat(n, d) => Value::Datum(Datum::Int(rat_round(n, d)))
-            Datum::BigInt(n) => Value::Datum(bigint_to_integer_datum(n))
-            Datum::BigRat(n, d) => {
+            Int(n) => Datum(Int(n))
+            Rat(n, d) => Datum(Int(rat_round(n, d)))
+            BigInt(n) => Datum(bigint_to_integer_datum(n))
+            BigRat(n, d) => {
               let q = bigrat_round(n, d)
-              Value::Datum(bigint_to_integer_datum(q))
+              Datum(bigint_to_integer_datum(q))
             }
-            Datum::Float(f) => {
+            Float(f) => {
               let n = float_round_int(f)
-              Value::Datum(Datum::Float(Float::from_int(n)))
+              Datum(Float(Float::from_int(n)))
             }
             _ => raise @core.EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::BitwiseAnd =>
+    BitwiseAnd =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(-1))
+        Datum(Int(-1))
       } else {
         let acc = value_as_exact_integer(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1351,15 +1351,15 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_exact_integer(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::And)
+          continue i + 1, datum_bitwise_binop(acc, next, And)
         } else {
           acc
         }
-        Value::Datum(acc)
+        Datum(acc)
       }
-    Primitive::BitwiseIor =>
+    BitwiseIor =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(0))
+        Datum(Int(0))
       } else {
         let acc = value_as_exact_integer(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1367,15 +1367,15 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_exact_integer(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::Or)
+          continue i + 1, datum_bitwise_binop(acc, next, Or)
         } else {
           acc
         }
-        Value::Datum(acc)
+        Datum(acc)
       }
-    Primitive::BitwiseXor =>
+    BitwiseXor =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(0))
+        Datum(Int(0))
       } else {
         let acc = value_as_exact_integer(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1383,79 +1383,79 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_exact_integer(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::Xor)
+          continue i + 1, datum_bitwise_binop(acc, next, Xor)
         } else {
           acc
         }
-        Value::Datum(acc)
+        Datum(acc)
       }
-    Primitive::BitwiseNot =>
+    BitwiseNot =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
-          Value::Datum(datum_bitwise_not(value))
+          Datum(datum_bitwise_not(value))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::BitwiseIf =>
+    BitwiseIf =>
       match args {
         [mask_value, yes_value, no_value] => {
           let mask = value_as_exact_integer(mask_value)
           let yes_value = value_as_exact_integer(yes_value)
           let no_value = value_as_exact_integer(no_value)
-          let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
+          let masked_yes = datum_bitwise_binop(mask, yes_value, And)
           let masked_no = datum_bitwise_binop(
             datum_bitwise_not(mask),
             no_value,
-            BitOp::And,
+            And,
           )
-          Value::Datum(datum_bitwise_binop(masked_yes, masked_no, BitOp::Or))
+          Datum(datum_bitwise_binop(masked_yes, masked_no, Or))
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::ArithmeticShift =>
+    ArithmeticShift =>
       match args {
         [value, shift_value] => {
           let value = value_as_exact_integer(value)
           let shift = value_as_int_index(shift_value)
-          Value::Datum(datum_arithmetic_shift(value, shift))
+          Datum(datum_arithmetic_shift(value, shift))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::BitwiseBitCount =>
+    BitwiseBitCount =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
           let count = datum_bitwise_bit_count(value)
-          Value::Datum(Datum::Int(count))
+          Datum(Int(count))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::BitwiseLength =>
+    BitwiseLength =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
           let count = datum_bitwise_length(value)
-          Value::Datum(Datum::Int(count))
+          Datum(Int(count))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::BitwiseFirstBitSet =>
+    BitwiseFirstBitSet =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
           let big = datum_to_bigint(value)
           if bigint_is_zero(big) {
-            Value::Datum(Datum::Int(-1))
+            Datum(Int(-1))
           } else {
-            let lsb = bigint_bitwise_binop(big, -big, BitOp::And)
+            let lsb = bigint_bitwise_binop(big, -big, And)
             let idx = bigint_bit_length_nonneg(lsb) - 1
-            Value::Datum(Datum::Int(idx))
+            Datum(Int(idx))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::BitwiseBitSetP =>
+    BitwiseBitSetP =>
       match args {
         [value, index_value] => {
           let value = value_as_exact_integer(value)
@@ -1464,15 +1464,15 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::BitwiseCopyBit =>
+    BitwiseCopyBit =>
       match args {
         [value, index_value, bit_value] => {
           let value = value_as_exact_integer(value)
           let index = value_as_nonnegative_int(index_value)
           let bit_value = value_as_exact_integer(bit_value)
           let bit = match bit_value {
-            Datum::Int(n) => n
-            Datum::BigInt(n) =>
+            Int(n) => n
+            BigInt(n) =>
               if bigint_is_zero(n) {
                 0
               } else if n.compare_int(1) == 0 {
@@ -1484,85 +1484,85 @@ fn apply_numeric_primitive_core(
           }
           let mask = bigint_to_integer_datum(bigint_pow2(index))
           let result = if bit == 0 {
-            datum_bitwise_binop(value, datum_bitwise_not(mask), BitOp::And)
+            datum_bitwise_binop(value, datum_bitwise_not(mask), And)
           } else if bit == 1 {
-            datum_bitwise_binop(value, mask, BitOp::Or)
+            datum_bitwise_binop(value, mask, Or)
           } else {
             raise @core.EvalError("type error: bit expected")
           }
-          Value::Datum(result)
+          Datum(result)
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::BitwiseBitField =>
+    BitwiseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_exact_integer(value)
           let start = value_as_nonnegative_int(start_value)
           let end = value_as_nonnegative_int(end_value)
-          Value::Datum(datum_bitwise_bit_field(value, start, end))
+          Datum(datum_bitwise_bit_field(value, start, end))
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::BitwiseCopyBitField =>
+    BitwiseCopyBitField =>
       match args {
         [value, start_value, end_value, from_value] => {
           let value = value_as_exact_integer(value)
           let start = value_as_nonnegative_int(start_value)
           let end = value_as_nonnegative_int(end_value)
           let from = value_as_exact_integer(from_value)
-          Value::Datum(datum_bitwise_copy_bit_field(value, start, end, from))
+          Datum(datum_bitwise_copy_bit_field(value, start, end, from))
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    Primitive::BitwiseRotateBitField =>
+    BitwiseRotateBitField =>
       match args {
         [value, start_value, end_value, count_value] => {
           let value = value_as_exact_integer(value)
           let start = value_as_nonnegative_int(start_value)
           let end = value_as_nonnegative_int(end_value)
           let count = value_as_int_index(count_value)
-          Value::Datum(datum_bitwise_rotate_bit_field(value, start, end, count))
+          Datum(datum_bitwise_rotate_bit_field(value, start, end, count))
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    Primitive::BitwiseReverseBitField =>
+    BitwiseReverseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_exact_integer(value)
           let start = value_as_nonnegative_int(start_value)
           let end = value_as_nonnegative_int(end_value)
-          Value::Datum(datum_bitwise_reverse_bit_field(value, start, end))
+          Datum(datum_bitwise_reverse_bit_field(value, start, end))
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FixnumP =>
+    FixnumP =>
       match args {
         [value] => bool_value(value_is_fixnum(value))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FixnumWidth =>
+    FixnumWidth =>
       match args {
-        [] => Value::Datum(Datum::Int(fixnum_width_value()))
+        [] => Datum(Int(fixnum_width_value()))
         _ => raise arity_mismatch(0, args.length())
       }
-    Primitive::LeastFixnum =>
-      match args {
-        [] => {
-          let half = fixnum_half_bigint()
-          Value::Datum(fixnum_from_bigint(-half))
-        }
-        _ => raise arity_mismatch(0, args.length())
-      }
-    Primitive::GreatestFixnum =>
+    LeastFixnum =>
       match args {
         [] => {
           let half = fixnum_half_bigint()
-          Value::Datum(fixnum_from_bigint(half - bigint_from_int(1)))
+          Datum(fixnum_from_bigint(-half))
         }
         _ => raise arity_mismatch(0, args.length())
       }
-    Primitive::FxEq =>
+    GreatestFixnum =>
+      match args {
+        [] => {
+          let half = fixnum_half_bigint()
+          Datum(fixnum_from_bigint(half - bigint_from_int(1)))
+        }
+        _ => raise arity_mismatch(0, args.length())
+      }
+    FxEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -1580,7 +1580,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FxLess =>
+    FxLess =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -1599,7 +1599,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FxGreater =>
+    FxGreater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -1618,7 +1618,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FxLessEq =>
+    FxLessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -1637,7 +1637,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FxGreaterEq =>
+    FxGreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -1656,32 +1656,32 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FxZeroP =>
+    FxZeroP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxPositiveP =>
+    FxPositiveP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) > 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxNegativeP =>
+    FxNegativeP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) < 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxOddP =>
+    FxOddP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) % 2 != 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxEvenP =>
+    FxEvenP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) % 2 == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxMin => {
+    FxMin => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
@@ -1696,9 +1696,9 @@ fn apply_numeric_primitive_core(
       } else {
         current
       }
-      Value::Datum(Datum::Int(current))
+      Datum(Int(current))
     }
-    Primitive::FxMax => {
+    FxMax => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
@@ -1713,9 +1713,9 @@ fn apply_numeric_primitive_core(
       } else {
         current
       }
-      Value::Datum(Datum::Int(current))
+      Datum(Int(current))
     }
-    Primitive::FxAdd => {
+    FxAdd => {
       let acc = for i = 0, acc = bigint_from_int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -1725,14 +1725,14 @@ fn apply_numeric_primitive_core(
       } else {
         acc
       }
-      Value::Datum(fixnum_from_bigint(acc))
+      Datum(fixnum_from_bigint(acc))
     }
-    Primitive::FxSub =>
+    FxSub =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
           let result = value_as_fixnum_bigint(value)
-          Value::Datum(fixnum_from_bigint(-result))
+          Datum(fixnum_from_bigint(-result))
         }
         _ => {
           let result = for i = 1, result = value_as_fixnum_bigint(args[0]);
@@ -1741,10 +1741,10 @@ fn apply_numeric_primitive_core(
             } else {
               result
             }
-          Value::Datum(fixnum_from_bigint(result))
+          Datum(fixnum_from_bigint(result))
         }
       }
-    Primitive::FxMul => {
+    FxMul => {
       let acc = for i = 0, acc = bigint_from_int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -1754,9 +1754,9 @@ fn apply_numeric_primitive_core(
       } else {
         acc
       }
-      Value::Datum(fixnum_from_bigint(acc))
+      Datum(fixnum_from_bigint(acc))
     }
-    Primitive::FxDiv =>
+    FxDiv =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1777,11 +1777,11 @@ fn apply_numeric_primitive_core(
           } else {
             q
           }
-          Value::Datum(fixnum_from_bigint(q))
+          Datum(fixnum_from_bigint(q))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxMod =>
+    FxMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1801,11 +1801,11 @@ fn apply_numeric_primitive_core(
           } else {
             r
           }
-          Value::Datum(fixnum_from_bigint(r))
+          Datum(fixnum_from_bigint(r))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxDiv0 =>
+    FxDiv0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1813,11 +1813,11 @@ fn apply_numeric_primitive_core(
           if right.is_zero() {
             raise @core.EvalError("division by zero")
           }
-          Value::Datum(fixnum_from_bigint(left / right))
+          Datum(fixnum_from_bigint(left / right))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxMod0 =>
+    FxMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1825,11 +1825,11 @@ fn apply_numeric_primitive_core(
           if right.is_zero() {
             raise @core.EvalError("division by zero")
           }
-          Value::Datum(fixnum_from_bigint(left % right))
+          Datum(fixnum_from_bigint(left % right))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxAddCarry =>
+    FxAddCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1840,14 +1840,14 @@ fn apply_numeric_primitive_core(
           let half = fixnum_half_bigint()
           let carry_out = bigint_floor_div(total + half, base)
           let sum = total - carry_out * base
-          Value::Values([
-            Value::Datum(fixnum_from_bigint(sum)),
-            Value::Datum(fixnum_from_bigint(carry_out)),
+          Values([
+            Datum(fixnum_from_bigint(sum)),
+            Datum(fixnum_from_bigint(carry_out)),
           ])
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxSubCarry =>
+    FxSubCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1858,14 +1858,14 @@ fn apply_numeric_primitive_core(
           let half = fixnum_half_bigint()
           let carry_out = bigint_floor_div(total + half, base)
           let sum = total - carry_out * base
-          Value::Values([
-            Value::Datum(fixnum_from_bigint(sum)),
-            Value::Datum(fixnum_from_bigint(carry_out)),
+          Values([
+            Datum(fixnum_from_bigint(sum)),
+            Datum(fixnum_from_bigint(carry_out)),
           ])
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxMulCarry =>
+    FxMulCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1876,25 +1876,25 @@ fn apply_numeric_primitive_core(
           let half = fixnum_half_bigint()
           let carry_out = bigint_floor_div(total + half, base)
           let sum = total - carry_out * base
-          Value::Values([
-            Value::Datum(fixnum_from_bigint(sum)),
-            Value::Datum(fixnum_from_bigint(carry_out)),
+          Values([
+            Datum(fixnum_from_bigint(sum)),
+            Datum(fixnum_from_bigint(carry_out)),
           ])
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxNot =>
+    FxNot =>
       match args {
         [value] => {
           let datum = value_as_fixnum_datum(value)
           let result = datum_bitwise_not(datum)
-          Value::Datum(fixnum_from_datum(result))
+          Datum(fixnum_from_datum(result))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxAnd =>
+    FxAnd =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(-1))
+        Datum(Int(-1))
       } else {
         let acc = value_as_fixnum_datum(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1902,15 +1902,15 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_fixnum_datum(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::And)
+          continue i + 1, datum_bitwise_binop(acc, next, And)
         } else {
           acc
         }
-        Value::Datum(fixnum_from_datum(acc))
+        Datum(fixnum_from_datum(acc))
       }
-    Primitive::FxIor =>
+    FxIor =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(0))
+        Datum(Int(0))
       } else {
         let acc = value_as_fixnum_datum(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1918,15 +1918,15 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_fixnum_datum(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::Or)
+          continue i + 1, datum_bitwise_binop(acc, next, Or)
         } else {
           acc
         }
-        Value::Datum(fixnum_from_datum(acc))
+        Datum(fixnum_from_datum(acc))
       }
-    Primitive::FxXor =>
+    FxXor =>
       if args.is_empty() {
-        Value::Datum(Datum::Int(0))
+        Datum(Int(0))
       } else {
         let acc = value_as_fixnum_datum(args[0])
         let acc = for i = 1, acc = acc; i < args.length(); {
@@ -1934,66 +1934,66 @@ fn apply_numeric_primitive_core(
           // decreases : args.length() - i
           // assert : i <= args.length()
           let next = value_as_fixnum_datum(args[i])
-          continue i + 1, datum_bitwise_binop(acc, next, BitOp::Xor)
+          continue i + 1, datum_bitwise_binop(acc, next, Xor)
         } else {
           acc
         }
-        Value::Datum(fixnum_from_datum(acc))
+        Datum(fixnum_from_datum(acc))
       }
-    Primitive::FxIf =>
+    FxIf =>
       match args {
         [mask_value, yes_value, no_value] => {
           let mask = value_as_fixnum_datum(mask_value)
           let yes_value = value_as_fixnum_datum(yes_value)
           let no_value = value_as_fixnum_datum(no_value)
-          let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
+          let masked_yes = datum_bitwise_binop(mask, yes_value, And)
           let masked_no = datum_bitwise_binop(
             datum_bitwise_not(mask),
             no_value,
-            BitOp::And,
+            And,
           )
-          Value::Datum(
+          Datum(
             fixnum_from_datum(
-              datum_bitwise_binop(masked_yes, masked_no, BitOp::Or),
+              datum_bitwise_binop(masked_yes, masked_no, Or),
             ),
           )
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxBitCount =>
+    FxBitCount =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
           let count = datum_bitwise_bit_count(value)
-          Value::Datum(Datum::Int(count))
+          Datum(Int(count))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxLength =>
+    FxLength =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
           let count = datum_bitwise_length(value)
-          Value::Datum(Datum::Int(count))
+          Datum(Int(count))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxFirstBitSet =>
+    FxFirstBitSet =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
           let big = datum_to_bigint(value)
           if bigint_is_zero(big) {
-            Value::Datum(Datum::Int(-1))
+            Datum(Int(-1))
           } else {
-            let lsb = bigint_bitwise_binop(big, -big, BitOp::And)
+            let lsb = bigint_bitwise_binop(big, -big, And)
             let idx = bigint_bit_length_nonneg(lsb) - 1
-            Value::Datum(Datum::Int(idx))
+            Datum(Int(idx))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FxBitSetP =>
+    FxBitSetP =>
       match args {
         [value, index_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2002,7 +2002,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxCopyBit =>
+    FxCopyBit =>
       match args {
         [value, index_value, bit_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2017,34 +2017,34 @@ fn apply_numeric_primitive_core(
           }
           let mask = bigint_to_integer_datum(bigint_pow2(index))
           let result = if bit == 0 {
-            datum_bitwise_binop(value, datum_bitwise_not(mask), BitOp::And)
+            datum_bitwise_binop(value, datum_bitwise_not(mask), And)
           } else {
-            datum_bitwise_binop(value, mask, BitOp::Or)
+            datum_bitwise_binop(value, mask, Or)
           }
-          Value::Datum(fixnum_from_datum(result))
+          Datum(fixnum_from_datum(result))
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxBitField =>
+    FxBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_fixnum_datum(value)
           let start = value_as_nonnegative_fixnum_int(start_value)
           let end = value_as_nonnegative_fixnum_int(end_value)
-          Value::Datum(
+          Datum(
             fixnum_from_datum(datum_bitwise_bit_field(value, start, end)),
           )
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxCopyBitField =>
+    FxCopyBitField =>
       match args {
         [value, start_value, end_value, from_value] => {
           let value = value_as_fixnum_datum(value)
           let start = value_as_nonnegative_fixnum_int(start_value)
           let end = value_as_nonnegative_fixnum_int(end_value)
           let from = value_as_fixnum_datum(from_value)
-          Value::Datum(
+          Datum(
             fixnum_from_datum(
               datum_bitwise_copy_bit_field(value, start, end, from),
             ),
@@ -2052,14 +2052,14 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    Primitive::FxRotateBitField =>
+    FxRotateBitField =>
       match args {
         [value, start_value, end_value, count_value] => {
           let value = value_as_fixnum_datum(value)
           let start = value_as_nonnegative_fixnum_int(start_value)
           let end = value_as_nonnegative_fixnum_int(end_value)
           let count = value_as_fixnum_int(count_value)
-          Value::Datum(
+          Datum(
             fixnum_from_datum(
               datum_bitwise_rotate_bit_field(value, start, end, count),
             ),
@@ -2067,13 +2067,13 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    Primitive::FxReverseBitField =>
+    FxReverseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_fixnum_datum(value)
           let start = value_as_nonnegative_fixnum_int(start_value)
           let end = value_as_nonnegative_fixnum_int(end_value)
-          Value::Datum(
+          Datum(
             fixnum_from_datum(
               datum_bitwise_reverse_bit_field(value, start, end),
             ),
@@ -2081,60 +2081,60 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::FxArithmeticShift =>
+    FxArithmeticShift =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
           let shift = value_as_fixnum_int(shift_value)
-          Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
+          Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxArithmeticShiftLeft =>
+    FxArithmeticShiftLeft =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
           let shift = value_as_nonnegative_fixnum_int(shift_value)
-          Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
+          Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FxArithmeticShiftRight =>
+    FxArithmeticShiftRight =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
           let shift = value_as_nonnegative_fixnum_int(shift_value)
-          Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, -shift)))
+          Datum(fixnum_from_datum(datum_arithmetic_shift(value, -shift)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlonumP =>
+    FlonumP =>
       match args {
-        [Value::Datum(datum)] =>
+        [Datum(datum)] =>
           match datum_unlabel(datum) {
-            Datum::Float(_) => bool_value(true)
+            Float(_) => bool_value(true)
             _ => bool_value(false)
           }
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::RealToFlonum =>
+    RealToFlonum =>
       match args {
         [value] => {
           let value = value_as_number(value)
-          Value::Datum(Datum::Float(number_to_float(value)))
+          Datum(Float(number_to_float(value)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FixnumToFlonum =>
+    FixnumToFlonum =>
       match args {
         [value] => {
           let value = value_as_fixnum_int(value)
-          Value::Datum(Datum::Float(Float::from_int(value)))
+          Datum(Float(Float::from_int(value)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlEq =>
+    FlEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2152,7 +2152,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FlLess =>
+    FlLess =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2171,7 +2171,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FlGreater =>
+    FlGreater =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2190,7 +2190,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FlLessEq =>
+    FlLessEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2209,7 +2209,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FlGreaterEq =>
+    FlGreaterEq =>
       if args.length() <= 1 {
         bool_value(true)
       } else {
@@ -2228,7 +2228,7 @@ fn apply_numeric_primitive_core(
         }
         bool_value(ok)
       }
-    Primitive::FlIntegerP =>
+    FlIntegerP =>
       match args {
         [value] => {
           let f = value_as_flonum(value)
@@ -2237,53 +2237,53 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlZeroP =>
+    FlZeroP =>
       match args {
         [value] => bool_value(value_as_flonum(value) == 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlPositiveP =>
+    FlPositiveP =>
       match args {
         [value] => bool_value(value_as_flonum(value) > 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlNegativeP =>
+    FlNegativeP =>
       match args {
         [value] => bool_value(value_as_flonum(value) < 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlOddP =>
+    FlOddP =>
       match args {
         [value] => bool_value(value_as_integer_flonum(value) % 2 != 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlEvenP =>
+    FlEvenP =>
       match args {
         [value] => bool_value(value_as_integer_flonum(value) % 2 == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlFiniteP =>
+    FlFiniteP =>
       match args {
         [value] => bool_value(float_is_finite(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlInfiniteP =>
+    FlInfiniteP =>
       match args {
         [value] => bool_value(float_is_infinite(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlNanP =>
+    FlNanP =>
       match args {
         [value] => bool_value(float_is_nan(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlMax => {
+    FlMax => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
       let current = value_as_flonum(args[0])
       if float_is_nan(current) {
-        return Value::Datum(Datum::Float(current))
+        return Datum(Float(current))
       }
       let current = for i = 1, current = current; i < args.length(); {
         // invariant : i >= 1 && i <= args.length()
@@ -2298,15 +2298,15 @@ fn apply_numeric_primitive_core(
       } else {
         current
       }
-      Value::Datum(Datum::Float(current))
+      Datum(Float(current))
     }
-    Primitive::FlMin => {
+    FlMin => {
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
       let current = value_as_flonum(args[0])
       if float_is_nan(current) {
-        return Value::Datum(Datum::Float(current))
+        return Datum(Float(current))
       }
       let current = for i = 1, current = current; i < args.length(); {
         // invariant : i >= 1 && i <= args.length()
@@ -2321,9 +2321,9 @@ fn apply_numeric_primitive_core(
       } else {
         current
       }
-      Value::Datum(Datum::Float(current))
+      Datum(Float(current))
     }
-    Primitive::FlAdd => {
+    FlAdd => {
       let acc = for i = 0, acc = Float::from_int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -2332,9 +2332,9 @@ fn apply_numeric_primitive_core(
       } else {
         acc
       }
-      Value::Datum(Datum::Float(acc))
+      Datum(Float(acc))
     }
-    Primitive::FlMul => {
+    FlMul => {
       let acc = for i = 0, acc = Float::from_int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -2343,12 +2343,12 @@ fn apply_numeric_primitive_core(
       } else {
         acc
       }
-      Value::Datum(Datum::Float(acc))
+      Datum(Float(acc))
     }
-    Primitive::FlSub =>
+    FlSub =>
       match args {
         [] => raise arity_mismatch(1, 0)
-        [value] => Value::Datum(Datum::Float(-value_as_flonum(value)))
+        [value] => Datum(Float(-value_as_flonum(value)))
         _ => {
           let result = value_as_flonum(args[0])
           let result = for i = 1, result = result; i < args.length(); {
@@ -2359,15 +2359,15 @@ fn apply_numeric_primitive_core(
           } else {
             result
           }
-          Value::Datum(Datum::Float(result))
+          Datum(Float(result))
         }
       }
-    Primitive::FlDiv =>
+    FlDiv =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
           let denom = value_as_flonum(value)
-          Value::Datum(Datum::Float(Float::from_int(1) / denom))
+          Datum(Float(Float::from_int(1) / denom))
         }
         _ => {
           let result = value_as_flonum(args[0])
@@ -2379,216 +2379,216 @@ fn apply_numeric_primitive_core(
           } else {
             result
           }
-          Value::Datum(Datum::Float(result))
+          Datum(Float(result))
         }
       }
-    Primitive::FlAbs =>
+    FlAbs =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
-          Value::Datum(Datum::Float(if num < 0.0 { -num } else { num }))
+          Datum(Float(if num < 0.0 { -num } else { num }))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlDivAndMod =>
+    FlDivAndMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (q, r) = flonum_div_and_mod(left, right)
-          Value::Values([
-            Value::Datum(Datum::Float(q)),
-            Value::Datum(Datum::Float(r)),
+          Values([
+            Datum(Float(q)),
+            Datum(Float(r)),
           ])
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlDivInt =>
+    FlDivInt =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (q, _) = flonum_div_and_mod(left, right)
-          Value::Datum(Datum::Float(q))
+          Datum(Float(q))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlMod =>
+    FlMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (_, r) = flonum_div_and_mod(left, right)
-          Value::Datum(Datum::Float(r))
+          Datum(Float(r))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlDiv0AndMod0 =>
+    FlDiv0AndMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (q, r) = flonum_div0_and_mod0(left, right)
-          Value::Values([
-            Value::Datum(Datum::Float(q)),
-            Value::Datum(Datum::Float(r)),
+          Values([
+            Datum(Float(q)),
+            Datum(Float(r)),
           ])
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlDiv0 =>
+    FlDiv0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (q, _) = flonum_div0_and_mod0(left, right)
-          Value::Datum(Datum::Float(q))
+          Datum(Float(q))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlMod0 =>
+    FlMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
           let right = value_as_flonum(right_value)
           let (_, r) = flonum_div0_and_mod0(left, right)
-          Value::Datum(Datum::Float(r))
+          Datum(Float(r))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlNumerator =>
+    FlNumerator =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
-          Value::Datum(Datum::Float(flonum_numerator(num)))
+          Datum(Float(flonum_numerator(num)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlDenominator =>
+    FlDenominator =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
-          Value::Datum(Datum::Float(flonum_denominator(num)))
+          Datum(Float(flonum_denominator(num)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlFloor =>
+    FlFloor =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
           if !float_is_finite(num) {
-            Value::Datum(Datum::Float(num))
+            Datum(Float(num))
           } else {
-            Value::Datum(Datum::Float(Float::from_int(float_floor_int(num))))
+            Datum(Float(Float::from_int(float_floor_int(num))))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlCeiling =>
+    FlCeiling =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
           if !float_is_finite(num) {
-            Value::Datum(Datum::Float(num))
+            Datum(Float(num))
           } else {
-            Value::Datum(
-              Datum::Float(Float::from_int(float_ceiling_int(num))),
+            Datum(
+              Float(Float::from_int(float_ceiling_int(num))),
             )
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlTruncate =>
+    FlTruncate =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
           if !float_is_finite(num) {
-            Value::Datum(Datum::Float(num))
+            Datum(Float(num))
           } else {
-            Value::Datum(Datum::Float(Float::from_int(num.to_int())))
+            Datum(Float(Float::from_int(num.to_int())))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlRound =>
+    FlRound =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
           if !float_is_finite(num) {
-            Value::Datum(Datum::Float(num))
+            Datum(Float(num))
           } else {
-            Value::Datum(Datum::Float(Float::from_int(float_round_int(num))))
+            Datum(Float(Float::from_int(float_round_int(num))))
           }
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlExp =>
+    FlExp =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.expf(value_as_flonum(value))))
+          Datum(Float(@math.expf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlLog =>
+    FlLog =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.lnf(value_as_flonum(value))))
+          Datum(Float(@math.lnf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlSin =>
+    FlSin =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.sinf(value_as_flonum(value))))
+          Datum(Float(@math.sinf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlCos =>
+    FlCos =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.cosf(value_as_flonum(value))))
+          Datum(Float(@math.cosf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlTan =>
+    FlTan =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.tanf(value_as_flonum(value))))
+          Datum(Float(@math.tanf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlAsin =>
+    FlAsin =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.asinf(value_as_flonum(value))))
+          Datum(Float(@math.asinf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlAcos =>
+    FlAcos =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.acosf(value_as_flonum(value))))
+          Datum(Float(@math.acosf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlAtan =>
+    FlAtan =>
       match args {
         [value] =>
-          Value::Datum(Datum::Float(@math.atanf(value_as_flonum(value))))
+          Datum(Float(@math.atanf(value_as_flonum(value))))
         [y_value, x_value] => {
           let y = value_as_flonum(y_value)
           let x = value_as_flonum(x_value)
-          Value::Datum(Datum::Float(@math.atan2f(y, x)))
+          Datum(Float(@math.atan2f(y, x)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::FlSqrt =>
+    FlSqrt =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
-          Value::Datum(Datum::Float(num.sqrt()))
+          Datum(Float(num.sqrt()))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::FlExpt =>
+    FlExpt =>
       match args {
         [base_value, exp_value] => {
           let base = value_as_flonum(base_value)
           let exp = value_as_flonum(exp_value)
-          Value::Datum(Datum::Float(@math.powf(base, exp)))
+          Datum(Float(@math.powf(base, exp)))
         }
         _ => raise arity_mismatch(2, args.length())
       }

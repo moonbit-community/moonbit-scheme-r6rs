@@ -61,14 +61,17 @@ test "unicode char case" {
 ///|
 test "datum constructors" {
   match Datum::Int(42) {
-    Datum::Int(42) => ()
+    Int(42) => ()
     _ => fail("expected int datum")
   }
-  let pair = Datum::Pair(Ref::new(Datum::Symbol("a")), Ref::new(Datum::Nil))
+  let pair = Datum::Pair(
+    Ref::new(Datum::Symbol("a")),
+    Ref::new(Datum::Nil),
+  )
   match pair {
-    Datum::Pair(car, cdr) =>
+    Pair(car, cdr) =>
       match (car.val, cdr.val) {
-        (Datum::Symbol("a"), Datum::Nil) => ()
+        (Symbol("a"), Nil) => ()
         _ => fail("expected (a)")
       }
     _ => fail("expected pair")

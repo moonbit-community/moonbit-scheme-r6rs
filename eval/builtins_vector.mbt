@@ -5,7 +5,7 @@ fn apply_vector_primitive(
   args : Array[Value],
 ) -> Value? raise EvalError {
   match prim {
-    Primitive::Vector => {
+    Vector => {
       let items : Array[Datum] = []
       for arg in args {
         // invariant : args.length() >= 0
@@ -13,9 +13,9 @@ fn apply_vector_primitive(
         // assert : args.length() >= 0
         items.push(value_to_datum_element(arg))
       }
-      Some(Value::Datum(Datum::Vector(items)))
+      Some(Datum(Vector(items)))
     }
-    Primitive::MakeVector =>
+    MakeVector =>
       match args {
         [len_value] =>
           Some({
@@ -29,7 +29,7 @@ fn apply_vector_primitive(
               items.push(fill)
               continue i + 1
             }
-            Value::Datum(Datum::Vector(items))
+            Datum(Vector(items))
           })
         [len_value, fill_value] =>
           Some({
@@ -43,28 +43,28 @@ fn apply_vector_primitive(
               items.push(fill)
               continue i + 1
             }
-            Value::Datum(Datum::Vector(items))
+            Datum(Vector(items))
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::VectorP =>
+    VectorP =>
       match args {
-        [Value::Datum(Datum::Vector(_))] => Some(bool_value(true))
+        [Datum(Vector(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::VectorLength =>
+    VectorLength =>
       match args {
         [vec_value] => {
           let items = value_as_vector(vec_value)
-          Some(Value::Datum(Datum::Int(items.length())))
+          Some(Datum(Int(items.length())))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::VectorRef =>
+    VectorRef =>
       match args {
         [vec_value, idx_value] => {
           let items = value_as_vector(vec_value)
@@ -74,18 +74,18 @@ fn apply_vector_primitive(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::VectorSet =>
+    VectorSet =>
       match args {
         [vec_value, idx_value, item_value] => {
           let items = value_as_vector(vec_value)
           let idx = value_as_int_index(idx_value)
           check_index(idx, items.length())
           items[idx] = value_to_datum_element(item_value)
-          Some(Value::Void)
+          Some(Void)
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::VectorFill =>
+    VectorFill =>
       match args {
         [vec_value, fill_value] =>
           Some({
@@ -101,7 +101,7 @@ fn apply_vector_primitive(
               items[i] = fill
               continue i + 1
             }
-            Value::Void
+            Void
           })
         [vec_value, fill_value, start_value] =>
           Some({
@@ -117,7 +117,7 @@ fn apply_vector_primitive(
               items[i] = fill
               continue i + 1
             }
-            Value::Void
+            Void
           })
         [vec_value, fill_value, start_value, end_value] =>
           Some({
@@ -133,14 +133,14 @@ fn apply_vector_primitive(
               items[i] = fill
               continue i + 1
             }
-            Value::Void
+            Void
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 2 to 4 got \{args.length()}",
           )
       }
-    Primitive::VectorCopy =>
+    VectorCopy =>
       match args {
         [vec_value] =>
           Some({
@@ -149,7 +149,7 @@ fn apply_vector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            Value::Datum(Datum::Vector(slice))
+            Datum(Vector(slice))
           })
         [vec_value, start_value] =>
           Some({
@@ -158,7 +158,7 @@ fn apply_vector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            Value::Datum(Datum::Vector(slice))
+            Datum(Vector(slice))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -167,14 +167,14 @@ fn apply_vector_primitive(
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            Value::Datum(Datum::Vector(slice))
+            Datum(Vector(slice))
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    Primitive::VectorCopyBang =>
+    VectorCopyBang =>
       match args {
         [to_value, at_value, from_value] =>
           Some({
@@ -205,7 +205,7 @@ fn apply_vector_primitive(
               to_items[at + j] = temp[j]
               continue j + 1
             }
-            Value::Void
+            Void
           })
         [to_value, at_value, from_value, start_value] =>
           Some({
@@ -236,7 +236,7 @@ fn apply_vector_primitive(
               to_items[at + j] = temp[j]
               continue j + 1
             }
-            Value::Void
+            Void
           })
         [to_value, at_value, from_value, start_value, end_value] =>
           Some({
@@ -267,14 +267,14 @@ fn apply_vector_primitive(
               to_items[at + j] = temp[j]
               continue j + 1
             }
-            Value::Void
+            Void
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
           )
       }
-    Primitive::VectorAppend => {
+    VectorAppend => {
       let items : Array[Datum] = []
       for arg in args {
         // invariant : args.length() >= 0
@@ -288,9 +288,9 @@ fn apply_vector_primitive(
           items.push(item)
         }
       }
-      Some(Value::Datum(Datum::Vector(items)))
+      Some(Datum(Vector(items)))
     }
-    Primitive::VectorToList =>
+    VectorToList =>
       match args {
         [vec_value] =>
           Some({
@@ -298,7 +298,7 @@ fn apply_vector_primitive(
             let start = 0
             let end = items.length()
             check_slice_range(start, end, items.length())
-            Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
+            Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         [vec_value, start_value] =>
           Some({
@@ -306,7 +306,7 @@ fn apply_vector_primitive(
             let start = value_as_int_index(start_value)
             let end = items.length()
             check_slice_range(start, end, items.length())
-            Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
+            Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -314,19 +314,19 @@ fn apply_vector_primitive(
             let start = value_as_int_index(start_value)
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, items.length())
-            Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
+            Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    Primitive::ListToVector =>
+    ListToVector =>
       match args {
         [datum_value] => {
           let datum = value_as_datum(datum_value)
           let items = datum_list_to_array(datum)
-          Some(Value::Datum(Datum::Vector(items)))
+          Some(Datum(Vector(items)))
         }
         _ => raise arity_mismatch(1, args.length())
       }

@@ -31,9 +31,9 @@ test "string port" {
 ///|
 test "env basics" {
   let env = env_new()
-  env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
+  env_define(env, "x", Datum(Int(1)))
   match env_lookup_optional(env, "x") {
-    Some(@core.Value::Datum(@core.Datum::Int(1))) => ()
+    Some(Datum(Int(1))) => ()
     _ => fail("expected bound value")
   }
 }
@@ -41,10 +41,10 @@ test "env basics" {
 ///|
 test "env set" {
   let env = env_new()
-  env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
-  env_set(env, "x", @core.Value::Datum(@core.Datum::Int(2)))
+  env_define(env, "x", Datum(Int(1)))
+  env_set(env, "x", Datum(Int(2)))
   match env_lookup_optional(env, "x") {
-    Some(@core.Value::Datum(@core.Datum::Int(2))) => ()
+    Some(Datum(Int(2))) => ()
     _ => fail("expected updated value")
   }
 }
@@ -52,11 +52,11 @@ test "env set" {
 ///|
 test "env clone" {
   let env = env_new()
-  env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
+  env_define(env, "x", Datum(Int(1)))
   let cloned = env_clone(env)
-  env_set(env, "x", @core.Value::Datum(@core.Datum::Int(2)))
+  env_set(env, "x", Datum(Int(2)))
   match env_lookup_optional(cloned, "x") {
-    Some(@core.Value::Datum(@core.Datum::Int(1))) => ()
+    Some(Datum(Int(1))) => ()
     _ => fail("expected cloned value to stay 1")
   }
 }
@@ -71,7 +71,7 @@ test "gensym unique suffix" {
 
 ///|
 test "list from array" {
-  let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+  let list = list_from_array([Int(1), Int(2)])
   let value = @core.Value::Datum(list)
   inspect(value_to_string(value), content="(1 2)")
 }
@@ -97,16 +97,16 @@ test "value to string" {
 ///|
 test "normalize rat" {
   match normalize_rat(4, 6) {
-    Some(@core.Datum::Rat(2, 3)) => ()
+    Some(Rat(2, 3)) => ()
     _ => fail("expected reduced ratio")
   }
 }
 
 ///|
 test "value from datum" {
-  let value = value_from_datum(@core.Datum::Int(3))
+  let value = value_from_datum(Int(3))
   match value {
-    @core.Value::Datum(@core.Datum::Int(3)) => ()
+    Datum(Int(3)) => ()
     _ => fail("expected datum value")
   }
 }
@@ -115,7 +115,7 @@ test "value from datum" {
 test "library exports" {
   let binding = @core.Binding::{
     id: next_binding_id(),
-    value: @core.Value::Datum(@core.Datum::Int(1)),
+    value: Datum(Int(1)),
   }
   register_library("doc/runtime-lib", { "x": binding })
   match lookup_library("doc/runtime-lib") {
@@ -123,7 +123,7 @@ test "library exports" {
       match lib.exports().get("x") {
         Some(exported) =>
           match exported.value {
-            @core.Value::Datum(@core.Datum::Int(1)) => ()
+            Datum(Int(1)) => ()
             _ => fail("expected datum export")
           }
         None => fail("expected export")

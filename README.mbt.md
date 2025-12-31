@@ -36,11 +36,11 @@ test "eval program" {
   let included = eval_program("(include \"mem.scm\")")
   inspect(value_to_string(included), content="5")
   match parse_number_token("10") {
-    Some(@core.Datum::Int(10)) => ()
+    Some(Int(10)) => ()
     _ => fail("expected int")
   }
   match parse_number_token_with_radix("ff", 16) {
-    Some(@core.Datum::Int(255)) => ()
+    Some(Int(255)) => ()
     _ => fail("expected 255")
   }
 }

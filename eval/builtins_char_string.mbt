@@ -5,48 +5,48 @@ fn apply_char_string_primitive(
   args : Array[Value],
 ) -> Value? raise EvalError {
   match prim {
-    Primitive::CharEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Eq, false)))
-    Primitive::CharLess =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Lt, false)))
-    Primitive::CharGreater =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Gt, false)))
-    Primitive::CharLessEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Le, false)))
-    Primitive::CharGreaterEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Ge, false)))
-    Primitive::CharCiEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Eq, true)))
-    Primitive::CharCiLess =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Lt, true)))
-    Primitive::CharCiGreater =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Gt, true)))
-    Primitive::CharCiLessEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Le, true)))
-    Primitive::CharCiGreaterEq =>
-      Some(bool_value(compare_chain_char(args, CompareMode::Ge, true)))
-    Primitive::CharP =>
+    CharEq =>
+      Some(bool_value(compare_chain_char(args, Eq, false)))
+    CharLess =>
+      Some(bool_value(compare_chain_char(args, Lt, false)))
+    CharGreater =>
+      Some(bool_value(compare_chain_char(args, Gt, false)))
+    CharLessEq =>
+      Some(bool_value(compare_chain_char(args, Le, false)))
+    CharGreaterEq =>
+      Some(bool_value(compare_chain_char(args, Ge, false)))
+    CharCiEq =>
+      Some(bool_value(compare_chain_char(args, Eq, true)))
+    CharCiLess =>
+      Some(bool_value(compare_chain_char(args, Lt, true)))
+    CharCiGreater =>
+      Some(bool_value(compare_chain_char(args, Gt, true)))
+    CharCiLessEq =>
+      Some(bool_value(compare_chain_char(args, Le, true)))
+    CharCiGreaterEq =>
+      Some(bool_value(compare_chain_char(args, Ge, true)))
+    CharP =>
       match args {
-        [Value::Datum(Datum::Char(_))] => Some(bool_value(true))
+        [Datum(Char(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharToInteger =>
+    CharToInteger =>
       match args {
         [char_value] =>
-          Some(Value::Datum(Datum::Int(value_as_char(char_value).to_int())))
+          Some(Datum(Int(value_as_char(char_value).to_int())))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::IntegerToChar =>
+    IntegerToChar =>
       match args {
         [int_value] =>
           Some({
             let ch = char_from_int_value(int_value)
-            Value::Datum(Datum::Char(ch))
+            Datum(Char(ch))
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharAlphabeticP =>
+    CharAlphabeticP =>
       match args {
         [char_value] =>
           Some({
@@ -55,7 +55,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharNumericP =>
+    CharNumericP =>
       match args {
         [char_value] =>
           Some({
@@ -64,7 +64,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharWhitespaceP =>
+    CharWhitespaceP =>
       match args {
         [char_value] =>
           Some({
@@ -73,7 +73,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharUpperCaseP =>
+    CharUpperCaseP =>
       match args {
         [char_value] =>
           Some({
@@ -82,7 +82,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharLowerCaseP =>
+    CharLowerCaseP =>
       match args {
         [char_value] =>
           Some({
@@ -91,67 +91,67 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharUpcase =>
+    CharUpcase =>
       match args {
         [char_value] =>
           Some(
-            Value::Datum(
-              Datum::Char(unicode_char(value_as_char(char_value)).upcase()),
+            Datum(
+              Char(unicode_char(value_as_char(char_value)).upcase()),
             ),
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharDowncase =>
+    CharDowncase =>
       match args {
         [char_value] =>
           Some(
-            Value::Datum(
-              Datum::Char(unicode_char(value_as_char(char_value)).downcase()),
+            Datum(
+              Char(unicode_char(value_as_char(char_value)).downcase()),
             ),
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharFoldcase =>
+    CharFoldcase =>
       match args {
         [char_value] =>
           Some(
-            Value::Datum(
-              Datum::Char(unicode_char(value_as_char(char_value)).foldcase()),
+            Datum(
+              Char(unicode_char(value_as_char(char_value)).foldcase()),
             ),
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CharGeneralCategory =>
+    CharGeneralCategory =>
       match args {
         [char_value] =>
           Some(
-            Value::Datum(
-              Datum::Symbol(unicode_char(value_as_char(char_value)).general_category()),
+            Datum(
+              Symbol(unicode_char(value_as_char(char_value)).general_category()),
             ),
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Eq, false)))
-    Primitive::StringLess =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Lt, false)))
-    Primitive::StringGreater =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Gt, false)))
-    Primitive::StringLessEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Le, false)))
-    Primitive::StringGreaterEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Ge, false)))
-    Primitive::StringCiEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Eq, true)))
-    Primitive::StringCiLess =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Lt, true)))
-    Primitive::StringCiGreater =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Gt, true)))
-    Primitive::StringCiLessEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Le, true)))
-    Primitive::StringCiGreaterEq =>
-      Some(bool_value(compare_chain_string(args, CompareMode::Ge, true)))
-    Primitive::String => {
+    StringEq =>
+      Some(bool_value(compare_chain_string(args, Eq, false)))
+    StringLess =>
+      Some(bool_value(compare_chain_string(args, Lt, false)))
+    StringGreater =>
+      Some(bool_value(compare_chain_string(args, Gt, false)))
+    StringLessEq =>
+      Some(bool_value(compare_chain_string(args, Le, false)))
+    StringGreaterEq =>
+      Some(bool_value(compare_chain_string(args, Ge, false)))
+    StringCiEq =>
+      Some(bool_value(compare_chain_string(args, Eq, true)))
+    StringCiLess =>
+      Some(bool_value(compare_chain_string(args, Lt, true)))
+    StringCiGreater =>
+      Some(bool_value(compare_chain_string(args, Gt, true)))
+    StringCiLessEq =>
+      Some(bool_value(compare_chain_string(args, Le, true)))
+    StringCiGreaterEq =>
+      Some(bool_value(compare_chain_string(args, Ge, true)))
+    String => {
       let buf = @buffer.new()
       for arg in args {
         // invariant : args.length() >= 0
@@ -159,9 +159,9 @@ fn apply_char_string_primitive(
         // assert : args.length() >= 0
         buf.write_char(value_as_char(arg))
       }
-      Some(Value::Datum(Datum::String(Ref::new(buf.to_string()))))
+      Some(Datum(String(Ref::new(buf.to_string()))))
     }
-    Primitive::MakeString =>
+    MakeString =>
       match args {
         [len_value] =>
           Some({
@@ -179,7 +179,7 @@ fn apply_char_string_primitive(
               buf.write_char(fill)
               continue i + 1
             }
-            Value::Datum(Datum::String(Ref::new(buf.to_string())))
+            Datum(String(Ref::new(buf.to_string())))
           })
         [len_value, fill_value] =>
           Some({
@@ -193,29 +193,29 @@ fn apply_char_string_primitive(
               buf.write_char(fill)
               continue i + 1
             }
-            Value::Datum(Datum::String(Ref::new(buf.to_string())))
+            Datum(String(Ref::new(buf.to_string())))
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::StringP =>
+    StringP =>
       match args {
-        [Value::Datum(Datum::String(_))] => Some(bool_value(true))
+        [Datum(String(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringLength =>
+    StringLength =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(Datum::Int(s.length()))
+            Datum(Int(s.length()))
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringAppend => {
+    StringAppend => {
       let buf = @buffer.new()
       for arg in args {
         // invariant : args.length() >= 0
@@ -223,9 +223,9 @@ fn apply_char_string_primitive(
         // assert : args.length() >= 0
         buf.write_string(value_as_string(arg))
       }
-      Some(Value::Datum(Datum::String(Ref::new(buf.to_string()))))
+      Some(Datum(String(Ref::new(buf.to_string()))))
     }
-    Primitive::StringRef =>
+    StringRef =>
       match args {
         [string_value, idx_value] =>
           Some({
@@ -233,13 +233,13 @@ fn apply_char_string_primitive(
             let idx = value_as_int_index(idx_value)
             check_index(idx, s.length())
             match s.get_char(idx) {
-              Some(ch) => Value::Datum(Datum::Char(ch))
+              Some(ch) => Datum(Char(ch))
               None => raise @core.EvalError("index out of range")
             }
           })
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive::StringSet =>
+    StringSet =>
       match args {
         [string_value, idx_value, char_value] =>
           Some({
@@ -248,11 +248,11 @@ fn apply_char_string_primitive(
             let ch = value_as_char(char_value)
             let updated = string_replace_range(sref.val, idx, idx + 1, ch)
             sref.val = updated
-            Value::Void
+            Void
           })
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::StringCopy =>
+    StringCopy =>
       match args {
         [string_value] =>
           Some({
@@ -263,7 +263,7 @@ fn apply_char_string_primitive(
             let view = try? s[start:end]
             match view {
               Ok(slice) =>
-                Value::Datum(Datum::String(Ref::new(slice.to_string())))
+                Datum(String(Ref::new(slice.to_string())))
               Err(_) => raise @core.EvalError("index out of range")
             }
           })
@@ -276,7 +276,7 @@ fn apply_char_string_primitive(
             let view = try? s[start:end]
             match view {
               Ok(slice) =>
-                Value::Datum(Datum::String(Ref::new(slice.to_string())))
+                Datum(String(Ref::new(slice.to_string())))
               Err(_) => raise @core.EvalError("index out of range")
             }
           })
@@ -289,7 +289,7 @@ fn apply_char_string_primitive(
             let view = try? s[start:end]
             match view {
               Ok(slice) =>
-                Value::Datum(Datum::String(Ref::new(slice.to_string())))
+                Datum(String(Ref::new(slice.to_string())))
               Err(_) => raise @core.EvalError("index out of range")
             }
           })
@@ -298,7 +298,7 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    Primitive::Substring =>
+    Substring =>
       match args {
         [string_value, start_value, end_value] =>
           Some({
@@ -309,13 +309,13 @@ fn apply_char_string_primitive(
             let view = try? s[start:end]
             match view {
               Ok(slice) =>
-                Value::Datum(Datum::String(Ref::new(slice.to_string())))
+                Datum(String(Ref::new(slice.to_string())))
               Err(_) => raise @core.EvalError("index out of range")
             }
           })
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive::StringCopyBang =>
+    StringCopyBang =>
       match args {
         [to_value, at_value, from_value] =>
           Some({
@@ -348,7 +348,7 @@ fn apply_char_string_primitive(
               continue i + 1
             }
             to_ref.val = buf.to_string()
-            Value::Void
+            Void
           })
         [to_value, at_value, from_value, start_value] =>
           Some({
@@ -381,7 +381,7 @@ fn apply_char_string_primitive(
               continue i + 1
             }
             to_ref.val = buf.to_string()
-            Value::Void
+            Void
           })
         [to_value, at_value, from_value, start_value, end_value] =>
           Some({
@@ -414,14 +414,14 @@ fn apply_char_string_primitive(
               continue i + 1
             }
             to_ref.val = buf.to_string()
-            Value::Void
+            Void
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
           )
       }
-    Primitive::StringFill =>
+    StringFill =>
       match args {
         [string_value, fill_value] =>
           Some({
@@ -431,7 +431,7 @@ fn apply_char_string_primitive(
             let end = sref.val.length()
             let updated = string_replace_range(sref.val, start, end, fill)
             sref.val = updated
-            Value::Void
+            Void
           })
         [string_value, fill_value, start_value] =>
           Some({
@@ -441,7 +441,7 @@ fn apply_char_string_primitive(
             let end = sref.val.length()
             let updated = string_replace_range(sref.val, start, end, fill)
             sref.val = updated
-            Value::Void
+            Void
           })
         [string_value, fill_value, start_value, end_value] =>
           Some({
@@ -451,14 +451,14 @@ fn apply_char_string_primitive(
             let end = value_as_int_index(end_value)
             let updated = string_replace_range(sref.val, start, end, fill)
             sref.val = updated
-            Value::Void
+            Void
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 2 to 4 got \{args.length()}",
           )
       }
-    Primitive::StringToList =>
+    StringToList =>
       match args {
         [string_value] =>
           Some({
@@ -472,12 +472,12 @@ fn apply_char_string_primitive(
               // decreases : end - i
               // assert : i <= end
               match s.get_char(i) {
-                Some(ch) => items.push(Datum::Char(ch))
+                Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
               continue i + 1
             }
-            Value::Datum(list_from_array(items))
+            Datum(list_from_array(items))
           })
         [string_value, start_value] =>
           Some({
@@ -491,12 +491,12 @@ fn apply_char_string_primitive(
               // decreases : end - i
               // assert : i <= end
               match s.get_char(i) {
-                Some(ch) => items.push(Datum::Char(ch))
+                Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
               continue i + 1
             }
-            Value::Datum(list_from_array(items))
+            Datum(list_from_array(items))
           })
         [string_value, start_value, end_value] =>
           Some({
@@ -510,19 +510,19 @@ fn apply_char_string_primitive(
               // decreases : end - i
               // assert : i <= end
               match s.get_char(i) {
-                Some(ch) => items.push(Datum::Char(ch))
+                Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
               continue i + 1
             }
-            Value::Datum(list_from_array(items))
+            Datum(list_from_array(items))
           })
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    Primitive::ListToString =>
+    ListToString =>
       match args {
         [datum_value] =>
           Some({
@@ -534,93 +534,93 @@ fn apply_char_string_primitive(
               // TODO(decreases) : loop index not exposed; possible bug
               // assert : items.length() >= 0
               match item {
-                Datum::Char(ch) => buf.write_char(ch)
+                Char(ch) => buf.write_char(ch)
                 _ => raise @core.EvalError("type error: char expected")
               }
             }
-            Value::Datum(Datum::String(Ref::new(buf.to_string())))
+            Datum(String(Ref::new(buf.to_string())))
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringUpcase =>
+    StringUpcase =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(Ref::new(unicode_string(s).upcase().into_string())),
+            Datum(
+              String(Ref::new(unicode_string(s).upcase().into_string())),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringDowncase =>
+    StringDowncase =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(Ref::new(unicode_string(s).downcase().into_string())),
+            Datum(
+              String(Ref::new(unicode_string(s).downcase().into_string())),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringFoldcase =>
+    StringFoldcase =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(Ref::new(unicode_string(s).foldcase().into_string())),
+            Datum(
+              String(Ref::new(unicode_string(s).foldcase().into_string())),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringNormalizeNfc =>
+    StringNormalizeNfc =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(
+            Datum(
+              String(
                 Ref::new(unicode_string(s).normalize_nfc().into_string()),
               ),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringNormalizeNfd =>
+    StringNormalizeNfd =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(
+            Datum(
+              String(
                 Ref::new(unicode_string(s).normalize_nfd().into_string()),
               ),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringNormalizeNfkc =>
+    StringNormalizeNfkc =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(
+            Datum(
+              String(
                 Ref::new(unicode_string(s).normalize_nfkc().into_string()),
               ),
             )
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::StringNormalizeNfkd =>
+    StringNormalizeNfkd =>
       match args {
         [string_value] =>
           Some({
             let s = value_as_string(string_value)
-            Value::Datum(
-              Datum::String(
+            Datum(
+              String(
                 Ref::new(unicode_string(s).normalize_nfkd().into_string()),
               ),
             )

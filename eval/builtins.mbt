@@ -45,147 +45,147 @@ fn apply_primitive_core(
   args : Array[Value],
 ) -> Value raise EvalError {
   match prim {
-    Primitive::Display =>
+    Display =>
       match args {
         [value] => {
           let port = get_current_output_port()
           port_write(port, display_string(value))
-          Value::Void
+          Void
         }
         [value, port_value] => {
           let port = value_as_port(port_value)
           port_write(port, display_string(value))
-          Value::Void
+          Void
         }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::Write =>
+    Write =>
       match args {
         [value] => {
           let port = get_current_output_port()
           port_write(port, value_to_string(value))
-          Value::Void
+          Void
         }
         [value, port_value] => {
           let port = value_as_port(port_value)
           port_write(port, value_to_string(value))
-          Value::Void
+          Void
         }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive::Newline =>
+    Newline =>
       match args {
         [] => {
           let port = get_current_output_port()
           port_write(port, "\n")
-          Value::Void
+          Void
         }
         [port_value] => {
           let port = value_as_port(port_value)
           port_write(port, "\n")
-          Value::Void
+          Void
         }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 0 or 1 got \{args.length()}",
           )
       }
-    Primitive::OpenOutputString =>
+    OpenOutputString =>
       match args {
-        [] => Value::Port(new_output_string_port())
+        [] => Port(new_output_string_port())
         _ => raise arity_mismatch(0, args.length())
       }
-    Primitive::GetOutputString =>
+    GetOutputString =>
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
-          Value::Datum(Datum::String(Ref::new(port_get_output_string(port))))
+          Datum(String(Ref::new(port_get_output_string(port))))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CurrentOutputPort =>
+    CurrentOutputPort =>
       match args {
-        [] => Value::Port(get_current_output_port())
+        [] => Port(get_current_output_port())
         _ => raise arity_mismatch(0, args.length())
       }
-    Primitive::WithExceptionHandler =>
+    WithExceptionHandler =>
       raise @core.EvalError(
         "internal error: with-exception-handler should be handled in apply_proc",
       )
-    Primitive::Raise =>
+    Raise =>
       raise @core.EvalError(
         "internal error: raise should be handled in apply_proc",
       )
-    Primitive::RaiseContinuable =>
+    RaiseContinuable =>
       raise @core.EvalError(
         "internal error: raise-continuable should be handled in apply_proc",
       )
-    Primitive::Error =>
+    Error =>
       raise @core.EvalError(
         "internal error: error should be handled in apply_proc",
       )
-    Primitive::AssertionViolation =>
+    AssertionViolation =>
       raise @core.EvalError(
         "internal error: assertion-violation should be handled in apply_proc",
       )
-    Primitive::ImplementationRestrictionViolation =>
+    ImplementationRestrictionViolation =>
       raise @core.EvalError(
         "internal error: implementation-restriction-violation should be handled in apply_proc",
       )
-    Primitive::UndefinedViolation =>
+    UndefinedViolation =>
       raise @core.EvalError(
         "internal error: undefined-violation should be handled in apply_proc",
       )
-    Primitive::SyntaxViolation =>
+    SyntaxViolation =>
       raise @core.EvalError(
         "internal error: syntax-violation should be handled in apply_proc",
       )
-    Primitive::Not =>
+    Not =>
       match args {
         [value] => bool_value(is_false(value))
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::Apply =>
+    Apply =>
       // handled by apply_proc to allow proper argument flattening
       raise @core.EvalError(
         "internal error: apply should be handled in apply_proc",
       )
-    Primitive::CallCC =>
+    CallCC =>
       raise @core.EvalError(
         "internal error: call/cc should be handled in apply_proc",
       )
-    Primitive::Map =>
+    Map =>
       raise @core.EvalError(
         "internal error: map should be handled in apply_proc",
       )
-    Primitive::ForEach =>
+    ForEach =>
       raise @core.EvalError(
         "internal error: for-each should be handled in apply_proc",
       )
-    Primitive::VectorMap =>
+    VectorMap =>
       raise @core.EvalError(
         "internal error: vector-map should be handled in apply_proc",
       )
-    Primitive::VectorForEach =>
+    VectorForEach =>
       raise @core.EvalError(
         "internal error: vector-for-each should be handled in apply_proc",
       )
-    Primitive::StringMap =>
+    StringMap =>
       raise @core.EvalError(
         "internal error: string-map should be handled in apply_proc",
       )
-    Primitive::StringForEach =>
+    StringForEach =>
       raise @core.EvalError(
         "internal error: string-for-each should be handled in apply_proc",
       )
-    Primitive::Values => Value::Values(args)
-    Primitive::MakeVariableTransformer =>
+    Values => Values(args)
+    MakeVariableTransformer =>
       match args {
         [proc_value] => {
           if !is_procedure_value(proc_value) {
@@ -195,7 +195,7 @@ fn apply_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::GenerateTemporaries =>
+    GenerateTemporaries =>
       match args {
         [datum_value] => {
           let datum = value_as_datum(datum_value)
@@ -206,10 +206,10 @@ fn apply_primitive_core(
             // TODO(decreases) : loop index not exposed; possible bug
             // assert : items.length() >= 0
             let (name, scopes, binding_id) = match datum_unlabel(item) {
-              Datum::Symbol(name) => (name, [], None)
-              Datum::Value(Value::SyntaxObject(obj)) =>
+              Symbol(name) => (name, [], None)
+              Value(SyntaxObject(obj)) =>
                 match datum_unlabel(obj.datum) {
-                  Datum::Symbol(name) => {
+                  Symbol(name) => {
                     let copied : Array[Int] = []
                     for scope in obj.scopes {
                       // invariant : obj.scopes.length() >= 0
@@ -235,40 +235,40 @@ fn apply_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::CallWithValues =>
+    CallWithValues =>
       raise @core.EvalError(
         "internal error: call-with-values should be handled in apply_proc",
       )
-    Primitive::MakeParameter =>
+    MakeParameter =>
       raise @core.EvalError(
         "internal error: make-parameter should be handled in apply_proc",
       )
-    Primitive::DynamicWind =>
+    DynamicWind =>
       raise @core.EvalError(
         "internal error: dynamic-wind should be handled in apply_proc",
       )
-    Primitive::Eval =>
+    Eval =>
       raise @core.EvalError(
         "internal error: eval should be handled in apply_proc",
       )
-    Primitive::Environment =>
+    Environment =>
       raise @core.EvalError(
         "internal error: environment should be handled in apply_proc",
       )
-    Primitive::PromiseP =>
+    PromiseP =>
       match args {
         [value] =>
           match value {
-            Value::Promise(_) => bool_value(true)
+            Promise(_) => bool_value(true)
             _ => bool_value(false)
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive::MakePromise =>
+    MakePromise =>
       raise @core.EvalError(
         "internal error: make-promise should be handled in apply_proc",
       )
-    Primitive::Force =>
+    Force =>
       raise @core.EvalError(
         "internal error: force should be handled in apply_proc",
       )
