@@ -2927,14 +2927,14 @@ fn apply_winder_after(
 
 ///|
 fn common_wind_prefix(current : Array[Winder], target : Array[Winder]) -> Int {
-  let mut i = 0
-  while i < current.length() && i < target.length() {
+  for i = 0; i < current.length() && i < target.length(); {
     if current[i].id != target[i].id {
-      break
+      break i
     }
-    i = i + 1
+    continue i + 1
+  } else {
+    i
   }
-  i
 }
 
 ///|

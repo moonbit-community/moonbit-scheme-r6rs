@@ -419,6 +419,21 @@ for i = 0; i < members.length(); {
 }
 ```
 
+## Prefix scans
+- Use `break i` to return the first mismatch index in a bounded `for` loop.
+
+Example:
+```mbt
+let prefix = for i = 0; i < current.length() && i < target.length(); {
+  if current[i].id != target[i].id {
+    break i
+  }
+  continue i + 1
+} else {
+  i
+}
+```
+
 ## Array equality scans
 - Use a functional `for` with `break false` for early exits instead of `mut` indices.
 
