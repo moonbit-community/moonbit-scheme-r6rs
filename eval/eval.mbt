@@ -3495,6 +3495,9 @@ fn eval_letrec_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
+      // invariant : bindings.length() >= 0
+      // TODO(decreases) : loop index not exposed; possible bug
+      // assert : bindings.length() >= 0
       let (name, _) = binding
       env_define(new_env, name, Value::Void)
     }
@@ -3526,6 +3529,9 @@ fn eval_letrec_star_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
+      // invariant : bindings.length() >= 0
+      // TODO(decreases) : loop index not exposed; possible bug
+      // assert : bindings.length() >= 0
       let (name, _) = binding
       env_define(new_env, name, Value::Void)
     }
@@ -3552,6 +3558,9 @@ fn expand_named_let(
   let param_items : Array[Datum] = []
   let arg_items : Array[Datum] = []
   for binding in bindings {
+    // invariant : bindings.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : bindings.length() >= 0
     let (param, expr) = binding
     param_items.push(Datum::Symbol(param))
     arg_items.push(expr)
@@ -3560,6 +3569,9 @@ fn expand_named_let(
   lambda_items.push(Datum::Symbol("lambda"))
   lambda_items.push(list_from_array(param_items))
   for expr in body {
+    // invariant : body.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : body.length() >= 0
     lambda_items.push(expr)
   }
   let lambda_expr = list_from_array(lambda_items)
@@ -3568,6 +3580,9 @@ fn expand_named_let(
   let call_items : Array[Datum] = []
   call_items.push(Datum::Symbol(name))
   for arg in arg_items {
+    // invariant : arg_items.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : arg_items.length() >= 0
     call_items.push(arg)
   }
   let call_expr = list_from_array(call_items)
@@ -3588,6 +3603,9 @@ fn eval_let_syntax_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
+      // invariant : bindings.length() >= 0
+      // TODO(decreases) : loop index not exposed; possible bug
+      // assert : bindings.length() >= 0
       let (name, transformer) = binding
       env_define(new_env, name, Value::Macro(transformer))
     }
@@ -3608,6 +3626,9 @@ fn eval_letrec_syntax_state(
     let new_env = env_extend(env)
     let binding_specs = datum_list_to_array(args[0])
     for i = 0; i < binding_specs.length(); {
+      // invariant : i >= 0 && i <= binding_specs.length()
+      // decreases : binding_specs.length() - i
+      // assert : i <= binding_specs.length()
       let parts = datum_list_to_array(binding_specs[i])
       if parts.length() != 2 {
         raise @core.EvalError("type error: syntax binding expected")
@@ -3626,6 +3647,9 @@ fn eval_letrec_syntax_state(
     let bindings = parse_syntax_bindings(args[0], new_env)
     let body = args.sub(start=1).to_array()
     for binding in bindings {
+      // invariant : bindings.length() >= 0
+      // TODO(decreases) : loop index not exposed; possible bug
+      // assert : bindings.length() >= 0
       let (name, transformer) = binding
       env_define(new_env, name, Value::Macro(transformer))
     }
@@ -3638,6 +3662,9 @@ fn build_begin(exprs : Array[Datum]) -> Datum {
   let items : Array[Datum] = []
   items.push(Datum::Symbol("begin"))
   for expr in exprs {
+    // invariant : exprs.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : exprs.length() >= 0
     items.push(expr)
   }
   list_from_array(items)
@@ -3652,6 +3679,9 @@ fn parse_do_bindings(
   let inits : Array[Datum] = []
   let steps : Array[Datum] = []
   for binding in bindings {
+    // invariant : bindings.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid do")
@@ -3689,16 +3719,25 @@ fn eval_do_state(
   let loop_name = next_do_name()
   let params : Array[Datum] = []
   for name in names {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : names.length() >= 0
     params.push(Datum::Symbol(name))
   }
   let call_items : Array[Datum] = []
   call_items.push(Datum::Symbol(loop_name))
   for step in steps {
+    // invariant : steps.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : steps.length() >= 0
     call_items.push(step)
   }
   let call_expr = list_from_array(call_items)
   let else_body : Array[Datum] = []
   for expr in command_exprs {
+    // invariant : command_exprs.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : command_exprs.length() >= 0
     else_body.push(expr)
   }
   else_body.push(call_expr)
@@ -3720,6 +3759,9 @@ fn eval_do_state(
   let init_call_items : Array[Datum] = []
   init_call_items.push(Datum::Symbol(loop_name))
   for init in inits {
+    // invariant : inits.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : inits.length() >= 0
     init_call_items.push(init)
   }
   let init_call_expr = list_from_array(init_call_items)
