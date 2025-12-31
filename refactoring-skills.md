@@ -68,6 +68,31 @@ fn stdlib_source() -> String { ... }
 fn load_stdlib(env : Env) -> Unit raise { ... }
 ```
 
+## Table-driven env bindings
+- Replace long `env_define` chains with a data table of `(name, Primitive)` and a small helper loop.
+- Keep special cases (like `Cxr(chain)`) in dedicated helpers so the list stays declarative.
+
+Example:
+```mbt
+let primitive_bindings : Array[(String, Primitive)] = [
+  ("+", Add),
+  ("cons", Cons),
+]
+
+fn define_primitives(env : Env, defs : Array[(String, Primitive)]) -> Unit {
+  for i = 0; i < defs.length(); {
+    // invariant : i >= 0 && i <= defs.length()
+    // decreases : defs.length() - i
+    // assert : i <= defs.length()
+    let (name, prim) = defs[i]
+    env_define(env, name, Primitive(prim))
+    continue i + 1
+  } else {
+    ()
+  }
+}
+```
+
 ## Chaining style after method refactors
 - Convert related free functions into `Type::method` so call sites can chain with `..`.
 - Update docs and tests that referenced old `@pkg.fn` helpers.
