@@ -60,6 +60,10 @@ test "parse basics" {
       inspect(items.length(), content="2")
     _ => fail("expected bytevector")
   }
+  match parse_program("#(1 2)") {
+    [@core.Datum::Vector(items), ..] => inspect(items.length(), content="2")
+    _ => fail("expected vector")
+  }
   match parse_program("(a . b)") {
     [@core.Datum::Pair(car, cdr), ..] =>
       match (car.val, cdr.val) {
