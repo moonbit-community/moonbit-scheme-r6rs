@@ -2577,6 +2577,9 @@ fn enum_set_symbol_list(value : Value) -> Array[String] raise EvalError {
 fn ensure_unique_symbols(names : Array[String]) -> Unit raise EvalError {
   let seen : Map[String, Bool] = {}
   for name in names {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : names.length() >= 0
     if seen.contains(name) {
       raise @core.EvalError("type error: duplicate symbol")
     }
