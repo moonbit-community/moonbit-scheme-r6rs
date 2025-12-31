@@ -981,19 +981,17 @@ fn apply_primitive(
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
-      let mut best = value_as_number(args[0])
-      let mut has_inexact = best is Datum::Float(_)
-      let mut i = 1
-      while i < args.length() {
-        let cur = value_as_number(args[i])
-        if cur is Datum::Float(_) {
-          has_inexact = true
+      let best = value_as_number(args[0])
+      let has_inexact = best is Datum::Float(_)
+      let (best, has_inexact) =
+        for i = 1, best = best, has_inexact = has_inexact; i < args.length(); {
+          let cur = value_as_number(args[i])
+          let next_best = if num_less(best, cur) { cur } else { best }
+          let next_has_inexact = has_inexact || cur is Datum::Float(_)
+          continue i + 1, next_best, next_has_inexact
+        } else {
+          (best, has_inexact)
         }
-        if num_less(best, cur) {
-          best = cur
-        }
-        i = i + 1
-      }
       if has_inexact {
         Value::Datum(Datum::Float(number_to_float(best)))
       } else {
@@ -1004,19 +1002,17 @@ fn apply_primitive(
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
-      let mut best = value_as_number(args[0])
-      let mut has_inexact = best is Datum::Float(_)
-      let mut i = 1
-      while i < args.length() {
-        let cur = value_as_number(args[i])
-        if cur is Datum::Float(_) {
-          has_inexact = true
+      let best = value_as_number(args[0])
+      let has_inexact = best is Datum::Float(_)
+      let (best, has_inexact) =
+        for i = 1, best = best, has_inexact = has_inexact; i < args.length(); {
+          let cur = value_as_number(args[i])
+          let next_best = if num_greater(best, cur) { cur } else { best }
+          let next_has_inexact = has_inexact || cur is Datum::Float(_)
+          continue i + 1, next_best, next_has_inexact
+        } else {
+          (best, has_inexact)
         }
-        if num_greater(best, cur) {
-          best = cur
-        }
-        i = i + 1
-      }
       if has_inexact {
         Value::Datum(Datum::Float(number_to_float(best)))
       } else {

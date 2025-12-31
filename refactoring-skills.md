@@ -359,6 +359,7 @@ let splicing = match r.peek() {
 
 ## Min/max accumulation
 - Use a functional `for` to carry the current best value when scanning arrays.
+- Carry extra flags in the loop state (for example, tracking inexact values).
 
 Example:
 ```mbt
@@ -369,6 +370,18 @@ let current = for i = 1, current = current; i < args.length(); {
   continue i + 1, next
 } else {
   current
+}
+```
+
+Example:
+```mbt
+let (best, has_inexact) = for i = 1, best = best, has_inexact = has_inexact; i < args.length(); {
+  let cur = value_as_number(args[i])
+  let next_best = if num_less(best, cur) { cur } else { best }
+  let next_has_inexact = has_inexact || cur is Datum::Float(_)
+  continue i + 1, next_best, next_has_inexact
+} else {
+  (best, has_inexact)
 }
 ```
 
