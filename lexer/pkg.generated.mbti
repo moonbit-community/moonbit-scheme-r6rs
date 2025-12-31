@@ -23,11 +23,14 @@ pub fn Reader::advance(Self, Int) -> Unit
 pub fn Reader::is_bytevector_start(Self) -> Bool
 pub fn Reader::is_ellipsis_start(Self) -> Bool
 pub fn Reader::is_vector_start(Self) -> Bool
+pub fn Reader::label_get(Self, Int) -> Ref[@core.Datum]?
+pub fn Reader::label_set(Self, Int, Ref[@core.Datum]) -> Unit
 pub fn Reader::next(Self) -> Char?
 pub fn Reader::peek(Self) -> Char?
 pub fn Reader::peek_next(Self) -> Char?
 pub fn Reader::read_string(Self) -> String raise @core.ParseError
 pub fn Reader::read_token(Self) -> String raise @core.ParseError
+pub fn Reader::set_fold_case(Self, Bool) -> Unit
 pub fn Reader::skip_ws_and_comments(Self) -> Unit raise @core.ParseError
 
 // Type aliases

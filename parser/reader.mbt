@@ -1172,9 +1172,9 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
           let tok = r.read_token()
           let directive = ascii_lower_string(tok)
           if directive == "#!fold-case" {
-            r.fold_case = true
+            r.set_fold_case(true)
           } else if directive == "#!no-fold-case" {
-            r.fold_case = false
+            r.set_fold_case(false)
           }
           read_expr(r)
         }
@@ -1182,18 +1182,18 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
           let tok = r.read_token()
           match parse_label_token(tok) {
             Some((true, label)) => {
-              match r.labels.get(label) {
+              match r.label_get(label) {
                 Some(_) => raise @core.ParseError("duplicate label")
                 None => ()
               }
               let cell = Ref::new(Datum::Nil)
-              r.labels[label] = cell
+              r.label_set(label, cell)
               let datum = read_expr(r)
               cell.val = datum
               Datum::Label(label, cell)
             }
             Some((false, label)) =>
-              match r.labels.get(label) {
+              match r.label_get(label) {
                 Some(cell) => Datum::Label(label, cell)
                 None => raise @core.ParseError("undefined label")
               }
@@ -1289,7 +1289,7 @@ pub fn parse_program_with_fold_case(
   fold_case : Bool,
 ) -> Array[Datum] raise ParseError {
   let r = make_reader(src)
-  r.fold_case = fold_case
+  r.set_fold_case(fold_case)
   let exprs : Array[Datum] = []
   for cur = r..skip_ws_and_comments().peek(); cur is Some(_); {
     // invariant : exprs.length() >= 0

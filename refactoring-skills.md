@@ -1795,6 +1795,17 @@ match r.peek_next() {
 }
 ```
 
+Example:
+```mbt
+// Before: direct field access
+r.fold_case = true
+match r.labels.get(label) { ... }
+
+// After: accessors on Reader
+r.set_fold_case(true)
+match r.label_get(label) { ... }
+```
+
 ## Internal methods on type aliases
 - Use private `Type::method` helpers to encapsulate repeated logic without changing the public API.
 - Chaining with `..` keeps small constructors readable.

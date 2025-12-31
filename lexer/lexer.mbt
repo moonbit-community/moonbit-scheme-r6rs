@@ -58,6 +58,24 @@ pub fn Reader::advance(self : Reader, count : Int) -> Unit {
 }
 
 ///|
+/// Enable or disable case folding for subsequent reads.
+pub fn Reader::set_fold_case(self : Reader, value : Bool) -> Unit {
+  self.fold_case = value
+}
+
+///|
+/// Look up a label cell by id.
+pub fn Reader::label_get(self : Reader, label : Int) -> Ref[Datum]? {
+  self.labels.get(label)
+}
+
+///|
+/// Store a label cell by id.
+pub fn Reader::label_set(self : Reader, label : Int, cell : Ref[Datum]) -> Unit {
+  self.labels[label] = cell
+}
+
+///|
 /// Consume and return the next character.
 ///
 /// # Example
