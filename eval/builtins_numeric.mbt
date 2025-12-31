@@ -178,11 +178,11 @@ fn apply_numeric_primitive_core(
       Value::Datum(acc)
     }
     Primitive::Sub =>
-      match args.length() {
-        0 => raise arity_mismatch(1, 0)
-        1 => {
-          let value = value_as_number(args[0])
-          Value::Datum(num_sub(Datum::Int(0), value))
+      match args {
+        [] => raise arity_mismatch(1, 0)
+        [value] => {
+          let number = value_as_number(value)
+          Value::Datum(num_sub(Datum::Int(0), number))
         }
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
@@ -209,11 +209,11 @@ fn apply_numeric_primitive_core(
       Value::Datum(product)
     }
     Primitive::Div =>
-      match args.length() {
-        0 => raise arity_mismatch(1, 0)
-        1 => {
-          let value = value_as_number(args[0])
-          Value::Datum(num_div(Datum::Int(1), value))
+      match args {
+        [] => raise arity_mismatch(1, 0)
+        [value] => {
+          let number = value_as_number(value)
+          Value::Datum(num_div(Datum::Int(1), number))
         }
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
@@ -413,14 +413,10 @@ fn apply_numeric_primitive_core(
         _ => raise arity_mismatch(2, args.length())
       }
     Primitive::NumberToString =>
-      match args.length() {
-        1 | 2 => {
-          let num = value_as_number(args[0])
-          let radix = if args.length() == 2 {
-            value_as_int_index(args[1])
-          } else {
-            10
-          }
+      match args {
+        [num_value] => {
+          let num = value_as_number(num_value)
+          let radix = 10
           if radix < 2 || radix > 36 {
             raise @core.EvalError("radix out of range")
           }
@@ -446,65 +442,103 @@ fn apply_numeric_primitive_core(
             _ => raise @core.EvalError("type error: number expected")
           }
         }
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
-      }
-    Primitive::StringToNumber =>
-      match args.length() {
-        1 | 2 => {
-          let s = value_as_string(args[0])
-          let radix = if args.length() == 2 {
-            value_as_int_index(args[1])
-          } else {
-            10
-          }
+        [num_value, radix_value] => {
+          let num = value_as_number(num_value)
+          let radix = value_as_int_index(radix_value)
           if radix < 2 || radix > 36 {
             raise @core.EvalError("radix out of range")
           }
-          let parsed = if args.length() == 2 {
-            parse_number_token_with_radix(s, radix)
-          } else {
-            parse_number_token(s)
+          match num {
+            Datum::Int(n) => {
+              let text = int_to_string_radix(n, radix)
+              Value::Datum(Datum::String(Ref::new(text)))
+            }
+            Datum::BigInt(n) => {
+              let text = bigint_to_string_radix(n, radix)
+              Value::Datum(Datum::String(Ref::new(text)))
+            }
+            Datum::Rat(_, _)
+            | Datum::BigRat(_, _)
+            | Datum::Float(_)
+            | Datum::Complex(_, _) => {
+              if radix != 10 {
+                raise @core.EvalError("type error: exact integer expected")
+              }
+              let text = value_to_string(Value::Datum(num))
+              Value::Datum(Datum::String(Ref::new(text)))
+            }
+            _ => raise @core.EvalError("type error: number expected")
           }
+        }
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
+      }
+    Primitive::StringToNumber =>
+      match args {
+        [string_value] => {
+          let s = value_as_string(string_value)
+          let radix = 10
+          if radix < 2 || radix > 36 {
+            raise @core.EvalError("radix out of range")
+          }
+          let parsed = parse_number_token(s)
           match parsed {
             Some(num) => Value::Datum(num)
             None => Value::Datum(Datum::Bool(false))
           }
         }
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
+        [string_value, radix_value] => {
+          let s = value_as_string(string_value)
+          let radix = value_as_int_index(radix_value)
+          if radix < 2 || radix > 36 {
+            raise @core.EvalError("radix out of range")
+          }
+          let parsed = parse_number_token_with_radix(s, radix)
+          match parsed {
+            Some(num) => Value::Datum(num)
+            None => Value::Datum(Datum::Bool(false))
+          }
+        }
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
       }
     Primitive::MakeRectangular =>
-      match args.length() {
-        2 => {
-          let real = datum_to_real(value_as_number(args[0]))
-          let imag = datum_to_real(value_as_number(args[1]))
+      match args {
+        [real_value, imag_value] => {
+          let real = datum_to_real(value_as_number(real_value))
+          let imag = datum_to_real(value_as_number(imag_value))
           Value::Datum(make_complex(real, imag))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::MakePolar =>
-      match args.length() {
-        2 => {
-          let r = number_to_float(datum_to_real(value_as_number(args[0])))
-          let theta = number_to_float(datum_to_real(value_as_number(args[1])))
+      match args {
+        [r_value, theta_value] => {
+          let r = number_to_float(datum_to_real(value_as_number(r_value)))
+          let theta = number_to_float(datum_to_real(value_as_number(theta_value)))
           let real = Datum::Float(r * @math.cosf(theta))
           let imag = Datum::Float(r * @math.sinf(theta))
           Value::Datum(make_complex(real, imag))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::RealPart =>
-      match args.length() {
-        1 =>
-          match value_as_number(args[0]) {
+      match args {
+        [num_value] =>
+          match value_as_number(num_value) {
             Datum::Complex(real, _) => Value::Datum(real.val)
             datum => Value::Datum(datum)
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ImagPart =>
-      match args.length() {
-        1 =>
-          match value_as_number(args[0]) {
+      match args {
+        [num_value] =>
+          match value_as_number(num_value) {
             Datum::Complex(_, imag) => Value::Datum(imag.val)
             Datum::Float(_) => Value::Datum(Datum::Float(0.0))
             Datum::Int(_)
@@ -513,12 +547,12 @@ fn apply_numeric_primitive_core(
             | Datum::BigRat(_, _) => Value::Datum(Datum::Int(0))
             _ => raise @core.EvalError("type error: number expected")
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Magnitude =>
-      match args.length() {
-        1 =>
-          match value_as_number(args[0]) {
+      match args {
+        [num_value] =>
+          match value_as_number(num_value) {
             Datum::Complex(real, imag) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
@@ -539,12 +573,12 @@ fn apply_numeric_primitive_core(
               }
             _ => raise @core.EvalError("type error: number expected")
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Angle =>
-      match args.length() {
-        1 =>
-          match value_as_number(args[0]) {
+      match args {
+        [num_value] =>
+          match value_as_number(num_value) {
             Datum::Complex(real, imag) => {
               let real_f = number_to_float(real.val)
               let imag_f = number_to_float(imag.val)
@@ -555,12 +589,12 @@ fn apply_numeric_primitive_core(
               Value::Datum(Datum::Float(@math.atan2f(0.0, real_f)))
             }
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Sqrt =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_value, is_real) = match datum_unlabel(value) {
             Datum::Complex(real, imag) =>
               if datum_is_zero(imag.val) {
@@ -588,12 +622,12 @@ fn apply_numeric_primitive_core(
             }
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Exp =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
             Value::Datum(Datum::Float(@math.expf(real_f)))
@@ -602,12 +636,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(er, ei))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Log =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= 0.0 {
             Value::Datum(Datum::Float(@math.lnf(real_f)))
@@ -616,13 +650,13 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(lr, li))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Expt =>
-      match args.length() {
-        2 => {
-          let base = value_as_number(args[0])
-          let exponent = value_as_number(args[1])
+      match args {
+        [base_value, exponent_value] => {
+          let base = value_as_number(base_value)
+          let exponent = value_as_number(exponent_value)
           match exponent {
             Datum::Int(exp_int) =>
               match base {
@@ -839,12 +873,12 @@ fn apply_numeric_primitive_core(
             _ => raise @core.EvalError("type error: number expected")
           }
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Sin =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
             Value::Datum(Datum::Float(@math.sinf(real_f)))
@@ -853,12 +887,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(sr, si))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Cos =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
             Value::Datum(Datum::Float(@math.cosf(real_f)))
@@ -867,12 +901,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(cr, ci))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Tan =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
             Value::Datum(Datum::Float(@math.tanf(real_f)))
@@ -881,12 +915,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(tr, ti))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Asin =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
             Value::Datum(Datum::Float(@math.asinf(real_f)))
@@ -895,12 +929,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(ar, ai))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Acos =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 && real_f >= -1.0 && real_f <= 1.0 {
             Value::Datum(Datum::Float(@math.acosf(real_f)))
@@ -909,12 +943,12 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(ar, ai))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Atan =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           let (real_f, imag_f) = datum_to_complex_float(value)
           if imag_f == 0.0 {
             Value::Datum(Datum::Float(@math.atanf(real_f)))
@@ -923,43 +957,46 @@ fn apply_numeric_primitive_core(
             Value::Datum(complex_from_float(ar, ai))
           }
         }
-        2 => {
-          let y = datum_to_real(value_as_number(args[0]))
-          let x = datum_to_real(value_as_number(args[1]))
+        [y_value, x_value] => {
+          let y = datum_to_real(value_as_number(y_value))
+          let x = datum_to_real(value_as_number(x_value))
           let y_f = number_to_float(y)
           let x_f = number_to_float(x)
           Value::Datum(Datum::Float(@math.atan2f(y_f, x_f)))
         }
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
       }
     Primitive::Numerator =>
-      match args.length() {
-        1 =>
-          match args[0] {
+      match args {
+        [value] =>
+          match value {
             Value::Datum(Datum::Int(n)) => Value::Datum(Datum::Int(n))
             Value::Datum(Datum::Rat(n, _)) => Value::Datum(Datum::Int(n))
             Value::Datum(Datum::BigInt(n)) => Value::Datum(Datum::BigInt(n))
             Value::Datum(Datum::BigRat(n, _)) => Value::Datum(Datum::BigInt(n))
             _ => raise @core.EvalError("type error: rational expected")
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Denominator =>
-      match args.length() {
-        1 =>
-          match args[0] {
+      match args {
+        [value] =>
+          match value {
             Value::Datum(Datum::Int(_)) => Value::Datum(Datum::Int(1))
             Value::Datum(Datum::Rat(_, d)) => Value::Datum(Datum::Int(d))
             Value::Datum(Datum::BigInt(_)) => Value::Datum(Datum::Int(1))
             Value::Datum(Datum::BigRat(_, d)) => Value::Datum(Datum::BigInt(d))
             _ => raise @core.EvalError("type error: rational expected")
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Abs =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [num_value] => {
+          let value = value_as_number(num_value)
           match value {
             Datum::Int(n) => Value::Datum(Datum::Int(int_abs(n)))
             Datum::Rat(n, d) =>
@@ -982,13 +1019,13 @@ fn apply_numeric_primitive_core(
             _ => raise @core.EvalError("type error: number expected")
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Quotient =>
-      match args.length() {
-        2 => {
-          let left_val = value_as_exact_integer(args[0])
-          let right_val = value_as_exact_integer(args[1])
+      match args {
+        [left_value, right_value] => {
+          let left_val = value_as_exact_integer(left_value)
+          let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
             (Datum::Int(left), Datum::Int(right)) => {
               if right == 0 {
@@ -1006,13 +1043,13 @@ fn apply_numeric_primitive_core(
             }
           }
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Remainder =>
-      match args.length() {
-        2 => {
-          let left_val = value_as_exact_integer(args[0])
-          let right_val = value_as_exact_integer(args[1])
+      match args {
+        [left_value, right_value] => {
+          let left_val = value_as_exact_integer(left_value)
+          let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
             (Datum::Int(left), Datum::Int(right)) => {
               if right == 0 {
@@ -1030,13 +1067,13 @@ fn apply_numeric_primitive_core(
             }
           }
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Modulo =>
-      match args.length() {
-        2 => {
-          let left_val = value_as_exact_integer(args[0])
-          let right_val = value_as_exact_integer(args[1])
+      match args {
+        [left_value, right_value] => {
+          let left_val = value_as_exact_integer(left_value)
+          let right_val = value_as_exact_integer(right_value)
           match (left_val, right_val) {
             (Datum::Int(left), Datum::Int(right)) => {
               if right == 0 {
@@ -1072,7 +1109,7 @@ fn apply_numeric_primitive_core(
             }
           }
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::Gcd => {
       // invariant : i >= 0 && i <= args.length()

@@ -209,6 +209,7 @@ for i = 0; i < clauses.length(); {
 - Use `[value]` patterns for 1-arity primitives to remove repeated `args[0]` indexing.
 - For `(x, y, size?)` APIs, split into `[x, y]` and `[x, y, size]` branches so validation stays local.
 - For wide-arity constructors, use a single `[a, b, c, d, e, f]` pattern to avoid indexing mistakes.
+- Extract `value_as_number(value)` once after matching `[value]` to keep numeric ops consistent and reduce repeated lookups.
 
 Example:
 ```mbt
