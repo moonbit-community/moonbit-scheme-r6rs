@@ -2824,11 +2824,10 @@ fn guard_start(
   info : GuardInfo,
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
-  let mut i = 0
-  while i < clauses.length() {
+  for i = 0; i < clauses.length(); {
     let parts = datum_list_to_array(clauses[i])
     if parts.is_empty() {
-      i = i + 1
+      continue i + 1
     } else {
       let head = symbol_name(parts[0])
       if head is Some("else") {
