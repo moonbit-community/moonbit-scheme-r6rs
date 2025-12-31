@@ -207,6 +207,7 @@ for i = 0; i < clauses.length(); {
 - Preserve existing error strings by reusing `args.length()` in formatted messages when tests assert exact text.
 - For `append`-style APIs, match `[]` and `[single]` first, then keep the "all but last" loop for the tail case.
 - Use `[value]` patterns for 1-arity primitives to remove repeated `args[0]` indexing.
+- For `(x, y, size?)` APIs, split into `[x, y]` and `[x, y, size]` branches so validation stays local.
 
 Example:
 ```mbt
