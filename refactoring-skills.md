@@ -412,6 +412,28 @@ fn list_member(mode : EqualityMode, item : Value, list : Datum) -> Value raise E
 }
 ```
 
+## Looping with external accumulators
+- Keep arrays or maps outside the loop and update them while advancing loop state with `continue`.
+
+Example:
+```mbt
+let seen : Array[Int] = []
+for cur = value; true; {
+  match cur {
+    Datum::Label(id, cell) => {
+      if seen.contains(id) {
+        break cur
+      }
+      seen.push(id)
+      continue cell.val
+    }
+    _ => break cur
+  }
+} else {
+  value
+}
+```
+
 Example:
 ```mbt
 fn next_counter_id(counter : Ref[Int]) -> Int {

@@ -799,22 +799,20 @@ pub fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
 ///|
 /// Strip a datum label wrapper if present.
 pub fn datum_unlabel(value : Datum) -> Datum {
-  let mut cur = value
   let seen : Array[Int] = []
-  while true {
+  for cur = value; true; {
     match cur {
       Datum::Label(id, cell) => {
         if seen.contains(id) {
-          return cur
+          break cur
         }
         seen.push(id)
-        cur = cell.val
+        continue cell.val
       }
-      _ => return cur
+      _ => break cur
     }
-  }
-  else {
-    cur
+  } else {
+    value
   }
 }
 
@@ -854,18 +852,27 @@ pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
 
 ///|
 /// Convert a proper list datum into an array.
+///
+/// # Example
+/// ```mbt check
+/// test "datum list to array" {
+///   let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+///   inspect(datum_list_to_array(list).length(), content="2")
+/// }
+/// ```
 pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
   let items : Array[Datum] = []
-  let mut cur = list
-  while true {
+  for cur = list; true; {
     match datum_unlabel(cur) {
       Datum::Nil => break
       Datum::Pair(a, b) => {
         items.push(a.val)
-        cur = b.val
+        continue b.val
       }
       _ => raise @core.EvalError("type error: proper list expected")
     }
+  } else {
+    ()
   }
   items
 }
