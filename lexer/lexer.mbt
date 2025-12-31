@@ -118,12 +118,14 @@ pub fn Reader::skip_ws_and_comments(self : Reader) -> Unit raise ParseError {
 
 ///|
 fn Reader::skip_line_comment(self : Reader) -> Unit {
-  while true {
-    match self.next() {
+  for cur = self.next(); true; {
+    match cur {
       Some('\n') => break
-      Some(_) => continue
+      Some(_) => continue self.next()
       None => break
     }
+  } else {
+    ()
   }
 }
 
