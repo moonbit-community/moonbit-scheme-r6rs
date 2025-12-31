@@ -317,6 +317,15 @@ pub fn enum_set_member_by_name(set : EnumSet, name : String) -> Bool {
 
 ///|
 /// Build an enum set from a list of names, erroring on unknown names.
+///
+/// # Example
+/// ```mbt check
+/// test "enum set from names" {
+///   let set = enum_set_from_names(["a", "b"], ["b"])
+///   inspect(enum_set_member_by_name(set, "b"), content="true")
+///   inspect(enum_set_member_by_name(set, "a"), content="false")
+/// }
+/// ```
 pub fn enum_set_from_names(
   universe : Array[String],
   names : Array[String],
