@@ -135,6 +135,23 @@ moon check
 - Group enum variants with `|` patterns when they map to the same output to reduce duplication.
 - For tuple matches, only group variants when the bound variables share the same type.
 
+## Recursive parent traversal
+- Prefer simple recursion over `mut` state when walking a parent chain.
+
+Example:
+```mbt
+pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
+  if actual.id == target.id {
+    true
+  } else {
+    match actual.parent {
+      Some(parent) => record_type_is_a(parent, target)
+      None => false
+    }
+  }
+}
+```
+
 ## Indexing helpers
 - Extract tiny helpers (like "last frame") to avoid repeated index math and keep mutations localized.
 

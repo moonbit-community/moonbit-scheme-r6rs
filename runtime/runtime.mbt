@@ -471,20 +471,25 @@ pub fn record_type_matches(
 
 ///|
 /// Return true if actual is target or derives from target.
+///
+/// # Example
+/// ```mbt check
+/// test "record type ancestry" {
+///   let base = make_record_type("base", None, false, false, None, [])
+///   let child = make_record_type("child", Some(base), false, false, None, [])
+///   inspect(record_type_is_a(child, base), content="true")
+///   inspect(record_type_is_a(base, child), content="false")
+/// }
+/// ```
 pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
-  let mut cur : RecordType? = Some(actual)
-  while true {
-    match cur {
-      Some(rt) => {
-        if rt.id == target.id {
-          return true
-        }
-        cur = rt.parent
-      }
-      None => return false
+  if actual.id == target.id {
+    true
+  } else {
+    match actual.parent {
+      Some(parent) => record_type_is_a(parent, target)
+      None => false
     }
   }
-  false
 }
 
 ///|
