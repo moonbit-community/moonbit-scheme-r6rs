@@ -1653,6 +1653,12 @@ fn bigint_bitwise_nonneg(
     bit = bigint_from_int(1),
     result = bigint_from_int(0);
     !bigint_is_zero(a) || !bigint_is_zero(b); {
+      // invariant : a.compare_int(0) >= 0
+      // invariant : b.compare_int(0) >= 0
+      // invariant : bit.compare_int(0) > 0
+      // invariant : result.compare_int(0) >= 0
+      // decreases : bigint_bit_length_nonneg(a) + bigint_bit_length_nonneg(b)
+      // assert : !bigint_is_zero(a) || !bigint_is_zero(b)
       let a_bit = a % two
       let b_bit = b % two
       let a_one = !bigint_is_zero(a_bit)
