@@ -378,16 +378,14 @@ fn apply_primitive(
       match args.length() {
         1 => {
           let value = value_as_number(args[0])
-          let mut real_value = value
-          let mut is_real = true
-          match datum_unlabel(value) {
+          let (real_value, is_real) = match datum_unlabel(value) {
             Datum::Complex(real, imag) =>
               if datum_is_zero(imag.val) {
-                real_value = real.val
+                (real.val, true)
               } else {
-                is_real = false
+                (value, false)
               }
-            _ => ()
+            _ => (value, true)
           }
           let exact_opt = if is_real {
             exact_sqrt_real(real_value)
