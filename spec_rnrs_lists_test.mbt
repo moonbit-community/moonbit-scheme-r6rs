@@ -45,3 +45,17 @@ test "rnrs lists: cons*" {
     content="((1 2 3 4) (1 2 . 3))",
   )
 }
+
+///|
+test "rnrs lists: list copy and tail" {
+  let program =
+    #|(import (rnrs lists))
+    #|(let* ((lst '(1 2 3))
+    #|       (tail (list-tail lst 1))
+    #|       (copy (list-copy lst)))
+    #|  (list tail copy (length copy)))
+  inspect(
+    value_to_string(eval_program(program)),
+    content="((2 3) (1 2 3) 3)",
+  )
+}

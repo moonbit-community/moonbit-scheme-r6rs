@@ -64,6 +64,24 @@ test "r6rs libraries: bytevector s8 ref/set" {
 }
 
 ///|
+test "r6rs libraries: bytevector copy and fill" {
+  let program =
+    #|(import (rnrs bytevectors))
+    #|(let* ((bv (bytevector 1 2 3 4))
+    #|       (copy (bytevector-copy bv 1 3))
+    #|       (target (make-bytevector 4 0)))
+    #|  (bytevector-copy! target 1 bv 0 2)
+    #|  (bytevector-fill! bv 9 2 4)
+    #|  (list (bytevector->u8-list copy)
+    #|        (bytevector->u8-list target)
+    #|        (bytevector->u8-list bv)))
+  inspect(
+    value_to_string(eval_program(program)),
+    content="((2 3) (0 1 2 0) (1 2 9 9))",
+  )
+}
+
+///|
 test "r6rs libraries: bytevector native endianness" {
   let program =
     #|(import (rnrs bytevectors))
