@@ -70,9 +70,21 @@ test "bitwise folds" {
 }
 
 ///|
+test "map over lists" {
+  let value = eval_program("(map + '(1 2) '(3 4))")
+  inspect(@runtime.value_to_string(value), content="(4 6)")
+}
+
+///|
 test "flonum min/max" {
   let value = eval_program("(list (flmax 1.0 2.5 2.0) (flmin 1.0 -1.0 0.0))")
   inspect(@runtime.value_to_string(value), content="(2.5 -1)")
+}
+
+///|
+test "bytevector copy" {
+  let value = eval_program("(bytevector-copy #vu8(1 2 3) 1 3)")
+  inspect(@runtime.value_to_string(value), content="#vu8(2 3)")
 }
 
 ///|

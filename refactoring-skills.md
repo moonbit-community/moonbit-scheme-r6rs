@@ -123,6 +123,7 @@ moon check
 - Prefer minimal inputs (short strings, small data) to keep doctests fast.
 - For lexer-style helpers, add `mbt check` examples in the package README instead of testing private helpers directly.
 - For unicode helpers, add a small compatibility-normalization example to widen coverage without changing APIs.
+- Add README tests for refactored primitives (e.g., `map`, `bytevector-copy`) to catch regressions early.
 
 ## Facade-level docs
 - Add small examples on re-exported APIs so module users see usage without diving into subpackages.
