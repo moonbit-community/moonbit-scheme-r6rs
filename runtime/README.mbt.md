@@ -62,6 +62,13 @@ test "env clone" {
 }
 
 ///|
+test "list from array" {
+  let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+  let value = @core.Value::Datum(list)
+  inspect(value_to_string(value), content="(1 2)")
+}
+
+///|
 test "enum set from names" {
   let set = enum_set_from_names(["a", "b"], ["b"])
   inspect(enum_set_member_by_name(set, "b"), content="true")

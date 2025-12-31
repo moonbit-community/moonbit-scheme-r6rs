@@ -143,21 +143,20 @@ fn bytevector_to_string(items : Array[Int]) -> String {
 ///|
 fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
   let parts : Array[String] = []
-  let mut cur = list
-  while true {
+  for cur = list; true; {
     match cur {
       Datum::Nil => {
         let joined = parts.join(" ")
-        return "(\{joined})"
+        break "(\{joined})"
       }
       Datum::Pair(a, b) => {
         parts.push(datum_to_string_state(a.val, state))
-        cur = b.val
+        continue b.val
       }
       _ => {
         let prefix = parts.join(" ")
         let tail = datum_to_string_state(cur, state)
-        return "(\{prefix} . \{tail})"
+        break "(\{prefix} . \{tail})"
       }
     }
   } else {
