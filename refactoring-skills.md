@@ -1843,6 +1843,10 @@ pub fn Library::exports(self : Library) -> Map[String, Binding] {
   self.exports
 }
 
+fn Library::new(exports : Map[String, Binding]) -> Library {
+  Library::{ exports }
+}
+
 let exports_map = lib.exports()
 ```
 

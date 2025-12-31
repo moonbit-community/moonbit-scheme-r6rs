@@ -27,6 +27,11 @@ pub fn Library::exports(self : Library) -> Map[String, Binding] {
 }
 
 ///|
+fn Library::new(exports : Map[String, Binding]) -> Library {
+  Library::{ exports }
+}
+
+///|
 priv struct Counter {
   cell : Ref[Int]
 }
@@ -524,7 +529,7 @@ pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
 ///|
 /// Register a library export table.
 pub fn register_library(name : String, exports : Map[String, Binding]) -> Unit {
-  library_registry.val[name] = Library::{ exports, }
+  library_registry.val[name] = Library::new(exports)
 }
 
 ///|
