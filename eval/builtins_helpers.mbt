@@ -1148,42 +1148,29 @@ fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
   if value == 0.0 {
     return (0, 1)
   }
-  let mut sign = 1
-  let mut x = value
-  if x < 0.0 {
-    sign = -1
-    x = -x
-  }
-  let mut a = float_floor_int(x)
-  let mut p0 = 1
-  let mut q0 = 0
-  let mut p1 = a
-  let mut q1 = 1
-  let mut frac = x - Float::from_int(a)
-  let mut iter = 0
-  while iter < 64 {
-    let approx = Float::from_int(p1) / Float::from_int(q1)
-    let mut diff = x - approx
-    if diff < 0.0 {
-      diff = -diff
+  let sign = if value < 0.0 { -1 } else { 1 }
+  let x = if value < 0.0 { -value } else { value }
+  let a0 = float_floor_int(x)
+  let frac0 = x - Float::from_int(a0)
+  let (p1, q1) = for iter = 0, p0 = 1, q0 = 0, p1 = a0, q1 = 1, frac = frac0;
+    iter < 64; {
+      let approx = Float::from_int(p1) / Float::from_int(q1)
+      let diff = if x >= approx { x - approx } else { approx - x }
+      if diff <= tol || frac == 0.0 {
+        break (p1, q1)
+      }
+      let frac_inv = Float::from_int(1) / frac
+      let a = float_floor_int(frac_inv)
+      let p2 = a * p1 + p0
+      let q2 = a * q1 + q0
+      if q2 == 0 {
+        break (p1, q1)
+      }
+      let frac_next = frac_inv - Float::from_int(a)
+      continue iter + 1, p1, q1, p2, q2, frac_next
+    } else {
+      (p1, q1)
     }
-    if diff <= tol || frac == 0.0 {
-      break
-    }
-    frac = 1.0 / frac
-    a = float_floor_int(frac)
-    let p2 = a * p1 + p0
-    let q2 = a * q1 + q0
-    if q2 == 0 {
-      break
-    }
-    p0 = p1
-    q0 = q1
-    p1 = p2
-    q1 = q2
-    frac = frac - Float::from_int(a)
-    iter = iter + 1
-  }
   (sign * p1, q1)
 }
 

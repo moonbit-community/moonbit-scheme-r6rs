@@ -1131,6 +1131,33 @@ for low = 0, high = n, ans = 0; low <= high; {
 }
 ```
 
+## Continued fraction loops
+- Carry `(p0, q0, p1, q1, frac)` through a functional loop to avoid many `mut` bindings.
+- Use `break (p1, q1)` for early exit conditions.
+
+Example:
+```mbt
+let (p1, q1) = for iter = 0, p0 = 1, q0 = 0, p1 = a0, q1 = 1, frac = frac0;
+  iter < 64; {
+    let approx = Float::from_int(p1) / Float::from_int(q1)
+    let diff = if x >= approx { x - approx } else { approx - x }
+    if diff <= tol || frac == 0.0 {
+      break (p1, q1)
+    }
+    let frac_inv = Float::from_int(1) / frac
+    let a = float_floor_int(frac_inv)
+    let p2 = a * p1 + p0
+    let q2 = a * q1 + q0
+    if q2 == 0 {
+      break (p1, q1)
+    }
+    let frac_next = frac_inv - Float::from_int(a)
+    continue iter + 1, p1, q1, p2, q2, frac_next
+  } else {
+    (p1, q1)
+  }
+```
+
 ## Facade docs for re-exports
 - Re-exported symbols do not inherit docstrings, so add wrapper examples or README tests.
 - Keep facade examples short and focused on public entrypoints.
