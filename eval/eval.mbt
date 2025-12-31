@@ -4184,6 +4184,9 @@ fn eval_define_enumeration_state(
 ///|
 fn array_contains_name(items : Array[String], name : String) -> Bool {
   for item in items {
+    // invariant : items.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : items.length() >= 0
     if item == name {
       return true
     }
@@ -4307,6 +4310,9 @@ fn apply_record_proc(
           }
           let parent_values : Array[Value] = []
           for arg in args {
+            // invariant : args.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : args.length() >= 0
             parent_values.push(arg)
           }
           let proc = Value::RecordProc(
@@ -4319,6 +4325,9 @@ fn apply_record_proc(
         Some(_) => {
           let parent_args : Array[Value] = []
           for arg in args {
+            // invariant : args.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : args.length() >= 0
             parent_args.push(arg)
           }
           record_constructor_from_descriptor(
@@ -4340,9 +4349,15 @@ fn apply_record_proc(
       }
       let values : Array[Value] = []
       for value in parent_values {
+        // invariant : parent_values.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : parent_values.length() >= 0
         values.push(value)
       }
       for arg in args {
+        // invariant : args.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : args.length() >= 0
         values.push(arg)
       }
       let record = make_record_instance(record_type, values)
@@ -4367,6 +4382,9 @@ fn apply_condition_proc(
         let ok = match condition_components_opt(args[0], base) {
           Some(components) =>
             for i = 0; i < components.length(); {
+              // invariant : i >= 0 && i <= components.length()
+              // decreases : components.length() - i
+              // assert : i <= components.length()
               if record_type_is_a(components[i].record_type, record_type) {
                 break true
               }
@@ -4386,6 +4404,9 @@ fn apply_condition_proc(
         let components = condition_components(args[0], base)
         let found =
           for i = 0; i < components.length(); {
+            // invariant : i >= 0 && i <= components.length()
+            // decreases : components.length() - i
+            // assert : i <= components.length()
             let record = components[i]
             if record_type_is_a(record.record_type, record_type) {
               break Some(record)
