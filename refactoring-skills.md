@@ -246,6 +246,18 @@ fn apply_numeric_primitive(prim : Primitive, args : Array[Value]) -> Value? rais
 ## Predicate grouping
 - Collect related predicate/equality primitives into a dedicated dispatcher to keep `apply_primitive_core` focused on IO/control.
 
+## Arity + type via array patterns
+- Use array patterns to combine arity checks with nested type matches, reducing `match args.length()` + `match args[0]` nesting.
+
+Example:
+```mbt
+match args {
+  [Value::Datum(Datum::Symbol(_))] => bool_value(true)
+  [_] => bool_value(false)
+  _ => raise arity_mismatch(1, args.length())
+}
+```
+
 ## Division-based counters
 - Replace `while n > 0` loops with a functional `for` that carries `(n, count)` state.
 
