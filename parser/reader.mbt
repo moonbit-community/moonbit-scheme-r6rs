@@ -997,12 +997,15 @@ fn read_list(r : Reader) -> Datum raise ParseError {
       }
     }
   }
-  let mut tail = match dotted_tail {
+  let base = match dotted_tail {
     Some(t) => t
     None => Datum::Nil
   }
-  for item in items.rev_iter() {
-    tail = pair_new(item, tail)
+  let tail = for i = items.length(), tail = base; i > 0; {
+    let idx = i - 1
+    continue i - 1, pair_new(items[idx], tail)
+  } else {
+    tail
   }
   tail
 }
@@ -1010,16 +1013,17 @@ fn read_list(r : Reader) -> Datum raise ParseError {
 ///|
 fn datum_list_to_array_parse(list : Datum) -> Array[Datum] raise ParseError {
   let items : Array[Datum] = []
-  let mut cur = list
-  while true {
+  for cur = list; true; {
     match cur {
       Datum::Nil => break
       Datum::Pair(a, b) => {
         items.push(a.val)
-        cur = b.val
+        continue b.val
       }
       _ => raise @core.ParseError("expected proper list")
     }
+  } else {
+    ()
   }
   items
 }

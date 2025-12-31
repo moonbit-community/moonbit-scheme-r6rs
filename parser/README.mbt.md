@@ -60,6 +60,14 @@ test "parse basics" {
       inspect(items.length(), content="2")
     _ => fail("expected bytevector")
   }
+  match parse_program("(a . b)") {
+    [@core.Datum::Pair(car, cdr), ..] =>
+      match (car.val, cdr.val) {
+        (@core.Datum::Symbol("a"), @core.Datum::Symbol("b")) => ()
+        _ => fail("expected dotted pair")
+      }
+    _ => fail("expected dotted pair")
+  }
   match parse_program_with_fold_case("ABC", true) {
     [@core.Datum::Symbol("abc"), ..] => ()
     _ => fail("expected folded symbol")
