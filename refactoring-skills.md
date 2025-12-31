@@ -329,6 +329,20 @@ if first && (ch == '+' || ch == '-') {
 }
 ```
 
+## Optional marker flags
+- Compute flags with a `match` that can consume the optional marker inline.
+
+Example:
+```mbt
+let splicing = match r.peek() {
+  Some('@') => {
+    ignore(r.next())
+    true
+  }
+  _ => false
+}
+```
+
 ## Boolean chaining
 - Replace stepwise `ok = ok && ...` with a single boolean expression to reduce mut.
 

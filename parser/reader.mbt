@@ -1090,13 +1090,12 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
     }
     Some(',') => {
       ignore(r.next())
-      let mut splicing = false
-      match r.peek() {
+      let splicing = match r.peek() {
         Some('@') => {
           ignore(r.next())
-          splicing = true
+          true
         }
-        _ => ()
+        _ => false
       }
       let expr = read_expr(r)
       if splicing {
@@ -1155,13 +1154,12 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
           }
           ',' => {
             r.pos = r.pos + 2
-            let mut splicing = false
-            match r.peek() {
+            let splicing = match r.peek() {
               Some('@') => {
                 ignore(r.next())
-                splicing = true
+                true
               }
-              _ => ()
+              _ => false
             }
             let expr = read_expr(r)
             if splicing {
