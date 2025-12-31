@@ -408,6 +408,17 @@ for frame in env {
 }
 ```
 
+## Index-based array transforms
+- When you need in-place updates, use `for i = 0; i < len; { ... continue i + 1 }` to avoid `mut` counters.
+
+Example:
+```mbt
+for i = 0; i < members.length(); {
+  members[i] = left.members[i] || right.members[i]
+  continue i + 1
+}
+```
+
 ## Array equality scans
 - Use a functional `for` with `break false` for early exits instead of `mut` indices.
 

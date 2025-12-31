@@ -3490,14 +3490,15 @@ fn apply_primitive(
           let left = value_as_enum_set(args[0])
           let right = value_as_enum_set(args[1])
           enum_set_require_same_universe(left, right)
-          let mut i = 0
-          while i < left.members.length() {
+          let ok = for i = 0; i < left.members.length(); {
             if left.members[i] && !right.members[i] {
-              return bool_value(false)
+              break false
             }
-            i = i + 1
+            continue i + 1
+          } else {
+            true
           }
-          bool_value(true)
+          bool_value(ok)
         }
         n => raise arity_mismatch(2, n)
       }
@@ -3507,14 +3508,15 @@ fn apply_primitive(
           let left = value_as_enum_set(args[0])
           let right = value_as_enum_set(args[1])
           enum_set_require_same_universe(left, right)
-          let mut i = 0
-          while i < left.members.length() {
+          let ok = for i = 0; i < left.members.length(); {
             if left.members[i] != right.members[i] {
-              return bool_value(false)
+              break false
             }
-            i = i + 1
+            continue i + 1
+          } else {
+            true
           }
-          bool_value(true)
+          bool_value(ok)
         }
         n => raise arity_mismatch(2, n)
       }
@@ -3525,10 +3527,9 @@ fn apply_primitive(
           let right = value_as_enum_set(args[1])
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          let mut i = 0
-          while i < members.length() {
+          for i = 0; i < members.length(); {
             members[i] = left.members[i] || right.members[i]
-            i = i + 1
+            continue i + 1
           }
           Value::EnumSet(make_enum_set(left.universe, members))
         }
@@ -3541,10 +3542,9 @@ fn apply_primitive(
           let right = value_as_enum_set(args[1])
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          let mut i = 0
-          while i < members.length() {
+          for i = 0; i < members.length(); {
             members[i] = left.members[i] && right.members[i]
-            i = i + 1
+            continue i + 1
           }
           Value::EnumSet(make_enum_set(left.universe, members))
         }
@@ -3557,10 +3557,9 @@ fn apply_primitive(
           let right = value_as_enum_set(args[1])
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          let mut i = 0
-          while i < members.length() {
+          for i = 0; i < members.length(); {
             members[i] = left.members[i] && !right.members[i]
-            i = i + 1
+            continue i + 1
           }
           Value::EnumSet(make_enum_set(left.universe, members))
         }
@@ -3571,10 +3570,9 @@ fn apply_primitive(
         1 => {
           let set = value_as_enum_set(args[0])
           let members = enum_set_members_all_false(set.universe)
-          let mut i = 0
-          while i < members.length() {
+          for i = 0; i < members.length(); {
             members[i] = !set.members[i]
-            i = i + 1
+            continue i + 1
           }
           Value::EnumSet(make_enum_set(set.universe, members))
         }
@@ -3586,11 +3584,10 @@ fn apply_primitive(
           let source = value_as_enum_set(args[0])
           let target = value_as_enum_set(args[1])
           let members = enum_set_members_all_false(target.universe)
-          let mut i = 0
-          while i < target.universe.length() {
+          for i = 0; i < target.universe.length(); {
             let name = target.universe[i]
             members[i] = enum_set_member_by_name(source, name)
-            i = i + 1
+            continue i + 1
           }
           Value::EnumSet(make_enum_set(target.universe, members))
         }
@@ -3601,12 +3598,11 @@ fn apply_primitive(
         1 => {
           let set = value_as_enum_set(args[0])
           let items : Array[Datum] = []
-          let mut i = 0
-          while i < set.universe.length() {
+          for i = 0; i < set.universe.length(); {
             if set.members[i] {
               items.push(Datum::Symbol(set.universe[i]))
             }
-            i = i + 1
+            continue i + 1
           }
           Value::Datum(list_from_array(items))
         }
