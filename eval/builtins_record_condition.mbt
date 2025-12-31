@@ -42,50 +42,36 @@ fn apply_record_condition_primitive_core(
 ) -> Value raise EvalError {
   match prim {
     Primitive::RecordP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Record(record) => bool_value(!record.record_type.is_opaque)
-            _ => bool_value(false)
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Record(record)] => bool_value(!record.record_type.is_opaque)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::RecordRtd =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Record(record) =>
-              if record.record_type.is_opaque {
-                raise @core.EvalError("record type is opaque")
-              } else {
-                match
-                  lookup_record_type_descriptor_by_id(record.record_type.id) {
-                  Some(desc) => Value::RecordTypeDescriptor(desc)
-                  None =>
-                    raise @core.EvalError("invalid record type descriptor")
-                }
-              }
-            _ => raise @core.EvalError("type error: record expected")
+      match args {
+        [Value::Record(record)] =>
+          if record.record_type.is_opaque {
+            raise @core.EvalError("record type is opaque")
+          } else {
+            match lookup_record_type_descriptor_by_id(record.record_type.id) {
+              Some(desc) => Value::RecordTypeDescriptor(desc)
+              None => raise @core.EvalError("invalid record type descriptor")
+            }
           }
-        n => raise arity_mismatch(1, n)
+        [_] => raise @core.EvalError("type error: record expected")
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::RecordTypeDescriptorP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::RecordTypeDescriptor(_) => bool_value(true)
-            _ => bool_value(false)
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::RecordTypeDescriptor(_)] => bool_value(true)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::RecordConstructorDescriptorP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::RecordConstructorDescriptor(_) => bool_value(true)
-            _ => bool_value(false)
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::RecordConstructorDescriptor(_)] => bool_value(true)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::RecordTypeName =>
       match args.length() {

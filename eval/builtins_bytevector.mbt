@@ -38,15 +38,10 @@ fn apply_bytevector_primitive(
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
     Primitive::ByteVectorP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(Datum::ByteVector(_)) => bool_value(true)
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::ByteVector(_))] => Some(bool_value(true))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ByteVectorLength =>
       match args.length() {

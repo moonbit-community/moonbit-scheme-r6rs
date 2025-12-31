@@ -117,50 +117,32 @@ fn apply_pair_list_primitive(
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
     Primitive::NullP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(Datum::Nil) => bool_value(true)
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::Nil)] => Some(bool_value(true))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::PairP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(Datum::Pair(_, _)) => bool_value(true)
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::Pair(_, _))] => Some(bool_value(true))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ListP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(d) => bool_value(is_proper_list(d))
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(d)] => Some(bool_value(is_proper_list(d)))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Length =>
-      match args.length() {
-        1 =>
+      match args {
+        [Value::Datum(d)] =>
           Some({
-            let datum = match args[0] {
-              Value::Datum(d) => d
-              _ => raise @core.EvalError("type error: list expected")
-            }
-            let items = datum_list_to_array(datum)
+            let items = datum_list_to_array(d)
             Value::Datum(Datum::Int(items.length()))
           })
-        n => raise arity_mismatch(1, n)
+        [_] => raise @core.EvalError("type error: list expected")
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Append =>
       Some(
@@ -192,13 +174,9 @@ fn apply_pair_list_primitive(
         },
       )
     Primitive::Reverse =>
-      match args.length() {
-        1 =>
+      match args {
+        [Value::Datum(datum)] =>
           Some({
-            let datum = match args[0] {
-              Value::Datum(d) => d
-              _ => raise @core.EvalError("type error: list expected")
-            }
             let items = datum_list_to_array(datum)
             let result = for i = 0, result = Datum::Nil; i < items.length(); {
               // invariant : i >= 0 && i <= items.length()
@@ -210,7 +188,8 @@ fn apply_pair_list_primitive(
             }
             Value::Datum(result)
           })
-        n => raise arity_mismatch(1, n)
+        [_] => raise @core.EvalError("type error: list expected")
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ListRef =>
       match args.length() {

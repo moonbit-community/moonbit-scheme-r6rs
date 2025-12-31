@@ -26,15 +26,10 @@ fn apply_char_string_primitive(
     Primitive::CharCiGreaterEq =>
       Some(bool_value(compare_chain_char(args, CompareMode::Ge, true)))
     Primitive::CharP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(Datum::Char(_)) => bool_value(true)
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::Char(_))] => Some(bool_value(true))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::CharToInteger =>
       match args.length() {
@@ -187,15 +182,10 @@ fn apply_char_string_primitive(
         n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
       }
     Primitive::StringP =>
-      match args.length() {
-        1 =>
-          Some(
-            match args[0] {
-              Value::Datum(Datum::String(_)) => bool_value(true)
-              _ => bool_value(false)
-            },
-          )
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::String(_))] => Some(bool_value(true))
+        [_] => Some(bool_value(false))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::StringLength =>
       match args.length() {

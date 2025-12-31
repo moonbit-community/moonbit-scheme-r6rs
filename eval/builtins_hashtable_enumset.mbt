@@ -82,13 +82,10 @@ fn apply_hashtable_enumset_primitive_core(
         n => raise arity_mismatch(2, n)
       }
     Primitive::HashtableP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Hashtable(_) => bool_value(true)
-            _ => bool_value(false)
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Hashtable(_)] => bool_value(true)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::HashtableSize =>
       match args.length() {
@@ -262,13 +259,10 @@ fn apply_hashtable_enumset_primitive_core(
         n => raise arity_mismatch(1, n)
       }
     Primitive::EnumSetP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::EnumSet(_) => bool_value(true)
-            _ => bool_value(false)
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::EnumSet(_)] => bool_value(true)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::EnumSetMemberP =>
       match args.length() {
