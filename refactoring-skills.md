@@ -332,6 +332,15 @@ fn list_from_items(items : Array[Datum], base : Datum) -> Datum {
 }
 ```
 
+Example:
+```mbt
+let forms : Array[Datum] = [Datum::Symbol("begin")]
+for i = 2; i < items.length(); {
+  forms.push(expand_template_indexed(items[i], ...))
+  continue i + 1
+}
+```
+
 ## Reader consumption
 - Use `Reader::next()` (with `ignore(...)` if needed) to advance instead of direct `pos` mutation.
 - Extract small reader steps (like line-comment skipping) into `Reader::` methods so call sites can chain.

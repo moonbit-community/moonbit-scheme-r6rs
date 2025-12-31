@@ -1819,8 +1819,7 @@ fn expand_with_syntax(
     )
   } else {
     let forms : Array[Datum] = [Datum::Symbol("begin")]
-    let mut i = 2
-    while i < items.length() {
+    for i = 2; i < items.length(); {
       forms.push(
         expand_template_indexed(
           items[i],
@@ -1834,7 +1833,7 @@ fn expand_with_syntax(
           template_forms,
         ),
       )
-      i = i + 1
+      continue i + 1
     }
     list_from_array(forms)
   }
