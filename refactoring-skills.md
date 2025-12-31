@@ -56,6 +56,18 @@ moon check
 - Prefer `apply_patch` for single-file edits and small, precise refactors.
 - Use `rg` to do quick sanity checks when you do not need full symbol context.
 
+## Split large files by feature
+- Move related `///|` blocks into focused files within the same package to keep huge modules readable.
+- Keep `///|` separators attached to each moved block and avoid stray trailing separators.
+- Use `moon ide outline <dir>` to locate candidate clusters before splitting.
+
+Example:
+```mbt
+// eval/stdlib.mbt
+fn stdlib_source() -> String { ... }
+fn load_stdlib(env : Env) -> Unit raise { ... }
+```
+
 ## Chaining style after method refactors
 - Convert related free functions into `Type::method` so call sites can chain with `..`.
 - Update docs and tests that referenced old `@pkg.fn` helpers.
