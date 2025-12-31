@@ -532,6 +532,21 @@ let reversed = for i = 0, reversed = bigint_from_int(0); i < width; {
 }
 ```
 
+## Endian accumulation
+- Fold byte arrays into integers with a functional loop to remove `mut` counters.
+- Carry a `factor` for little-endian accumulation.
+
+Example:
+```mbt
+let result = for i = 0, result = bigint_from_int(0), factor = bigint_from_int(1);
+  i < size; {
+    let next = result + bigint_from_int(items[start + i]) * factor
+    continue i + 1, next, factor * base
+  } else {
+    result
+  }
+```
+
 ## Prefix tag scanning
 - Use functional `for` with `continue` to advance by fixed steps (like `#`-prefixed numeric tags).
 

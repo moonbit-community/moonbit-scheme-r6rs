@@ -2287,26 +2287,25 @@ fn bytevector_uint_ref(
   endian : Endian,
 ) -> @bigint.BigInt {
   let base = bigint_from_int(256)
-  let mut result = bigint_from_int(0)
   match endian {
-    Endian::Big => {
-      let mut i = 0
-      while i < size {
-        result = result * base + bigint_from_int(items[start + i])
-        i = i + 1
+    Endian::Big =>
+      for i = 0, result = bigint_from_int(0); i < size; {
+        let next = result * base + bigint_from_int(items[start + i])
+        continue i + 1, next
+      } else {
+        result
       }
-    }
-    Endian::Little => {
-      let mut factor = bigint_from_int(1)
-      let mut i = 0
-      while i < size {
-        result = result + bigint_from_int(items[start + i]) * factor
-        factor = factor * base
-        i = i + 1
-      }
-    }
+    Endian::Little =>
+      for i = 0,
+        result = bigint_from_int(0),
+        factor = bigint_from_int(1);
+        i < size; {
+          let next = result + bigint_from_int(items[start + i]) * factor
+          continue i + 1, next, factor * base
+        } else {
+          result
+        }
   }
-  result
 }
 
 ///|
@@ -2323,31 +2322,26 @@ fn bytevector_uint_set(
   }
   let base = bigint_from_int(256)
   let bytes : Array[Int] = []
-  let mut v = value
-  let mut i = 0
-  while i < size {
+  for i = 0, v = value; i < size; {
     let byte = v % base
     let byte_int = match bigint_to_int_option(byte) {
       Some(n) => n
       None => raise @core.EvalError("integer out of range")
     }
     bytes.push(byte_int)
-    v = v / base
-    i = i + 1
+    continue i + 1, v / base
   }
   match endian {
     Endian::Big => {
-      let mut j = 0
-      while j < size {
+      for j = 0; j < size; {
         items[start + j] = bytes[size - 1 - j]
-        j = j + 1
+        continue j + 1
       }
     }
     Endian::Little => {
-      let mut j = 0
-      while j < size {
+      for j = 0; j < size; {
         items[start + j] = bytes[j]
-        j = j + 1
+        continue j + 1
       }
     }
   }
