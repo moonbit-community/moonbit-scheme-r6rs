@@ -206,6 +206,7 @@ for i = 0; i < clauses.length(); {
 - For variadic primitives, capture the first required arguments and iterate the rest to avoid manual index math.
 - Preserve existing error strings by reusing `args.length()` in formatted messages when tests assert exact text.
 - For `append`-style APIs, match `[]` and `[single]` first, then keep the "all but last" loop for the tail case.
+- Use `[value]` patterns for 1-arity primitives to remove repeated `args[0]` indexing.
 
 Example:
 ```mbt
