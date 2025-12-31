@@ -52,11 +52,17 @@ fn build_decomp_map(
 ) -> Map[Char, Array[Char]] {
   let map = Map::new(capacity=count)
   for i = 0; i < data.length(); {
+    // invariant : i >= 0 && i < data.length()
+    // decreases : data.length() - i
+    // assert : i + 1 < data.length()
     let ch = data[i]
     let len = data[i + 1].to_int()
     let start = i + 2
     let seq : Array[Char] = []
     for j = 0; j < len; {
+      // invariant : j >= 0 && j <= len
+      // decreases : len - j
+      // assert : start + j < data.length()
       seq.push(data[start + j])
       continue j + 1
     } else {
@@ -76,6 +82,9 @@ fn build_combining_class_map(
 ) -> Map[Char, Int] {
   let map = Map::new(capacity=count)
   for i = 0; i < data.length(); {
+    // invariant : i >= 0 && i < data.length()
+    // decreases : data.length() - i
+    // assert : i + 1 < data.length()
     let ch = data[i]
     let cls = data[i + 1].to_int()
     map[ch] = cls
@@ -92,6 +101,9 @@ fn build_composition_map(
 ) -> Map[UInt, Char] {
   let map = Map::new(capacity=count)
   for i = 0; i + 2 < data.length(); {
+    // invariant : i >= 0 && i + 2 < data.length()
+    // decreases : data.length() - i
+    // assert : i + 2 < data.length()
     let starter = data[i]
     let combining = data[i + 1]
     let composed = data[i + 2]
