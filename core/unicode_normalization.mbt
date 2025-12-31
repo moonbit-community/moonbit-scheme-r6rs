@@ -198,17 +198,19 @@ fn decompose_string(s : String, compat : Bool) -> Array[Char] {
 
 ///|
 fn insert_sorted_by_ccc(segment : Array[Char], ch : Char, ccc : Int) -> Unit {
-  let mut i = segment.length()
+  let start = segment.length()
   segment.push(ch)
-  while i > 0 {
+  let insert_at = for i = start; i > 0; {
     let prev = segment[i - 1]
     if combining_class(prev) <= ccc {
-      break
+      break i
     }
     segment[i] = prev
-    i = i - 1
+    continue i - 1
+  } else {
+    0
   }
-  segment[i] = ch
+  segment[insert_at] = ch
 }
 
 ///|

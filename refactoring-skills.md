@@ -166,6 +166,26 @@ pub fn env_clone(env : Env) -> Env {
 ## Shared constants
 - Lift repeated lookup tables (like radix digit arrays) to a single `let` to avoid duplication.
 
+## Insertion index scans
+- Use a functional `for` with `break` to compute the insertion point while shifting elements.
+
+Example:
+```mbt
+let start = segment.length()
+segment.push(ch)
+let insert_at = for i = start; i > 0; {
+  let prev = segment[i - 1]
+  if combining_class(prev) <= ccc {
+    break i
+  }
+  segment[i] = prev
+  continue i - 1
+} else {
+  0
+}
+segment[insert_at] = ch
+```
+
 ## Reverse assembly
 - Extract a small helper for reversing `Array[Char]` into a `String` to cut repeated loops.
 

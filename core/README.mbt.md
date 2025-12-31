@@ -24,6 +24,8 @@ test "unicode helpers" {
   inspect(unicode_char('A').general_category(), content="Lu")
   inspect(unicode_char('A').is_uppercase(), content="true")
   inspect(unicode_string("ABC").foldcase().into_string(), content="abc")
+  inspect(unicode_string("AbC").downcase().into_string(), content="abc")
+  inspect(unicode_string("abc").upcase().into_string(), content="ABC")
   inspect(
     unicode_string("e\u{301}").normalize_nfc().into_string(),
     content="\u{00e9}",
