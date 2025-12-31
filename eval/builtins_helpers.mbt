@@ -1134,6 +1134,9 @@ fn exact_integer_sqrt(n : Int) -> (Int, Int) {
     return (0, n)
   }
   for low = 0, high = n, ans = 0; low <= high; {
+    // invariant : low >= 0 && high >= 0
+    // decreases : high - low + 1
+    // assert : low <= high + 1
     let mid = (low + high) / 2
     if mid == 0 {
       continue 1, high, 0
@@ -1164,6 +1167,9 @@ fn exact_integer_sqrt_bigint(
   let one = bigint_from_int(1)
   let two = bigint_from_int(2)
   for low = bigint_from_int(0), high = n, ans = bigint_from_int(0); low <= high; {
+    // invariant : low.compare_int(0) >= 0 && high.compare_int(0) >= 0
+    // TODO(decreases) : BigInt measure not explicit; possible bug
+    // assert : low.compare_int(high) <= 0
     let mid = (low + high) / two
     if mid.is_zero() {
       continue one, high, bigint_from_int(0)
