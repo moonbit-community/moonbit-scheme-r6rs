@@ -354,6 +354,23 @@ let idx = for i = 0; i < chars.length(); {
 }
 ```
 
+## Looping until None
+- Use a functional `for` with `continue` to repeatedly transform a value until a lookup returns `None`.
+
+Example:
+```mbt
+fn strip_all_gensym_suffixes(name : String) -> String {
+  for cur = name; true; {
+    match strip_gensym_suffix(cur) {
+      Some(next) => continue next
+      None => break cur
+    }
+  } else {
+    name
+  }
+}
+```
+
 ## List traversal with functional state
 - Replace `mut cur` list loops with a functional `for` and `break` to return values.
 

@@ -7,15 +7,15 @@ fn arity_mismatch(expected : Int, got : Int) -> EvalError {
 ///|
 /// Return true if the datum is a proper list.
 fn is_proper_list(value : Datum) -> Bool {
-  let mut cur = value
-  while true {
+  for cur = value; true; {
     match datum_unlabel(cur) {
-      Datum::Nil => return true
-      Datum::Pair(_, cdr) => cur = cdr.val
-      _ => return false
+      Datum::Nil => break true
+      Datum::Pair(_, cdr) => continue cdr.val
+      _ => break false
     }
+  } else {
+    false
   }
-  false
 }
 
 ///|
@@ -93,14 +93,14 @@ fn strip_gensym_suffix(name : String) -> String? {
 
 ///|
 fn strip_all_gensym_suffixes(name : String) -> String {
-  let mut cur = name
-  while true {
+  for cur = name; true; {
     match strip_gensym_suffix(cur) {
-      Some(next) => cur = next
-      None => break
+      Some(next) => continue next
+      None => break cur
     }
+  } else {
+    name
   }
-  cur
 }
 
 ///|
