@@ -15,29 +15,26 @@ fn string_to_chars(value : String) -> Array[Char] {
 
 ///|
 fn parse_int_token(tok : String) -> Int? {
-  let mut sign = 1
-  let mut acc = 0
-  let mut first = true
-  let mut has_digit = false
-  for ch in tok {
-    if first && (ch == '+' || ch == '-') {
-      sign = if ch == '-' { -1 } else { 1 }
-      first = false
-      continue
-    }
-    first = false
-    if ch.is_ascii_digit() {
-      acc = acc * 10 + (ch.to_int() - '0'.to_int())
-      has_digit = true
-      continue
-    }
+  let chars = tok.to_array()
+  if chars.is_empty() {
     return None
   }
-  if has_digit {
-    Some(sign * acc)
-  } else {
-    None
+  let (start, sign) = match chars[0] {
+    '+' => (1, 1)
+    '-' => (1, -1)
+    _ => (0, 1)
   }
+  let (acc, has_digit) = for i = start, acc = 0, has_digit = false;
+    i < chars.length(); {
+      let ch = chars[i]
+      if !ch.is_ascii_digit() {
+        return None
+      }
+      continue i + 1, acc * 10 + (ch.to_int() - '0'.to_int()), true
+    } else {
+      (acc, has_digit)
+    }
+  if has_digit { Some(sign * acc) } else { None }
 }
 
 ///|
