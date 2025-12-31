@@ -46,64 +46,73 @@ fn apply_primitive_core(
 ) -> Value raise EvalError {
   match prim {
     Primitive::Display =>
-      match args.length() {
-        1 => {
+      match args {
+        [value] => {
           let port = get_current_output_port()
-          port_write(port, display_string(args[0]))
+          port_write(port, display_string(value))
           Value::Void
         }
-        2 => {
-          let port = value_as_port(args[1])
-          port_write(port, display_string(args[0]))
+        [value, port_value] => {
+          let port = value_as_port(port_value)
+          port_write(port, display_string(value))
           Value::Void
         }
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
       }
     Primitive::Write =>
-      match args.length() {
-        1 => {
+      match args {
+        [value] => {
           let port = get_current_output_port()
-          port_write(port, value_to_string(args[0]))
+          port_write(port, value_to_string(value))
           Value::Void
         }
-        2 => {
-          let port = value_as_port(args[1])
-          port_write(port, value_to_string(args[0]))
+        [value, port_value] => {
+          let port = value_as_port(port_value)
+          port_write(port, value_to_string(value))
           Value::Void
         }
-        n => raise @core.EvalError("arity mismatch: expected 1 or 2 got \{n}")
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 1 or 2 got \{args.length()}",
+          )
       }
     Primitive::Newline =>
-      match args.length() {
-        0 => {
+      match args {
+        [] => {
           let port = get_current_output_port()
           port_write(port, "\n")
           Value::Void
         }
-        1 => {
-          let port = value_as_port(args[0])
+        [port_value] => {
+          let port = value_as_port(port_value)
           port_write(port, "\n")
           Value::Void
         }
-        n => raise @core.EvalError("arity mismatch: expected 0 or 1 got \{n}")
+        _ =>
+          raise @core.EvalError(
+            "arity mismatch: expected 0 or 1 got \{args.length()}",
+          )
       }
     Primitive::OpenOutputString =>
-      match args.length() {
-        0 => Value::Port(new_output_string_port())
-        n => raise arity_mismatch(0, n)
+      match args {
+        [] => Value::Port(new_output_string_port())
+        _ => raise arity_mismatch(0, args.length())
       }
     Primitive::GetOutputString =>
-      match args.length() {
-        1 => {
-          let port = value_as_port(args[0])
+      match args {
+        [port_value] => {
+          let port = value_as_port(port_value)
           Value::Datum(Datum::String(Ref::new(port_get_output_string(port))))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::CurrentOutputPort =>
-      match args.length() {
-        0 => Value::Port(get_current_output_port())
-        n => raise arity_mismatch(0, n)
+      match args {
+        [] => Value::Port(get_current_output_port())
+        _ => raise arity_mismatch(0, args.length())
       }
     Primitive::WithExceptionHandler =>
       raise @core.EvalError(
@@ -138,9 +147,9 @@ fn apply_primitive_core(
         "internal error: syntax-violation should be handled in apply_proc",
       )
     Primitive::Not =>
-      match args.length() {
-        1 => bool_value(is_false(args[0]))
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(is_false(value))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Apply =>
       // handled by apply_proc to allow proper argument flattening
@@ -177,19 +186,19 @@ fn apply_primitive_core(
       )
     Primitive::Values => Value::Values(args)
     Primitive::MakeVariableTransformer =>
-      match args.length() {
-        1 => {
-          if !is_procedure_value(args[0]) {
+      match args {
+        [proc_value] => {
+          if !is_procedure_value(proc_value) {
             raise @core.EvalError("type error: procedure expected")
           }
-          args[0]
+          proc_value
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::GenerateTemporaries =>
-      match args.length() {
-        1 => {
-          let datum = value_as_datum(args[0])
+      match args {
+        [datum_value] => {
+          let datum = value_as_datum(datum_value)
           let items = datum_list_to_array(datum)
           let results : Array[Datum] = []
           for item in items {
@@ -224,7 +233,7 @@ fn apply_primitive_core(
           }
           Value::Datum(list_from_array(results))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::CallWithValues =>
       raise @core.EvalError(
@@ -247,13 +256,13 @@ fn apply_primitive_core(
         "internal error: environment should be handled in apply_proc",
       )
     Primitive::PromiseP =>
-      match args.length() {
-        1 =>
-          match args[0] {
+      match args {
+        [value] =>
+          match value {
             Value::Promise(_) => bool_value(true)
             _ => bool_value(false)
           }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::MakePromise =>
       raise @core.EvalError(
