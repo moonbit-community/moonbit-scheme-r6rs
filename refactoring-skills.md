@@ -306,11 +306,24 @@ for item in segment {
 
 ## Build lists with functional state
 - Build list datums from arrays using a functional `for` instead of `mut` tail updates.
+- When dotted tails or early exits are possible, wrap list building in a helper and `return` early.
 
 Example:
 ```mbt
 pub fn list_from_array(items : Array[Datum]) -> Datum {
   for i = items.length(), tail = Datum::Nil; i > 0; {
+    let idx = i - 1
+    continue i - 1, pair_new(items[idx], tail)
+  } else {
+    tail
+  }
+}
+```
+
+Example:
+```mbt
+fn list_from_items(items : Array[Datum], base : Datum) -> Datum {
+  for i = items.length(), tail = base; i > 0; {
     let idx = i - 1
     continue i - 1, pair_new(items[idx], tail)
   } else {

@@ -963,15 +963,24 @@ fn make_unsyntax_splicing(expr : Datum) -> Datum {
 }
 
 ///|
+fn list_from_items(items : Array[Datum], base : Datum) -> Datum {
+  for i = items.length(), tail = base; i > 0; {
+    let idx = i - 1
+    continue i - 1, pair_new(items[idx], tail)
+  } else {
+    tail
+  }
+}
+
+///|
 fn read_list(r : Reader) -> Datum raise ParseError {
   let items : Array[Datum] = []
-  let mut dotted_tail : Datum? = None
   while true {
     match r..skip_ws_and_comments().peek() {
       None => raise @core.ParseError("unexpected EOF while reading list")
       Some(')') => {
         ignore(r.next())
-        break
+        return list_from_items(items, Datum::Nil)
       }
       Some('.') =>
         if r.is_ellipsis_start() {
@@ -988,8 +997,7 @@ fn read_list(r : Reader) -> Datum raise ParseError {
             Some(')') => ignore(r.next())
             _ => raise @core.ParseError("expected ) after dotted tail")
           }
-          dotted_tail = Some(tail)
-          break
+          return list_from_items(items, tail)
         }
       _ => {
         let expr = read_expr(r)
@@ -997,17 +1005,7 @@ fn read_list(r : Reader) -> Datum raise ParseError {
       }
     }
   }
-  let base = match dotted_tail {
-    Some(t) => t
-    None => Datum::Nil
-  }
-  let tail = for i = items.length(), tail = base; i > 0; {
-    let idx = i - 1
-    continue i - 1, pair_new(items[idx], tail)
-  } else {
-    tail
-  }
-  tail
+  raise @core.ParseError("unexpected EOF while reading list")
 }
 
 ///|
