@@ -1643,11 +1643,10 @@ fn eval_expr_impl(
               )
             } else {
               let new_env = env_extend(env)
-              let mut i = 0
-              while i < bindings.length() {
+              for i = 0; i < bindings.length(); {
                 let (name, _) = bindings[i]
                 env_define(new_env, name, next_values[i])
-                i = i + 1
+                continue i + 1
               }
               state = eval_sequence_state(body, new_env, next, handlers)
             }
@@ -1706,11 +1705,10 @@ fn eval_expr_impl(
                 handlers,
               )
             } else {
-              let mut i = 0
-              while i < bindings.length() {
+              for i = 0; i < bindings.length(); {
                 let (name, _) = bindings[i]
                 env_set(env, name, next_values[i])
-                i = i + 1
+                continue i + 1
               }
               state = eval_sequence_state(body, env, next, handlers)
             }
@@ -1737,14 +1735,13 @@ fn eval_expr_impl(
               )
             } else {
               let new_env = env_extend(env)
-              let mut i = 0
-              while i < bindings.length() {
+              for i = 0; i < bindings.length(); {
                 let binding_values = next_collected[i]
                 for binding in binding_values {
                   let (name, bound_value) = binding
                   env_define(new_env, name, bound_value)
                 }
-                i = i + 1
+                continue i + 1
               }
               state = eval_sequence_state(body, new_env, next, handlers)
             }
