@@ -371,6 +371,24 @@ fn strip_all_gensym_suffixes(name : String) -> String {
 }
 ```
 
+## Multi-flag scans
+- Use a functional `for` with tuple state to compute multiple booleans in a single pass.
+
+Example:
+```mbt
+let (has_dot, has_exp, has_slash) = for i = 0, has_dot = false, has_exp = false,
+  has_slash = false; i < tok.length(); {
+    match tok.get_char(i) {
+      Some(ch) =>
+        continue i + 1, has_dot || ch == '.',
+          has_exp || ch == 'e' || ch == 'E', has_slash || ch == '/'
+      None => break (has_dot, has_exp, has_slash)
+    }
+  } else {
+    (has_dot, has_exp, has_slash)
+  }
+```
+
 ## List traversal with functional state
 - Replace `mut cur` list loops with a functional `for` and `break` to return values.
 

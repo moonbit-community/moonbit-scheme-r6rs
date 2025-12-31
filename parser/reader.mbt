@@ -572,18 +572,17 @@ fn parse_real_token_with_settings(
     Some(value) => return Some(value)
     None => ()
   }
-  let mut has_dot = false
-  let mut has_exp = false
-  let mut has_slash = false
-  for ch in tok {
-    if ch == '.' {
-      has_dot = true
-    } else if ch == 'e' || ch == 'E' {
-      has_exp = true
-    } else if ch == '/' {
-      has_slash = true
+  let (has_dot, has_exp, has_slash) = for i = 0, has_dot = false, has_exp = false,
+    has_slash = false; i < tok.length(); {
+      match tok.get_char(i) {
+        Some(ch) =>
+          continue i + 1, has_dot || ch == '.',
+            has_exp || ch == 'e' || ch == 'E', has_slash || ch == '/'
+        None => break (has_dot, has_exp, has_slash)
+      }
+    } else {
+      (has_dot, has_exp, has_slash)
     }
-  }
   if radix != 10 {
     if has_dot || has_exp {
       return None
