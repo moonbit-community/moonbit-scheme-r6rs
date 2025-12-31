@@ -384,6 +384,21 @@ let splicing = match r.peek() {
 ## Boolean chaining
 - Replace stepwise `ok = ok && ...` with a single boolean expression to reduce mut.
 
+## Array equality scans
+- Use a functional `for` with `break false` for early exits instead of `mut` indices.
+
+Example:
+```mbt
+for i = 0; i < left.length(); {
+  if !binding_equal(left[i], right[i]) {
+    break false
+  }
+  continue i + 1
+} else {
+  true
+}
+```
+
 ## Predicate-driven loops
 - Move `while true` + `match` exit checks into the `for` predicate when possible.
 - Use `else` to return the final state cleanly.

@@ -462,14 +462,14 @@ fn binding_equal(left : BindingVal, right : BindingVal) -> Bool {
       if a.length() != b.length() {
         false
       } else {
-        let mut i = 0
-        while i < a.length() {
+        for i = 0; i < a.length(); {
           if !binding_equal(a[i], b[i]) {
-            return false
+            break false
           }
-          i = i + 1
+          continue i + 1
+        } else {
+          true
         }
-        true
       }
     _ => false
   }
