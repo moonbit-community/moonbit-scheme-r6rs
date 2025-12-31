@@ -88,4 +88,13 @@ test "normalize rat" {
     _ => fail("expected reduced ratio")
   }
 }
+
+///|
+test "value from datum" {
+  let value = value_from_datum(@core.Datum::Int(3))
+  match value {
+    @core.Value::Datum(@core.Datum::Int(3)) => ()
+    _ => fail("expected datum value")
+  }
+}
 ```

@@ -1,5 +1,15 @@
 ///|
 /// Wrap a Bool into a Datum Value.
+///
+/// # Example
+/// ```mbt check
+/// test "bool value helper" {
+///   match bool_value(true) {
+///     @core.Value::Datum(@core.Datum::Bool(true)) => ()
+///     _ => fail("expected bool value")
+///   }
+/// }
+/// ```
 pub fn bool_value(value : Bool) -> Value {
   Value::Datum(Datum::Bool(value))
 }
