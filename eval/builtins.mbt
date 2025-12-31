@@ -1486,14 +1486,18 @@ fn apply_primitive(
           if right.is_zero() {
             raise @core.EvalError("division by zero")
           }
-          let mut q = left / right
+          let q = left / right
           let r = left % right
-          if !bigint_is_zero(r) {
+          let q = if !bigint_is_zero(r) {
             let r_sign = r.compare_int(0)
             let right_sign = right.compare_int(0)
             if (r_sign > 0 && right_sign < 0) || (r_sign < 0 && right_sign > 0) {
-              q = q - bigint_from_int(1)
+              q - bigint_from_int(1)
+            } else {
+              q
             }
+          } else {
+            q
           }
           Value::Datum(fixnum_from_bigint(q))
         }
@@ -1507,13 +1511,17 @@ fn apply_primitive(
           if right.is_zero() {
             raise @core.EvalError("division by zero")
           }
-          let mut r = left % right
-          if !bigint_is_zero(r) {
+          let r = left % right
+          let r = if !bigint_is_zero(r) {
             let r_sign = r.compare_int(0)
             let right_sign = right.compare_int(0)
             if (r_sign > 0 && right_sign < 0) || (r_sign < 0 && right_sign > 0) {
-              r = r + right
+              r + right
+            } else {
+              r
             }
+          } else {
+            r
           }
           Value::Datum(fixnum_from_bigint(r))
         }
