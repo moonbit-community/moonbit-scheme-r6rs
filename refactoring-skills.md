@@ -210,6 +210,7 @@ for i = 0; i < clauses.length(); {
 - For `(x, y, size?)` APIs, split into `[x, y]` and `[x, y, size]` branches so validation stays local.
 - For wide-arity constructors, use a single `[a, b, c, d, e, f]` pattern to avoid indexing mistakes.
 - Extract `value_as_number(value)` once after matching `[value]` to keep numeric ops consistent and reduce repeated lookups.
+- For arithmetic with special 0/1 cases, match `[]`, `[value]`, and `_` to keep identity rules explicit.
 
 Example:
 ```mbt
