@@ -2322,23 +2322,25 @@ fn apply_primitive(
     Primitive::Cxr(chain) =>
       match args.length() {
         1 => {
-          let mut cur = value_as_datum(args[0])
-          let mut i = chain.length()
-          while i > 0 {
-            i = i - 1
-            let op = match chain.get_char(i) {
+          let cur = value_as_datum(args[0])
+          let cur = for i = chain.length(), cur = cur; i > 0; {
+            let idx = i - 1
+            let op = match chain.get_char(idx) {
               Some(ch) => ch
               None => raise @core.EvalError("internal error: invalid cxr")
             }
-            match cur {
+            let next = match cur {
               Datum::Pair(car, cdr) =>
                 match op {
-                  'a' => cur = car.val
-                  'd' => cur = cdr.val
+                  'a' => car.val
+                  'd' => cdr.val
                   _ => raise @core.EvalError("internal error: invalid cxr")
                 }
               _ => raise @core.EvalError("type error: pair expected")
             }
+            continue i - 1, next
+          } else {
+            cur
           }
           value_from_datum(cur)
         }
@@ -2361,10 +2363,9 @@ fn apply_primitive(
             Datum::Nil
           }
           let items : Array[Datum] = []
-          let mut i = 0
-          while i < len {
+          for i = 0; i < len; {
             items.push(fill)
-            i = i + 1
+            continue i + 1
           }
           Value::Datum(list_from_array(items))
         }
