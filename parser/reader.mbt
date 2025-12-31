@@ -1023,18 +1023,17 @@ fn read_vector_literal(r : Reader) -> Datum raise ParseError {
 fn read_bytevector_literal(r : Reader) -> Datum raise ParseError {
   let list = read_list(r)
   let items = datum_list_to_array_parse(list)
-  let bytes : Array[Int] = []
-  for item in items {
+  let bytes = items.map((item) =>
     match item {
       Datum::Int(n) => {
         if n < 0 || n > 255 {
           raise @core.ParseError("bytevector element out of range")
         }
-        bytes.push(n)
+        n
       }
       _ => raise @core.ParseError("bytevector element must be integer")
     }
-  }
+  )
   Datum::ByteVector(bytes)
 }
 

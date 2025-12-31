@@ -333,6 +333,24 @@ pub fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
 }
 ```
 
+## Validating map transforms
+- `Array::map` can raise; use it to validate elements while transforming.
+
+Example:
+```mbt
+let bytes = items.map((item) =>
+  match item {
+    Datum::Int(n) => {
+      if n < 0 || n > 255 {
+        raise @core.ParseError("bytevector element out of range")
+      }
+      n
+    }
+    _ => raise @core.ParseError("bytevector element must be integer")
+  }
+)
+```
+
 ## Fast exponent loops without mut
 - Use functional `for` state to implement exponentiation by squaring without mutable variables.
 
