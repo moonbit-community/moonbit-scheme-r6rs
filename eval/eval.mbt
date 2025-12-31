@@ -1418,6 +1418,9 @@ fn stdlib_source() -> String {
 fn load_stdlib(env : Env) -> Unit raise {
   let forms = parse_program(stdlib_source())
   for form in forms {
+    // invariant : forms.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : forms.length() >= 0
     let _ = eval_expr(form, env)
 
   }
@@ -1426,6 +1429,9 @@ fn load_stdlib(env : Env) -> Unit raise {
 ///|
 fn captures_is_empty(captures : Map[String, Value]) -> Bool {
   for _ in captures.keys() {
+    // invariant : captures.keys().length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : captures.keys().length() >= 0
     return false
   }
   true
@@ -1438,6 +1444,9 @@ fn env_with_captures(env : Env, captures : Map[String, Value]) -> Env {
   }
   let next_env = env_extend(env)
   for name in captures.keys() {
+    // invariant : captures.keys().length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : captures.keys().length() >= 0
     match captures.get(name) {
       Some(value) => env_define(next_env, name, value)
       None => ()

@@ -1588,6 +1588,7 @@ let best = for i = 0, best = None; i < items.length(); {
 - For BigInt state, use helper measures like `bigint_bit_length_nonneg` to keep the decreases clause in `Int`.
 - In nested loops, add a separate spec block per loop; for `map.keys()` iteration, use `keys().length()` in the invariant.
 - For `for item in array` loops, use the container length in invariant/assert and keep a TODO decreases when the index is hidden.
+- For early-return loops (e.g., emptiness checks), place the spec block before the return to keep it visible.
 
 Example:
 ```mbt
