@@ -197,6 +197,22 @@ pub fn env_clone(env : Env) -> Env {
 ## Reverse scans
 - Isolate right-to-left split detection into a helper to keep main parsers linear.
 
+## Suffix digit scans
+- Use functional `for` with `break` to find the first non-digit from the end without `mut`.
+
+Example:
+```mbt
+let i = for idx = len; idx > 0; {
+  let ch = chars[idx - 1]
+  if ch >= '0' && ch <= '9' {
+    continue idx - 1
+  }
+  break idx
+} else {
+  0
+}
+```
+
 ## Unique delimiter lookup
 - Extract a helper like `find_unique_char` when multiple parsers need the same delimiter scan logic.
 

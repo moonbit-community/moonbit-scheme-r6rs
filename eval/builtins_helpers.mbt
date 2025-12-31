@@ -58,20 +58,21 @@ fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
 }
 
 ///|
+/// Strip a gensym suffix like `__sg123` if present.
 fn strip_gensym_suffix(name : String) -> String? {
   let chars = string_to_chars(name)
   let len = chars.length()
   if len < 5 {
     return None
   }
-  let mut i = len
-  while i > 0 {
-    let ch = chars[i - 1]
+  let i = for idx = len; idx > 0; {
+    let ch = chars[idx - 1]
     if ch >= '0' && ch <= '9' {
-      i = i - 1
-    } else {
-      break
+      continue idx - 1
     }
+    break idx
+  } else {
+    0
   }
   if i == len || i < 4 {
     return None
