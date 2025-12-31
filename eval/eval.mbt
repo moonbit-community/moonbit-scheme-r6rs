@@ -6004,58 +6004,57 @@ fn apply_proc(
       eval_sequence_state(cl.body, new_env, kont, handlers)
     }
     Value::CaseClosure(cl) => {
-      let mut matched = false
-      let mut matched_formals : Formals? = None
-      let mut matched_body : Array[Datum] = []
-      for clause in cl.clauses {
-        let clause_formals = Formals::{
-          params: clause.params,
-          rest: clause.rest,
-        }
-        if formals_accept_len(clause_formals, args.length()) {
-          matched = true
-          matched_formals = Some(clause_formals)
-          matched_body = clause.body
-          break
-        }
-      }
-      if !matched {
-        if cl.clauses.length() == 1 {
-          let clause = cl.clauses[0]
-          match clause.rest {
-            None => raise arity_mismatch(clause.params.length(), args.length())
-            Some(_) =>
-              raise arity_mismatch_at_least(
-                clause.params.length(),
-                args.length(),
-              )
-          }
-        }
-        let expected_parts : Array[String] = []
-        for clause in cl.clauses {
+      let matched =
+        for i = 0; i < cl.clauses.length(); {
+          let clause = cl.clauses[i]
           let clause_formals = Formals::{
             params: clause.params,
             rest: clause.rest,
           }
-          expected_parts.push(formals_expected_desc(clause_formals))
+          if formals_accept_len(clause_formals, args.length()) {
+            break Some((clause_formals, clause.body))
+          }
+          continue i + 1
+        } else {
+          None
         }
-        let expected = expected_parts.join(", ")
-        raise @core.EvalError(
-          "arity mismatch: expected one of \{expected} got \{args.length()}",
-        )
-      }
-      let new_env = env_extend(cl.env)
-      match matched_formals {
-        Some(formals) => {
-          let bindings = formals_bindings(formals, args)
+      match matched {
+        None => {
+          if cl.clauses.length() == 1 {
+            let clause = cl.clauses[0]
+            match clause.rest {
+              None =>
+                raise arity_mismatch(clause.params.length(), args.length())
+              Some(_) =>
+                raise arity_mismatch_at_least(
+                  clause.params.length(),
+                  args.length(),
+                )
+            }
+          }
+          let expected_parts : Array[String] = []
+          for clause in cl.clauses {
+            let clause_formals = Formals::{
+              params: clause.params,
+              rest: clause.rest,
+            }
+            expected_parts.push(formals_expected_desc(clause_formals))
+          }
+          let expected = expected_parts.join(", ")
+          raise @core.EvalError(
+            "arity mismatch: expected one of \{expected} got \{args.length()}",
+          )
+        }
+        Some((matched_formals, matched_body)) => {
+          let new_env = env_extend(cl.env)
+          let bindings = formals_bindings(matched_formals, args)
           for binding in bindings {
             let (name, bound_value) = binding
             env_define(new_env, name, bound_value)
           }
+          eval_sequence_state(matched_body, new_env, kont, handlers)
         }
-        None => ()
       }
-      eval_sequence_state(matched_body, new_env, kont, handlers)
     }
     Value::Parameter(param) =>
       match args.length() {
