@@ -1589,6 +1589,9 @@ fn eval_expr_impl(
             let arg_value = expect_single(value)
             let next_values : Array[Value] = []
             for item in evaluated {
+              // invariant : evaluated.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : evaluated.length() >= 0
               next_values.push(item)
             }
             next_values.push(arg_value)
@@ -1665,6 +1668,9 @@ fn eval_expr_impl(
             let single = expect_single(value)
             let next_values : Array[Value] = []
             for item in values {
+              // invariant : values.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : values.length() >= 0
               next_values.push(item)
             }
             next_values.push(single)
@@ -1680,6 +1686,9 @@ fn eval_expr_impl(
             } else {
               let new_env = env_extend(env)
               for i = 0; i < bindings.length(); {
+                // invariant : i >= 0 && i <= bindings.length()
+                // decreases : bindings.length() - i
+                // assert : i <= bindings.length()
                 let (name, _) = bindings[i]
                 env_define(new_env, name, next_values[i])
                 continue i + 1
@@ -1726,6 +1735,9 @@ fn eval_expr_impl(
             let single = expect_single(value)
             let next_values : Array[Value] = []
             for item in collected {
+              // invariant : collected.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : collected.length() >= 0
               next_values.push(item)
             }
             next_values.push(single)
@@ -1742,6 +1754,9 @@ fn eval_expr_impl(
               )
             } else {
               for i = 0; i < bindings.length(); {
+                // invariant : i >= 0 && i <= bindings.length()
+                // decreases : bindings.length() - i
+                // assert : i <= bindings.length()
                 let (name, _) = bindings[i]
                 env_set(env, name, next_values[i])
                 continue i + 1
@@ -1755,6 +1770,9 @@ fn eval_expr_impl(
             let bound = formals_bindings(formals, values)
             let next_collected : Array[Array[(String, Value)]] = []
             for item in collected {
+              // invariant : collected.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : collected.length() >= 0
               next_collected.push(item)
             }
             next_collected.push(bound)
@@ -1772,8 +1790,14 @@ fn eval_expr_impl(
             } else {
               let new_env = env_extend(env)
               for i = 0; i < bindings.length(); {
+                // invariant : i >= 0 && i <= bindings.length()
+                // decreases : bindings.length() - i
+                // assert : i <= bindings.length()
                 let binding_values = next_collected[i]
                 for binding in binding_values {
+                  // invariant : binding_values.length() >= 0
+                  // TODO(decreases) : loop index not exposed; possible bug
+                  // assert : binding_values.length() >= 0
                   let (name, bound_value) = binding
                   env_define(new_env, name, bound_value)
                 }
@@ -1788,6 +1812,9 @@ fn eval_expr_impl(
             let binding_values = formals_bindings(formals, values)
             let new_env = env_extend(env)
             for binding in binding_values {
+              // invariant : binding_values.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : binding_values.length() >= 0
               let (name, bound_value) = binding
               env_define(new_env, name, bound_value)
             }
@@ -1808,6 +1835,9 @@ fn eval_expr_impl(
             let values = value_to_values(value)
             let binding_values = formals_bindings(formals, values)
             for binding in binding_values {
+              // invariant : binding_values.length() >= 0
+              // TODO(decreases) : loop index not exposed; possible bug
+              // assert : binding_values.length() >= 0
               let (name, bound_value) = binding
               env_define(env, name, bound_value)
             }
