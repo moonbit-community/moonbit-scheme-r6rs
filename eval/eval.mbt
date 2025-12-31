@@ -6288,158 +6288,156 @@ fn apply_proc(
         _ => raise arity_mismatch(1, args.length())
       }
     Value::Primitive(Primitive::Map) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let lists : Array[Datum] = []
-        for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          lists.push(value_as_datum(args[i]))
-          continue i + 1
+      match args {
+        [proc_value, first_list, ..rest] => {
+          let lists : Array[Datum] = []
+          lists.push(value_as_datum(first_list))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            lists.push(value_as_datum(item))
+          }
+          map_step(proc_value, lists, [], false, kont, handlers)
         }
-        map_step(proc_value, lists, [], false, kont, handlers)
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(Primitive::ForEach) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let lists : Array[Datum] = []
-        for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          lists.push(value_as_datum(args[i]))
-          continue i + 1
+      match args {
+        [proc_value, first_list, ..rest] => {
+          let lists : Array[Datum] = []
+          lists.push(value_as_datum(first_list))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            lists.push(value_as_datum(item))
+          }
+          map_step(proc_value, lists, [], true, kont, handlers)
         }
-        map_step(proc_value, lists, [], true, kont, handlers)
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(Primitive::VectorMap) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let vectors : Array[Array[Datum]] = []
-        for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          vectors.push(value_as_vector(args[i]))
-          continue i + 1
-        }
-        let len = vectors[0].length()
-        for j = 0; j < vectors.length(); {
-          // invariant : j >= 0 && j <= vectors.length()
-          // decreases : vectors.length() - j
-          // assert : j <= vectors.length()
-          if vectors[j].length() != len {
-            raise @core.EvalError("vector length mismatch")
+      match args {
+        [proc_value, first_vector, ..rest] => {
+          let vectors : Array[Array[Datum]] = []
+          vectors.push(value_as_vector(first_vector))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            vectors.push(value_as_vector(item))
           }
-          continue j + 1
+          let len = vectors[0].length()
+          for j = 0; j < vectors.length(); {
+            // invariant : j >= 0 && j <= vectors.length()
+            // decreases : vectors.length() - j
+            // assert : j <= vectors.length()
+            if vectors[j].length() != len {
+              raise @core.EvalError("vector length mismatch")
+            }
+            continue j + 1
+          }
+          let lists : Array[Datum] = []
+          for k = 0; k < vectors.length(); {
+            // invariant : k >= 0 && k <= vectors.length()
+            // decreases : vectors.length() - k
+            // assert : k <= vectors.length()
+            lists.push(list_from_array(vectors[k]))
+            continue k + 1
+          }
+          map_step(
+            proc_value,
+            lists,
+            [],
+            false,
+            Kont::VectorMapFinalize(kont),
+            handlers,
+          )
         }
-        let lists : Array[Datum] = []
-        for k = 0; k < vectors.length(); {
-          // invariant : k >= 0 && k <= vectors.length()
-          // decreases : vectors.length() - k
-          // assert : k <= vectors.length()
-          lists.push(list_from_array(vectors[k]))
-          continue k + 1
-        }
-        map_step(
-          proc_value,
-          lists,
-          [],
-          false,
-          Kont::VectorMapFinalize(kont),
-          handlers,
-        )
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(Primitive::VectorForEach) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let vectors : Array[Array[Datum]] = []
-        for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          vectors.push(value_as_vector(args[i]))
-          continue i + 1
-        }
-        let len = vectors[0].length()
-        for j = 0; j < vectors.length(); {
-          // invariant : j >= 0 && j <= vectors.length()
-          // decreases : vectors.length() - j
-          // assert : j <= vectors.length()
-          if vectors[j].length() != len {
-            raise @core.EvalError("vector length mismatch")
+      match args {
+        [proc_value, first_vector, ..rest] => {
+          let vectors : Array[Array[Datum]] = []
+          vectors.push(value_as_vector(first_vector))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            vectors.push(value_as_vector(item))
           }
-          continue j + 1
+          let len = vectors[0].length()
+          for j = 0; j < vectors.length(); {
+            // invariant : j >= 0 && j <= vectors.length()
+            // decreases : vectors.length() - j
+            // assert : j <= vectors.length()
+            if vectors[j].length() != len {
+              raise @core.EvalError("vector length mismatch")
+            }
+            continue j + 1
+          }
+          let lists : Array[Datum] = []
+          for k = 0; k < vectors.length(); {
+            // invariant : k >= 0 && k <= vectors.length()
+            // decreases : vectors.length() - k
+            // assert : k <= vectors.length()
+            lists.push(list_from_array(vectors[k]))
+            continue k + 1
+          }
+          map_step(proc_value, lists, [], true, kont, handlers)
         }
-        let lists : Array[Datum] = []
-        for k = 0; k < vectors.length(); {
-          // invariant : k >= 0 && k <= vectors.length()
-          // decreases : vectors.length() - k
-          // assert : k <= vectors.length()
-          lists.push(list_from_array(vectors[k]))
-          continue k + 1
-        }
-        map_step(proc_value, lists, [], true, kont, handlers)
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(Primitive::StringMap) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let first = value_as_string(args[1])
-        let len = first.length()
-        let lists : Array[Datum] = []
-        lists.push(string_to_char_list(first))
-        for i = 2; i < args.length(); {
-          // invariant : i >= 2 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let s = value_as_string(args[i])
-          if s.length() != len {
-            raise @core.EvalError("string length mismatch")
+      match args {
+        [proc_value, first_value, ..rest] => {
+          let first = value_as_string(first_value)
+          let len = first.length()
+          let lists : Array[Datum] = []
+          lists.push(string_to_char_list(first))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            let s = value_as_string(item)
+            if s.length() != len {
+              raise @core.EvalError("string length mismatch")
+            }
+            lists.push(string_to_char_list(s))
           }
-          lists.push(string_to_char_list(s))
-          continue i + 1
+          map_step(
+            proc_value,
+            lists,
+            [],
+            false,
+            Kont::StringMapFinalize(kont),
+            handlers,
+          )
         }
-        map_step(
-          proc_value,
-          lists,
-          [],
-          false,
-          Kont::StringMapFinalize(kont),
-          handlers,
-        )
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(Primitive::StringForEach) =>
-      if args.length() < 2 {
-        raise arity_mismatch(2, args.length())
-      } else {
-        let proc_value = args[0]
-        let first = value_as_string(args[1])
-        let len = first.length()
-        let lists : Array[Datum] = []
-        lists.push(string_to_char_list(first))
-        for i = 2; i < args.length(); {
-          // invariant : i >= 2 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let s = value_as_string(args[i])
-          if s.length() != len {
-            raise @core.EvalError("string length mismatch")
+      match args {
+        [proc_value, first_value, ..rest] => {
+          let first = value_as_string(first_value)
+          let len = first.length()
+          let lists : Array[Datum] = []
+          lists.push(string_to_char_list(first))
+          for item in rest {
+            // invariant : rest.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : rest.length() >= 0
+            let s = value_as_string(item)
+            if s.length() != len {
+              raise @core.EvalError("string length mismatch")
+            }
+            lists.push(string_to_char_list(s))
           }
-          lists.push(string_to_char_list(s))
-          continue i + 1
+          map_step(proc_value, lists, [], true, kont, handlers)
         }
-        map_step(proc_value, lists, [], true, kont, handlers)
+        _ => raise arity_mismatch(2, args.length())
       }
     Value::Primitive(prim) =>
       MachineState::Apply(apply_primitive(prim, args), kont, handlers)
