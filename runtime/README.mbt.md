@@ -39,6 +39,17 @@ test "env basics" {
 }
 
 ///|
+test "env set" {
+  let env = env_new()
+  env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
+  env_set(env, "x", @core.Value::Datum(@core.Datum::Int(2)))
+  match env_lookup_optional(env, "x") {
+    Some(@core.Value::Datum(@core.Datum::Int(2))) => ()
+    _ => fail("expected updated value")
+  }
+}
+
+///|
 test "value to string" {
   let value = @core.Value::Datum(@core.Datum::Int(5))
   inspect(value_to_string(value), content="5")
