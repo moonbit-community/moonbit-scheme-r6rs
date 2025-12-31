@@ -1557,29 +1557,24 @@ fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int {
   if bigint_is_zero(value) {
     return 0
   }
-  let mut n = value
   let two = bigint_from_int(2)
-  let mut count = 0
-  while n.compare_int(0) > 0 {
-    n = n / two
-    count = count + 1
+  for n = value, count = 0; n.compare_int(0) > 0; {
+    continue n / two, count + 1
+  } else {
+    count
   }
-  count
 }
 
 ///|
 fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int {
-  let mut n = value
   let two = bigint_from_int(2)
-  let mut count = 0
-  while n.compare_int(0) > 0 {
+  for n = value, count = 0; n.compare_int(0) > 0; {
     let bit = n % two
-    if !bigint_is_zero(bit) {
-      count = count + 1
-    }
-    n = n / two
+    let next = if bigint_is_zero(bit) { count } else { count + 1 }
+    continue n / two, next
+  } else {
+    count
   }
-  count
 }
 
 ///|

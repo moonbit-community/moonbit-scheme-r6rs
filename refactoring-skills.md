@@ -177,6 +177,18 @@ pub fn env_clone(env : Env) -> Env {
 - Prefer `for i, v in array` over manual `while` counters when possible to reduce `mut`.
   - Useful for delimiter scans like `@` or `/` in numeric tokens.
 
+## Division-based counters
+- Replace `while n > 0` loops with a functional `for` that carries `(n, count)` state.
+
+Example:
+```mbt
+for n = value, count = 0; n.compare_int(0) > 0; {
+  continue n / two, count + 1
+} else {
+  count
+}
+```
+
 ## Multi-state loops
 - Use functional `for` with multiple state variables to replace `mut` accumulators in small numeric loops.
 
