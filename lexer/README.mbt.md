@@ -21,9 +21,15 @@ let tok = reader.read_token()
 ```mbt check
 ///|
 test "reader helpers" {
-  inspect(digit_value('9'), content="Some(9)")
-  inspect(digit_value('a'), content="Some(10)")
-  inspect(digit_value('F'), content="Some(15)")
+  let peek = make_reader("ab")
+  guard peek.peek_next() is Some('b') else { fail("expected b") }
+  peek.advance(1)
+  guard peek.peek() is Some('b') else { fail("expected b") }
+  let labeled = make_reader("x")
+  let cell = Ref::new(@core.Datum::Nil)
+  labeled.label_set(1, cell)
+  guard labeled.label_get(1) is Some(_) else { fail("expected label") }
+  guard labeled.label_get(2) is None else { fail("expected missing label") }
   let r = make_reader("#(1 2)")
   inspect(r.is_vector_start(), content="true")
   let ellipsis = make_reader("...")

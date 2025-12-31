@@ -1926,6 +1926,22 @@ let value = Datum::Int(1)
 let typed : Datum = Int(1)
 ```
 
+## Minimize public helpers
+- Use `moon ide find-references` to confirm a helper is package-internal.
+- Move any public README examples to docstring tests before making the helper private.
+
+Example:
+```mbt
+fn digit_value(ch : Char) -> Int? {
+  match ch {
+    '0'..='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    _ => None
+  }
+}
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.

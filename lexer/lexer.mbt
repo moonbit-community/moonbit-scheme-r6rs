@@ -47,6 +47,15 @@ fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
 
 ///|
 /// Peek the next character after the current position without consuming it.
+///
+/// # Example
+/// ```mbt check
+/// test "peek_next" {
+///   let r = make_reader("ab")
+///   guard r.peek_next() is Some('b') else { fail("expected b") }
+///   guard r.peek() is Some('a') else { fail("expected a") }
+/// }
+/// ```
 pub fn Reader::peek_next(self : Reader) -> Char? {
   self.peek_offset(1)
 }
@@ -71,6 +80,17 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[Datum]? {
 
 ///|
 /// Store a label cell by id.
+///
+/// # Example
+/// ```mbt check
+/// test "label set/get" {
+///   let r = make_reader("x")
+///   let cell = Ref::new(@core.Datum::Nil)
+///   r.label_set(1, cell)
+///   guard r.label_get(1) is Some(_) else { fail("expected label") }
+///   guard r.label_get(2) is None else { fail("expected missing label") }
+/// }
+/// ```
 pub fn Reader::label_set(self : Reader, label : Int, cell : Ref[Datum]) -> Unit {
   self.labels[label] = cell
 }
@@ -358,14 +378,11 @@ fn Reader::read_identifier_escape(self : Reader) -> Char raise ParseError {
 /// }
 /// ```
 pub fn digit_value(ch : Char) -> Int? {
-  if ch.is_ascii_digit() {
-    Some(ch.to_int() - '0'.to_int())
-  } else if ch.is_ascii_lowercase() {
-    Some(ch.to_int() - 'a'.to_int() + 10)
-  } else if ch.is_ascii_uppercase() {
-    Some(ch.to_int() - 'A'.to_int() + 10)
-  } else {
-    None
+  match ch {
+    '0'..='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    _ => None
   }
 }
 
