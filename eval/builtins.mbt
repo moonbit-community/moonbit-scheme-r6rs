@@ -7,6 +7,9 @@ fn apply_primitive(
   match prim {
     Primitive::Add => {
       let acc = for i = 0, acc = Datum::Int(0); i < args.length(); {
+        // invariant : i >= 0 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         continue i + 1, num_add(acc, value_as_number(args[i]))
       } else {
         acc
@@ -23,6 +26,9 @@ fn apply_primitive(
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
             i < args.length(); {
+              // invariant : i >= 1 && i <= args.length()
+              // decreases : args.length() - i
+              // assert : i <= args.length()
               continue i + 1, num_sub(result, value_as_number(args[i]))
             } else {
               result
@@ -32,6 +38,9 @@ fn apply_primitive(
       }
     Primitive::Mul => {
       let product = for i = 0, product = Datum::Int(1); i < args.length(); {
+        // invariant : i >= 0 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         continue i + 1, num_mul(product, value_as_number(args[i]))
       } else {
         product
@@ -48,6 +57,9 @@ fn apply_primitive(
         _ => {
           let result = for i = 1, result = value_as_number(args[0]);
             i < args.length(); {
+              // invariant : i >= 1 && i <= args.length()
+              // decreases : args.length() - i
+              // assert : i <= args.length()
               continue i + 1, num_div(result, value_as_number(args[i]))
             } else {
               result
@@ -61,6 +73,9 @@ fn apply_primitive(
       } else {
         let first = value_as_number(args[0])
         let ok = for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           if !num_equal(value_as_number(args[i]), first) {
             break false
           }
@@ -76,6 +91,9 @@ fn apply_primitive(
       } else {
         let prev = value_as_number(args[0])
         let ok = for i = 1, prev = prev; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let cur = value_as_number(args[i])
           if !num_less(prev, cur) {
             break false
