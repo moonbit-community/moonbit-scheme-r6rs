@@ -90,7 +90,7 @@ pub fn Reader::label_set(self : Reader, label : Int, cell : Ref[Datum]) -> Unit 
 pub fn Reader::next(self : Reader) -> Char? {
   let ch = self.peek()
   match ch {
-    Some(_) => self.pos = self.pos + 1
+    Some(_) => self.advance(1)
     None => ()
   }
   ch
