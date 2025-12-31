@@ -200,6 +200,37 @@ for i = 0; i < clauses.length(); {
 }
 ```
 
+## Array arity pattern matching
+- Use array patterns to enforce fixed arity and avoid extra indexing or nested length checks.
+- Keep the fallback `_` branch so you can report `arity_mismatch` with `args.length()`.
+
+Example:
+```mbt
+match args {
+  [expr_value, env_value] => {
+    let expr = value_as_datum(expr_value)
+    let eval_env = value_as_eval_env(env_value)
+    MachineState::Eval(expr, eval_env.env, kont, handlers)
+  }
+  _ => raise arity_mismatch(2, args.length())
+}
+```
+
+## Loop specs as comments
+- Write formal, type-checkable expressions in `// invariant : ...`, `// decreases : ...`, and `// assert : ...`.
+- When the loop index is not exposed, add a TODO for decreases to flag potential issues.
+
+Example:
+```mbt
+for i = 0; i < items.length(); {
+  // invariant : i >= 0 && i <= items.length()
+  // decreases : items.length() - i
+  // assert : i <= items.length()
+  ...
+  continue i + 1
+}
+```
+
 ## Split primitive dispatches
 - Move large `match prim` blocks into per-domain `apply_*_primitive` helpers that return `Value?`.
 - Keep `apply_primitive` as a small dispatcher and leave a `apply_primitive_core` for the remaining primitives.
