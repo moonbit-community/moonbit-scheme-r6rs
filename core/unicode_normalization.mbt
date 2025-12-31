@@ -193,6 +193,9 @@ fn decompose_char(ch : Char, compat : Bool, out : Array[Char]) -> Unit {
   match mapping {
     Some(seq) =>
       for item in seq {
+        // invariant : seq.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : seq.length() >= 0
         decompose_char(item, compat, out)
       }
     None => out.push(ch)
@@ -203,6 +206,9 @@ fn decompose_char(ch : Char, compat : Bool, out : Array[Char]) -> Unit {
 fn decompose_string(s : String, compat : Bool) -> Array[Char] {
   let out : Array[Char] = []
   for ch in s {
+    // invariant : s.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : s.length() >= 0
     decompose_char(ch, compat, out)
   }
   out
@@ -213,6 +219,9 @@ fn insert_sorted_by_ccc(segment : Array[Char], ch : Char, ccc : Int) -> Unit {
   let start = segment.length()
   segment.push(ch)
   let insert_at = for i = start; i > 0; {
+    // invariant : i >= 0 && i <= segment.length()
+    // decreases : i
+    // assert : i <= segment.length()
     let prev = segment[i - 1]
     if combining_class(prev) <= ccc {
       break i
@@ -230,11 +239,17 @@ fn canonical_order(chars : Array[Char]) -> Array[Char] {
   let out : Array[Char] = []
   let empty_segment : Array[Char] = []
   let segment = for i = 0, segment = empty_segment; i < chars.length(); {
+    // invariant : i >= 0 && i <= chars.length()
+    // decreases : chars.length() - i
+    // assert : i <= chars.length()
     let ch = chars[i]
     let ccc = combining_class(ch)
     if ccc == 0 {
       if segment.length() > 0 {
         for item in segment {
+          // invariant : segment.length() >= 0
+          // TODO(decreases) : loop index not exposed; possible bug
+          // assert : segment.length() >= 0
           out.push(item)
         }
       }
@@ -253,6 +268,9 @@ fn canonical_order(chars : Array[Char]) -> Array[Char] {
     segment
   }
   for item in segment {
+    // invariant : segment.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : segment.length() >= 0
     out.push(item)
   }
   out
@@ -323,6 +341,9 @@ fn try_compose(
 fn compose(chars : Array[Char]) -> Array[Char] {
   let out : Array[Char] = []
   for i = 0, starter_index = -1, last_ccc = 0; i < chars.length(); {
+    // invariant : i >= 0 && i <= chars.length()
+    // decreases : chars.length() - i
+    // assert : starter_index == -1 || starter_index < out.length()
     let ch = chars[i]
     let ccc = combining_class(ch)
     if starter_index >= 0 {
@@ -351,6 +372,9 @@ fn normalize_string(s : String, compat : Bool, compose_output : Bool) -> String 
   let result = if compose_output { compose(ordered) } else { ordered }
   let buf = @buffer.new()
   for ch in result {
+    // invariant : result.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : result.length() >= 0
     buf.write_char(ch)
   }
   buf.to_string()
