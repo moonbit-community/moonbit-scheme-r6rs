@@ -14,7 +14,7 @@
 /// ```
 pub fn env_new() -> Env {
   let env : Env = []
-  env.push({})
+  env..push({})
   env
 }
 
@@ -22,7 +22,7 @@ pub fn env_new() -> Env {
 /// Extend an environment by pushing a new empty frame.
 pub fn env_extend(env : Env) -> Env {
   let new_env = env.copy()
-  new_env.push({})
+  new_env..push({})
   new_env
 }
 
@@ -49,20 +49,20 @@ pub fn env_clone(env : Env) -> Env {
 }
 
 ///|
-fn env_last_frame(env : Env) -> Map[String, Binding] {
-  env[env.length() - 1]
+fn Env::last_frame(self : Env) -> Map[String, Binding] {
+  self[self.length() - 1]
 }
 
 ///|
-fn env_get(env : Env, name : String) -> Binding? {
-  if env.is_empty() {
+fn Env::get_binding(self : Env, name : String) -> Binding? {
+  if self.is_empty() {
     return None
   }
-  let result : Binding? = for i = env.length() - 1; i >= 0; i = i - 1 {
-    // invariant : i >= 0 && i < env.length()
+  let result : Binding? = for i = self.length() - 1; i >= 0; i = i - 1 {
+    // invariant : i >= 0 && i < self.length()
     // decreases : i
-    // assert : i < env.length()
-    let frame = env[i]
+    // assert : i < self.length()
+    let frame = self[i]
     match frame.get(name) {
       Some(binding) => break Some(binding)
       None => ()
@@ -76,7 +76,7 @@ fn env_get(env : Env, name : String) -> Binding? {
 ///|
 /// Look up a macro transformer by name, if present.
 pub fn env_get_macro(env : Env, name : String) -> MacroTransformer? {
-  match env_get(env, name) {
+  match env.get_binding(name) {
     Some(binding) =>
       match binding.value {
         Value::Macro(transformer) => Some(transformer)
@@ -89,21 +89,21 @@ pub fn env_get_macro(env : Env, name : String) -> MacroTransformer? {
 ///|
 /// Define a new binding in the current frame.
 pub fn env_define(env : Env, name : String, value : Value) -> Unit {
-  let frame = env_last_frame(env)
+  let frame = env.last_frame()
   frame[name] = Binding::{ id: next_binding_id(), value }
 }
 
 ///|
 /// Define an existing binding in the current frame.
 pub fn env_define_binding(env : Env, name : String, binding : Binding) -> Unit {
-  let frame = env_last_frame(env)
+  let frame = env.last_frame()
   frame[name] = binding
 }
 
 ///|
 /// Look up a binding by name or raise if it is unbound.
 pub fn env_lookup_binding(env : Env, name : String) -> Binding raise EvalError {
-  match env_get(env, name) {
+  match env.get_binding(name) {
     Some(binding) => binding
     None => raise @core.EvalError("unbound variable: \{name}")
   }
@@ -112,13 +112,13 @@ pub fn env_lookup_binding(env : Env, name : String) -> Binding raise EvalError {
 ///|
 /// Look up a binding by name, returning None if missing.
 pub fn env_lookup_binding_optional(env : Env, name : String) -> Binding? {
-  env_get(env, name)
+  env.get_binding(name)
 }
 
 ///|
 /// Look up a binding id by name, returning None if missing.
 pub fn env_binding_id_optional(env : Env, name : String) -> Int? {
-  match env_get(env, name) {
+  match env.get_binding(name) {
     Some(binding) => Some(binding.id)
     None => None
   }
@@ -145,7 +145,7 @@ pub fn env_lookup(env : Env, name : String) -> Value raise EvalError {
 ///|
 /// Look up a binding value, returning None if missing.
 pub fn env_lookup_optional(env : Env, name : String) -> Value? {
-  match env_get(env, name) {
+  match env.get_binding(name) {
     Some(binding) => Some(binding.value)
     None => None
   }

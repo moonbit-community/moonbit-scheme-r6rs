@@ -1794,3 +1794,25 @@ match r.peek_next() {
   _ => ...
 }
 ```
+
+## Internal methods on type aliases
+- Use private `Type::method` helpers to encapsulate repeated logic without changing the public API.
+- Chaining with `..` keeps small constructors readable.
+
+Example:
+```mbt
+fn Env::last_frame(self : Env) -> Map[String, Binding] {
+  self[self.length() - 1]
+}
+
+pub fn env_define(env : Env, name : String, value : Value) -> Unit {
+  let frame = env.last_frame()
+  frame[name] = Binding::{ id: next_binding_id(), value }
+}
+
+pub fn env_new() -> Env {
+  let env : Env = []
+  env..push({})
+  env
+}
+```
