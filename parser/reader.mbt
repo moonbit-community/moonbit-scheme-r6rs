@@ -776,12 +776,13 @@ fn parse_complex_token(
 fn parse_number_token_internal(tok : String, radix_override : Int?) -> Datum? {
   let chars = string_to_chars(tok)
   let len = chars.length()
-  let mut radix = match radix_override {
+  let base_radix = match radix_override {
     Some(r) => r
     None => 10
   }
-  let mut exactness : Char? = None
-  let start = for i = 0; i + 1 < len && chars[i] == '#'; {
+  let default_exactness : Char? = None
+  let (start, radix, exactness) = for i = 0, radix = base_radix,
+    exactness = default_exactness; i + 1 < len && chars[i] == '#'; {
     let tag = chars[i + 1]
     match tag {
       'b' | 'B' | 'o' | 'O' | 'd' | 'D' | 'x' | 'X' =>
@@ -789,12 +790,13 @@ fn parse_number_token_internal(tok : String, radix_override : Int?) -> Datum? {
           if radix != 10 {
             return None
           }
-          radix = match tag {
+          let next_radix = match tag {
             'b' | 'B' => 2
             'o' | 'O' => 8
             'd' | 'D' => 10
             _ => 16
           }
+          continue i + 2, next_radix, exactness
         } else {
           return None
         }
@@ -802,13 +804,12 @@ fn parse_number_token_internal(tok : String, radix_override : Int?) -> Datum? {
         if exactness is Some(_) {
           return None
         }
-        exactness = Some(tag)
+        continue i + 2, radix, Some(tag)
       }
       _ => return None
     }
-    continue i + 2
   } else {
-    i
+    (i, radix, exactness)
   }
   if start >= len {
     return None

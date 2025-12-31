@@ -377,6 +377,21 @@ let (acc, frac_len, has_digit) = for i = start,
 ## Prefix tag scanning
 - Use functional `for` with `continue` to advance by fixed steps (like `#`-prefixed numeric tags).
 
+Example:
+```mbt
+let (start, radix, exactness) = for i = 0, radix = base_radix,
+  exactness = default_exactness; i + 1 < len && chars[i] == '#'; {
+    let tag = chars[i + 1]
+    match tag {
+      'b' | 'B' => continue i + 2, 2, exactness
+      'e' | 'E' => continue i + 2, radix, Some(tag)
+      _ => return None
+    }
+  } else {
+    (i, radix, exactness)
+  }
+```
+
 ## Depth-driven loops
 - Replace `mut depth` while loops with functional `for` state updates when scanning nested constructs.
 
