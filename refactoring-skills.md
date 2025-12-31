@@ -1499,3 +1499,21 @@ let list = for cur = r..skip_ws_and_comments().peek(); true; {
   Datum::Nil
 }
 ```
+
+## Conditional tuple replacement
+- Replace `mut` assignments across branches with a tuple result from an `if` expression.
+- Rebind the final value for sign or normalization without mutation.
+
+Example:
+```mbt
+let base_num = bigint_from_int(mantissa_bits.reinterpret_as_int())
+let one = bigint_from_int(1)
+let (num, den) = if exp_adjusted >= 0 {
+  let pow = pow_bigint_int(bigint_from_int(2), exp_adjusted)
+  (base_num * pow, one)
+} else {
+  let pow = pow_bigint_int(bigint_from_int(2), -exp_adjusted)
+  (base_num, pow)
+}
+let num = if sign_bit != 0U { -num } else { num }
+```

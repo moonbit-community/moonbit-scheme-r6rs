@@ -252,6 +252,7 @@ fn number_to_bigrat(
 }
 
 ///|
+/// Convert a finite float into an exact rational Datum.
 fn float_to_exact_datum(value : Float) -> Datum raise EvalError {
   if !float_is_finite(value) {
     raise @core.EvalError("inexact->exact: non-finite")
@@ -274,16 +275,16 @@ fn float_to_exact_datum(value : Float) -> Datum raise EvalError {
   } else {
     exp_bits.reinterpret_as_int() - 150
   }
-  let mut num = bigint_from_int(mantissa_bits.reinterpret_as_int())
-  let mut den = bigint_from_int(1)
-  if exp_adjusted >= 0 {
-    num = num * pow_bigint_int(bigint_from_int(2), exp_adjusted)
+  let base_num = bigint_from_int(mantissa_bits.reinterpret_as_int())
+  let one = bigint_from_int(1)
+  let (num, den) = if exp_adjusted >= 0 {
+    let pow = pow_bigint_int(bigint_from_int(2), exp_adjusted)
+    (base_num * pow, one)
   } else {
-    den = pow_bigint_int(bigint_from_int(2), -exp_adjusted)
+    let pow = pow_bigint_int(bigint_from_int(2), -exp_adjusted)
+    (base_num, pow)
   }
-  if sign_bit != 0U {
-    num = -num
-  }
+  let num = if sign_bit != 0U { -num } else { num }
   match normalize_big_rat(num, den) {
     Some(datum) => datum
     None => raise @core.EvalError("inexact->exact: unsupported")
