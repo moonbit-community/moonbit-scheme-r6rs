@@ -3437,8 +3437,7 @@ fn eval_letrec_syntax_state(
   } else {
     let new_env = env_extend(env)
     let binding_specs = datum_list_to_array(args[0])
-    let mut i = 0
-    while i < binding_specs.length() {
+    for i = 0; i < binding_specs.length(); {
       let parts = datum_list_to_array(binding_specs[i])
       if parts.length() != 2 {
         raise @core.EvalError("type error: syntax binding expected")
@@ -3452,7 +3451,7 @@ fn eval_letrec_syntax_state(
         def_env: new_env,
       })
       env_define(new_env, name, Value::Macro(placeholder))
-      i = i + 1
+      continue i + 1
     }
     let bindings = parse_syntax_bindings(args[0], new_env)
     let body = args.sub(start=1).to_array()
@@ -3701,8 +3700,7 @@ fn eval_define_record_type_state(
   }
   let fields : Array[RecordField] = []
   let field_index : Map[String, Int] = {}
-  let mut i = 0
-  while i < ctor_fields.length() {
+  for i = 0; i < ctor_fields.length(); {
     let field_name = ctor_fields[i]
     if field_index.contains(field_name) {
       raise @core.EvalError("invalid define-record-type")
@@ -3721,7 +3719,7 @@ fn eval_define_record_type_state(
       fields.push(RecordField::{ name: field_name, mutable: is_mutable })
     }
     field_index[field_name] = i
-    i = i + 1
+    continue i + 1
   }
   let bindings : Array[RecordFieldBinding] = []
   for field_name in new_field_names {
@@ -3860,8 +3858,7 @@ fn eval_define_condition_type_state(
   }
   let bindings : Array[RecordFieldBinding] = []
   let parent_count = parent_fields.length()
-  let mut i = 0
-  while i < new_field_names.length() {
+  for i = 0; i < new_field_names.length(); {
     let field_name = new_field_names[i]
     let accessor_name = match accessors.get(field_name) {
       Some(name) => name
@@ -3872,7 +3869,7 @@ fn eval_define_condition_type_state(
       index: parent_count + i,
       mutator: None,
     })
-    i = i + 1
+    continue i + 1
   }
   let record_type = make_record_type(
     record_name,
@@ -4303,12 +4300,11 @@ fn hashtable_found_state(
         raise @core.EvalError("hashtable is immutable")
       }
       let next_entries : Array[HashtableEntry] = []
-      let mut i = 0
-      while i < entries.length() {
+      for i = 0; i < entries.length(); {
         if i != idx {
           next_entries.push(entries[i])
         }
-        i = i + 1
+        continue i + 1
       }
       table.entries.val = next_entries
       MachineState::Apply(Value::Void, kont, handlers)
@@ -4597,10 +4593,9 @@ fn parse_version_ref(expr : Datum) -> VersionRef raise EvalError {
         raise @core.EvalError("invalid library name")
       }
       let refs : Array[VersionRef] = []
-      let mut i = 1
-      while i < items.length() {
+      for i = 1; i < items.length(); {
         refs.push(parse_version_ref(items[i]))
-        i = i + 1
+        continue i + 1
       }
       VersionRef::And(refs)
     }
@@ -4609,10 +4604,9 @@ fn parse_version_ref(expr : Datum) -> VersionRef raise EvalError {
         raise @core.EvalError("invalid library name")
       }
       let refs : Array[VersionRef] = []
-      let mut i = 1
-      while i < items.length() {
+      for i = 1; i < items.length(); {
         refs.push(parse_version_ref(items[i]))
-        i = i + 1
+        continue i + 1
       }
       VersionRef::Or(refs)
     }
@@ -4642,26 +4636,27 @@ fn parse_library_name_spec(expr : Datum) -> LibraryNameSpec raise EvalError {
     raise @core.EvalError("invalid library name")
   }
   let names : Array[String] = []
-  let mut version : Array[Int]? = None
-  let mut i = 0
-  while i < parts.length() {
-    match parts[i] {
-      Datum::Symbol(name) => {
-        if version is Some(_) {
-          raise @core.EvalError("invalid library name")
+  let version : Array[Int]? =
+    for i = 0, version = None; i < parts.length(); {
+      match parts[i] {
+        Datum::Symbol(name) => {
+          if version is Some(_) {
+            raise @core.EvalError("invalid library name")
+          }
+          names.push(name)
+          continue i + 1, version
         }
-        names.push(name)
-      }
-      Datum::Pair(_, _) | Datum::Nil => {
-        if i != parts.length() - 1 {
-          raise @core.EvalError("invalid library name")
+        Datum::Pair(_, _) | Datum::Nil => {
+          if i != parts.length() - 1 {
+            raise @core.EvalError("invalid library name")
+          }
+          continue i + 1, Some(parse_version_list(parts[i]))
         }
-        version = Some(parse_version_list(parts[i]))
+        _ => raise @core.EvalError("invalid library name")
       }
-      _ => raise @core.EvalError("invalid library name")
+    } else {
+      version
     }
-    i = i + 1
-  }
   if names.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -4675,26 +4670,27 @@ fn parse_library_ref(expr : Datum) -> LibraryRef raise EvalError {
     raise @core.EvalError("invalid library name")
   }
   let names : Array[String] = []
-  let mut version_ref : VersionRef? = None
-  let mut i = 0
-  while i < parts.length() {
-    match parts[i] {
-      Datum::Symbol(name) => {
-        if version_ref is Some(_) {
-          raise @core.EvalError("invalid library name")
+  let version_ref : VersionRef? =
+    for i = 0, version_ref = None; i < parts.length(); {
+      match parts[i] {
+        Datum::Symbol(name) => {
+          if version_ref is Some(_) {
+            raise @core.EvalError("invalid library name")
+          }
+          names.push(name)
+          continue i + 1, version_ref
         }
-        names.push(name)
-      }
-      Datum::Pair(_, _) | Datum::Nil => {
-        if i != parts.length() - 1 {
-          raise @core.EvalError("invalid library name")
+        Datum::Pair(_, _) | Datum::Nil => {
+          if i != parts.length() - 1 {
+            raise @core.EvalError("invalid library name")
+          }
+          continue i + 1, Some(parse_version_ref(parts[i]))
         }
-        version_ref = Some(parse_version_ref(parts[i]))
+        _ => raise @core.EvalError("invalid library name")
       }
-      _ => raise @core.EvalError("invalid library name")
+    } else {
+      version_ref
     }
-    i = i + 1
-  }
   if names.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -4708,17 +4704,20 @@ fn compare_versions(left : Array[Int], right : Array[Int]) -> Int {
   } else {
     right.length()
   }
-  let mut i = 0
-  while i < min_len {
+  let prefix_cmp = for i = 0; i < min_len; {
     if left[i] < right[i] {
-      return -1
+      break -1
     }
     if left[i] > right[i] {
-      return 1
+      break 1
     }
-    i = i + 1
+    continue i + 1
+  } else {
+    0
   }
-  if left.length() < right.length() {
+  if prefix_cmp != 0 {
+    prefix_cmp
+  } else if left.length() < right.length() {
     -1
   } else if left.length() > right.length() {
     1

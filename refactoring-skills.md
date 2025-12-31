@@ -434,6 +434,21 @@ let prefix = for i = 0; i < current.length() && i < target.length(); {
 }
 ```
 
+Example:
+```mbt
+let cmp = for i = 0; i < min_len; {
+  if left[i] < right[i] {
+    break -1
+  }
+  if left[i] > right[i] {
+    break 1
+  }
+  continue i + 1
+} else {
+  0
+}
+```
+
 ## Array equality scans
 - Use a functional `for` with `break false` for early exits instead of `mut` indices.
 
