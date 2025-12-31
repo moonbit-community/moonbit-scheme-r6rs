@@ -878,12 +878,24 @@ pub fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
 
 ///|
 /// Build a list datum from an array.
+///
+/// # Example
+/// ```mbt check
+/// test "list from array" {
+///   let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
+///   match list {
+///     @core.Datum::Pair(_, _) => ()
+///     _ => fail("expected list")
+///   }
+/// }
+/// ```
 pub fn list_from_array(items : Array[Datum]) -> Datum {
-  let mut tail = Datum::Nil
-  for item in items.rev_iter() {
-    tail = pair_new(item, tail)
+  for i = items.length(), tail = Datum::Nil; i > 0; {
+    let idx = i - 1
+    continue i - 1, pair_new(items[idx], tail)
+  } else {
+    tail
   }
-  tail
 }
 
 ///|

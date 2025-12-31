@@ -206,6 +206,21 @@ segment[insert_at] = ch
 ## Reverse assembly
 - Extract a small helper for reversing `Array[Char]` into a `String` to cut repeated loops.
 
+## Build lists with functional state
+- Build list datums from arrays using a functional `for` instead of `mut` tail updates.
+
+Example:
+```mbt
+pub fn list_from_array(items : Array[Datum]) -> Datum {
+  for i = items.length(), tail = Datum::Nil; i > 0; {
+    let idx = i - 1
+    continue i - 1, pair_new(items[idx], tail)
+  } else {
+    tail
+  }
+}
+```
+
 ## Reader consumption
 - Use `Reader::next()` (with `ignore(...)` if needed) to advance instead of direct `pos` mutation.
 
