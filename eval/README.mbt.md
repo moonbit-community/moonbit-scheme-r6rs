@@ -46,6 +46,12 @@ test "empty program value" {
 }
 
 ///|
+test "numeric comparisons" {
+  let value = eval_program("(and (= 1 1 1) (< 1 2 3) (>= 3 2 1))")
+  inspect(@runtime.value_to_string(value), content="#t")
+}
+
+///|
 test "include source" {
   register_include_source("mem.scm", "(+ 1 2)")
   let value = eval_program("(include \"mem.scm\")")

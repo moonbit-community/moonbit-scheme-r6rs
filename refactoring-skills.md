@@ -598,6 +598,20 @@ fn compare_chain_char(args : Array[Value], mode : CompareMode, case_insensitive 
 }
 ```
 
+Example:
+```mbt
+let prev = value_as_number(args[0])
+let ok = for i = 1, prev = prev; i < args.length(); {
+  let cur = value_as_number(args[i])
+  if !num_less(prev, cur) {
+    break false
+  }
+  continue i + 1, cur
+} else {
+  true
+}
+```
+
 ## Counter wrappers for OO-style ids
 - Wrap repeated `Ref[Int]` counters in a small struct with a `next()` method to keep call sites uniform.
 - Keep the wrapper private to avoid API churn while still enabling method-style calls.

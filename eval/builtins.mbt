@@ -20,12 +20,12 @@ fn apply_primitive(
           Value::Datum(num_sub(Datum::Int(0), value))
         }
         _ => {
-          let mut result = value_as_number(args[0])
-          let mut i = 1
-          while i < args.length() {
-            result = num_sub(result, value_as_number(args[i]))
-            i = i + 1
-          }
+          let result = for i = 1, result = value_as_number(args[0]);
+            i < args.length(); {
+              continue i + 1, num_sub(result, value_as_number(args[i]))
+            } else {
+              result
+            }
           Value::Datum(result)
         }
       }
@@ -44,12 +44,12 @@ fn apply_primitive(
           Value::Datum(num_div(Datum::Int(1), value))
         }
         _ => {
-          let mut result = value_as_number(args[0])
-          let mut i = 1
-          while i < args.length() {
-            result = num_div(result, value_as_number(args[i]))
-            i = i + 1
-          }
+          let result = for i = 1, result = value_as_number(args[0]);
+            i < args.length(); {
+              continue i + 1, num_div(result, value_as_number(args[i]))
+            } else {
+              result
+            }
           Value::Datum(result)
         }
       }
@@ -58,15 +58,13 @@ fn apply_primitive(
         bool_value(true)
       } else {
         let first = value_as_number(args[0])
-        let mut ok = true
-        let mut i = 1
-        while i < args.length() {
+        let ok = for i = 1; i < args.length(); {
           if !num_equal(value_as_number(args[i]), first) {
-            ok = false
-            break
-          } else {
-            i = i + 1
+            break false
           }
+          continue i + 1
+        } else {
+          true
         }
         bool_value(ok)
       }
@@ -74,18 +72,15 @@ fn apply_primitive(
       if args.length() <= 1 {
         bool_value(true)
       } else {
-        let mut ok = true
-        let mut prev = value_as_number(args[0])
-        let mut i = 1
-        while i < args.length() {
+        let prev = value_as_number(args[0])
+        let ok = for i = 1, prev = prev; i < args.length(); {
           let cur = value_as_number(args[i])
           if !num_less(prev, cur) {
-            ok = false
-            break
-          } else {
-            prev = cur
-            i = i + 1
+            break false
           }
+          continue i + 1, cur
+        } else {
+          true
         }
         bool_value(ok)
       }
@@ -93,18 +88,15 @@ fn apply_primitive(
       if args.length() <= 1 {
         bool_value(true)
       } else {
-        let mut ok = true
-        let mut prev = value_as_number(args[0])
-        let mut i = 1
-        while i < args.length() {
+        let prev = value_as_number(args[0])
+        let ok = for i = 1, prev = prev; i < args.length(); {
           let cur = value_as_number(args[i])
           if !num_greater(prev, cur) {
-            ok = false
-            break
-          } else {
-            prev = cur
-            i = i + 1
+            break false
           }
+          continue i + 1, cur
+        } else {
+          true
         }
         bool_value(ok)
       }
@@ -112,18 +104,15 @@ fn apply_primitive(
       if args.length() <= 1 {
         bool_value(true)
       } else {
-        let mut ok = true
-        let mut prev = value_as_number(args[0])
-        let mut i = 1
-        while i < args.length() {
+        let prev = value_as_number(args[0])
+        let ok = for i = 1, prev = prev; i < args.length(); {
           let cur = value_as_number(args[i])
           if !num_less_eq(prev, cur) {
-            ok = false
-            break
-          } else {
-            prev = cur
-            i = i + 1
+            break false
           }
+          continue i + 1, cur
+        } else {
+          true
         }
         bool_value(ok)
       }
@@ -131,18 +120,15 @@ fn apply_primitive(
       if args.length() <= 1 {
         bool_value(true)
       } else {
-        let mut ok = true
-        let mut prev = value_as_number(args[0])
-        let mut i = 1
-        while i < args.length() {
+        let prev = value_as_number(args[0])
+        let ok = for i = 1, prev = prev; i < args.length(); {
           let cur = value_as_number(args[i])
           if !num_greater_eq(prev, cur) {
-            ok = false
-            break
-          } else {
-            prev = cur
-            i = i + 1
+            break false
           }
+          continue i + 1, cur
+        } else {
+          true
         }
         bool_value(ok)
       }
