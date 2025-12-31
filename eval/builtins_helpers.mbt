@@ -971,11 +971,7 @@ let radix_digits : ReadOnlyArray[Char] = [
 
 ///|
 fn chars_rev_to_string(chars : Array[Char]) -> String {
-  let out : Array[Char] = []
-  for ch in chars.rev_iter() {
-    out.push(ch)
-  }
-  String::from_array(out)
+  String::from_array(chars.rev())
 }
 
 ///|
@@ -1051,8 +1047,7 @@ fn string_replace_range(
     raise @core.EvalError("index out of range")
   }
   let buf = @buffer.new()
-  let mut i = 0
-  while i < len {
+  for i = 0; i < len; {
     match s.get_char(i) {
       Some(ch) =>
         if i >= start && i < end {
@@ -1062,9 +1057,10 @@ fn string_replace_range(
         }
       None => raise @core.EvalError("index out of range")
     }
-    i = i + 1
+    continue i + 1
+  } else {
+    buf.to_string()
   }
-  buf.to_string()
 }
 
 ///|

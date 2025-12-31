@@ -348,6 +348,16 @@ fn pow_int(base : Int, exp : Int) -> Int {
 }
 ```
 
+## Reverse buffers with Array::rev
+- Use `Array::rev` instead of manual reverse-iter builds.
+
+Example:
+```mbt
+fn chars_rev_to_string(chars : Array[Char]) -> String {
+  String::from_array(chars.rev())
+}
+```
+
 ## Reader-friendly indexing helpers
 - Use `String::to_array()` for fast Char arrays instead of manual pushes.
 - Replace manual bounds checks with `Array::get` and reuse peek helpers.
