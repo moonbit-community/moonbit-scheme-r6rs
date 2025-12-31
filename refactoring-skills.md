@@ -1581,3 +1581,30 @@ let best = for i = 0, best = None; i < items.length(); {
   best
 }
 ```
+
+## Dafny-style loop specs (comments)
+- Annotate loops with `// invariant : ...`, `// decreases : ...`, and `// assert : ...` inside the loop body.
+- If a measure is not expressible, add `// TODO(decreases) : ...` to flag the risk.
+
+Example:
+```mbt
+for cur = list; true; {
+  // invariant : items.length() >= 0
+  // TODO(decreases) : list length not explicit; possible bug
+  // assert :
+  //   match cur {
+  //     Datum::Pair(_, _) | Datum::Nil => true
+  //     _ => false
+  //   }
+  match cur {
+    Datum::Nil => break
+    Datum::Pair(a, b) => {
+      items.push(a.val)
+      continue b.val
+    }
+    _ => raise @core.EvalError("type error: proper list expected")
+  }
+} else {
+  ()
+}
+```

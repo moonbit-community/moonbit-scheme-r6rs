@@ -348,6 +348,9 @@ pub fn enum_set_from_names(
 ) -> EnumSet raise EvalError {
   let members = enum_set_members_all_false(universe)
   for name in names {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : names.length() >= 0
     match enum_set_index_of(universe, name) {
       Some(idx) => members[idx] = true
       None => raise @core.EvalError("enum-set: unknown symbol")
@@ -477,6 +480,9 @@ pub fn record_type_matches(
     return false
   }
   for i, expected in fields {
+    // invariant : i >= 0 && i < fields.length()
+    // decreases : fields.length() - i
+    // assert : i < existing.fields.length()
     let actual = existing.fields[i]
     if expected.name != actual.name || expected.mutable != actual.mutable {
       return false

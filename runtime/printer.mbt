@@ -2,6 +2,9 @@
 fn escape_string(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
+    // invariant : s.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : s.length() >= 0
     match ch {
       '"' => buf.write_string("\\\"")
       '\\' => buf.write_string("\\\\")
@@ -144,6 +147,9 @@ fn bytevector_to_string(items : Array[Int]) -> String {
 fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
   let parts : Array[String] = []
   for cur = list; true; {
+    // invariant : parts.length() >= 0
+    // TODO(decreases) : list length not explicit; possible bug
+    // assert : parts.length() >= 0
     match cur {
       Datum::Nil => {
         let joined = parts.join(" ")

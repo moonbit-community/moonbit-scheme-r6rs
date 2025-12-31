@@ -8,6 +8,13 @@ fn arity_mismatch(expected : Int, got : Int) -> EvalError {
 /// Return true if the datum is a proper list.
 fn is_proper_list(value : Datum) -> Bool {
   for cur = value; true; {
+    // invariant : true
+    // TODO(decreases) : list length not explicit; possible bug
+    // assert :
+    //   match datum_unlabel(cur) {
+    //     Datum::Pair(_, _) | Datum::Nil => true
+    //     _ => true
+    //   }
     match datum_unlabel(cur) {
       Datum::Nil => break true
       Datum::Pair(_, cdr) => continue cdr.val
@@ -49,6 +56,9 @@ fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
     false
   } else {
     for i, value in left {
+      // invariant : i >= 0 && i < left.length()
+      // decreases : left.length() - i
+      // assert : i < right.length()
       if value != right[i] {
         return false
       }
@@ -66,6 +76,9 @@ fn strip_gensym_suffix(name : String) -> String? {
     return None
   }
   let i = for idx = len; idx > 0; {
+    // invariant : idx >= 0 && idx <= len
+    // decreases : idx
+    // assert : idx <= len
     let ch = chars[idx - 1]
     if ch >= '0' && ch <= '9' {
       continue idx - 1
@@ -94,6 +107,9 @@ fn strip_gensym_suffix(name : String) -> String? {
 ///|
 fn strip_all_gensym_suffixes(name : String) -> String {
   for cur = name; true; {
+    // invariant : cur.length() >= 0
+    // TODO(decreases) : suffix length not explicit; possible bug
+    // assert : cur.length() >= 0
     match strip_gensym_suffix(cur) {
       Some(next) => continue next
       None => break cur
@@ -455,6 +471,9 @@ fn float_to_int_exact(value : Float) -> Int? {
 ///|
 fn pow_int(base : Int, exp : Int) -> Int {
   for result = 1, b = base, e = exp; e > 0; {
+    // invariant : e >= 0
+    // decreases : e
+    // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
   } else {
@@ -466,6 +485,9 @@ fn pow_int(base : Int, exp : Int) -> Int {
 fn pow_bigint_int(base : @bigint.BigInt, exp : Int) -> @bigint.BigInt {
   let one = bigint_from_int(1)
   for result = one, b = base, e = exp; e > 0; {
+    // invariant : e >= 0
+    // decreases : e
+    // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
   } else {
@@ -481,6 +503,9 @@ fn pow_bigint_bigint(
   let one = bigint_from_int(1)
   let two = bigint_from_int(2)
   for result = one, b = base, e = exp; e.compare_int(0) > 0; {
+    // invariant : e.compare_int(0) >= 0
+    // TODO(decreases) : BigInt measure not explicit; possible bug
+    // assert : e.compare_int(0) >= 0
     let next_result = if !bigint_is_zero(e % two) { result * b } else { result }
     continue next_result, b * b, e / two
   } else {
@@ -491,6 +516,9 @@ fn pow_bigint_bigint(
 ///|
 fn pow_float_int(base : Float, exp : Int) -> Float {
   for result = Float::from_int(1), b = base, e = exp; e > 0; {
+    // invariant : e >= 0
+    // decreases : e
+    // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
   } else {

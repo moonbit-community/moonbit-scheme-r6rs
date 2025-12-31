@@ -5077,6 +5077,9 @@ fn parse_rename_specs(
 ) -> Array[(String, String)] raise EvalError {
   let renames : Array[(String, String)] = []
   for item in items {
+    // invariant : items.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : items.length() >= 0
     let parts = datum_list_to_array(item)
     if parts.length() != 2 {
       raise @core.EvalError("invalid import set")
