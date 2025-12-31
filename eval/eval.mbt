@@ -1446,6 +1446,13 @@ fn env_with_captures(env : Env, captures : Map[String, Value]) -> Env {
 }
 
 ///|
+fn values_with_push(values : Array[Value], extra : Value) -> Array[Value] {
+  let next = values.copy()
+  next.push(extra)
+  next
+}
+
+///|
 fn eval_expr_impl(
   expr : Datum,
   env : Env,
@@ -1577,14 +1584,7 @@ fn eval_expr_impl(
           }
           AppArgs(proc, evaluated, remaining, env, next) => {
             let arg_value = expect_single(value)
-            let next_values : Array[Value] = []
-            for item in evaluated {
-              // invariant : evaluated.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : evaluated.length() >= 0
-              next_values.push(item)
-            }
-            next_values.push(arg_value)
+            let next_values = values_with_push(evaluated, arg_value)
             if remaining.is_empty() {
               state = apply_proc(proc, next_values, next, handlers)
             } else {
@@ -1656,14 +1656,7 @@ fn eval_expr_impl(
           }
           Let(bindings, index, values, env, body, next) => {
             let single = expect_single(value)
-            let next_values : Array[Value] = []
-            for item in values {
-              // invariant : values.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : values.length() >= 0
-              next_values.push(item)
-            }
-            next_values.push(single)
+            let next_values = values_with_push(values, single)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
@@ -1723,14 +1716,7 @@ fn eval_expr_impl(
           }
           LetRecInit(bindings, index, collected, env, body, next) => {
             let single = expect_single(value)
-            let next_values : Array[Value] = []
-            for item in collected {
-              // invariant : collected.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : collected.length() >= 0
-              next_values.push(item)
-            }
-            next_values.push(single)
+            let next_values = values_with_push(collected, single)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
@@ -1904,14 +1890,7 @@ fn eval_expr_impl(
                   handlers,
                 )
               None => {
-                let next_values : Array[Value] = []
-                for item in values {
-                  // invariant : values.length() >= 0
-                  // TODO(decreases) : loop index not exposed; possible bug
-                  // assert : values.length() >= 0
-                  next_values.push(item)
-                }
-                next_values.push(new_value)
+                let next_values = values_with_push(values, new_value)
                 let next_index = index + 1
                 if next_index < bindings.length() {
                   let (param_expr, _) = bindings[next_index]
@@ -1962,14 +1941,7 @@ fn eval_expr_impl(
             next
           ) => {
             let converted = expect_single(value)
-            let next_values : Array[Value] = []
-            for item in values {
-              // invariant : values.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : values.length() >= 0
-              next_values.push(item)
-            }
-            next_values.push(converted)
+            let next_values = values_with_push(values, converted)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (param_expr, _) = bindings[next_index]

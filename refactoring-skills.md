@@ -1325,6 +1325,18 @@ Example:
 let winds_copy = wind_stack.val.copy()
 ```
 
+## Copy + append helpers
+- Use `values.copy()` + `push` to extend arrays instead of manual loops.
+
+Example:
+```mbt
+fn values_with_push(values : Array[Value], extra : Value) -> Array[Value] {
+  let next = values.copy()
+  next.push(extra)
+  next
+}
+```
+
 ## Map over parsed lists
 - Convert list datums once, then map to avoid duplicate traversal logic.
 
