@@ -1589,6 +1589,20 @@ let best = for i = 0, best = None; i < items.length(); {
 - In nested loops, add a separate spec block per loop; for `map.keys()` iteration, use `keys().length()` in the invariant.
 - For `for item in array` loops, use the container length in invariant/assert and keep a TODO decreases when the index is hidden.
 - For early-return loops (e.g., emptiness checks), place the spec block before the return to keep it visible.
+- Use a tiny scan script to find `for` loops without `// invariant` and work file-by-file.
+
+Example:
+```bash
+python3 - <<'PY'
+from pathlib import Path
+for path in Path("eval").rglob("*.mbt"):
+  lines = path.read_text().splitlines()
+  for i, line in enumerate(lines):
+    if "for " in line and "{" in line and not line.lstrip().startswith("//"):
+      if not any("// invariant" in w for w in lines[i+1:i+6]):
+        print(f"{path}:{i+1}: {line.strip()}")
+PY
+```
 
 Example:
 ```mbt
