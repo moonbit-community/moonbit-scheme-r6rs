@@ -5137,6 +5137,9 @@ fn parse_export_clause(expr : Datum) -> Array[(String, String)] raise EvalError 
     Datum::Symbol("export") => {
       let exports : Array[(String, String)] = []
       for i = 1; i < items.length(); {
+        // invariant : i >= 1 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : i <= items.length()
         match items[i] {
           Datum::Symbol(name) => exports.push((name, name))
           Datum::Pair(_, _) => {
@@ -5147,6 +5150,9 @@ fn parse_export_clause(expr : Datum) -> Array[(String, String)] raise EvalError 
             match spec_items[0] {
               Datum::Symbol("rename") => {
                 for j = 1; j < spec_items.length(); {
+                  // invariant : j >= 1 && j <= spec_items.length()
+                  // decreases : spec_items.length() - j
+                  // assert : j <= spec_items.length()
                   let rename_parts = datum_list_to_array(spec_items[j])
                   if rename_parts.length() != 2 {
                     raise @core.EvalError("invalid library")
@@ -5229,7 +5235,13 @@ fn is_syntax_keyword(name : String) -> Bool {
     conditions_syntax_keywords(),
   ]
   for keywords in lists {
+    // invariant : lists.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : lists.length() >= 0
     for kw in keywords {
+      // invariant : keywords.length() >= 0
+      // TODO(decreases) : loop index not exposed; possible bug
+      // assert : keywords.length() >= 0
       if kw == name {
         return true
       }
@@ -5256,6 +5268,9 @@ fn library_exports(name : String) -> Map[String, Binding] raise EvalError {
     Some(lib) => {
       let exports : Map[String, Binding] = {}
       for key in lib.exports.keys() {
+        // invariant : lib.exports.keys().length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : lib.exports.keys().length() >= 0
         match lib.exports.get(key) {
           Some(binding) => exports[key] = binding
           None => ()
@@ -5274,6 +5289,9 @@ fn import_set_only(
 ) -> Map[String, Binding] raise EvalError {
   let result : Map[String, Binding] = {}
   for name in names {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : names.length() >= 0
     match exports.get(name) {
       Some(binding) => result[name] = binding
       None => raise @core.EvalError("unknown import: \{name}")
@@ -5289,6 +5307,9 @@ fn import_set_except(
 ) -> Map[String, Binding] raise EvalError {
   let excluded : Map[String, Bool] = {}
   for name in names {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : names.length() >= 0
     if !exports.contains(name) {
       raise @core.EvalError("unknown import: \{name}")
     }
@@ -5296,6 +5317,9 @@ fn import_set_except(
   }
   let result : Map[String, Binding] = {}
   for key in exports.keys() {
+    // invariant : exports.keys().length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : exports.keys().length() >= 0
     if !excluded.contains(key) {
       match exports.get(key) {
         Some(binding) => result[key] = binding
@@ -5313,6 +5337,9 @@ fn import_set_rename(
 ) -> Map[String, Binding] raise EvalError {
   let rename_map : Map[String, String] = {}
   for rename in renames {
+    // invariant : renames.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : renames.length() >= 0
     let (old_name, new_name) = rename
     if !exports.contains(old_name) {
       raise @core.EvalError("unknown import: \{old_name}")
@@ -5324,6 +5351,9 @@ fn import_set_rename(
   }
   let result : Map[String, Binding] = {}
   for key in exports.keys() {
+    // invariant : exports.keys().length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : exports.keys().length() >= 0
     let target = match rename_map.get(key) {
       Some(name) => name
       None => key
@@ -5346,6 +5376,9 @@ fn import_set_prefix(
 ) -> Map[String, Binding] {
   let result : Map[String, Binding] = {}
   for key in exports.keys() {
+    // invariant : exports.keys().length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : exports.keys().length() >= 0
     match exports.get(key) {
       Some(binding) => result["\{prefix}\{key}"] = binding
       None => ()
