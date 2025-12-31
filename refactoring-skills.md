@@ -152,6 +152,15 @@ pub fn UnicodeString::into_string(self : UnicodeString) -> String {
 
 ## Error-path doctests
 - Prefer `try ... catch ... noraise` for error-path doctests to avoid lint warnings.
+- For parser-style `raise` functions, `try?` plus `Err(_)` checks keep docs short.
+
+Example:
+```mbt
+test "parse errors" {
+  let result = try? parse_program("#| unterminated")
+  inspect(result is Err(_), content="true")
+}
+```
 
 ## Match simplification
 - Group enum variants with `|` patterns when they map to the same output to reduce duplication.

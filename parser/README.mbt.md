@@ -121,4 +121,10 @@ test "parse block comment" {
     _ => fail("expected int after comment")
   }
 }
+
+///|
+test "parse errors" {
+  let result = try? parse_program("#| unterminated")
+  inspect(result is Err(_), content="true")
+}
 ```
