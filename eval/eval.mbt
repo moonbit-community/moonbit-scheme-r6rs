@@ -5868,10 +5868,9 @@ fn apply_proc(
       } else {
         let proc_value = args[0]
         let lists : Array[Datum] = []
-        let mut i = 1
-        while i < args.length() {
+        for i = 1; i < args.length(); {
           lists.push(value_as_datum(args[i]))
-          i = i + 1
+          continue i + 1
         }
         map_step(proc_value, lists, [], false, kont, handlers)
       }
@@ -5881,10 +5880,9 @@ fn apply_proc(
       } else {
         let proc_value = args[0]
         let lists : Array[Datum] = []
-        let mut i = 1
-        while i < args.length() {
+        for i = 1; i < args.length(); {
           lists.push(value_as_datum(args[i]))
-          i = i + 1
+          continue i + 1
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
@@ -5894,24 +5892,21 @@ fn apply_proc(
       } else {
         let proc_value = args[0]
         let vectors : Array[Array[Datum]] = []
-        let mut i = 1
-        while i < args.length() {
+        for i = 1; i < args.length(); {
           vectors.push(value_as_vector(args[i]))
-          i = i + 1
+          continue i + 1
         }
         let len = vectors[0].length()
-        let mut j = 0
-        while j < vectors.length() {
+        for j = 0; j < vectors.length(); {
           if vectors[j].length() != len {
             raise @core.EvalError("vector length mismatch")
           }
-          j = j + 1
+          continue j + 1
         }
         let lists : Array[Datum] = []
-        let mut k = 0
-        while k < vectors.length() {
+        for k = 0; k < vectors.length(); {
           lists.push(list_from_array(vectors[k]))
-          k = k + 1
+          continue k + 1
         }
         map_step(
           proc_value,
@@ -5928,24 +5923,21 @@ fn apply_proc(
       } else {
         let proc_value = args[0]
         let vectors : Array[Array[Datum]] = []
-        let mut i = 1
-        while i < args.length() {
+        for i = 1; i < args.length(); {
           vectors.push(value_as_vector(args[i]))
-          i = i + 1
+          continue i + 1
         }
         let len = vectors[0].length()
-        let mut j = 0
-        while j < vectors.length() {
+        for j = 0; j < vectors.length(); {
           if vectors[j].length() != len {
             raise @core.EvalError("vector length mismatch")
           }
-          j = j + 1
+          continue j + 1
         }
         let lists : Array[Datum] = []
-        let mut k = 0
-        while k < vectors.length() {
+        for k = 0; k < vectors.length(); {
           lists.push(list_from_array(vectors[k]))
-          k = k + 1
+          continue k + 1
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
@@ -5958,14 +5950,13 @@ fn apply_proc(
         let len = first.length()
         let lists : Array[Datum] = []
         lists.push(string_to_char_list(first))
-        let mut i = 2
-        while i < args.length() {
+        for i = 2; i < args.length(); {
           let s = value_as_string(args[i])
           if s.length() != len {
             raise @core.EvalError("string length mismatch")
           }
           lists.push(string_to_char_list(s))
-          i = i + 1
+          continue i + 1
         }
         map_step(
           proc_value,
@@ -5985,14 +5976,13 @@ fn apply_proc(
         let len = first.length()
         let lists : Array[Datum] = []
         lists.push(string_to_char_list(first))
-        let mut i = 2
-        while i < args.length() {
+        for i = 2; i < args.length(); {
           let s = value_as_string(args[i])
           if s.length() != len {
             raise @core.EvalError("string length mismatch")
           }
           lists.push(string_to_char_list(s))
-          i = i + 1
+          continue i + 1
         }
         map_step(proc_value, lists, [], true, kont, handlers)
       }
@@ -6091,16 +6081,15 @@ fn apply_proc(
       let target_winds = cont.winds
       let actions : Array[WindAction] = []
       let prefix = common_wind_prefix(current_winds, target_winds)
-      let mut i = current_winds.length()
-      while i > prefix {
-        i = i - 1
-        actions.push(WindAction::After(current_winds[i]))
+      for i = current_winds.length(); i > prefix; {
+        let idx = i - 1
+        actions.push(WindAction::After(current_winds[idx]))
+        continue i - 1
       }
       actions.push(WindAction::SwitchHandlers(cont.handlers))
-      i = prefix
-      while i < target_winds.length() {
+      for i = prefix; i < target_winds.length(); {
         actions.push(WindAction::Before(target_winds[i]))
-        i = i + 1
+        continue i + 1
       }
       run_wind_actions(
         actions,
@@ -6129,10 +6118,9 @@ fn apply_apply(
   } else {
     let proc = args[0]
     let flat : Array[Value] = []
-    let mut i = 1
-    while i < args.length() - 1 {
+    for i = 1; i < args.length() - 1; {
       flat.push(args[i])
-      i = i + 1
+      continue i + 1
     }
     let list_value = value_as_datum(args[args.length() - 1])
     let tail = datum_list_to_value_array(list_value)

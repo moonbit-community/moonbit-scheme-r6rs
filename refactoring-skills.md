@@ -449,6 +449,18 @@ let cmp = for i = 0; i < min_len; {
 }
 ```
 
+## Reverse index scans
+- Use a descending `for` with `idx = i - 1` when walking from the end.
+
+Example:
+```mbt
+for i = current.length(); i > prefix; {
+  let idx = i - 1
+  actions.push(WindAction::After(current[idx]))
+  continue i - 1
+}
+```
+
 ## Array equality scans
 - Use a functional `for` with `break false` for early exits instead of `mut` indices.
 
