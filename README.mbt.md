@@ -26,6 +26,8 @@ let text = @dii/scheme-r6rs.value_to_string(value)
 test "eval program" {
   let value = eval_program("(+ 1 2)")
   inspect(value_to_string(value), content="3")
+  let list_value = eval_program("(list 1 2 3)")
+  inspect(value_to_string(list_value), content="(1 2 3)")
   let forms = parse_program("(+ 1 2)")
   inspect(forms.length(), content="1")
   let values = eval_program_all("(define x 1) (+ x 2)")

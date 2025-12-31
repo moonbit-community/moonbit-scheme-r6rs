@@ -124,6 +124,7 @@ moon check
 - For lexer-style helpers, add `mbt check` examples in the package README instead of testing private helpers directly.
 - For unicode helpers, add a small compatibility-normalization example to widen coverage without changing APIs.
 - Add README tests for refactored primitives (e.g., `map`, `bytevector-copy`) to catch regressions early.
+- Keep the top-level README tests small and end-to-end (e.g., `eval_program` + `value_to_string`).
 
 ## Facade-level docs
 - Add small examples on re-exported APIs so module users see usage without diving into subpackages.
