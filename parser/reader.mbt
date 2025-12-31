@@ -1288,8 +1288,11 @@ pub fn parse_program_with_fold_case(
   src : String,
   fold_case : Bool,
 ) -> Array[Datum] raise ParseError {
-  let r = make_reader(src)
-  r.set_fold_case(fold_case)
+  let r = {
+    let r = make_reader(src)
+    r..set_fold_case(fold_case)
+    r
+  }
   let exprs : Array[Datum] = []
   for cur = r..skip_ws_and_comments().peek(); cur is Some(_); {
     // invariant : exprs.length() >= 0

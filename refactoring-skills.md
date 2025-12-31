@@ -1806,6 +1806,15 @@ r.set_fold_case(true)
 match r.label_get(label) { ... }
 ```
 
+Example:
+```mbt
+let r = {
+  let r = make_reader(src)
+  r..set_fold_case(true)
+  r
+}
+```
+
 ## Make struct fields opaque
 - Use `pub struct` (instead of `pub(all)`) when callers should not construct or mutate fields directly.
 - Provide a constructor helper like `make_reader` and methods for the allowed operations.
