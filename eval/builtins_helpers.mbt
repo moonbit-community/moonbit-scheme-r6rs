@@ -1848,6 +1848,9 @@ fn datum_bitwise_reverse_bit_field(
   }
   let field = datum_bitwise_bit_field(value, start, end)
   let reversed = for i = 0, reversed = bigint_from_int(0); i < width; {
+    // invariant : i >= 0 && i <= width
+    // decreases : width - i
+    // assert : i <= width
     let next =
       if datum_bitwise_bit_set(field, i) {
         reversed + bigint_pow2(width - 1 - i)
@@ -1894,6 +1897,9 @@ fn compare_chain_char(
   }
   let prev = foldcase_char_if(value_as_char(args[0]), case_insensitive)
   for i = 1, prev = prev; i < args.length(); {
+    // invariant : i >= 1 && i <= args.length()
+    // decreases : args.length() - i
+    // assert : i <= args.length()
     let cur = foldcase_char_if(value_as_char(args[i]), case_insensitive)
     let cmp = prev.to_int().compare(cur.to_int())
     if !compare_ok(mode, cmp) {
