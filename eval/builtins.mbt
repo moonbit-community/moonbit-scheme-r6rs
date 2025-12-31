@@ -585,13 +585,9 @@ fn apply_primitive(
                 Datum::Float(f) => {
                   let exp_f = bigint_to_float(abs_exp)
                   let abs_base = if f < 0.0 { -f } else { f }
-                  let mut pow = @math.powf(abs_base, exp_f)
-                  if exp_sign < 0 {
-                    pow = 1.0 / pow
-                  }
-                  if f < 0.0 && exp_is_odd {
-                    pow = -pow
-                  }
+                  let pow = @math.powf(abs_base, exp_f)
+                  let pow = if exp_sign < 0 { Float::from_int(1) / pow } else { pow }
+                  let pow = if f < 0.0 && exp_is_odd { -pow } else { pow }
                   Value::Datum(Datum::Float(pow))
                 }
                 Datum::Complex(_, _) => {
