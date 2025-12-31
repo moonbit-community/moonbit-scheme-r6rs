@@ -6277,6 +6277,9 @@ fn apply_proc(
         let proc_value = args[0]
         let lists : Array[Datum] = []
         for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           lists.push(value_as_datum(args[i]))
           continue i + 1
         }
@@ -6289,6 +6292,9 @@ fn apply_proc(
         let proc_value = args[0]
         let lists : Array[Datum] = []
         for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           lists.push(value_as_datum(args[i]))
           continue i + 1
         }
@@ -6301,11 +6307,17 @@ fn apply_proc(
         let proc_value = args[0]
         let vectors : Array[Array[Datum]] = []
         for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           vectors.push(value_as_vector(args[i]))
           continue i + 1
         }
         let len = vectors[0].length()
         for j = 0; j < vectors.length(); {
+          // invariant : j >= 0 && j <= vectors.length()
+          // decreases : vectors.length() - j
+          // assert : j <= vectors.length()
           if vectors[j].length() != len {
             raise @core.EvalError("vector length mismatch")
           }
@@ -6313,6 +6325,9 @@ fn apply_proc(
         }
         let lists : Array[Datum] = []
         for k = 0; k < vectors.length(); {
+          // invariant : k >= 0 && k <= vectors.length()
+          // decreases : vectors.length() - k
+          // assert : k <= vectors.length()
           lists.push(list_from_array(vectors[k]))
           continue k + 1
         }
@@ -6332,11 +6347,17 @@ fn apply_proc(
         let proc_value = args[0]
         let vectors : Array[Array[Datum]] = []
         for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           vectors.push(value_as_vector(args[i]))
           continue i + 1
         }
         let len = vectors[0].length()
         for j = 0; j < vectors.length(); {
+          // invariant : j >= 0 && j <= vectors.length()
+          // decreases : vectors.length() - j
+          // assert : j <= vectors.length()
           if vectors[j].length() != len {
             raise @core.EvalError("vector length mismatch")
           }
@@ -6344,6 +6365,9 @@ fn apply_proc(
         }
         let lists : Array[Datum] = []
         for k = 0; k < vectors.length(); {
+          // invariant : k >= 0 && k <= vectors.length()
+          // decreases : vectors.length() - k
+          // assert : k <= vectors.length()
           lists.push(list_from_array(vectors[k]))
           continue k + 1
         }
@@ -6359,6 +6383,9 @@ fn apply_proc(
         let lists : Array[Datum] = []
         lists.push(string_to_char_list(first))
         for i = 2; i < args.length(); {
+          // invariant : i >= 2 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let s = value_as_string(args[i])
           if s.length() != len {
             raise @core.EvalError("string length mismatch")
@@ -6385,6 +6412,9 @@ fn apply_proc(
         let lists : Array[Datum] = []
         lists.push(string_to_char_list(first))
         for i = 2; i < args.length(); {
+          // invariant : i >= 2 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let s = value_as_string(args[i])
           if s.length() != len {
             raise @core.EvalError("string length mismatch")
@@ -6401,6 +6431,9 @@ fn apply_proc(
       let bindings = formals_bindings(formals, args)
       let new_env = env_extend(cl.env)
       for binding in bindings {
+        // invariant : bindings.length() >= 0
+        // TODO(decreases) : loop index not exposed; possible bug
+        // assert : bindings.length() >= 0
         let (name, bound_value) = binding
         env_define(new_env, name, bound_value)
       }
@@ -6409,6 +6442,9 @@ fn apply_proc(
     Value::CaseClosure(cl) => {
       let matched =
         for i = 0; i < cl.clauses.length(); {
+          // invariant : i >= 0 && i <= cl.clauses.length()
+          // decreases : cl.clauses.length() - i
+          // assert : i <= cl.clauses.length()
           let clause = cl.clauses[i]
           let clause_formals = Formals::{
             params: clause.params,
@@ -6437,6 +6473,9 @@ fn apply_proc(
           }
           let expected_parts : Array[String] = []
           for clause in cl.clauses {
+            // invariant : cl.clauses.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : cl.clauses.length() >= 0
             let clause_formals = Formals::{
               params: clause.params,
               rest: clause.rest,
@@ -6452,6 +6491,9 @@ fn apply_proc(
           let new_env = env_extend(cl.env)
           let bindings = formals_bindings(matched_formals, args)
           for binding in bindings {
+            // invariant : bindings.length() >= 0
+            // TODO(decreases) : loop index not exposed; possible bug
+            // assert : bindings.length() >= 0
             let (name, bound_value) = binding
             env_define(new_env, name, bound_value)
           }
@@ -6489,12 +6531,18 @@ fn apply_proc(
       let actions : Array[WindAction] = []
       let prefix = common_wind_prefix(current_winds, target_winds)
       for i = current_winds.length(); i > prefix; {
+        // invariant : i >= prefix && i <= current_winds.length()
+        // decreases : i - prefix
+        // assert : i <= current_winds.length()
         let idx = i - 1
         actions.push(WindAction::After(current_winds[idx]))
         continue i - 1
       }
       actions.push(WindAction::SwitchHandlers(cont.handlers))
       for i = prefix; i < target_winds.length(); {
+        // invariant : i >= prefix && i <= target_winds.length()
+        // decreases : target_winds.length() - i
+        // assert : i <= target_winds.length()
         actions.push(WindAction::Before(target_winds[i]))
         continue i + 1
       }
@@ -6526,6 +6574,9 @@ fn apply_apply(
     let proc = args[0]
     let flat : Array[Value] = []
     for i = 1; i < args.length() - 1; {
+      // invariant : i >= 1 && i <= args.length() - 1
+      // decreases : args.length() - 1 - i
+      // assert : i <= args.length() - 1
       flat.push(args[i])
       continue i + 1
     }
