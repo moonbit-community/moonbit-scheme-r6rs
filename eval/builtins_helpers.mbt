@@ -1337,18 +1337,13 @@ fn fixnum_width_value() -> Int {
   if cached != 0 {
     return cached
   }
-  let mut exp = 0
-  let mut value = bigint_from_int(1)
   let two = bigint_from_int(2)
-  while true {
-    match bigint_to_int_option(value) {
-      Some(_) => {
-        exp = exp + 1
-        value = value * two
-      }
-      None => break
+  let exp = for exp = 0, value = bigint_from_int(1);
+    bigint_to_int_option(value) is Some(_); {
+      continue exp + 1, value * two
+    } else {
+      exp
     }
-  }
   let width = exp + 1
   fixnum_width_cache.val = width
   width

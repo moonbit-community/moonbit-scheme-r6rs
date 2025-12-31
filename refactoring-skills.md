@@ -357,6 +357,20 @@ let splicing = match r.peek() {
 ## Boolean chaining
 - Replace stepwise `ok = ok && ...` with a single boolean expression to reduce mut.
 
+## Predicate-driven loops
+- Move `while true` + `match` exit checks into the `for` predicate when possible.
+- Use `else` to return the final state cleanly.
+
+Example:
+```mbt
+let exp = for exp = 0, value = bigint_from_int(1);
+  bigint_to_int_option(value) is Some(_); {
+    continue exp + 1, value * two
+  } else {
+    exp
+  }
+```
+
 ## Min/max accumulation
 - Use a functional `for` to carry the current best value when scanning arrays.
 - Carry extra flags in the loop state (for example, tracking inexact values).
