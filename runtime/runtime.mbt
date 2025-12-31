@@ -298,6 +298,9 @@ pub fn enum_set_universe_equal(a : EnumSet, b : EnumSet) -> Bool {
     return false
   }
   for i, name in a.universe {
+    // invariant : i >= 0 && i < a.universe.length()
+    // decreases : a.universe.length() - i
+    // assert : i < b.universe.length()
     if b.universe[i] != name {
       return false
     }
@@ -309,6 +312,9 @@ pub fn enum_set_universe_equal(a : EnumSet, b : EnumSet) -> Bool {
 /// Find the index of a symbol in an enum-set universe.
 pub fn enum_set_index_of(universe : Array[String], name : String) -> Int? {
   for i, item in universe {
+    // invariant : i >= 0 && i < universe.length()
+    // decreases : universe.length() - i
+    // assert : i < universe.length()
     if item == name {
       return Some(i)
     }
@@ -694,6 +700,9 @@ pub fn int_abs(value : Int) -> Int {
 /// ```
 pub fn gcd(a : Int, b : Int) -> Int {
   for x = int_abs(a), y = int_abs(b); y != 0; {
+    // invariant : x >= 0 && y >= 0
+    // decreases : y
+    // assert : y >= 0
     continue y, x % y
   } else {
     x
@@ -768,6 +777,9 @@ pub fn bigint_to_int_option(value : @bigint.BigInt) -> Int? {
 /// Compute the greatest common divisor for BigInt.
 pub fn bigint_gcd(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
   for x = bigint_abs(a), y = bigint_abs(b); !bigint_is_zero(y); {
+    // invariant : x.compare_int(0) >= 0 && y.compare_int(0) >= 0
+    // TODO(decreases) : BigInt measure not explicit; possible bug
+    // assert : y.compare_int(0) >= 0
     continue y, x % y
   } else {
     x
@@ -811,6 +823,9 @@ pub fn normalize_big_rat(num : @bigint.BigInt, den : @bigint.BigInt) -> Datum? {
 pub fn datum_unlabel(value : Datum) -> Datum {
   let seen : Array[Int] = []
   for cur = value; true; {
+    // invariant : seen.length() >= 0
+    // TODO(decreases) : list length not explicit; possible bug
+    // assert : seen.length() >= 0
     match cur {
       Datum::Label(id, cell) => {
         if seen.contains(id) {
@@ -873,6 +888,13 @@ pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
 pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
   let items : Array[Datum] = []
   for cur = list; true; {
+    // invariant : items.length() >= 0
+    // TODO(decreases) : list length not explicit; possible bug
+    // assert :
+    //   match datum_unlabel(cur) {
+    //     Datum::Pair(_, _) | Datum::Nil => true
+    //     _ => false
+    //   }
     match datum_unlabel(cur) {
       Datum::Nil => break
       Datum::Pair(a, b) => {
@@ -908,6 +930,9 @@ pub fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
 /// ```
 pub fn list_from_array(items : Array[Datum]) -> Datum {
   for i = items.length(), tail = Datum::Nil; i > 0; {
+    // invariant : i >= 0 && i <= items.length()
+    // decreases : i
+    // assert : i <= items.length()
     let idx = i - 1
     continue i - 1, pair_new(items[idx], tail)
   } else {

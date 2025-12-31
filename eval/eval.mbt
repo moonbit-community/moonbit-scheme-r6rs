@@ -4683,6 +4683,9 @@ fn parse_library_ref(expr : Datum) -> LibraryRef raise EvalError {
   let names : Array[String] = []
   let version_ref : VersionRef? =
     for i = 0, version_ref = None; i < parts.length(); {
+      // invariant : i >= 0 && i <= parts.length()
+      // decreases : parts.length() - i
+      // assert : names.length() <= i
       match parts[i] {
         Datum::Symbol(name) => {
           if version_ref is Some(_) {
@@ -4716,6 +4719,9 @@ fn compare_versions(left : Array[Int], right : Array[Int]) -> Int {
     right.length()
   }
   let prefix_cmp = for i = 0; i < min_len; {
+    // invariant : i >= 0 && i <= min_len
+    // decreases : min_len - i
+    // assert : i <= min_len
     if left[i] < right[i] {
       break -1
     }
@@ -4747,6 +4753,9 @@ fn version_ref_matches(version : Array[Int], reference : VersionRef) -> Bool {
     VersionRef::Le(expected) => compare_versions(version, expected) <= 0
     VersionRef::And(items) => {
       for i = 0; i < items.length(); {
+        // invariant : i >= 0 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : i <= items.length()
         if !version_ref_matches(version, items[i]) {
           break false
         }
@@ -4757,6 +4766,9 @@ fn version_ref_matches(version : Array[Int], reference : VersionRef) -> Bool {
     }
     VersionRef::Or(items) => {
       for i = 0; i < items.length(); {
+        // invariant : i >= 0 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : i <= items.length()
         if version_ref_matches(version, items[i]) {
           break true
         }
@@ -4777,6 +4789,9 @@ fn select_library_for_ref(reference : LibraryRef) -> LibraryVersionInfo? {
       let version_ref = reference.version_ref
       let best = for i = 0, best = (None : LibraryVersionInfo?);
         i < available.length(); {
+        // invariant : i >= 0 && i <= available.length()
+        // decreases : available.length() - i
+        // assert : i <= available.length()
         let entry = available[i]
         match version_ref {
           Some(ref_value) => {
@@ -5086,6 +5101,9 @@ fn parse_for_phases(items : Array[Datum]) -> ImportPhases raise EvalError {
   }
   let (run, expand) = for i = 0, run = false, expand = false;
     i < items.length(); {
+    // invariant : i >= 0 && i <= items.length()
+    // decreases : items.length() - i
+    // assert : i <= items.length()
     let item = items[i]
     match item {
       Datum::Symbol("run") => continue i + 1, true, expand

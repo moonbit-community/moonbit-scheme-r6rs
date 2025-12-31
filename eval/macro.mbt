@@ -1460,6 +1460,13 @@ fn collect_pattern_vars(
 fn datum_list_to_array_opt(list : Datum) -> Array[Datum]? {
   let items : Array[Datum] = []
   let ok = for cur = list; true; {
+    // invariant : items.length() >= 0
+    // TODO(decreases) : list length not explicit; possible bug
+    // assert :
+    //   match datum_unlabel(cur) {
+    //     Datum::Pair(_, _) | Datum::Nil => true
+    //     _ => false
+    //   }
     match datum_unlabel(cur) {
       Datum::Nil => break true
       Datum::Pair(a, b) => {
@@ -2333,6 +2340,9 @@ fn max_binding_len(
             0
           } else {
             let max_len = for i = 0, max_len = 0; i < items.length(); {
+              // invariant : i >= 0 && i <= items.length()
+              // decreases : items.length() - i
+              // assert : max_len >= 0
               let len = max_binding_len(items[i], bindings, indices)
               let next = if len > max_len { len } else { max_len }
               continue i + 1, next
@@ -2357,6 +2367,9 @@ fn max_binding_len(
       }
     Datum::Vector(items) => {
       let max_len = for i = 0, max_len = 0; i < items.length(); {
+        // invariant : i >= 0 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : max_len >= 0
         let len = max_binding_len(items[i], bindings, indices)
         let next = if len > max_len { len } else { max_len }
         continue i + 1, next
@@ -2393,6 +2406,9 @@ fn template_has_repeat_binding(
             false
           } else {
             let found = for i = 0; i < items.length(); {
+              // invariant : i >= 0 && i <= items.length()
+              // decreases : items.length() - i
+              // assert : i <= items.length()
               if template_has_repeat_binding(items[i], bindings, ellipsis, indices) {
                 break true
               }
@@ -2412,6 +2428,9 @@ fn template_has_repeat_binding(
       }
     Datum::Vector(items) => {
       let found = for i = 0; i < items.length(); {
+        // invariant : i >= 0 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : i <= items.length()
         if template_has_repeat_binding(items[i], bindings, ellipsis, indices) {
           break true
         }
