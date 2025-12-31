@@ -97,4 +97,28 @@ test "parse basics" {
     _ => fail("expected folded symbol")
   }
 }
+
+///|
+test "parse labels" {
+  let forms = parse_program("#1=(a) #1#")
+  match forms {
+    [@core.Datum::Label(label1, cell1), @core.Datum::Label(label2, cell2), ..] => {
+      inspect(label1 == label2, content="true")
+      cell1.val = @core.Datum::Symbol("z")
+      match cell2.val {
+        @core.Datum::Symbol("z") => ()
+        _ => fail("expected shared label")
+      }
+    }
+    _ => fail("expected labels")
+  }
+}
+
+///|
+test "parse block comment" {
+  match parse_program("#| comment |# 1") {
+    [@core.Datum::Int(1), ..] => ()
+    _ => fail("expected int after comment")
+  }
+}
 ```
