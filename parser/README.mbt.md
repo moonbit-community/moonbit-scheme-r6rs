@@ -43,6 +43,10 @@ test "parse basics" {
     Some(@core.Datum::Float(f)) => inspect(f == 100.0, content="true")
     _ => fail("expected 100.0")
   }
+  match parse_number_token("1.5") {
+    Some(@core.Datum::Float(f)) => inspect(f == 1.5, content="true")
+    _ => fail("expected 1.5")
+  }
   match parse_number_token_with_radix("ff", 16) {
     Some(@core.Datum::Int(255)) => ()
     _ => fail("expected 255")

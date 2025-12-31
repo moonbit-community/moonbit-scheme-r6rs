@@ -272,40 +272,45 @@ fn parse_rat_token(tok : String) -> Datum? {
 
 ///|
 fn parse_float_token(tok : String) -> Float? {
-  let mut sign = Float::from_int(1)
-  let mut int_part = 0
-  let mut frac_part = 0
-  let mut frac_div = 1
-  let mut seen_dot = false
-  let mut seen_digit = false
-  let mut first = true
-  for ch in tok {
-    if first && (ch == '+' || ch == '-') {
-      sign = if ch == '-' { Float::from_int(-1) } else { Float::from_int(1) }
-      first = false
-      continue
-    }
-    first = false
-    if ch == '.' {
-      if seen_dot {
-        return None
+  let (sign, int_part, frac_part, frac_div, seen_dot, seen_digit) = for i = 0,
+    sign = Float::from_int(1), int_part = 0, frac_part = 0, frac_div = 1,
+    seen_dot = false, seen_digit = false, first = true; i < tok.length(); {
+      match tok.get_char(i) {
+        Some(ch) => {
+          if first && (ch == '+' || ch == '-') {
+            let next_sign =
+              if ch == '-' { Float::from_int(-1) } else { Float::from_int(1) }
+            continue i + 1, next_sign, int_part, frac_part, frac_div, seen_dot,
+              seen_digit, false
+          }
+          if ch == '.' {
+            if seen_dot {
+              return None
+            }
+            continue i + 1, sign, int_part, frac_part, frac_div, true, seen_digit,
+              false
+          }
+          if ch.is_ascii_digit() {
+            let digit = ch.to_int() - '0'.to_int()
+            let next_seen = true
+            if seen_dot {
+              let next_frac = frac_part * 10 + digit
+              let next_div = frac_div * 10
+              continue i + 1, sign, int_part, next_frac, next_div, seen_dot,
+                next_seen, false
+            } else {
+              let next_int = int_part * 10 + digit
+              continue i + 1, sign, next_int, frac_part, frac_div, seen_dot,
+                next_seen, false
+            }
+          }
+          return None
+        }
+        None => break (sign, int_part, frac_part, frac_div, seen_dot, seen_digit)
       }
-      seen_dot = true
-      continue
+    } else {
+      (sign, int_part, frac_part, frac_div, seen_dot, seen_digit)
     }
-    if ch.is_ascii_digit() {
-      let digit = ch.to_int() - '0'.to_int()
-      seen_digit = true
-      if seen_dot {
-        frac_part = frac_part * 10 + digit
-        frac_div = frac_div * 10
-      } else {
-        int_part = int_part * 10 + digit
-      }
-      continue
-    }
-    return None
-  }
   if !seen_dot || !seen_digit {
     None
   } else {

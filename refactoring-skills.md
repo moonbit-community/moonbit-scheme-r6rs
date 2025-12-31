@@ -275,6 +275,15 @@ pub fn list_from_array(items : Array[Datum]) -> Datum {
 ## First-token handling
 - Replace manual index counters with a `first` flag when parsing optional leading signs.
 
+Example:
+```mbt
+if first && (ch == '+' || ch == '-') {
+  let next_sign = if ch == '-' { Float::from_int(-1) } else { Float::from_int(1) }
+  continue i + 1, next_sign, int_part, frac_part, frac_div, seen_dot,
+    seen_digit, false
+}
+```
+
 ## Boolean chaining
 - Replace stepwise `ok = ok && ...` with a single boolean expression to reduce mut.
 
