@@ -1816,3 +1816,19 @@ pub fn env_new() -> Env {
   env
 }
 ```
+
+## Nested pattern matches for Option + struct fields
+- Use nested `match` blocks when you need to inspect a struct field.
+- This keeps the field-specific logic local to the successful branch.
+
+Example:
+```mbt
+match env.get_binding(name) {
+  Some(binding) =>
+    match binding.value {
+      Value::Macro(transformer) => Some(transformer)
+      _ => None
+    }
+  _ => None
+}
+```
