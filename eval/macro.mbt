@@ -133,8 +133,7 @@ fn parse_identifier_syntax(
       fender: None,
     })
   } else {
-    let mut i = 1
-    while i < parts.length() {
+    for i = 1; i < parts.length(); {
       let rule_parts = datum_list_to_array(parts[i])
       if rule_parts.length() != 2 {
         raise @core.EvalError("invalid identifier-syntax")
@@ -144,7 +143,9 @@ fn parse_identifier_syntax(
         template: rule_parts[1],
         fender: None,
       })
-      i = i + 1
+      continue i + 1
+    } else {
+      ()
     }
   }
   let pattern_vars : Map[String, Bool] = {}
@@ -180,8 +181,7 @@ fn parse_syntax_case_rules(
   let literals = parse_literal_list(literals_expr)
   let ellipsis_active = !is_literal(literals, "...")
   let rules : Array[SyntaxRule] = []
-  let mut i = 0
-  while i < clauses.length() {
+  for i = 0; i < clauses.length(); {
     let rule_parts = datum_list_to_array(clauses[i])
     if rule_parts.length() == 2 {
       validate_pattern(
@@ -212,7 +212,9 @@ fn parse_syntax_case_rules(
     } else {
       raise @core.EvalError("invalid syntax-case clause")
     }
-    i = i + 1
+    continue i + 1
+  } else {
+    ()
   }
   {
     literals,

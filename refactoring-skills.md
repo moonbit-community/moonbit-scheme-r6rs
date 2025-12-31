@@ -188,6 +188,17 @@ for i = literal_idx + 1; i < parts.length(); {
 }
 ```
 
+Example:
+```mbt
+for i = 0; i < clauses.length(); {
+  let rule_parts = datum_list_to_array(clauses[i])
+  ...
+  continue i + 1
+} else {
+  ()
+}
+```
+
 ## Division-based counters
 - Replace `while n > 0` loops with a functional `for` that carries `(n, count)` state.
 
