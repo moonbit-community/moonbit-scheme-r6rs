@@ -239,6 +239,10 @@ fn apply_numeric_primitive(prim : Primitive, args : Array[Value]) -> Value? rais
 }
 ```
 
+## Slice-by-sentinel extraction
+- When a match block is contiguous, use sentinel primitives to slice the block into a new file.
+- Good sentinels are the first/next primitive labels like `Primitive::RecordP` and `Primitive::MakeEqHashtable`.
+
 ## Division-based counters
 - Replace `while n > 0` loops with a functional `for` that carries `(n, count)` state.
 
