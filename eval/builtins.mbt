@@ -1360,6 +1360,9 @@ fn apply_primitive(
       } else {
         let first = value_as_fixnum_int(args[0])
         let ok = for i = 1; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           if value_as_fixnum_int(args[i]) != first {
             break false
           }
@@ -1375,6 +1378,9 @@ fn apply_primitive(
       } else {
         let prev = value_as_fixnum_int(args[0])
         let ok = for i = 1, prev = prev; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let cur = value_as_fixnum_int(args[i])
           if prev >= cur {
             break false
@@ -1391,6 +1397,9 @@ fn apply_primitive(
       } else {
         let prev = value_as_fixnum_int(args[0])
         let ok = for i = 1, prev = prev; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let cur = value_as_fixnum_int(args[i])
           if prev <= cur {
             break false
@@ -1407,6 +1416,9 @@ fn apply_primitive(
       } else {
         let prev = value_as_fixnum_int(args[0])
         let ok = for i = 1, prev = prev; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let cur = value_as_fixnum_int(args[i])
           if prev > cur {
             break false
@@ -1423,6 +1435,9 @@ fn apply_primitive(
       } else {
         let prev = value_as_fixnum_int(args[0])
         let ok = for i = 1, prev = prev; i < args.length(); {
+          // invariant : i >= 1 && i <= args.length()
+          // decreases : args.length() - i
+          // assert : i <= args.length()
           let cur = value_as_fixnum_int(args[i])
           if prev < cur {
             break false
@@ -1464,6 +1479,9 @@ fn apply_primitive(
       }
       let current = value_as_fixnum_int(args[0])
       let current = for i = 1, current = current; i < args.length(); {
+        // invariant : i >= 1 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         let cur = value_as_fixnum_int(args[i])
         let next = if cur < current { cur } else { current }
         continue i + 1, next
@@ -1478,6 +1496,9 @@ fn apply_primitive(
       }
       let current = value_as_fixnum_int(args[0])
       let current = for i = 1, current = current; i < args.length(); {
+        // invariant : i >= 1 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         let cur = value_as_fixnum_int(args[i])
         let next = if cur > current { cur } else { current }
         continue i + 1, next
@@ -1488,6 +1509,9 @@ fn apply_primitive(
     }
     Primitive::FxAdd => {
       let acc = for i = 0, acc = bigint_from_int(0); i < args.length(); {
+        // invariant : i >= 0 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         let next = acc + value_as_fixnum_bigint(args[i])
         continue i + 1, next
       } else {
@@ -1514,6 +1538,9 @@ fn apply_primitive(
       }
     Primitive::FxMul => {
       let acc = for i = 0, acc = bigint_from_int(1); i < args.length(); {
+        // invariant : i >= 0 && i <= args.length()
+        // decreases : args.length() - i
+        // assert : i <= args.length()
         let next = acc * value_as_fixnum_bigint(args[i])
         continue i + 1, next
       } else {
