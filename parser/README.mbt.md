@@ -31,6 +31,11 @@ test "parse basics" {
     Some(@core.Datum::Int(255)) => ()
     _ => fail("expected 255")
   }
+  match parse_program("#vu8(1 2)") {
+    [@core.Datum::ByteVector(items), ..] =>
+      inspect(items.length(), content="2")
+    _ => fail("expected bytevector")
+  }
   match parse_program_with_fold_case("ABC", true) {
     [@core.Datum::Symbol("abc"), ..] => ()
     _ => fail("expected folded symbol")
