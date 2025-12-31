@@ -44,4 +44,14 @@ test "reader chaining" {
       .read_token()
   inspect(token, content="foo")
 }
+
+///|
+test "string escapes" {
+  let r = make_reader("\"a\\n\"")
+  ignore(r.next())
+  inspect(r.read_string(), content="a\n")
+  let r2 = make_reader("\"\\x41;\"")
+  ignore(r2.next())
+  inspect(r2.read_string(), content="A")
+}
 ```
