@@ -258,6 +258,8 @@ match args {
 }
 ```
 
+Tip: For fixed multi-arity calls, use `[a, b]`, `[a, b, c]` patterns and reuse the local names for `value_as_*` conversions.
+
 ## Division-based counters
 - Replace `while n > 0` loops with a functional `for` that carries `(n, count)` state.
 

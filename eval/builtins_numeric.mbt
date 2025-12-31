@@ -323,47 +323,42 @@ fn apply_numeric_primitive_core(
         bool_value(ok)
       }
     Primitive::ExactToInexact =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Datum(Datum::Float(_)) => args[0]
-            Value::Datum(Datum::Complex(real, imag)) => {
-              let real_f = number_to_float(real.val)
-              let imag_f = number_to_float(imag.val)
-              Value::Datum(
-                make_complex(Datum::Float(real_f), Datum::Float(imag_f)),
-              )
-            }
-            _ => {
-              let value = value_as_number(args[0])
-              Value::Datum(Datum::Float(number_to_float(value)))
-            }
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::Float(f))] => Value::Datum(Datum::Float(f))
+        [Value::Datum(Datum::Complex(real, imag))] => {
+          let real_f = number_to_float(real.val)
+          let imag_f = number_to_float(imag.val)
+          Value::Datum(
+            make_complex(Datum::Float(real_f), Datum::Float(imag_f)),
+          )
+        }
+        [value] => {
+          let value = value_as_number(value)
+          Value::Datum(Datum::Float(number_to_float(value)))
+        }
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::InexactToExact =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Datum(Datum::Float(f)) =>
-              Value::Datum(float_to_exact_datum(f))
-            Value::Datum(Datum::Complex(real, imag)) => {
-              let real_exact = inexact_component_to_exact(real.val)
-              let imag_exact = inexact_component_to_exact(imag.val)
-              Value::Datum(make_complex(real_exact, imag_exact))
-            }
-            Value::Datum(Datum::Int(_))
-            | Value::Datum(Datum::BigInt(_))
-            | Value::Datum(Datum::Rat(_, _))
-            | Value::Datum(Datum::BigRat(_, _)) => args[0]
-            _ => raise @core.EvalError("type error: number expected")
-          }
-        n => raise arity_mismatch(1, n)
+      match args {
+        [Value::Datum(Datum::Float(f))] =>
+          Value::Datum(float_to_exact_datum(f))
+        [Value::Datum(Datum::Complex(real, imag))] => {
+          let real_exact = inexact_component_to_exact(real.val)
+          let imag_exact = inexact_component_to_exact(imag.val)
+          Value::Datum(make_complex(real_exact, imag_exact))
+        }
+        [Value::Datum(Datum::Int(n))] => Value::Datum(Datum::Int(n))
+        [Value::Datum(Datum::BigInt(n))] => Value::Datum(Datum::BigInt(n))
+        [Value::Datum(Datum::Rat(n, d))] => Value::Datum(Datum::Rat(n, d))
+        [Value::Datum(Datum::BigRat(n, d))] =>
+          Value::Datum(Datum::BigRat(n, d))
+        [_] => raise @core.EvalError("type error: number expected")
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::ExactIntegerSqrt =>
-      match args.length() {
-        1 => {
-          let value = value_as_exact_integer(args[0])
+      match args {
+        [value] => {
+          let value = value_as_exact_integer(value)
           match value {
             Datum::Int(n) => {
               if n < 0 {
@@ -392,13 +387,13 @@ fn apply_numeric_primitive_core(
             _ => raise @core.EvalError("type error: exact integer expected")
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::Rationalize =>
-      match args.length() {
-        2 => {
-          let x = value_as_number(args[0])
-          let tol_value = value_as_number(args[1])
+      match args {
+        [x_value, tol_value] => {
+          let x = value_as_number(x_value)
+          let tol_value = value_as_number(tol_value)
           let tol = number_to_float(tol_value)
           if tol < 0.0 {
             raise @core.EvalError("type error: nonnegative real expected")
@@ -415,7 +410,7 @@ fn apply_numeric_primitive_core(
             _ => raise @core.EvalError("type error: number expected")
           }
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::NumberToString =>
       match args.length() {
@@ -1358,19 +1353,19 @@ fn apply_numeric_primitive_core(
         Value::Datum(acc)
       }
     Primitive::BitwiseNot =>
-      match args.length() {
-        1 => {
-          let value = value_as_exact_integer(args[0])
+      match args {
+        [value] => {
+          let value = value_as_exact_integer(value)
           Value::Datum(datum_bitwise_not(value))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::BitwiseIf =>
-      match args.length() {
-        3 => {
-          let mask = value_as_exact_integer(args[0])
-          let yes_value = value_as_exact_integer(args[1])
-          let no_value = value_as_exact_integer(args[2])
+      match args {
+        [mask_value, yes_value, no_value] => {
+          let mask = value_as_exact_integer(mask_value)
+          let yes_value = value_as_exact_integer(yes_value)
+          let no_value = value_as_exact_integer(no_value)
           let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
           let masked_no = datum_bitwise_binop(
             datum_bitwise_not(mask),
@@ -1379,39 +1374,39 @@ fn apply_numeric_primitive_core(
           )
           Value::Datum(datum_bitwise_binop(masked_yes, masked_no, BitOp::Or))
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::ArithmeticShift =>
-      match args.length() {
-        2 => {
-          let value = value_as_exact_integer(args[0])
-          let shift = value_as_int_index(args[1])
+      match args {
+        [value, shift_value] => {
+          let value = value_as_exact_integer(value)
+          let shift = value_as_int_index(shift_value)
           Value::Datum(datum_arithmetic_shift(value, shift))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::BitwiseBitCount =>
-      match args.length() {
-        1 => {
-          let value = value_as_exact_integer(args[0])
+      match args {
+        [value] => {
+          let value = value_as_exact_integer(value)
           let count = datum_bitwise_bit_count(value)
           Value::Datum(Datum::Int(count))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::BitwiseLength =>
-      match args.length() {
-        1 => {
-          let value = value_as_exact_integer(args[0])
+      match args {
+        [value] => {
+          let value = value_as_exact_integer(value)
           let count = datum_bitwise_length(value)
           Value::Datum(Datum::Int(count))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::BitwiseFirstBitSet =>
-      match args.length() {
-        1 => {
-          let value = value_as_exact_integer(args[0])
+      match args {
+        [value] => {
+          let value = value_as_exact_integer(value)
           let big = datum_to_bigint(value)
           if bigint_is_zero(big) {
             Value::Datum(Datum::Int(-1))
@@ -1421,23 +1416,23 @@ fn apply_numeric_primitive_core(
             Value::Datum(Datum::Int(idx))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::BitwiseBitSetP =>
-      match args.length() {
-        2 => {
-          let value = value_as_exact_integer(args[0])
-          let index = value_as_nonnegative_int(args[1])
+      match args {
+        [value, index_value] => {
+          let value = value_as_exact_integer(value)
+          let index = value_as_nonnegative_int(index_value)
           bool_value(datum_bitwise_bit_set(value, index))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::BitwiseCopyBit =>
-      match args.length() {
-        3 => {
-          let value = value_as_exact_integer(args[0])
-          let index = value_as_nonnegative_int(args[1])
-          let bit_value = value_as_exact_integer(args[2])
+      match args {
+        [value, index_value, bit_value] => {
+          let value = value_as_exact_integer(value)
+          let index = value_as_nonnegative_int(index_value)
+          let bit_value = value_as_exact_integer(bit_value)
           let bit = match bit_value {
             Datum::Int(n) => n
             Datum::BigInt(n) =>
@@ -1460,75 +1455,75 @@ fn apply_numeric_primitive_core(
           }
           Value::Datum(result)
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::BitwiseBitField =>
-      match args.length() {
-        3 => {
-          let value = value_as_exact_integer(args[0])
-          let start = value_as_nonnegative_int(args[1])
-          let end = value_as_nonnegative_int(args[2])
+      match args {
+        [value, start_value, end_value] => {
+          let value = value_as_exact_integer(value)
+          let start = value_as_nonnegative_int(start_value)
+          let end = value_as_nonnegative_int(end_value)
           Value::Datum(datum_bitwise_bit_field(value, start, end))
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::BitwiseCopyBitField =>
-      match args.length() {
-        4 => {
-          let value = value_as_exact_integer(args[0])
-          let start = value_as_nonnegative_int(args[1])
-          let end = value_as_nonnegative_int(args[2])
-          let from = value_as_exact_integer(args[3])
+      match args {
+        [value, start_value, end_value, from_value] => {
+          let value = value_as_exact_integer(value)
+          let start = value_as_nonnegative_int(start_value)
+          let end = value_as_nonnegative_int(end_value)
+          let from = value_as_exact_integer(from_value)
           Value::Datum(datum_bitwise_copy_bit_field(value, start, end, from))
         }
-        n => raise arity_mismatch(4, n)
+        _ => raise arity_mismatch(4, args.length())
       }
     Primitive::BitwiseRotateBitField =>
-      match args.length() {
-        4 => {
-          let value = value_as_exact_integer(args[0])
-          let start = value_as_nonnegative_int(args[1])
-          let end = value_as_nonnegative_int(args[2])
-          let count = value_as_int_index(args[3])
+      match args {
+        [value, start_value, end_value, count_value] => {
+          let value = value_as_exact_integer(value)
+          let start = value_as_nonnegative_int(start_value)
+          let end = value_as_nonnegative_int(end_value)
+          let count = value_as_int_index(count_value)
           Value::Datum(datum_bitwise_rotate_bit_field(value, start, end, count))
         }
-        n => raise arity_mismatch(4, n)
+        _ => raise arity_mismatch(4, args.length())
       }
     Primitive::BitwiseReverseBitField =>
-      match args.length() {
-        3 => {
-          let value = value_as_exact_integer(args[0])
-          let start = value_as_nonnegative_int(args[1])
-          let end = value_as_nonnegative_int(args[2])
+      match args {
+        [value, start_value, end_value] => {
+          let value = value_as_exact_integer(value)
+          let start = value_as_nonnegative_int(start_value)
+          let end = value_as_nonnegative_int(end_value)
           Value::Datum(datum_bitwise_reverse_bit_field(value, start, end))
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::FixnumP =>
-      match args.length() {
-        1 => bool_value(value_is_fixnum(args[0]))
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_is_fixnum(value))
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FixnumWidth =>
-      match args.length() {
-        0 => Value::Datum(Datum::Int(fixnum_width_value()))
-        n => raise arity_mismatch(0, n)
+      match args {
+        [] => Value::Datum(Datum::Int(fixnum_width_value()))
+        _ => raise arity_mismatch(0, args.length())
       }
     Primitive::LeastFixnum =>
-      match args.length() {
-        0 => {
+      match args {
+        [] => {
           let half = fixnum_half_bigint()
           Value::Datum(fixnum_from_bigint(-half))
         }
-        n => raise arity_mismatch(0, n)
+        _ => raise arity_mismatch(0, args.length())
       }
     Primitive::GreatestFixnum =>
-      match args.length() {
-        0 => {
+      match args {
+        [] => {
           let half = fixnum_half_bigint()
           Value::Datum(fixnum_from_bigint(half - bigint_from_int(1)))
         }
-        n => raise arity_mismatch(0, n)
+        _ => raise arity_mismatch(0, args.length())
       }
     Primitive::FxEq =>
       if args.length() <= 1 {
@@ -1625,29 +1620,29 @@ fn apply_numeric_primitive_core(
         bool_value(ok)
       }
     Primitive::FxZeroP =>
-      match args.length() {
-        1 => bool_value(value_as_fixnum_int(args[0]) == 0)
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_as_fixnum_int(value) == 0)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxPositiveP =>
-      match args.length() {
-        1 => bool_value(value_as_fixnum_int(args[0]) > 0)
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_as_fixnum_int(value) > 0)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxNegativeP =>
-      match args.length() {
-        1 => bool_value(value_as_fixnum_int(args[0]) < 0)
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_as_fixnum_int(value) < 0)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxOddP =>
-      match args.length() {
-        1 => bool_value(value_as_fixnum_int(args[0]) % 2 != 0)
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_as_fixnum_int(value) % 2 != 0)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxEvenP =>
-      match args.length() {
-        1 => bool_value(value_as_fixnum_int(args[0]) % 2 == 0)
-        n => raise arity_mismatch(1, n)
+      match args {
+        [value] => bool_value(value_as_fixnum_int(value) % 2 == 0)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxMin => {
       if args.is_empty() {
@@ -1909,11 +1904,11 @@ fn apply_numeric_primitive_core(
         Value::Datum(fixnum_from_datum(acc))
       }
     Primitive::FxIf =>
-      match args.length() {
-        3 => {
-          let mask = value_as_fixnum_datum(args[0])
-          let yes_value = value_as_fixnum_datum(args[1])
-          let no_value = value_as_fixnum_datum(args[2])
+      match args {
+        [mask_value, yes_value, no_value] => {
+          let mask = value_as_fixnum_datum(mask_value)
+          let yes_value = value_as_fixnum_datum(yes_value)
+          let no_value = value_as_fixnum_datum(no_value)
           let masked_yes = datum_bitwise_binop(mask, yes_value, BitOp::And)
           let masked_no = datum_bitwise_binop(
             datum_bitwise_not(mask),
@@ -1926,30 +1921,30 @@ fn apply_numeric_primitive_core(
             ),
           )
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::FxBitCount =>
-      match args.length() {
-        1 => {
-          let value = value_as_fixnum_datum(args[0])
+      match args {
+        [value] => {
+          let value = value_as_fixnum_datum(value)
           let count = datum_bitwise_bit_count(value)
           Value::Datum(Datum::Int(count))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxLength =>
-      match args.length() {
-        1 => {
-          let value = value_as_fixnum_datum(args[0])
+      match args {
+        [value] => {
+          let value = value_as_fixnum_datum(value)
           let count = datum_bitwise_length(value)
           Value::Datum(Datum::Int(count))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxFirstBitSet =>
-      match args.length() {
-        1 => {
-          let value = value_as_fixnum_datum(args[0])
+      match args {
+        [value] => {
+          let value = value_as_fixnum_datum(value)
           let big = datum_to_bigint(value)
           if bigint_is_zero(big) {
             Value::Datum(Datum::Int(-1))
@@ -1959,23 +1954,23 @@ fn apply_numeric_primitive_core(
             Value::Datum(Datum::Int(idx))
           }
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FxBitSetP =>
-      match args.length() {
-        2 => {
-          let value = value_as_fixnum_datum(args[0])
-          let index = value_as_nonnegative_fixnum_int(args[1])
+      match args {
+        [value, index_value] => {
+          let value = value_as_fixnum_datum(value)
+          let index = value_as_nonnegative_fixnum_int(index_value)
           bool_value(datum_bitwise_bit_set(value, index))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::FxCopyBit =>
-      match args.length() {
-        3 => {
-          let value = value_as_fixnum_datum(args[0])
-          let index = value_as_nonnegative_fixnum_int(args[1])
-          let bit_value = value_as_fixnum_bigint(args[2])
+      match args {
+        [value, index_value, bit_value] => {
+          let value = value_as_fixnum_datum(value)
+          let index = value_as_nonnegative_fixnum_int(index_value)
+          let bit_value = value_as_fixnum_bigint(bit_value)
           let bit = if bigint_is_zero(bit_value) {
             0
           } else if bit_value.compare_int(1) == 0 {
@@ -1991,119 +1986,116 @@ fn apply_numeric_primitive_core(
           }
           Value::Datum(fixnum_from_datum(result))
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::FxBitField =>
-      match args.length() {
-        3 => {
-          let value = value_as_fixnum_datum(args[0])
-          let start = value_as_nonnegative_fixnum_int(args[1])
-          let end = value_as_nonnegative_fixnum_int(args[2])
+      match args {
+        [value, start_value, end_value] => {
+          let value = value_as_fixnum_datum(value)
+          let start = value_as_nonnegative_fixnum_int(start_value)
+          let end = value_as_nonnegative_fixnum_int(end_value)
           Value::Datum(
             fixnum_from_datum(datum_bitwise_bit_field(value, start, end)),
           )
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::FxCopyBitField =>
-      match args.length() {
-        4 => {
-          let value = value_as_fixnum_datum(args[0])
-          let start = value_as_nonnegative_fixnum_int(args[1])
-          let end = value_as_nonnegative_fixnum_int(args[2])
-          let from = value_as_fixnum_datum(args[3])
+      match args {
+        [value, start_value, end_value, from_value] => {
+          let value = value_as_fixnum_datum(value)
+          let start = value_as_nonnegative_fixnum_int(start_value)
+          let end = value_as_nonnegative_fixnum_int(end_value)
+          let from = value_as_fixnum_datum(from_value)
           Value::Datum(
             fixnum_from_datum(
               datum_bitwise_copy_bit_field(value, start, end, from),
             ),
           )
         }
-        n => raise arity_mismatch(4, n)
+        _ => raise arity_mismatch(4, args.length())
       }
     Primitive::FxRotateBitField =>
-      match args.length() {
-        4 => {
-          let value = value_as_fixnum_datum(args[0])
-          let start = value_as_nonnegative_fixnum_int(args[1])
-          let end = value_as_nonnegative_fixnum_int(args[2])
-          let count = value_as_fixnum_int(args[3])
+      match args {
+        [value, start_value, end_value, count_value] => {
+          let value = value_as_fixnum_datum(value)
+          let start = value_as_nonnegative_fixnum_int(start_value)
+          let end = value_as_nonnegative_fixnum_int(end_value)
+          let count = value_as_fixnum_int(count_value)
           Value::Datum(
             fixnum_from_datum(
               datum_bitwise_rotate_bit_field(value, start, end, count),
             ),
           )
         }
-        n => raise arity_mismatch(4, n)
+        _ => raise arity_mismatch(4, args.length())
       }
     Primitive::FxReverseBitField =>
-      match args.length() {
-        3 => {
-          let value = value_as_fixnum_datum(args[0])
-          let start = value_as_nonnegative_fixnum_int(args[1])
-          let end = value_as_nonnegative_fixnum_int(args[2])
+      match args {
+        [value, start_value, end_value] => {
+          let value = value_as_fixnum_datum(value)
+          let start = value_as_nonnegative_fixnum_int(start_value)
+          let end = value_as_nonnegative_fixnum_int(end_value)
           Value::Datum(
             fixnum_from_datum(
               datum_bitwise_reverse_bit_field(value, start, end),
             ),
           )
         }
-        n => raise arity_mismatch(3, n)
+        _ => raise arity_mismatch(3, args.length())
       }
     Primitive::FxArithmeticShift =>
-      match args.length() {
-        2 => {
-          let value = value_as_fixnum_datum(args[0])
-          let shift = value_as_fixnum_int(args[1])
+      match args {
+        [value, shift_value] => {
+          let value = value_as_fixnum_datum(value)
+          let shift = value_as_fixnum_int(shift_value)
           Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::FxArithmeticShiftLeft =>
-      match args.length() {
-        2 => {
-          let value = value_as_fixnum_datum(args[0])
-          let shift = value_as_nonnegative_fixnum_int(args[1])
+      match args {
+        [value, shift_value] => {
+          let value = value_as_fixnum_datum(value)
+          let shift = value_as_nonnegative_fixnum_int(shift_value)
           Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, shift)))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::FxArithmeticShiftRight =>
-      match args.length() {
-        2 => {
-          let value = value_as_fixnum_datum(args[0])
-          let shift = value_as_nonnegative_fixnum_int(args[1])
+      match args {
+        [value, shift_value] => {
+          let value = value_as_fixnum_datum(value)
+          let shift = value_as_nonnegative_fixnum_int(shift_value)
           Value::Datum(fixnum_from_datum(datum_arithmetic_shift(value, -shift)))
         }
-        n => raise arity_mismatch(2, n)
+        _ => raise arity_mismatch(2, args.length())
       }
     Primitive::FlonumP =>
-      match args.length() {
-        1 =>
-          match args[0] {
-            Value::Datum(datum) =>
-              match datum_unlabel(datum) {
-                Datum::Float(_) => bool_value(true)
-                _ => bool_value(false)
-              }
+      match args {
+        [Value::Datum(datum)] =>
+          match datum_unlabel(datum) {
+            Datum::Float(_) => bool_value(true)
             _ => bool_value(false)
           }
-        n => raise arity_mismatch(1, n)
+        [_] => bool_value(false)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::RealToFlonum =>
-      match args.length() {
-        1 => {
-          let value = value_as_number(args[0])
+      match args {
+        [value] => {
+          let value = value_as_number(value)
           Value::Datum(Datum::Float(number_to_float(value)))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FixnumToFlonum =>
-      match args.length() {
-        1 => {
-          let value = value_as_fixnum_int(args[0])
+      match args {
+        [value] => {
+          let value = value_as_fixnum_int(value)
           Value::Datum(Datum::Float(Float::from_int(value)))
         }
-        n => raise arity_mismatch(1, n)
+        _ => raise arity_mismatch(1, args.length())
       }
     Primitive::FlEq =>
       if args.length() <= 1 {
