@@ -2019,16 +2019,18 @@ fn apply_primitive(
       Value::Datum(Datum::Float(current))
     }
     Primitive::FlAdd => {
-      let mut acc = Float::from_int(0)
-      for arg in args {
-        acc = acc + value_as_flonum(arg)
+      let acc = for i = 0, acc = Float::from_int(0); i < args.length(); {
+        continue i + 1, acc + value_as_flonum(args[i])
+      } else {
+        acc
       }
       Value::Datum(Datum::Float(acc))
     }
     Primitive::FlMul => {
-      let mut acc = Float::from_int(1)
-      for arg in args {
-        acc = acc * value_as_flonum(arg)
+      let acc = for i = 0, acc = Float::from_int(1); i < args.length(); {
+        continue i + 1, acc * value_as_flonum(args[i])
+      } else {
+        acc
       }
       Value::Datum(Datum::Float(acc))
     }
