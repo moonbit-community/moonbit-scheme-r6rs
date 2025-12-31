@@ -43,6 +43,8 @@ test "eval program" {
     Some(Int(255)) => ()
     _ => fail("expected 255")
   }
+  let result = try? eval_program("(car 1)")
+  inspect(result is Err(_), content="true")
 }
 ```
 
