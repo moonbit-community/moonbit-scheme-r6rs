@@ -1093,26 +1093,22 @@ fn exact_integer_sqrt(n : Int) -> (Int, Int) {
     // Caller ensures nonnegative; keep a safe fallback.
     return (0, n)
   }
-  let mut low = 0
-  let mut high = n
-  let mut ans = 0
-  while low <= high {
+  for low = 0, high = n, ans = 0; low <= high; {
     let mid = (low + high) / 2
     if mid == 0 {
-      ans = 0
-      low = 1
+      continue 1, high, 0
     } else {
       let div = n / mid
       if mid <= div {
-        ans = mid
-        low = mid + 1
+        continue mid + 1, high, mid
       } else {
-        high = mid - 1
+        continue low, mid - 1, ans
       }
     }
+  } else {
+    let rem = n - ans * ans
+    (ans, rem)
   }
-  let rem = n - ans * ans
-  (ans, rem)
 }
 
 ///|
@@ -1125,28 +1121,24 @@ fn exact_integer_sqrt_bigint(
     }
     return (bigint_from_int(0), n)
   }
-  let mut low = bigint_from_int(0)
-  let mut high = n
-  let mut ans = bigint_from_int(0)
   let one = bigint_from_int(1)
   let two = bigint_from_int(2)
-  while low <= high {
+  for low = bigint_from_int(0), high = n, ans = bigint_from_int(0); low <= high; {
     let mid = (low + high) / two
     if mid.is_zero() {
-      ans = bigint_from_int(0)
-      low = one
+      continue one, high, bigint_from_int(0)
     } else {
       let div = n / mid
       if mid <= div {
-        ans = mid
-        low = mid + one
+        continue mid + one, high, mid
       } else {
-        high = mid - one
+        continue low, mid - one, ans
       }
     }
+  } else {
+    let rem = n - ans * ans
+    (ans, rem)
   }
-  let rem = n - ans * ans
-  (ans, rem)
 }
 
 ///|

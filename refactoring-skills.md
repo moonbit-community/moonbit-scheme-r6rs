@@ -460,6 +460,27 @@ fn gcd(a : Int, b : Int) -> Int {
 }
 ```
 
+## Binary search with loop state
+- Track `(low, high, best)` in a functional `for` loop to avoid mutable bounds.
+
+Example:
+```mbt
+for low = 0, high = n, ans = 0; low <= high; {
+  let mid = (low + high) / 2
+  if mid == 0 {
+    continue 1, high, 0
+  }
+  let div = n / mid
+  if mid <= div {
+    continue mid + 1, high, mid
+  } else {
+    continue low, mid - 1, ans
+  }
+} else {
+  (ans, n - ans * ans)
+}
+```
+
 ## Facade docs for re-exports
 - Re-exported symbols do not inherit docstrings, so add wrapper examples or README tests.
 - Keep facade examples short and focused on public entrypoints.
