@@ -2512,12 +2512,18 @@ fn quasiquote_expand(
       let expanded : Array[Datum] = []
       if depth == 1 {
         for item in items {
+          // invariant : items.length() >= 0
+          // TODO(decreases) : loop index not exposed; possible bug
+          // assert : items.length() >= 0
           match unwrap_form(item, "unquote-splicing") {
             Some(arg) => {
               let value = eval_expr(arg, env)
               let datum = value_as_datum(value)
               let list_items = datum_list_to_array(datum)
               for list_item in list_items {
+                // invariant : list_items.length() >= 0
+                // TODO(decreases) : loop index not exposed; possible bug
+                // assert : list_items.length() >= 0
                 expanded.push(list_item)
               }
             }
@@ -2526,6 +2532,9 @@ fn quasiquote_expand(
         }
       } else {
         for item in items {
+          // invariant : items.length() >= 0
+          // TODO(decreases) : loop index not exposed; possible bug
+          // assert : items.length() >= 0
           expanded.push(quasiquote_expand(item, env, depth))
         }
       }
@@ -2599,6 +2608,9 @@ fn quasisyntax_expand(
       let expanded : Array[Datum] = []
       if depth == 1 {
         for item in items {
+          // invariant : items.length() >= 0
+          // TODO(decreases) : loop index not exposed; possible bug
+          // assert : items.length() >= 0
           match unwrap_form(item, "unsyntax-splicing") {
             Some(arg) => {
               let value = eval_expr(arg, env)
@@ -2608,6 +2620,9 @@ fn quasisyntax_expand(
               }
               let list_items = datum_list_to_array(datum)
               for list_item in list_items {
+                // invariant : list_items.length() >= 0
+                // TODO(decreases) : loop index not exposed; possible bug
+                // assert : list_items.length() >= 0
                 expanded.push(list_item)
               }
             }
@@ -2616,6 +2631,9 @@ fn quasisyntax_expand(
         }
       } else {
         for item in items {
+          // invariant : items.length() >= 0
+          // TODO(decreases) : loop index not exposed; possible bug
+          // assert : items.length() >= 0
           expanded.push(quasisyntax_expand(item, env, depth))
         }
       }
@@ -2628,6 +2646,9 @@ fn quasisyntax_expand(
 ///|
 fn list_with_tail(items : Array[Datum], tail : Datum) -> Datum {
   for i = items.length(), result = tail; i > 0; {
+    // invariant : i >= 0 && i <= items.length()
+    // decreases : i
+    // assert : i <= items.length()
     let idx = i - 1
     continue i - 1, pair_new(items[idx], result)
   } else {
@@ -2639,6 +2660,9 @@ fn list_with_tail(items : Array[Datum], tail : Datum) -> Datum {
 fn parse_formals(expr : Datum) -> Formals raise EvalError {
   let names : Array[String] = []
   for cur = expr; true; {
+    // invariant : names.length() >= 0
+    // TODO(decreases) : list structure not explicit; possible bug
+    // assert : names.length() >= 0
     match datum_unwrap_syntax(cur) {
       Datum::Nil => break Formals::{ params: names, rest: None }
       Datum::Symbol(name) => break Formals::{ params: names, rest: Some(name) }
@@ -2663,6 +2687,9 @@ fn arity_mismatch_at_least(expected : Int, got : Int) -> EvalError {
 fn values_to_list_value(values : Array[Value]) -> Value {
   let items : Array[Datum] = []
   for value in values {
+    // invariant : values.length() >= 0
+    // TODO(decreases) : loop index not exposed; possible bug
+    // assert : values.length() >= 0
     items.push(value_to_datum_element(value))
   }
   Value::Datum(list_from_array(items))
@@ -2687,6 +2714,9 @@ fn formals_bindings(
   }
   let bindings : Array[(String, Value)] = []
   for i = 0; i < params.length(); {
+    // invariant : i >= 0 && i <= params.length()
+    // decreases : params.length() - i
+    // assert : i <= params.length()
     bindings.push((params[i], values[i]))
     continue i + 1
   }
@@ -2694,6 +2724,9 @@ fn formals_bindings(
     Some(name) => {
       let rest_values : Array[Value] = []
       for j = min_len; j < values.length(); {
+        // invariant : j >= min_len && j <= values.length()
+        // decreases : values.length() - j
+        // assert : j <= values.length()
         rest_values.push(values[j])
         continue j + 1
       }
