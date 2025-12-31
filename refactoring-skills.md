@@ -357,6 +357,21 @@ let splicing = match r.peek() {
 ## Boolean chaining
 - Replace stepwise `ok = ok && ...` with a single boolean expression to reduce mut.
 
+## Min/max accumulation
+- Use a functional `for` to carry the current best value when scanning arrays.
+
+Example:
+```mbt
+let current = value_as_fixnum_int(args[0])
+let current = for i = 1, current = current; i < args.length(); {
+  let cur = value_as_fixnum_int(args[i])
+  let next = if cur > current { cur } else { current }
+  continue i + 1, next
+} else {
+  current
+}
+```
+
 ## String conversion helper
 - Use a single `string_to_chars` helper for repeated String → Array[Char] conversions.
 - Prefer slicing the char array for prefixes instead of manual `get_char` loops.

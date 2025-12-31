@@ -1427,14 +1427,13 @@ fn apply_primitive(
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
-      let mut current = value_as_fixnum_int(args[0])
-      let mut i = 1
-      while i < args.length() {
+      let current = value_as_fixnum_int(args[0])
+      let current = for i = 1, current = current; i < args.length(); {
         let cur = value_as_fixnum_int(args[i])
-        if cur < current {
-          current = cur
-        }
-        i = i + 1
+        let next = if cur < current { cur } else { current }
+        continue i + 1, next
+      } else {
+        current
       }
       Value::Datum(Datum::Int(current))
     }
@@ -1442,21 +1441,22 @@ fn apply_primitive(
       if args.is_empty() {
         raise arity_mismatch(1, 0)
       }
-      let mut current = value_as_fixnum_int(args[0])
-      let mut i = 1
-      while i < args.length() {
+      let current = value_as_fixnum_int(args[0])
+      let current = for i = 1, current = current; i < args.length(); {
         let cur = value_as_fixnum_int(args[i])
-        if cur > current {
-          current = cur
-        }
-        i = i + 1
+        let next = if cur > current { cur } else { current }
+        continue i + 1, next
+      } else {
+        current
       }
       Value::Datum(Datum::Int(current))
     }
     Primitive::FxAdd => {
-      let mut acc = bigint_from_int(0)
-      for arg in args {
-        acc = acc + value_as_fixnum_bigint(arg)
+      let acc = for i = 0, acc = bigint_from_int(0); i < args.length(); {
+        let next = acc + value_as_fixnum_bigint(args[i])
+        continue i + 1, next
+      } else {
+        acc
       }
       Value::Datum(fixnum_from_bigint(acc))
     }
@@ -1468,19 +1468,21 @@ fn apply_primitive(
           Value::Datum(fixnum_from_bigint(-value))
         }
         _ => {
-          let mut result = value_as_fixnum_bigint(args[0])
-          let mut i = 1
-          while i < args.length() {
-            result = result - value_as_fixnum_bigint(args[i])
-            i = i + 1
-          }
+          let result = for i = 1, result = value_as_fixnum_bigint(args[0]);
+            i < args.length(); {
+              continue i + 1, result - value_as_fixnum_bigint(args[i])
+            } else {
+              result
+            }
           Value::Datum(fixnum_from_bigint(result))
         }
       }
     Primitive::FxMul => {
-      let mut acc = bigint_from_int(1)
-      for arg in args {
-        acc = acc * value_as_fixnum_bigint(arg)
+      let acc = for i = 0, acc = bigint_from_int(1); i < args.length(); {
+        let next = acc * value_as_fixnum_bigint(args[i])
+        continue i + 1, next
+      } else {
+        acc
       }
       Value::Datum(fixnum_from_bigint(acc))
     }
