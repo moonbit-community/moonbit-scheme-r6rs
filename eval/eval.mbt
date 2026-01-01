@@ -1618,23 +1618,19 @@ fn eval_case_lambda(args : Array[Datum], env : Env) -> Value raise EvalError {
   if args.is_empty() {
     raise arity_mismatch(1, 0)
   }
-  let clauses : Array[CaseClause] = []
-  for clause in args {
-    // invariant : args.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : args.length() >= 0
+  let clauses : Array[CaseClause] = args.map((clause) => {
     let parts = datum_list_to_array(clause)
     if parts.length() < 2 {
       raise @core.EvalError("invalid case-lambda")
     }
     let formals = parse_formals(parts[0])
     let body = parts.sub(start=1).to_array()
-    clauses.push(CaseClause::{
+    CaseClause::{
       params: formals.params,
       rest: formals.rest,
       body,
-    })
-  }
+    }
+  })
   CaseClosure(make_case_closure(clauses, env))
 }
 
