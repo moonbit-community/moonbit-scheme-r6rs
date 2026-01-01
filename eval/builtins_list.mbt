@@ -85,13 +85,8 @@ fn apply_pair_list_primitive(
         _ => raise arity_mismatch(1, args.length())
       }
     List => {
-      let items : Array[Datum] = []
-      for arg in args {
-        // invariant : args.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : args.length() >= 0
-        items.push(value_to_datum_element(arg))
-      }
+      let items : Array[Datum] =
+        args.map((arg) => value_to_datum_element(arg))
       Some(Value::Datum(list_from_array(items)))
     }
     MakeList =>
@@ -173,12 +168,7 @@ fn apply_pair_list_primitive(
                 _ => raise @core.EvalError("type error: list expected")
               }
               let part = datum_list_to_array(datum)
-              for item in part {
-                // invariant : part.length() >= 0
-                // TODO(decreases) : loop index not exposed; possible bug
-                // assert : part.length() >= 0
-                items.push(item)
-              }
+              items.push_iter(part.iter())
               continue i + 1
             }
             let tail = value_to_datum_element(args[args.length() - 1])
