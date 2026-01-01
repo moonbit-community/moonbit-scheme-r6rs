@@ -6,13 +6,8 @@ fn apply_vector_primitive(
 ) -> Value? raise EvalError {
   match prim {
     Vector => {
-      let items : Array[Datum] = []
-      for arg in args {
-        // invariant : args.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : args.length() >= 0
-        items.push(value_to_datum_element(arg))
-      }
+      let items : Array[Datum] =
+        args.map((arg) => value_to_datum_element(arg))
       Some(Datum(Vector(items)))
     }
     MakeVector =>
@@ -281,12 +276,7 @@ fn apply_vector_primitive(
         // TODO(decreases) : loop index not exposed; possible bug
         // assert : args.length() >= 0
         let vec = value_as_vector(arg)
-        for item in vec {
-          // invariant : vec.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : vec.length() >= 0
-          items.push(item)
-        }
+        items.push_iter(vec.iter())
       }
       Some(Datum(Vector(items)))
     }
