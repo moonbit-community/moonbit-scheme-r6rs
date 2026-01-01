@@ -55,12 +55,7 @@ fn include_forms(
     // assert : args.length() >= 0
     let path = include_path_from_arg(arg)
     let parsed = include_parse_file(path, fold_case)
-    for form in parsed {
-      // invariant : parsed.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : parsed.length() >= 0
-      forms.push(form)
-    }
+    forms.push_iter(parsed.iter())
   }
   forms
 }
