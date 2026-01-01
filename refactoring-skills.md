@@ -2435,3 +2435,24 @@ for i = 0, j = xs.length(); i < j; {
   ...
 }
 ```
+
+## Prefer explicit package qualifiers over `using`
+- Replace `using @pkg { type Foo }` with explicit `@pkg.Foo` in signatures and `@pkg.Foo::Constr` at construction/pattern sites, and update docstring/README tests to match.
+
+Example:
+```mbt
+// before
+using @core { type Datum }
+fn parse_number_token(tok : String) -> Datum? { ... }
+match parse_number_token("10") {
+  Some(Int(10)) => ()
+  _ => fail("expected integer")
+}
+
+// after
+fn parse_number_token(tok : String) -> @core.Datum? { ... }
+match parse_number_token("10") {
+  Some(@core.Datum::Int(10)) => ()
+  _ => fail("expected integer")
+}
+```
