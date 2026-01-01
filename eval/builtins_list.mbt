@@ -147,7 +147,7 @@ fn apply_pair_list_primitive(
         [Datum(d)] =>
           Some({
             let items = datum_list_to_array(d)
-            @core.Value::Datum(@core.Datum::Int(items.length()))
+            @core.Value::Datum(Int(items.length()))
           })
         [_] => raise @core.EvalError("type error: list expected")
         _ => raise arity_mismatch(1, args.length())
@@ -155,7 +155,7 @@ fn apply_pair_list_primitive(
     @core.Primitive::Append =>
       Some(
         match args {
-          [] => @core.Value::Datum(@core.Datum::Nil)
+          [] => @core.Value::Datum(Nil)
           [single] => single
           _ => {
             let items : Array[@core.Datum] = []

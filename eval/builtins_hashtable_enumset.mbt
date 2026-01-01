@@ -141,7 +141,7 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
-          @core.Value::Datum(@core.Datum::Int(table.entries.val.length()))
+          @core.Value::Datum(Int(table.entries.val.length()))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -207,7 +207,7 @@ fn apply_hashtable_enumset_primitive_core(
             table.entries.val.map((entry) =>
               value_to_datum_element(entry.key)
             )
-          @core.Value::Datum(@core.Datum::Vector(items))
+          @core.Value::Datum(Vector(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -224,8 +224,8 @@ fn apply_hashtable_enumset_primitive_core(
               value_to_datum_element(entry.value.val)
             )
           @core.Value::Values([
-            @core.Value::Datum(@core.Datum::Vector(key_items)),
-            @core.Value::Datum(@core.Datum::Vector(value_items)),
+            @core.Value::Datum(Vector(key_items)),
+            @core.Value::Datum(Vector(value_items)),
           ])
         }
         _ => raise arity_mismatch(1, args.length())
@@ -244,7 +244,7 @@ fn apply_hashtable_enumset_primitive_core(
           let table = value_as_hashtable(table_value)
           match table.hash {
             Some(hash) => hash
-            None => @core.Value::Datum(@core.Datum::Bool(false))
+            None => @core.Value::Datum(Bool(false))
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -449,7 +449,7 @@ fn apply_hashtable_enumset_primitive_core(
             // decreases : set.universe.length() - i
             // assert : i <= set.universe.length()
             if set.members[i] {
-              items.push(@core.Datum::Symbol(set.universe[i]))
+              items.push(Symbol(set.universe[i]))
             }
             continue i + 1
           }

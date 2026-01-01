@@ -7,7 +7,7 @@ fn apply_bytevector_primitive(
   match prim {
     @core.Primitive::ByteVector => {
       let items : Array[Int] = args.map((arg) => value_as_byte(arg))
-      Some(@core.Value::Datum(@core.Datum::ByteVector(items)))
+      Some(@core.Value::Datum(ByteVector(items)))
     }
     @core.Primitive::MakeByteVector =>
       match args {
@@ -23,7 +23,7 @@ fn apply_bytevector_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@core.Datum::ByteVector(items))
+            @core.Value::Datum(ByteVector(items))
           })
         [len_value, fill_value] =>
           Some({
@@ -37,7 +37,7 @@ fn apply_bytevector_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@core.Datum::ByteVector(items))
+            @core.Value::Datum(ByteVector(items))
           })
         _ =>
           raise @core.EvalError(
@@ -46,7 +46,7 @@ fn apply_bytevector_primitive(
       }
     @core.Primitive::ByteVectorP =>
       match args {
-        [@core.Value::Datum(@core.Datum::ByteVector(_))] => Some(bool_value(true))
+        [@core.Value::Datum(ByteVector(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
@@ -54,7 +54,7 @@ fn apply_bytevector_primitive(
       match args {
         [vec_value] => {
           let items = value_as_bytevector(vec_value)
-          Some(@core.Value::Datum(@core.Datum::Int(items.length())))
+          Some(@core.Value::Datum(Int(items.length())))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -90,7 +90,7 @@ fn apply_bytevector_primitive(
             let items = value_as_bytevector(vec_value)
             let idx = value_as_int_index(idx_value)
             check_index(idx, items.length())
-            @core.Value::Datum(@core.Datum::Int(items[idx]))
+            @core.Value::Datum(Int(items[idx]))
           })
         _ => raise arity_mismatch(2, args.length())
       }
@@ -115,7 +115,7 @@ fn apply_bytevector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::ByteVector(slice))
+            @core.Value::Datum(ByteVector(slice))
           })
         [vec_value, start_value] =>
           Some({
@@ -124,7 +124,7 @@ fn apply_bytevector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::ByteVector(slice))
+            @core.Value::Datum(ByteVector(slice))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -133,7 +133,7 @@ fn apply_bytevector_primitive(
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::ByteVector(slice))
+            @core.Value::Datum(ByteVector(slice))
           })
         _ =>
           raise @core.EvalError(
@@ -246,7 +246,7 @@ fn apply_bytevector_primitive(
         let vec = value_as_bytevector(arg)
         items.push_iter(vec.iter())
       }
-      Some(@core.Value::Datum(@core.Datum::ByteVector(items)))
+      Some(@core.Value::Datum(ByteVector(items)))
     }
     @core.Primitive::ByteVectorFill =>
       match args {
@@ -316,7 +316,7 @@ fn apply_bytevector_primitive(
               // invariant : i >= start && i <= end
               // decreases : end - i
               // assert : i <= end
-              datums.push(@core.Datum::Int(items[i]))
+              datums.push(Int(items[i]))
               continue i + 1
             }
             @core.Value::Datum(list_from_array(datums))
@@ -332,7 +332,7 @@ fn apply_bytevector_primitive(
               // invariant : i >= start && i <= end
               // decreases : end - i
               // assert : i <= end
-              datums.push(@core.Datum::Int(items[i]))
+              datums.push(Int(items[i]))
               continue i + 1
             }
             @core.Value::Datum(list_from_array(datums))
@@ -348,7 +348,7 @@ fn apply_bytevector_primitive(
               // invariant : i >= start && i <= end
               // decreases : end - i
               // assert : i <= end
-              datums.push(@core.Datum::Int(items[i]))
+              datums.push(Int(items[i]))
               continue i + 1
             }
             @core.Value::Datum(list_from_array(datums))
@@ -366,7 +366,7 @@ fn apply_bytevector_primitive(
             let items = datum_list_to_array(datum)
             let bytes : Array[Int] = items.map((item) =>
               match item {
-                @core.Datum::Int(n) => {
+                Int(n) => {
                   if n < 0 || n > 255 {
                     raise @core.EvalError("type error: byte expected")
                   }
@@ -375,7 +375,7 @@ fn apply_bytevector_primitive(
                 _ => raise @core.EvalError("type error: byte expected")
               }
             )
-            @core.Value::Datum(@core.Datum::ByteVector(bytes))
+            @core.Value::Datum(ByteVector(bytes))
           })
         _ => raise arity_mismatch(1, args.length())
       }
@@ -387,7 +387,7 @@ fn apply_bytevector_primitive(
             let start = 0
             let end = string_char_length(s)
             let bytes = string_to_utf8_bytes(s, start, end)
-            @core.Value::Datum(@core.Datum::ByteVector(bytes))
+            @core.Value::Datum(ByteVector(bytes))
           })
         [string_value, start_value] =>
           Some({
@@ -395,7 +395,7 @@ fn apply_bytevector_primitive(
             let start = value_as_int_index(start_value)
             let end = string_char_length(s)
             let bytes = string_to_utf8_bytes(s, start, end)
-            @core.Value::Datum(@core.Datum::ByteVector(bytes))
+            @core.Value::Datum(ByteVector(bytes))
           })
         [string_value, start_value, end_value] =>
           Some({
@@ -403,7 +403,7 @@ fn apply_bytevector_primitive(
             let start = value_as_int_index(start_value)
             let end = value_as_int_index(end_value)
             let bytes = string_to_utf8_bytes(s, start, end)
-            @core.Value::Datum(@core.Datum::ByteVector(bytes))
+            @core.Value::Datum(ByteVector(bytes))
           })
         _ =>
           raise @core.EvalError(
@@ -418,7 +418,7 @@ fn apply_bytevector_primitive(
             let start = 0
             let end = items.length()
             let text = utf8_decode_to_string(items, start, end)
-            @core.Value::Datum(@core.Datum::String(Ref::new(text)))
+            @core.Value::Datum(String(Ref::new(text)))
           })
         [vec_value, start_value] =>
           Some({
@@ -426,7 +426,7 @@ fn apply_bytevector_primitive(
             let start = value_as_int_index(start_value)
             let end = items.length()
             let text = utf8_decode_to_string(items, start, end)
-            @core.Value::Datum(@core.Datum::String(Ref::new(text)))
+            @core.Value::Datum(String(Ref::new(text)))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -434,7 +434,7 @@ fn apply_bytevector_primitive(
             let start = value_as_int_index(start_value)
             let end = value_as_int_index(end_value)
             let text = utf8_decode_to_string(items, start, end)
-            @core.Value::Datum(@core.Datum::String(Ref::new(text)))
+            @core.Value::Datum(String(Ref::new(text)))
           })
         _ =>
           raise @core.EvalError(

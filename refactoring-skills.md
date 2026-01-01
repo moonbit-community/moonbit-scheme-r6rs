@@ -158,6 +158,20 @@ PY
 moon check
 ```
 
+## When to keep Datum prefixes
+- Constructors that share names with built-in types (`Int`, `Float`, `Bool`, `String`, `Char`) often need `@core.Datum::` in expressions.
+- Patterns on a known `@core.Datum` can still drop the prefix for readability.
+
+Example:
+```mbt
+match datum {
+  Int(n) => n
+  _ => 0
+}
+
+let zero = @core.Datum::Int(0)
+```
+
 ## Private helper methods on Reader
 - Convert `Reader`-only helpers to private methods to keep lookahead and escape logic local to the reader API.
 

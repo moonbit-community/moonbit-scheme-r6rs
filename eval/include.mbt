@@ -19,7 +19,7 @@ pub fn register_include_source(path : String, content : String) -> Unit {
 ///|
 fn include_path_from_arg(arg : @core.Datum) -> String raise @core.EvalError {
   match @runtime.datum_unlabel(arg) {
-    @core.Datum::String(path) => path.val
+    String(path) => path.val
     _ => raise @core.EvalError("type error: string expected")
   }
 }

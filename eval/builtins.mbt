@@ -105,7 +105,7 @@ fn apply_primitive_core(
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
-          @core.Value::Datum(@core.Datum::String(Ref::new(@runtime.port_get_output_string(port))))
+          @core.Value::Datum(String(Ref::new(@runtime.port_get_output_string(port))))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -203,10 +203,10 @@ fn apply_primitive_core(
           let results : Array[@core.Datum] = []
           for item in items {
             let (name, scopes, binding_id) = match @runtime.datum_unlabel(item) {
-              @core.Datum::Symbol(name) => (name, [], None)
-              @core.Datum::Value(@core.Value::SyntaxObject(obj)) =>
+              Symbol(name) => (name, [], None)
+              Value(@core.Value::SyntaxObject(obj)) =>
                 match @runtime.datum_unlabel(obj.datum) {
-                  @core.Datum::Symbol(name) => {
+                  Symbol(name) => {
                     let copied : Array[Int] = []
                     for scope in obj.scopes {
                       copied.push(scope)

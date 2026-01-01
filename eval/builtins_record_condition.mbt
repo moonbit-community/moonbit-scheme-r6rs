@@ -77,7 +77,7 @@ fn apply_record_condition_primitive_core(
       match args {
         [desc_value] => {
           let desc = value_as_record_type_descriptor(desc_value)
-          @core.Value::Datum(@core.Datum::Symbol(desc.record_type.name))
+          @core.Value::Datum(Symbol(desc.record_type.name))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -89,9 +89,9 @@ fn apply_record_condition_primitive_core(
             Some(parent) =>
               match @runtime.lookup_record_type_descriptor(parent.name) {
                 Some(parent_desc) => @core.Value::RecordTypeDescriptor(parent_desc)
-                None => @core.Value::Datum(@core.Datum::Bool(false))
+                None => @core.Value::Datum(Bool(false))
               }
-            None => @core.Value::Datum(@core.Datum::Bool(false))
+            None => @core.Value::Datum(Bool(false))
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -101,8 +101,8 @@ fn apply_record_condition_primitive_core(
         [desc_value] => {
           let desc = value_as_record_type_descriptor(desc_value)
           match desc.record_type.uid {
-            Some(uid) => @core.Value::Datum(@core.Datum::Symbol(uid))
-            None => @core.Value::Datum(@core.Datum::Bool(false))
+            Some(uid) => @core.Value::Datum(Symbol(uid))
+            None => @core.Value::Datum(Bool(false))
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -137,7 +137,7 @@ fn apply_record_condition_primitive_core(
           let desc = value_as_record_type_descriptor(desc_value)
           let items : Array[@core.Datum] = []
           for field in desc.record_type.fields {
-            items.push(@core.Datum::Symbol(field.name))
+            items.push(Symbol(field.name))
           }
           @core.Value::Datum(list_from_array(items))
         }
@@ -207,7 +207,7 @@ fn apply_record_condition_primitive_core(
         [name_value, parent_value, uid_value, sealed_value, opaque_value, fields_value] => {
           let name = value_as_symbol(name_value)
           let parent_desc = match parent_value {
-            @core.Value::Datum(@core.Datum::Bool(false)) => None
+            @core.Value::Datum(Bool(false)) => None
             @core.Value::RecordTypeDescriptor(desc) => Some(desc)
             _ =>
               raise @core.EvalError(
@@ -226,8 +226,8 @@ fn apply_record_condition_primitive_core(
             None => ()
           }
           let uid = match uid_value {
-            @core.Value::Datum(@core.Datum::Bool(false)) => None
-            @core.Value::Datum(@core.Datum::Symbol(uid_name)) => Some(uid_name)
+            @core.Value::Datum(Bool(false)) => None
+            @core.Value::Datum(Symbol(uid_name)) => Some(uid_name)
             _ => raise @core.EvalError("type error: symbol expected")
           }
           let is_sealed = value_as_bool(sealed_value)
@@ -293,7 +293,7 @@ fn apply_record_condition_primitive_core(
           let rtd = value_as_record_type_descriptor(rtd_value)
           let record_type = rtd.record_type
           let parent_desc = match parent_value {
-            @core.Value::Datum(@core.Datum::Bool(false)) =>
+            @core.Value::Datum(Bool(false)) =>
               match record_type.parent {
                 Some(parent) => Some(default_constructor_descriptor(parent))
                 None => None
@@ -320,7 +320,7 @@ fn apply_record_condition_primitive_core(
               }
           }
           let protocol = match protocol_value {
-            @core.Value::Datum(@core.Datum::Bool(false)) => None
+            @core.Value::Datum(Bool(false)) => None
             value => {
               if !@runtime.is_procedure_value(value) {
                 raise @core.EvalError("type error: procedure expected")
@@ -358,7 +358,7 @@ fn apply_record_condition_primitive_core(
           if components.length() == 1 {
             @core.Value::Record(components[0])
           } else {
-            @core.Value::Datum(@core.Datum::Condition(@runtime.make_condition(components)))
+            @core.Value::Datum(Condition(@runtime.make_condition(components)))
           }
         }
       }
@@ -378,7 +378,7 @@ fn apply_record_condition_primitive_core(
           let base = condition_base_type()
           let components = condition_components(condition_value, base)
           let items : Array[@core.Datum] =
-            components.map((record) => @core.Datum::Record(record))
+            components.map((record) => Record(record))
           @core.Value::Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())

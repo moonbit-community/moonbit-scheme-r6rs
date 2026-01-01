@@ -8,7 +8,7 @@ fn apply_vector_primitive(
     @core.Primitive::Vector => {
       let items : Array[@core.Datum] =
         args.map((arg) => value_to_datum_element(arg))
-      Some(@core.Value::Datum(@core.Datum::Vector(items)))
+      Some(@core.Value::Datum(Vector(items)))
     }
     @core.Primitive::MakeVector =>
       match args {
@@ -24,7 +24,7 @@ fn apply_vector_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@core.Datum::Vector(items))
+            @core.Value::Datum(Vector(items))
           })
         [len_value, fill_value] =>
           Some({
@@ -38,7 +38,7 @@ fn apply_vector_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@core.Datum::Vector(items))
+            @core.Value::Datum(Vector(items))
           })
         _ =>
           raise @core.EvalError(
@@ -47,7 +47,7 @@ fn apply_vector_primitive(
       }
     @core.Primitive::VectorP =>
       match args {
-        [@core.Value::Datum(@core.Datum::Vector(_))] => Some(bool_value(true))
+        [@core.Value::Datum(Vector(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
@@ -55,7 +55,7 @@ fn apply_vector_primitive(
       match args {
         [vec_value] => {
           let items = value_as_vector(vec_value)
-          Some(@core.Value::Datum(@core.Datum::Int(items.length())))
+          Some(@core.Value::Datum(Int(items.length())))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -144,7 +144,7 @@ fn apply_vector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::Vector(slice))
+            @core.Value::Datum(Vector(slice))
           })
         [vec_value, start_value] =>
           Some({
@@ -153,7 +153,7 @@ fn apply_vector_primitive(
             let end = items.length()
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::Vector(slice))
+            @core.Value::Datum(Vector(slice))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -162,7 +162,7 @@ fn apply_vector_primitive(
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, items.length())
             let slice = items.sub(start~, end~).to_array()
-            @core.Value::Datum(@core.Datum::Vector(slice))
+            @core.Value::Datum(Vector(slice))
           })
         _ =>
           raise @core.EvalError(
@@ -275,7 +275,7 @@ fn apply_vector_primitive(
         let vec = value_as_vector(arg)
         items.push_iter(vec.iter())
       }
-      Some(@core.Value::Datum(@core.Datum::Vector(items)))
+      Some(@core.Value::Datum(Vector(items)))
     }
     @core.Primitive::VectorToList =>
       match args {
@@ -313,7 +313,7 @@ fn apply_vector_primitive(
         [datum_value] => {
           let datum = value_as_datum(datum_value)
           let items = datum_list_to_array(datum)
-          Some(@core.Value::Datum(@core.Datum::Vector(items)))
+          Some(@core.Value::Datum(Vector(items)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
