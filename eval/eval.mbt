@@ -4226,23 +4226,13 @@ fn filter_exports_by_phase(
     return exports
   }
   let result : Map[String, Binding] = {}
-  for key in exports.keys() {
-    // invariant : true
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : true
-    match exports.get(key) {
-      Some(binding) =>
-        match binding.value {
-          Macro(_) => if phases.expand { result[key] = exports[key] }
-          SyntaxKeyword(_) =>
-            if phases.expand {
-              result[key] = exports[key]
-            }
-          _ => if phases.run { result[key] = exports[key] }
-        }
-      None => ()
+  exports.iter2().each((key, binding) =>
+    match binding.value {
+      Macro(_) => if phases.expand { result[key] = binding }
+      SyntaxKeyword(_) => if phases.expand { result[key] = binding }
+      _ => if phases.run { result[key] = binding }
     }
-  }
+  )
   result
 }
 
@@ -4303,15 +4293,9 @@ fn import_set_exports(expr : Datum) -> Map[String, Binding] raise EvalError {
 ///|
 fn import_set_into_env(expr : Datum, env : Env) -> Unit raise EvalError {
   let exports = import_set_exports(expr)
-  for key in exports.keys() {
-    // invariant : exports.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : exports.keys().length() >= 0
-    match exports.get(key) {
-      Some(binding) => env_define_binding(env, key, binding)
-      None => ()
-    }
-  }
+  exports.iter2().each((key, binding) =>
+    env_define_binding(env, key, binding)
+  )
 }
 
 ///|
