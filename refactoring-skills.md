@@ -2193,6 +2193,18 @@ bindings.iter2().each((name, value) =>
 )
 ```
 
+## Filter iterators into arrays
+- `Iter::filter(...).to_array()` keeps iteration lazy until the collection step.
+
+Example:
+```mbt
+let literals : Array[String] =
+  literal_set
+    .keys()
+    .filter((key) => !pattern_vars.contains(key))
+    .to_array()
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.
