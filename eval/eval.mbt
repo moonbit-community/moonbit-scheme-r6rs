@@ -1740,14 +1740,7 @@ fn parse_bool(expr : Datum) -> Bool raise EvalError {
 
 ///|
 fn parse_symbol_list(items : Array[Datum]) -> Array[String] raise EvalError {
-  let names : Array[String] = []
-  for item in items {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : items.length() >= 0
-    names.push(parse_symbol(item))
-  }
-  names
+  items.map((item) => parse_symbol(item))
 }
 
 ///|
@@ -1767,11 +1760,7 @@ fn expect_single(value : Value) -> Value raise EvalError {
 fn value_to_values(value : Value) -> Array[Value] {
   match value {
     Values(values) => values
-    _ => {
-      let values : Array[Value] = []
-      values.push(value)
-      values
-    }
+    _ => [value]
   }
 }
 
