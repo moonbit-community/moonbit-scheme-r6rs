@@ -6,17 +6,9 @@ import(
 )
 
 // Values
-pub fn condition_base_type() -> @core.RecordType raise @core.EvalError
-
-pub fn condition_components(@core.Value, @core.RecordType) -> Array[@core.Record] raise @core.EvalError
-
-pub fn condition_components_opt(@core.Value, @core.RecordType) -> Array[@core.Record]?
-
 pub fn datum_list_to_array(@core.Datum) -> Array[@core.Datum] raise @core.EvalError
 
 pub fn datum_unlabel(@core.Datum) -> @core.Datum
-
-pub fn default_constructor_descriptor(@core.RecordType) -> @core.RecordConstructorDescriptor
 
 pub fn enum_set_from_names(Array[String], Array[String]) -> @core.EnumSet raise @core.EvalError
 
@@ -97,8 +89,6 @@ pub fn port_get_output_string(@core.Port) -> String
 pub fn port_write(@core.Port, String) -> Unit
 
 pub fn record_type_is_a(@core.RecordType, @core.RecordType) -> Bool
-
-pub fn record_type_matches(@core.RecordType, @core.RecordType?, Bool, Bool, Array[@core.RecordField]) -> Bool
 
 pub fn register_library(String, Map[String, @core.Binding]) -> Unit
 

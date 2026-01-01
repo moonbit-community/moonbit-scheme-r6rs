@@ -2648,7 +2648,7 @@ fn eval_define_record_type_state(
   }
   let (record_type, ctor_desc) = match existing_desc {
     Some(desc) => {
-      if !@runtime.record_type_matches(
+      if !record_type_matches(
           desc.record_type,
           parent_type,
           is_sealed,
@@ -2726,7 +2726,7 @@ fn eval_define_condition_type_state(
   if parent_type.is_sealed || parent_type.is_opaque {
     raise @core.EvalError("invalid define-condition-type")
   }
-  let base_type = @runtime.condition_base_type()
+  let base_type = condition_base_type()
   if !@runtime.record_type_is_a(parent_type, base_type) {
     raise @core.EvalError("invalid define-condition-type")
   }
@@ -2877,7 +2877,7 @@ fn record_constructor_from_descriptor(
         Some(parent) => {
           let parent_desc = match desc.parent_desc {
             Some(p) => p
-            None => @runtime.default_constructor_descriptor(parent)
+            None => default_constructor_descriptor(parent)
           }
           @core.Value::RecordProc(
             @runtime.make_record_proc(
@@ -3010,8 +3010,8 @@ fn apply_condition_proc(
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
-        let base = @runtime.condition_base_type()
-        let ok = match @runtime.condition_components_opt(args[0], base) {
+        let base = condition_base_type()
+        let ok = match condition_components_opt(args[0], base) {
           Some(components) =>
             for i = 0; i < components.length(); {
               // invariant : i >= 0 && i <= components.length()
@@ -3032,8 +3032,8 @@ fn apply_condition_proc(
       if args.length() != 1 {
         raise arity_mismatch(1, args.length())
       } else {
-        let base = @runtime.condition_base_type()
-        let components = @runtime.condition_components(args[0], base)
+        let base = condition_base_type()
+        let components = condition_components(args[0], base)
         let found =
           for i = 0; i < components.length(); {
             // invariant : i >= 0 && i <= components.length()

@@ -2814,7 +2814,7 @@ fn value_as_condition_type_descriptor(
   value : @core.Value,
 ) -> @core.RecordTypeDescriptor raise @core.EvalError {
   let desc = value_as_record_type_descriptor(value)
-  let base = @runtime.condition_base_type()
+  let base = condition_base_type()
   if !@runtime.record_type_is_a(desc.record_type, base) {
     raise @core.EvalError("type error: condition type expected")
   }

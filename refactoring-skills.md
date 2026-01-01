@@ -2544,9 +2544,23 @@ let forms = @parser.parse_program("(+ 1 2)")
 
 ## Audit public API before narrowing
 - Use `moon ide find-references` on each `pub` symbol to confirm whether it is used outside the package before making it private.
+- If a runtime helper is only used by eval, move it into an eval helper file and drop the runtime export; replace `@runtime.fn` with `fn`.
 
 Example:
 ```bash
 moon ide find-references "Reader::peek_next"
 moon ide find-references "Reader::label_get"
+```
+
+Example:
+```bash
+moon ide find-references "condition_base_type"
+```
+
+```mbt
+// before
+let base = @runtime.condition_base_type()
+
+// after
+let base = condition_base_type()
 ```

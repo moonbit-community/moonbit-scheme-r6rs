@@ -252,7 +252,7 @@ fn apply_record_condition_primitive_core(
             Some(uid_name) =>
               match @runtime.lookup_record_type_descriptor_by_uid(uid_name) {
                 Some(existing_desc) => {
-                  if !@runtime.record_type_matches(
+                  if !record_type_matches(
                       existing_desc.record_type,
                       parent_type,
                       is_sealed,
@@ -268,7 +268,7 @@ fn apply_record_condition_primitive_core(
                   let record_type = @runtime.make_record_type(
                     name, parent_type, is_sealed, effective_opaque, uid, fields,
                   )
-                  let ctor_desc = @runtime.default_constructor_descriptor(record_type)
+                  let ctor_desc = default_constructor_descriptor(record_type)
                   let rtd = @runtime.make_record_type_descriptor(record_type, ctor_desc)
                   let _ = @runtime.register_record_type(name, rtd)
                   @core.Value::RecordTypeDescriptor(rtd)
@@ -278,7 +278,7 @@ fn apply_record_condition_primitive_core(
               let record_type = @runtime.make_record_type(
                 name, parent_type, is_sealed, effective_opaque, uid, fields,
               )
-              let ctor_desc = @runtime.default_constructor_descriptor(record_type)
+              let ctor_desc = default_constructor_descriptor(record_type)
               let rtd = @runtime.make_record_type_descriptor(record_type, ctor_desc)
               let _ = @runtime.register_record_type(name, rtd)
               @core.Value::RecordTypeDescriptor(rtd)
@@ -295,7 +295,7 @@ fn apply_record_condition_primitive_core(
           let parent_desc = match parent_value {
             @core.Value::Datum(@core.Datum::Bool(false)) =>
               match record_type.parent {
-                Some(parent) => Some(@runtime.default_constructor_descriptor(parent))
+                Some(parent) => Some(default_constructor_descriptor(parent))
                 None => None
               }
             _ => Some(value_as_record_constructor_descriptor(parent_value))
@@ -349,10 +349,10 @@ fn apply_record_condition_primitive_core(
       match args {
         [] => raise arity_mismatch(1, 0)
         _ => {
-          let base = @runtime.condition_base_type()
+          let base = condition_base_type()
           let components : Array[@core.Record] = []
           for arg in args {
-            let parts = @runtime.condition_components(arg, base)
+            let parts = condition_components(arg, base)
             components.push_iter(parts.iter())
           }
           if components.length() == 1 {
@@ -366,8 +366,8 @@ fn apply_record_condition_primitive_core(
     @core.Primitive::ConditionP =>
       match args {
         [condition_value] => {
-          let base = @runtime.condition_base_type()
-          let ok = @runtime.condition_components_opt(condition_value, base) is Some(_)
+          let base = condition_base_type()
+          let ok = condition_components_opt(condition_value, base) is Some(_)
           bool_value(ok)
         }
         _ => raise arity_mismatch(1, args.length())
@@ -375,8 +375,8 @@ fn apply_record_condition_primitive_core(
     @core.Primitive::SimpleConditions =>
       match args {
         [condition_value] => {
-          let base = @runtime.condition_base_type()
-          let components = @runtime.condition_components(condition_value, base)
+          let base = condition_base_type()
+          let components = condition_components(condition_value, base)
           let items : Array[@core.Datum] =
             components.map((record) => @core.Datum::Record(record))
           @core.Value::Datum(@runtime.list_from_array(items))
