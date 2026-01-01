@@ -2025,6 +2025,16 @@ match value {
 }
 ```
 
+## Use Option::map for simple projections
+- Prefer `opt.map(...)` over a two-branch `match` when only transforming `Some`.
+
+Example:
+```mbt
+pub fn env_binding_id_optional(env : Env, name : String) -> Int? {
+  env.get_binding(name).map((binding) => binding.id)
+}
+```
+
 ## Drop constructor prefixes in patterns
 - In `match` patterns, you can omit `TypePath::` when the scrutinee type is known.
 - Keep prefixes in expressions unless the type is explicit; otherwise the compiler treats the constructor name as an unbound value.
