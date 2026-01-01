@@ -495,7 +495,7 @@ fn apply_numeric_primitive_core(
           if radix < 2 || radix > 36 {
             raise @core.EvalError("radix out of range")
           }
-          let parsed = parse_number_token_with_radix(s, radix)
+          let parsed = parse_number_token(s, radix=radix)
           match parsed {
             Some(num) => Datum(num)
             None => Datum(Bool(false))

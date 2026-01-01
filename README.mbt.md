@@ -39,7 +39,7 @@ test "eval program" {
     Some(Int(10)) => ()
     _ => fail("expected int")
   }
-  match parse_number_token_with_radix("ff", 16) {
+  match parse_number_token("ff", radix=16) {
     Some(Int(255)) => ()
     _ => fail("expected 255")
   }

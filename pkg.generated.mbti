@@ -10,9 +10,7 @@ pub fn eval_program(String) -> @core.Value raise
 
 pub fn eval_program_all(String) -> Array[@core.Value] raise
 
-pub fn parse_number_token(String) -> @core.Datum?
-
-pub fn parse_number_token_with_radix(String, Int) -> @core.Datum?
+pub fn parse_number_token(String, radix? : Int) -> @core.Datum?
 
 pub fn parse_program(String, fold_case? : Bool) -> Array[@core.Datum] raise @core.ParseError
 

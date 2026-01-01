@@ -12,7 +12,6 @@ pub using @core {
 /// Re-export parser entrypoints for convenience.
 pub using @parser {
   parse_number_token,
-  parse_number_token_with_radix,
   parse_program,
 }
 

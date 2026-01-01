@@ -131,5 +131,4 @@ using @runtime {
 using @parser {
   parse_program,
   parse_number_token,
-  parse_number_token_with_radix,
 }

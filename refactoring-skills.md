@@ -2150,6 +2150,17 @@ pub fn parse_program(src : String, fold_case? : Bool = false) -> Array[Datum] ra
 let forms = parse_program("ABC", fold_case=true)
 ```
 
+Example:
+```mbt
+// Before: duplicate public entrypoints
+pub fn parse_number_token(tok : String) -> Datum? { ... }
+pub fn parse_number_token_with_radix(tok : String, radix : Int) -> Datum? { ... }
+
+// After: optional parameter keeps one public entrypoint
+pub fn parse_number_token(tok : String, radix? : Int) -> Datum? { ... }
+let parsed = parse_number_token("ff", radix=16)
+```
+
 ## Replace nested loops with push_iter/map
 - Use `Array::push_iter` to append a whole array in one call.
 - Use `Array::map` to build new arrays without a mutable accumulator.
