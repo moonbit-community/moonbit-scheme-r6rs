@@ -2146,6 +2146,15 @@ pub fn value_as_datum(value : Value) -> Datum raise EvalError { ... }
 fn value_as_datum(value : Value) -> Datum raise EvalError { ... }
 ```
 
+Example:
+```mbt
+// runtime before (exported helper)
+pub fn bool_value(value : Bool) -> Value { ... }
+
+// eval after (package-private helper)
+fn bool_value(value : Bool) -> Value { ... }
+```
+
 ## Fold variants into optional parameters
 - Replace `fn name_with_options(...)` with a single public entrypoint + optional parameters.
 - Update call sites with `moon ide find-references` before removing the old API.

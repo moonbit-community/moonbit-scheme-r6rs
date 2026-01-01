@@ -70,12 +70,6 @@ test "gensym unique suffix" {
 }
 
 ///|
-test "value predicates" {
-  inspect(is_false(bool_value(false)), content="true")
-  inspect(is_false(bool_value(true)), content="false")
-}
-
-///|
 test "list from array" {
   let list = list_from_array([Int(1), Int(2)])
   let value = @core.Value::Datum(list)

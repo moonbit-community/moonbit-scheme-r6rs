@@ -194,6 +194,19 @@ fn is_identifier_value(value : Value) -> Bool {
 }
 
 ///|
+fn bool_value(value : Bool) -> Value {
+  Datum(Bool(value))
+}
+
+///|
+fn is_false(value : Value) -> Bool {
+  match value {
+    Datum(Bool(false)) => true
+    _ => false
+  }
+}
+
+///|
 fn value_as_datum(value : Value) -> Datum raise EvalError {
   match value {
     Datum(d) => d

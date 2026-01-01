@@ -1,20 +1,3 @@
-///|
-/// Wrap a Bool into a Datum Value.
-///
-/// # Example
-/// ```mbt check
-/// test "bool value helper" {
-///   match bool_value(true) {
-///     Datum(Bool(true)) => ()
-///     _ => fail("expected bool value")
-///   }
-/// }
-/// ```
-pub fn bool_value(value : Bool) -> Value {
-  Datum(Bool(value))
-}
-
-///|
 priv struct Counter {
   cell : Ref[Int]
 }
@@ -584,23 +567,6 @@ pub fn port_write(port : Port, text : String) -> Unit {
 pub fn port_get_output_string(port : Port) -> String {
   match port.kind {
     OutputString(buffer) => buffer.val
-  }
-}
-
-///|
-/// Scheme false predicate for values.
-///
-/// # Example
-/// ```mbt check
-/// test "is_false predicate" {
-///   inspect(is_false(bool_value(false)), content="true")
-///   inspect(is_false(bool_value(true)), content="false")
-/// }
-/// ```
-pub fn is_false(value : Value) -> Bool {
-  match value {
-    Datum(Bool(false)) => true
-    _ => false
   }
 }
 

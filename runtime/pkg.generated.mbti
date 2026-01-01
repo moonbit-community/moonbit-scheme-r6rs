@@ -17,8 +17,6 @@ pub fn bigint_is_zero(@bigint.BigInt) -> Bool
 
 pub fn bigint_to_int_option(@bigint.BigInt) -> Int?
 
-pub fn bool_value(Bool) -> @core.Value
-
 pub fn condition_base_type() -> @core.RecordType raise @core.EvalError
 
 pub fn condition_components(@core.Value, @core.RecordType) -> Array[@core.Record] raise @core.EvalError
@@ -68,8 +66,6 @@ pub fn gensym(String) -> String
 pub fn get_current_output_port() -> @core.Port
 
 pub fn int_abs(Int) -> Int
-
-pub fn is_false(@core.Value) -> Bool
 
 pub fn is_procedure_value(@core.Value) -> Bool
 
