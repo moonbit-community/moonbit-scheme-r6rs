@@ -23,15 +23,6 @@ pub fn value_to_string(@core.Value) -> String
 // Types and methods
 
 // Type aliases
-pub using @core {type Datum}
-
-pub using @core {type EvalError}
-
-pub using @core {type ParseError}
-
-pub using @core {type Primitive}
-
-pub using @core {type Value}
 
 // Traits
 

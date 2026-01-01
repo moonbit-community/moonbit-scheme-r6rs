@@ -2463,6 +2463,7 @@ for i = 0, j = xs.length(); i < j; {
 
 ## Prefer explicit package qualifiers over `using`
 - Replace `using @pkg { type Foo }` with explicit `@pkg.Foo` in signatures and `@pkg.Foo::Constr` at construction/pattern sites, and update docstring/README tests to match.
+- For facade packages, remove `pub using` re-exports to keep the public API minimal; use `moon doc "@pkg.fn"` to confirm signatures, then update call sites to use `@pkg.fn` explicitly.
 
 Example:
 ```mbt
@@ -2480,6 +2481,16 @@ match parse_number_token("10") {
   Some(@core.Datum::Int(10)) => ()
   _ => fail("expected integer")
 }
+```
+
+Example (facade):
+```mbt
+// before
+pub using @parser { parse_program }
+let forms = parse_program("(+ 1 2)")
+
+// after
+let forms = @parser.parse_program("(+ 1 2)")
 ```
 
 ## Audit public API before narrowing

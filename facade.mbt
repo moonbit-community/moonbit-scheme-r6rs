@@ -1,18 +1,55 @@
 ///|
-/// Re-export core runtime types used by the public API.
-pub using @core {
-  type Datum,
-  type EvalError,
-  type ParseError,
-  type Primitive,
-  type Value,
+/// Parse all top-level datums from a source string.
+///
+/// # Example
+/// ```mbt check
+/// test "facade parse program" {
+///   let forms = parse_program("#\\a")
+///   match forms {
+///     [Char('a'), ..] => ()
+///     _ => fail("expected char datum")
+///   }
+/// }
+/// ```
+///
+/// # Example
+/// ```mbt check
+/// test "facade parse program fold case" {
+///   let forms = parse_program("ABC", fold_case=true)
+///   match forms {
+///     [Symbol("abc"), ..] => ()
+///     _ => fail("expected folded symbol")
+///   }
+/// }
+/// ```
+pub fn parse_program(src : String, fold_case? : Bool) -> Array[@core.Datum] raise @core.ParseError {
+  match fold_case {
+    Some(value) => @parser.parse_program(src, fold_case=value)
+    None => @parser.parse_program(src)
+  }
 }
 
 ///|
-/// Re-export parser entrypoints for convenience.
-pub using @parser {
-  parse_number_token,
-  parse_program,
+/// Parse a numeric token using default radix and exactness rules.
+///
+/// # Example
+/// ```mbt check
+/// test "facade parse number token" {
+///   match parse_number_token("10") {
+///     Some(Int(10)) => ()
+///     _ => fail("expected integer")
+///   }
+///   match parse_number_token("ff", radix=16) {
+///     Some(Int(255)) => ()
+///     _ => fail("expected 255")
+///   }
+/// }
+/// ```
+pub fn parse_number_token(tok : String, radix? : Int) -> @core.Datum? {
+  match radix {
+    Some(value) => @parser.parse_number_token(tok, radix=value)
+    None => @parser.parse_number_token(tok)
+  }
 }
 
 ///|
@@ -25,7 +62,7 @@ pub using @parser {
 ///   inspect(value_to_string(value), content="3")
 /// }
 /// ```
-pub fn eval_program(src : String) -> Value raise {
+pub fn eval_program(src : String) -> @core.Value raise {
   @eval.eval_program(src)
 }
 
@@ -39,7 +76,7 @@ pub fn eval_program(src : String) -> Value raise {
 ///   inspect(values.length(), content="2")
 /// }
 /// ```
-pub fn eval_program_all(src : String) -> Array[Value] raise {
+pub fn eval_program_all(src : String) -> Array[@core.Value] raise {
   @eval.eval_program_all(src)
 }
 
@@ -68,6 +105,6 @@ pub fn register_include_source(path : String, content : String) -> Unit {
 ///   inspect(value_to_string(value), content="3")
 /// }
 /// ```
-pub fn value_to_string(value : Value) -> String {
+pub fn value_to_string(value : @core.Value) -> String {
   @runtime.value_to_string(value)
 }
