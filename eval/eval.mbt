@@ -2882,13 +2882,8 @@ fn eval_define_condition_type_state(
     raise @core.EvalError("invalid define-condition-type")
   }
   let parent_fields = parent_type.fields
-  let parent_field_names : Array[String] = []
-  for field in parent_fields {
-    // invariant : parent_fields.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : parent_fields.length() >= 0
-    parent_field_names.push(field.name)
-  }
+  let parent_field_names : Array[String] =
+    parent_fields.map((field) => field.name)
   let accessors : Map[String, String] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
@@ -2910,19 +2905,12 @@ fn eval_define_condition_type_state(
     accessors[field_name] = accessor
     new_field_names.push(field_name)
   }
-  let fields : Array[RecordField] = []
-  for field in parent_fields {
-    // invariant : parent_fields.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : parent_fields.length() >= 0
-    fields.push(field)
-  }
-  for field_name in new_field_names {
-    // invariant : new_field_names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : new_field_names.length() >= 0
-    fields.push(RecordField::{ name: field_name, mutable: false })
-  }
+  let fields = parent_fields.copy()
+  fields.push_iter(
+    new_field_names
+      .map((field_name) => RecordField::{ name: field_name, mutable: false })
+      .iter(),
+  )
   let bindings : Array[RecordFieldBinding] = []
   let parent_count = parent_fields.length()
   for i = 0; i < new_field_names.length(); {
