@@ -204,6 +204,8 @@ test "parse errors" {
 - After auto-qualifying, scan for nested prefixes like `@core.Value::@core.Primitive::` and fix them with targeted replacements.
 - Keep local enum constructors local; use `MachineState::Eval` instead of `@core.Primitive::Eval`.
 - For core enums with overlapping variant names (e.g., `Set`), qualify with the enum type (`@core.HashtableOp::Set`) to avoid clashes with `@core.Kont::Set`.
+- When `Datum` wraps a `Value`, keep the nested constructors explicit (`@core.Datum::Value(@core.Value::SyntaxObject(...))`) so qualifier sweeps do not invert the enum.
+- After removing `using`, update doctests and README examples to use explicit `@core.Value::Datum(@core.Datum::Int(...))`.
 
 Example:
 ```mbt

@@ -57,17 +57,17 @@ let enum_set_counter : Counter = Counter::new()
 let enum_set_proc_counter : Counter = Counter::new()
 
 ///|
-let library_registry : Ref[Map[String, Map[String, Binding]]] = Ref::new({})
+let library_registry : Ref[Map[String, Map[String, @core.Binding]]] = Ref::new({})
 
 ///|
-let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
+let record_type_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref::new({})
 
 ///|
-let record_type_uid_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({},
+let record_type_uid_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref::new({},
 )
 
 ///|
-let record_type_id_registry : Ref[Map[Int, RecordTypeDescriptor]] = Ref::new({})
+let record_type_id_registry : Ref[Map[Int, @core.RecordTypeDescriptor]] = Ref::new({})
 
 ///|
 /// Generate a fresh symbol name with a gensym suffix.
@@ -158,13 +158,13 @@ fn next_enum_set_proc_id() -> Int {
 /// Construct a new record type descriptor.
 pub fn make_record_type(
   name : String,
-  parent : RecordType?,
+  parent : @core.RecordType?,
   is_sealed : Bool,
   is_opaque : Bool,
   uid : String?,
-  fields : Array[RecordField],
-) -> RecordType {
-  RecordType::{
+  fields : Array[@core.RecordField],
+) -> @core.RecordType {
+  @core.RecordType::{
     id: next_record_type_id(),
     name,
     parent,
@@ -177,24 +177,24 @@ pub fn make_record_type(
 
 ///|
 /// Allocate a record procedure wrapper.
-pub fn make_record_proc(kind : RecordProcKind) -> RecordProc {
-  RecordProc::{ id: next_record_proc_id(), kind }
+pub fn make_record_proc(kind : @core.RecordProcKind) -> @core.RecordProc {
+  @core.RecordProc::{ id: next_record_proc_id(), kind }
 }
 
 ///|
 /// Allocate a condition procedure wrapper.
-pub fn make_condition_proc(kind : ConditionProcKind) -> ConditionProc {
-  ConditionProc::{ id: next_condition_proc_id(), kind }
+pub fn make_condition_proc(kind : @core.ConditionProcKind) -> @core.ConditionProc {
+  @core.ConditionProc::{ id: next_condition_proc_id(), kind }
 }
 
 ///|
 /// Construct a record constructor descriptor.
 pub fn make_record_constructor_descriptor(
-  record_type : RecordType,
-  parent_desc : RecordConstructorDescriptor?,
-  protocol : Value?,
-) -> RecordConstructorDescriptor {
-  RecordConstructorDescriptor::{
+  record_type : @core.RecordType,
+  parent_desc : @core.RecordConstructorDescriptor?,
+  protocol : @core.Value?,
+) -> @core.RecordConstructorDescriptor {
+  @core.RecordConstructorDescriptor::{
     id: next_record_ctor_desc_id(),
     record_type,
     parent_desc,
@@ -205,10 +205,10 @@ pub fn make_record_constructor_descriptor(
 ///|
 /// Construct a record type descriptor wrapper.
 pub fn make_record_type_descriptor(
-  record_type : RecordType,
-  constructor_desc : RecordConstructorDescriptor,
-) -> RecordTypeDescriptor {
-  RecordTypeDescriptor::{
+  record_type : @core.RecordType,
+  constructor_desc : @core.RecordConstructorDescriptor,
+) -> @core.RecordTypeDescriptor {
+  @core.RecordTypeDescriptor::{
     id: next_record_type_desc_id(),
     record_type,
     constructor_desc,
@@ -218,27 +218,27 @@ pub fn make_record_type_descriptor(
 ///|
 /// Create a record instance with boxed fields.
 pub fn make_record_instance(
-  record_type : RecordType,
-  values : Array[Value],
-) -> Record {
+  record_type : @core.RecordType,
+  values : Array[@core.Value],
+) -> @core.Record {
   let fields = values.map((value) => Ref::new(value))
-  Record::{ id: next_record_id(), record_type, fields }
+  @core.Record::{ id: next_record_id(), record_type, fields }
 }
 
 ///|
 /// Construct a condition with the given record components.
-pub fn make_condition(components : Array[Record]) -> Condition {
-  Condition::{ id: next_condition_id(), components }
+pub fn make_condition(components : Array[@core.Record]) -> @core.Condition {
+  @core.Condition::{ id: next_condition_id(), components }
 }
 
 ///|
 /// Construct a new hashtable with equivalence and hash settings.
 pub fn make_hashtable(
-  equiv : HashtableEquiv,
-  hash : Value?,
+  equiv : @core.HashtableEquiv,
+  hash : @core.Value?,
   mutable : Bool,
-) -> Hashtable {
-  Hashtable::{
+) -> @core.Hashtable {
+  @core.Hashtable::{
     id: next_hashtable_id(),
     mutable,
     equiv,
@@ -252,14 +252,14 @@ pub fn make_hashtable(
 pub fn make_enum_set(
   universe : Array[String],
   members : Array[Bool],
-) -> EnumSet {
-  EnumSet::{ id: next_enum_set_id(), universe, members }
+) -> @core.EnumSet {
+  @core.EnumSet::{ id: next_enum_set_id(), universe, members }
 }
 
 ///|
 /// Allocate an enum-set procedure wrapper.
-pub fn make_enum_set_proc(kind : EnumSetProcKind) -> EnumSetProc {
-  EnumSetProc::{ id: next_enum_set_proc_id(), kind }
+pub fn make_enum_set_proc(kind : @core.EnumSetProcKind) -> @core.EnumSetProc {
+  @core.EnumSetProc::{ id: next_enum_set_proc_id(), kind }
 }
 
 ///|
@@ -275,7 +275,7 @@ fn enum_set_members_fill(universe : Array[String], value : Bool) -> Array[Bool] 
 
 ///|
 /// Compare enum-set universes for equal ordering.
-pub fn enum_set_universe_equal(a : EnumSet, b : EnumSet) -> Bool {
+pub fn enum_set_universe_equal(a : @core.EnumSet, b : @core.EnumSet) -> Bool {
   if a.universe.length() != b.universe.length() {
     return false
   }
@@ -300,7 +300,7 @@ pub fn enum_set_index_of(universe : Array[String], name : String) -> Int? {
 
 ///|
 /// Check membership by symbol name.
-pub fn enum_set_member_by_name(set : EnumSet, name : String) -> Bool {
+pub fn enum_set_member_by_name(set : @core.EnumSet, name : String) -> Bool {
   match enum_set_index_of(set.universe, name) {
     Some(idx) => set.members[idx]
     None => false
@@ -321,7 +321,7 @@ pub fn enum_set_member_by_name(set : EnumSet, name : String) -> Bool {
 pub fn enum_set_from_names(
   universe : Array[String],
   names : Array[String],
-) -> EnumSet raise EvalError {
+) -> @core.EnumSet raise @core.EvalError {
   let members = enum_set_members_all_false(universe)
   for name in names {
     match enum_set_index_of(universe, name) {
@@ -350,8 +350,8 @@ pub fn reset_record_type_registry() -> Unit {
 /// Register a record type descriptor by name and id.
 pub fn register_record_type(
   name : String,
-  desc : RecordTypeDescriptor,
-) -> RecordTypeDescriptor {
+  desc : @core.RecordTypeDescriptor,
+) -> @core.RecordTypeDescriptor {
   record_type_registry.val[name] = desc
   record_type_id_registry.val[desc.record_type.id] = desc
   match desc.record_type.uid {
@@ -365,7 +365,7 @@ pub fn register_record_type(
 /// Register a record type alias without changing descriptor identity.
 pub fn register_record_type_alias(
   name : String,
-  desc : RecordTypeDescriptor,
+  desc : @core.RecordTypeDescriptor,
 ) -> Unit {
   record_type_registry.val[name] = desc
   record_type_id_registry.val[desc.record_type.id] = desc
@@ -377,7 +377,7 @@ pub fn register_record_type_alias(
 
 ///|
 /// Look up a record type descriptor by name.
-pub fn lookup_record_type_descriptor(name : String) -> RecordTypeDescriptor? {
+pub fn lookup_record_type_descriptor(name : String) -> @core.RecordTypeDescriptor? {
   record_type_registry.val.get(name)
 }
 
@@ -385,21 +385,21 @@ pub fn lookup_record_type_descriptor(name : String) -> RecordTypeDescriptor? {
 /// Look up a record type descriptor by uid.
 pub fn lookup_record_type_descriptor_by_uid(
   uid : String,
-) -> RecordTypeDescriptor? {
+) -> @core.RecordTypeDescriptor? {
   record_type_uid_registry.val.get(uid)
 }
 
 ///|
 /// Look up a record type descriptor by internal id.
-pub fn lookup_record_type_descriptor_by_id(id : Int) -> RecordTypeDescriptor? {
+pub fn lookup_record_type_descriptor_by_id(id : Int) -> @core.RecordTypeDescriptor? {
   record_type_id_registry.val.get(id)
 }
 
 ///|
 /// Build a constructor descriptor chain for a record type.
 pub fn default_constructor_descriptor(
-  record_type : RecordType,
-) -> RecordConstructorDescriptor {
+  record_type : @core.RecordType,
+) -> @core.RecordConstructorDescriptor {
   let parent_desc =
     record_type.parent.map((parent) => default_constructor_descriptor(parent))
   make_record_constructor_descriptor(record_type, parent_desc, None)
@@ -407,16 +407,16 @@ pub fn default_constructor_descriptor(
 
 ///|
 /// Return true if the value is a callable procedure.
-pub fn is_procedure_value(value : Value) -> Bool {
+pub fn is_procedure_value(value : @core.Value) -> Bool {
   match value {
     Primitive(_)
     | Closure(_)
     | CaseClosure(_)
     | Parameter(_)
     | Continuation(_)
-    | RecordProc(_)
-    | ConditionProc(_)
-    | EnumSetProc(_) => true
+    | @core.RecordProc(_)
+    | @core.ConditionProc(_)
+    | @core.EnumSetProc(_) => true
     _ => false
   }
 }
@@ -424,11 +424,11 @@ pub fn is_procedure_value(value : Value) -> Bool {
 ///|
 /// Compare an existing record type against descriptor fields.
 pub fn record_type_matches(
-  existing : RecordType,
-  parent : RecordType?,
+  existing : @core.RecordType,
+  parent : @core.RecordType?,
   is_sealed : Bool,
   is_opaque : Bool,
-  fields : Array[RecordField],
+  fields : Array[@core.RecordField],
 ) -> Bool {
   if existing.is_sealed != is_sealed {
     return false
@@ -471,7 +471,7 @@ pub fn record_type_matches(
 ///   inspect(record_type_is_a(base, child), content="false")
 /// }
 /// ```
-pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
+pub fn record_type_is_a(actual : @core.RecordType, target : @core.RecordType) -> Bool {
   if actual.id == target.id {
     true
   } else {
@@ -484,13 +484,13 @@ pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
 
 ///|
 /// Register a library export table.
-pub fn register_library(name : String, exports : Map[String, Binding]) -> Unit {
+pub fn register_library(name : String, exports : Map[String, @core.Binding]) -> Unit {
   library_registry.val[name] = exports
 }
 
 ///|
 /// Look up a library by name.
-pub fn lookup_library(name : String) -> Map[String, Binding]? {
+pub fn lookup_library(name : String) -> Map[String, @core.Binding]? {
   library_registry.val.get(name)
 }
 
@@ -505,23 +505,23 @@ pub fn lookup_library(name : String) -> Map[String, Binding]? {
 ///   inspect(port_get_output_string(port), content="hi")
 /// }
 /// ```
-pub fn new_output_string_port() -> Port {
+pub fn new_output_string_port() -> @core.Port {
   let buffer = Ref::new("")
-  Port::{ id: next_port_id(), kind: OutputString(buffer) }
+  @core.Port::{ id: next_port_id(), kind: OutputString(buffer) }
 }
 
 ///|
-let current_output_port : Ref[Port] = Ref::new(new_output_string_port())
+let current_output_port : Ref[@core.Port] = Ref::new(new_output_string_port())
 
 ///|
 /// Fetch the current output port.
-pub fn get_current_output_port() -> Port {
+pub fn get_current_output_port() -> @core.Port {
   current_output_port.val
 }
 
 ///|
 /// Replace the current output port.
-pub fn set_current_output_port(port : Port) -> Unit {
+pub fn set_current_output_port(port : @core.Port) -> Unit {
   current_output_port.val = port
 }
 
@@ -536,7 +536,7 @@ pub fn set_current_output_port(port : Port) -> Unit {
 ///   inspect(port_get_output_string(port), content="ok")
 /// }
 /// ```
-pub fn port_write(port : Port, text : String) -> Unit {
+pub fn port_write(port : @core.Port, text : String) -> Unit {
   match port.kind {
     OutputString(buffer) => buffer.val = buffer.val + text
   }
@@ -552,25 +552,25 @@ pub fn port_write(port : Port, text : String) -> Unit {
 ///   inspect(port_get_output_string(port), content="")
 /// }
 /// ```
-pub fn port_get_output_string(port : Port) -> String {
+pub fn port_get_output_string(port : @core.Port) -> String {
   match port.kind {
     OutputString(buffer) => buffer.val
   }
 }
 
 ///|
-/// Convert a Datum back to a Value.
-pub fn value_from_datum(datum : Datum) -> Value {
+/// Convert a @core.Datum back to a @core.Value.
+pub fn value_from_datum(datum : @core.Datum) -> @core.Value {
   match datum {
-    Record(record) => Record(record)
-    Value(value) => value
-    _ => Datum(datum)
+    @core.Datum::Record(record) => @core.Value::Record(record)
+    @core.Datum::Value(value) => value
+    _ => @core.Value::Datum(datum)
   }
 }
 
 ///|
 /// Retrieve the base condition record type.
-pub fn condition_base_type() -> RecordType raise EvalError {
+pub fn condition_base_type() -> @core.RecordType raise @core.EvalError {
   match lookup_record_type_descriptor("&condition") {
     Some(desc) => desc.record_type
     None => raise @core.EvalError("internal error: missing &condition")
@@ -578,9 +578,9 @@ pub fn condition_base_type() -> RecordType raise EvalError {
 }
 
 ///|
-fn value_as_condition_record(value : Value, base : RecordType) -> Record? {
+fn value_as_condition_record(value : @core.Value, base : @core.RecordType) -> @core.Record? {
   match value {
-    Record(record) | Datum(Record(record)) =>
+    @core.Value::Record(record) | @core.Value::Datum(@core.Datum::Record(record)) =>
       if record_type_is_a(record.record_type, base) {
         Some(record)
       } else {
@@ -593,11 +593,11 @@ fn value_as_condition_record(value : Value, base : RecordType) -> Record? {
 ///|
 /// Extract condition components if the value is a condition.
 pub fn condition_components_opt(
-  value : Value,
-  base : RecordType,
-) -> Array[Record]? {
+  value : @core.Value,
+  base : @core.RecordType,
+) -> Array[@core.Record]? {
   match value {
-    Datum(Condition(cond)) => Some(cond.components)
+    @core.Value::Datum(@core.Datum::Condition(cond)) => Some(cond.components)
     _ =>
       value_as_condition_record(value, base).map((record) => [record])
   }
@@ -606,9 +606,9 @@ pub fn condition_components_opt(
 ///|
 /// Extract condition components or raise on type mismatch.
 pub fn condition_components(
-  value : Value,
-  base : RecordType,
-) -> Array[Record] raise EvalError {
+  value : @core.Value,
+  base : @core.RecordType,
+) -> Array[@core.Record] raise @core.EvalError {
   match condition_components_opt(value, base) {
     Some(items) => items
     None => raise @core.EvalError("type error: condition expected")
@@ -617,7 +617,7 @@ pub fn condition_components(
 
 ///|
 /// Strip a datum label wrapper if present.
-pub fn datum_unlabel(value : Datum) -> Datum {
+pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
   let seen : Array[Int] = []
   for cur = value; true; {
     // invariant : seen.length() >= 0
@@ -640,7 +640,7 @@ pub fn datum_unlabel(value : Datum) -> Datum {
 
 ///|
 /// Allocate a new pair datum.
-pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
+pub fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
   Pair(Ref::new(car), Ref::new(cdr))
 }
 
@@ -654,8 +654,8 @@ pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
 ///   inspect(datum_list_to_array(list).length(), content="2")
 /// }
 /// ```
-pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
-  let items : Array[Datum] = []
+pub fn datum_list_to_array(list : @core.Datum) -> Array[@core.Datum] raise @core.EvalError {
+  let items : Array[@core.Datum] = []
   for cur = list; true; {
     // invariant : items.length() >= 0
     // TODO(decreases) : list length not explicit; possible bug
@@ -691,8 +691,8 @@ pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
 ///   }
 /// }
 /// ```
-pub fn list_from_array(items : Array[Datum]) -> Datum {
-  for i = items.length(), tail = Datum::Nil; i > 0; {
+pub fn list_from_array(items : Array[@core.Datum]) -> @core.Datum {
+  for i = items.length(), tail = @core.Datum::Nil; i > 0; {
     // invariant : i >= 0 && i <= items.length()
     // decreases : i
     // assert : i <= items.length()
@@ -705,10 +705,10 @@ pub fn list_from_array(items : Array[Datum]) -> Datum {
 
 ///|
 /// Extract a symbol name from a datum when possible.
-pub fn symbol_name(expr : Datum) -> String? {
+pub fn symbol_name(expr : @core.Datum) -> String? {
   match expr {
     Symbol(name) => Some(name)
-    Value(SyntaxObject(obj)) => symbol_name(obj.datum)
+    @core.Datum::Value(@core.Value::SyntaxObject(obj)) => symbol_name(obj.datum)
     _ => None
   }
 }
@@ -727,9 +727,9 @@ fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
 
 ///|
 /// Remove syntax wrappers from a datum tree.
-pub fn strip_syntax_datum(datum : Datum) -> Datum {
+pub fn strip_syntax_datum(datum : @core.Datum) -> @core.Datum {
   match datum {
-    Value(SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
+    @core.Datum::Value(@core.Value::SyntaxObject(obj)) => strip_syntax_datum(obj.datum)
     Pair(a, b) =>
       pair_new(strip_syntax_datum(a.val), strip_syntax_datum(b.val))
     Vector(items) =>
@@ -745,11 +745,11 @@ pub fn strip_syntax_datum(datum : Datum) -> Datum {
 
 ///|
 /// Wrap datum leaves in syntax objects with given scopes.
-fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
+fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      Value(
-        SyntaxObject(SyntaxObject::{
+      @core.Datum::Value(
+        @core.Value::SyntaxObject(@core.SyntaxObject::{
           datum: Symbol(name),
           scopes,
           binding_id: None,
@@ -767,41 +767,41 @@ fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
         Ref::new(syntax_wrap_datum(real.val, scopes)),
         Ref::new(syntax_wrap_datum(imag.val, scopes)),
       )
-    Value(SyntaxObject(_)) => datum
+    @core.Datum::Value(@core.Value::SyntaxObject(_)) => datum
     _ => datum
   }
 }
 
 ///|
 /// Wrap a datum in syntax objects unless already wrapped.
-pub fn syntax_wrap_root(datum : Datum, scopes : Array[Int]) -> Datum {
+pub fn syntax_wrap_root(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
   match datum {
     Symbol(_) => datum
-    Value(SyntaxObject(_)) => datum
+    @core.Datum::Value(@core.Value::SyntaxObject(_)) => datum
     _ => syntax_wrap_datum(datum, scopes)
   }
 }
 
 ///|
 /// Add a scope to every syntax object within a datum.
-pub fn syntax_add_scope(datum : Datum, scope : Int) -> Datum {
+pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      Value(
-        SyntaxObject(SyntaxObject::{
+      @core.Datum::Value(
+        @core.Value::SyntaxObject(@core.SyntaxObject::{
           datum: Symbol(name),
           scopes: [scope],
           binding_id: None,
         }),
       )
-    Value(SyntaxObject(obj)) => {
+    @core.Datum::Value(@core.Value::SyntaxObject(obj)) => {
       let next_scopes = scopes_with_added(obj.scopes, scope)
       let inner = match obj.datum {
         Symbol(_) => obj.datum
         _ => syntax_add_scope(obj.datum, scope)
       }
-      Value(
-        SyntaxObject(SyntaxObject::{
+      @core.Datum::Value(
+        @core.Value::SyntaxObject(@core.SyntaxObject::{
           datum: inner,
           scopes: next_scopes,
           binding_id: obj.binding_id,

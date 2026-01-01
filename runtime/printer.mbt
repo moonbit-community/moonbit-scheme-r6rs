@@ -52,7 +52,7 @@ fn char_to_string(ch : Char) -> String {
 }
 
 ///|
-fn datum_to_string_state(datum : Datum, state : PrinterState) -> String {
+fn datum_to_string_state(datum : @core.Datum, state : PrinterState) -> String {
   match datum {
     Label(id, cell) => {
       let flags = state.label_flags(id)
@@ -89,13 +89,13 @@ fn datum_to_string_state(datum : Datum, state : PrinterState) -> String {
 }
 
 ///|
-fn datum_to_string(datum : Datum) -> String {
+fn datum_to_string(datum : @core.Datum) -> String {
   let state = PrinterState::new()
   datum_to_string_state(datum, state)
 }
 
 ///|
-fn datum_is_negative(value : Datum) -> Bool {
+fn datum_is_negative(value : @core.Datum) -> Bool {
   match datum_unlabel(value) {
     Int(n) => n < 0
     BigInt(n) => n.compare_int(0) < 0
@@ -107,7 +107,7 @@ fn datum_is_negative(value : Datum) -> Bool {
 }
 
 ///|
-fn datum_abs(value : Datum) -> Datum {
+fn datum_abs(value : @core.Datum) -> @core.Datum {
   match datum_unlabel(value) {
     Int(n) => Int(if n < 0 { -n } else { n })
     Rat(n, d) => Rat(if n < 0 { -n } else { n }, d)
@@ -130,8 +130,8 @@ fn datum_abs(value : Datum) -> Datum {
 
 ///|
 fn complex_to_string_state(
-  real : Datum,
-  imag : Datum,
+  real : @core.Datum,
+  imag : @core.Datum,
   state : PrinterState,
 ) -> String {
   let real_str = datum_to_string_state(real, state)
@@ -143,7 +143,7 @@ fn complex_to_string_state(
 }
 
 ///|
-fn vector_to_string_state(items : Array[Datum], state : PrinterState) -> String {
+fn vector_to_string_state(items : Array[@core.Datum], state : PrinterState) -> String {
   let joined = items.map((item) => datum_to_string_state(item, state)).join(" ")
   "#(\{joined})"
 }
@@ -155,7 +155,7 @@ fn bytevector_to_string(items : Array[Int]) -> String {
 }
 
 ///|
-fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
+fn datum_list_to_string_state(list : @core.Datum, state : PrinterState) -> String {
   let parts : Array[String] = []
   for cur = list; true; {
     // invariant : parts.length() >= 0
@@ -191,7 +191,7 @@ fn datum_list_to_string_state(list : Datum, state : PrinterState) -> String {
 ///   inspect(value_to_string(value), content="7")
 /// }
 /// ```
-pub fn value_to_string(value : Value) -> String {
+pub fn value_to_string(value : @core.Value) -> String {
   match value {
     Void => "#<void>"
     Datum(d) => datum_to_string(d)
