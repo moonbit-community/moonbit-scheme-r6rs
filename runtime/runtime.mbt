@@ -15,23 +15,6 @@ pub fn bool_value(value : Bool) -> Value {
 }
 
 ///|
-/// Registry entry for a library's exported bindings.
-pub struct Library {
-  exports : Map[String, Binding]
-}
-
-///|
-/// Access the export bindings for a library.
-pub fn Library::exports(self : Library) -> Map[String, Binding] {
-  self.exports
-}
-
-///|
-fn Library::new(exports : Map[String, Binding]) -> Library {
-  Library::{ exports }
-}
-
-///|
 priv struct Counter {
   cell : Ref[Int]
 }
@@ -91,7 +74,7 @@ let enum_set_counter : Counter = Counter::new()
 let enum_set_proc_counter : Counter = Counter::new()
 
 ///|
-let library_registry : Ref[Map[String, Library]] = Ref::new({})
+let library_registry : Ref[Map[String, Map[String, Binding]]] = Ref::new({})
 
 ///|
 let record_type_registry : Ref[Map[String, RecordTypeDescriptor]] = Ref::new({})
@@ -539,12 +522,12 @@ pub fn record_type_is_a(actual : RecordType, target : RecordType) -> Bool {
 ///|
 /// Register a library export table.
 pub fn register_library(name : String, exports : Map[String, Binding]) -> Unit {
-  library_registry.val[name] = Library::new(exports)
+  library_registry.val[name] = exports
 }
 
 ///|
 /// Look up a library by name.
-pub fn lookup_library(name : String) -> Library? {
+pub fn lookup_library(name : String) -> Map[String, Binding]? {
   library_registry.val.get(name)
 }
 

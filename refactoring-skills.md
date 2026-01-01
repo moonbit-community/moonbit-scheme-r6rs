@@ -1923,6 +1923,7 @@ pub fn make_reader(src : String) -> Reader {
 
 Example:
 ```mbt
+// Before: wrapper type with a single field
 pub struct Library {
   exports : Map[String, Binding]
 }
@@ -1931,11 +1932,21 @@ pub fn Library::exports(self : Library) -> Map[String, Binding] {
   self.exports
 }
 
-fn Library::new(exports : Map[String, Binding]) -> Library {
-  Library::{ exports }
+// After: registry stores exports directly, smaller public surface
+let library_registry : Ref[Map[String, Map[String, Binding]]] = { ref: {} }
+
+pub fn register_library(name : String, exports : Map[String, Binding]) -> Unit {
+  library_registry[][name] = exports
 }
 
-let exports_map = lib.exports()
+pub fn lookup_library(name : String) -> Map[String, Binding]? {
+  library_registry[].get(name)
+}
+
+match lookup_library("doc/runtime-lib") {
+  Some(exports) => exports.get("x")
+  None => None
+}
 ```
 
 ## README mbt check for new APIs

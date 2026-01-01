@@ -4130,8 +4130,7 @@ fn parse_import_clause(expr : Datum) -> Array[Datum] raise EvalError {
 ///|
 fn library_exports(name : String) -> Map[String, Binding] raise EvalError {
   match lookup_library(name) {
-    Some(lib) => {
-      let exports_map = lib.exports()
+    Some(exports_map) => {
       let exports : Map[String, Binding] = {}
       for key in exports_map.keys() {
         // invariant : exports_map.keys().length() >= 0

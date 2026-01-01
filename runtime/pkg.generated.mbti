@@ -83,7 +83,7 @@ pub fn is_procedure_value(@core.Value) -> Bool
 
 pub fn list_from_array(Array[@core.Datum]) -> @core.Datum
 
-pub fn lookup_library(String) -> Library?
+pub fn lookup_library(String) -> Map[String, @core.Binding]?
 
 pub fn lookup_record_type_descriptor(String) -> @core.RecordTypeDescriptor?
 
@@ -170,10 +170,6 @@ pub fn value_to_string(@core.Value) -> String
 // Errors
 
 // Types and methods
-pub struct Library {
-  exports : Map[String, @core.Binding]
-}
-pub fn Library::exports(Self) -> Map[String, @core.Binding]
 
 // Type aliases
 

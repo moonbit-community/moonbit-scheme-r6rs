@@ -134,8 +134,8 @@ test "library exports" {
   }
   register_library("doc/runtime-lib", { "x": binding })
   match lookup_library("doc/runtime-lib") {
-    Some(lib) =>
-      match lib.exports().get("x") {
+    Some(exports) =>
+      match exports.get("x") {
         Some(exported) =>
           match exported.value {
             Datum(Int(1)) => ()
