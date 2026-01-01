@@ -319,15 +319,9 @@ fn env_with_captures(env : Env, captures : Map[String, Value]) -> Env {
     return env
   }
   let next_env = env_extend(env)
-  for name in captures.keys() {
-    // invariant : captures.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : captures.keys().length() >= 0
-    match captures.get(name) {
-      Some(value) => env_define(next_env, name, value)
-      None => ()
-    }
-  }
+  captures.iter2().each((name, value) =>
+    env_define(next_env, name, value)
+  )
   next_env
 }
 
@@ -1987,19 +1981,12 @@ fn eval_begin_for_syntax_state(
 
   }
   let frame = syntax_env[syntax_env.length() - 1]
-  for key in frame.keys() {
-    // invariant : frame.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : frame.keys().length() >= 0
-    match frame.get(key) {
-      Some(binding) =>
-        match binding.value {
-          Macro(rules) => env_define(env, key, Macro(rules))
-          _ => ()
-        }
+  frame.iter2().each((key, binding) =>
+    match binding.value {
+      Macro(rules) => env_define(env, key, Macro(rules))
       _ => ()
     }
-  }
+  )
   Apply(Void, kont, handlers)
 }
 
