@@ -135,6 +135,7 @@ moon info
 ## Simplify constructor prefixes in patterns
 - When the matched type is known, drop the `Type::` prefix in patterns to reduce noise.
 - Keep explicit qualifiers in expressions where the constructor type is not obvious.
+- For value predicates over `Array[@core.Value]`, switch `[@core.Value::Datum(...)]` to `[Datum(...)]` and keep `@core.Value::Datum(...)` in constructors.
 
 Example:
 ```mbt
@@ -142,6 +143,13 @@ match datum {
   Pair(a, b) => ...
   Nil => ...
 }
+
+match args {
+  [Datum(Symbol(name))] => ...
+  _ => ...
+}
+
+let v = @core.Value::Datum(Symbol("x"))
 ```
 
 ## Batch remove Datum constructor prefixes safely

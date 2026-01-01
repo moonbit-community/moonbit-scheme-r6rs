@@ -70,7 +70,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::SymbolP =>
       match args {
-        [@core.Value::Datum(Symbol(_))] => bool_value(true)
+        [Datum(Symbol(_))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
@@ -82,7 +82,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::SyntaxP =>
       match args {
-        [@core.Value::SyntaxObject(_)] => bool_value(true)
+        [SyntaxObject(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
@@ -118,14 +118,14 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::SymbolToString =>
       match args {
-        [@core.Value::Datum(Symbol(name))] =>
+        [Datum(Symbol(name))] =>
           @core.Value::Datum(String(Ref::new(name)))
         [_] => raise @core.EvalError("type error: symbol expected")
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::StringToSymbol =>
       match args {
-        [@core.Value::Datum(String(name))] =>
+        [Datum(String(name))] =>
           @core.Value::Datum(Symbol(name.val))
         [_] => raise @core.EvalError("type error: string expected")
         _ => raise arity_mismatch(1, args.length())
@@ -165,9 +165,9 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::SyntaxToDatum =>
       match args {
-        [@core.Value::SyntaxObject(obj)] =>
+        [SyntaxObject(obj)] =>
           @core.Value::Datum(@runtime.strip_syntax_datum(obj.datum))
-        [@core.Value::Datum(d)] => @core.Value::Datum(@runtime.strip_syntax_datum(d))
+        [Datum(d)] => @core.Value::Datum(@runtime.strip_syntax_datum(d))
         [_] => raise @core.EvalError("type error: syntax expected")
         _ => raise arity_mismatch(1, args.length())
       }
@@ -175,20 +175,20 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [context, base] | [context, base, _] => {
           let scopes = match context {
-            @core.Value::SyntaxObject(obj) => obj.scopes
+            SyntaxObject(obj) => obj.scopes
             _ => []
           }
           let context_binding = match context {
-            @core.Value::SyntaxObject(obj) => obj.binding_id
+            SyntaxObject(obj) => obj.binding_id
             _ => None
           }
           let base = match base {
-            @core.Value::SyntaxObject(obj) => obj.datum
-            @core.Value::Datum(d) => d
+            SyntaxObject(obj) => obj.datum
+            Datum(d) => d
             _ => raise @core.EvalError("type error: datum expected")
           }
           let template_name = match context {
-            @core.Value::SyntaxObject(obj) =>
+            SyntaxObject(obj) =>
               match @runtime.datum_unlabel(obj.datum) {
                 Symbol(name) => Some(name)
                 _ => None
@@ -227,70 +227,70 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::BooleanP =>
       match args {
-        [@core.Value::Datum(Bool(_))] => bool_value(true)
+        [Datum(Bool(_))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::BooleanEq => bool_value(compare_chain_bool(args))
     @core.Primitive::NumberP =>
       match args {
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))]
-        | [@core.Value::Datum(Float(_))]
-        | [@core.Value::Datum(Complex(_, _))] => bool_value(true)
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))]
+        | [Datum(Float(_))]
+        | [Datum(Complex(_, _))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::IntegerP =>
       match args {
-        [@core.Value::Datum(datum)] => bool_value(datum_is_integer_valued(datum))
+        [Datum(datum)] => bool_value(datum_is_integer_valued(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::ExactIntegerP =>
       match args {
-        [@core.Value::Datum(datum)] => bool_value(datum_is_exact_integer(datum))
+        [Datum(datum)] => bool_value(datum_is_exact_integer(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::RationalP =>
       match args {
-        [@core.Value::Datum(datum)] => bool_value(datum_is_rational_valued(datum))
+        [Datum(datum)] => bool_value(datum_is_rational_valued(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::RealP =>
       match args {
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))]
-        | [@core.Value::Datum(Float(_))] => bool_value(true)
-        [@core.Value::Datum(Complex(_, imag))] =>
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))]
+        | [Datum(Float(_))] => bool_value(true)
+        [Datum(Complex(_, imag))] =>
           bool_value(datum_is_zero(imag.val))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::ComplexP =>
       match args {
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))]
-        | [@core.Value::Datum(Float(_))]
-        | [@core.Value::Datum(Complex(_, _))] => bool_value(true)
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))]
+        | [Datum(Float(_))]
+        | [Datum(Complex(_, _))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::ExactP =>
       match args {
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))] => bool_value(true)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))] => bool_value(true)
+        [Datum(Complex(real, imag))] =>
           match (real.val, imag.val) {
             (Int(_), Int(_)) => bool_value(true)
             (Int(_), BigInt(_)) => bool_value(true)
@@ -315,8 +315,8 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::InexactP =>
       match args {
-        [@core.Value::Datum(Float(_))] => bool_value(true)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Float(_))] => bool_value(true)
+        [Datum(Complex(real, imag))] =>
           match (real.val, imag.val) {
             (Float(_), _) => bool_value(true)
             (_, Float(_)) => bool_value(true)
@@ -327,12 +327,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::ZeroP =>
       match args {
-        [@core.Value::Datum(Int(n))] => bool_value(n == 0)
-        [@core.Value::Datum(Rat(n, _))] => bool_value(n == 0)
-        [@core.Value::Datum(BigInt(n))] => bool_value(n.is_zero())
-        [@core.Value::Datum(BigRat(n, _))] => bool_value(n.is_zero())
-        [@core.Value::Datum(Float(n))] => bool_value(n == 0.0)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Int(n))] => bool_value(n == 0)
+        [Datum(Rat(n, _))] => bool_value(n == 0)
+        [Datum(BigInt(n))] => bool_value(n.is_zero())
+        [Datum(BigRat(n, _))] => bool_value(n.is_zero())
+        [Datum(Float(n))] => bool_value(n == 0.0)
+        [Datum(Complex(real, imag))] =>
           bool_value(datum_is_zero(real.val) && datum_is_zero(imag.val))
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
@@ -371,9 +371,9 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let value = match value {
-            @core.Value::Datum(Int(n)) => @core.Datum::Int(n)
-            @core.Value::Datum(BigInt(n)) => @core.Datum::BigInt(n)
-            @core.Value::Datum(Complex(real, imag)) =>
+            Datum(Int(n)) => @core.Datum::Int(n)
+            Datum(BigInt(n)) => @core.Datum::BigInt(n)
+            Datum(Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
                   Int(n) => @core.Datum::Int(n)
@@ -399,9 +399,9 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let value = match value {
-            @core.Value::Datum(Int(n)) => @core.Datum::Int(n)
-            @core.Value::Datum(BigInt(n)) => @core.Datum::BigInt(n)
-            @core.Value::Datum(Complex(real, imag)) =>
+            Datum(Int(n)) => @core.Datum::Int(n)
+            Datum(BigInt(n)) => @core.Datum::BigInt(n)
+            Datum(Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
                   Int(n) => @core.Datum::Int(n)
@@ -425,12 +425,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::FiniteP =>
       match args {
-        [@core.Value::Datum(Float(f))] => bool_value(float_is_finite(f))
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))] => bool_value(true)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Float(f))] => bool_value(float_is_finite(f))
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))] => bool_value(true)
+        [Datum(Complex(real, imag))] =>
           if datum_is_zero(imag.val) {
             match real.val {
               Float(f) => bool_value(float_is_finite(f))
@@ -448,12 +448,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::InfiniteP =>
       match args {
-        [@core.Value::Datum(Float(f))] => bool_value(float_is_infinite(f))
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))] => bool_value(false)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Float(f))] => bool_value(float_is_infinite(f))
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))] => bool_value(false)
+        [Datum(Complex(real, imag))] =>
           if datum_is_zero(imag.val) {
             match real.val {
               Float(f) => bool_value(float_is_infinite(f))
@@ -471,12 +471,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::NanP =>
       match args {
-        [@core.Value::Datum(Float(f))] => bool_value(float_is_nan(f))
-        [@core.Value::Datum(Int(_))]
-        | [@core.Value::Datum(BigInt(_))]
-        | [@core.Value::Datum(Rat(_, _))]
-        | [@core.Value::Datum(BigRat(_, _))] => bool_value(false)
-        [@core.Value::Datum(Complex(real, imag))] =>
+        [Datum(Float(f))] => bool_value(float_is_nan(f))
+        [Datum(Int(_))]
+        | [Datum(BigInt(_))]
+        | [Datum(Rat(_, _))]
+        | [Datum(BigRat(_, _))] => bool_value(false)
+        [Datum(Complex(real, imag))] =>
           if datum_is_zero(imag.val) {
             match real.val {
               Float(f) => bool_value(float_is_nan(f))
@@ -494,15 +494,15 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     @core.Primitive::ProcedureP =>
       match args {
-        [@core.Value::Primitive(_)]
-        | [@core.Value::Closure(_)]
-        | [@core.Value::CaseClosure(_)]
-        | [@core.Value::GuardHandler(_)]
-        | [@core.Value::Parameter(_)]
-        | [@core.Value::Continuation(_)]
-        | [@core.Value::RecordProc(_)]
-        | [@core.Value::ConditionProc(_)]
-        | [@core.Value::EnumSetProc(_)] => bool_value(true)
+        [Primitive(_)]
+        | [Closure(_)]
+        | [CaseClosure(_)]
+        | [GuardHandler(_)]
+        | [Parameter(_)]
+        | [Continuation(_)]
+        | [RecordProc(_)]
+        | [ConditionProc(_)]
+        | [EnumSetProc(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
