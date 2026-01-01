@@ -120,32 +120,32 @@ fn strip_all_gensym_suffixes(name : String) -> String {
 /// eqv? semantics for runtime values.
 fn value_eqv(left : @core.Value, right : @core.Value) -> Bool {
   match (left, right) {
-    (@core.Value::Datum(a), @core.Value::Datum(b)) => datum_equal(a, b)
-    (@core.Value::Primitive(a), @core.Value::Primitive(b)) => a == b
-    (@core.Value::Closure(a), @core.Value::Closure(b)) => a.id == b.id
-    (@core.Value::CaseClosure(a), @core.Value::CaseClosure(b)) => a.id == b.id
-    (@core.Value::GuardHandler(a), @core.Value::GuardHandler(b)) => a.id == b.id
-    (@core.Value::Parameter(a), @core.Value::Parameter(b)) => a.id == b.id
-    (@core.Value::Promise(a), @core.Value::Promise(b)) => a.id == b.id
-    (@core.Value::EvalEnv(a), @core.Value::EvalEnv(b)) => a.id == b.id
-    (@core.Value::Continuation(a), @core.Value::Continuation(b)) => a.id == b.id
-    (@core.Value::Port(a), @core.Value::Port(b)) => a.id == b.id
-    (@core.Value::Record(a), @core.Value::Record(b)) => a.id == b.id
-    (@core.Value::RecordProc(a), @core.Value::RecordProc(b)) => a.id == b.id
-    (@core.Value::ConditionProc(a), @core.Value::ConditionProc(b)) => a.id == b.id
-    (@core.Value::Hashtable(a), @core.Value::Hashtable(b)) => a.id == b.id
-    (@core.Value::EnumSet(a), @core.Value::EnumSet(b)) => a.id == b.id
-    (@core.Value::EnumSetProc(a), @core.Value::EnumSetProc(b)) => a.id == b.id
-    (@core.Value::RecordTypeDescriptor(a), @core.Value::RecordTypeDescriptor(b)) =>
+    (Datum(a), Datum(b)) => datum_equal(a, b)
+    (Primitive(a), Primitive(b)) => a == b
+    (Closure(a), Closure(b)) => a.id == b.id
+    (CaseClosure(a), CaseClosure(b)) => a.id == b.id
+    (GuardHandler(a), GuardHandler(b)) => a.id == b.id
+    (Parameter(a), Parameter(b)) => a.id == b.id
+    (Promise(a), Promise(b)) => a.id == b.id
+    (EvalEnv(a), EvalEnv(b)) => a.id == b.id
+    (Continuation(a), Continuation(b)) => a.id == b.id
+    (Port(a), Port(b)) => a.id == b.id
+    (Record(a), Record(b)) => a.id == b.id
+    (RecordProc(a), RecordProc(b)) => a.id == b.id
+    (ConditionProc(a), ConditionProc(b)) => a.id == b.id
+    (Hashtable(a), Hashtable(b)) => a.id == b.id
+    (EnumSet(a), EnumSet(b)) => a.id == b.id
+    (EnumSetProc(a), EnumSetProc(b)) => a.id == b.id
+    (RecordTypeDescriptor(a), RecordTypeDescriptor(b)) =>
       a.id == b.id
     (
-      @core.Value::RecordConstructorDescriptor(a),
-      @core.Value::RecordConstructorDescriptor(b),
+      RecordConstructorDescriptor(a),
+      RecordConstructorDescriptor(b),
     ) => a.id == b.id
-    (@core.Value::SyntaxObject(a), @core.Value::SyntaxObject(b)) =>
+    (SyntaxObject(a), SyntaxObject(b)) =>
       scopes_equal(a.scopes, b.scopes) && datum_equal(a.datum, b.datum)
-    (@core.Value::SyntaxKeyword(a), @core.Value::SyntaxKeyword(b)) => a == b
-    (@core.Value::Void, @core.Value::Void) => true
+    (SyntaxKeyword(a), SyntaxKeyword(b)) => a == b
+    (Void, Void) => true
     _ => false
   }
 }
@@ -159,12 +159,12 @@ fn value_equal(left : @core.Value, right : @core.Value) -> Bool {
 ///|
 fn identifier_info(value : @core.Value) -> (String, Array[Int], Int?) raise @core.EvalError {
   match value {
-    @core.Value::Datum(d) =>
+    Datum(d) =>
       match @runtime.datum_unlabel(d) {
         Symbol(name) => (name, [], None)
         _ => raise @core.EvalError("type error: identifier expected")
       }
-    @core.Value::SyntaxObject(obj) =>
+    SyntaxObject(obj) =>
       match @runtime.datum_unlabel(obj.datum) {
         Symbol(name) => (name, obj.scopes, obj.binding_id)
         _ => raise @core.EvalError("type error: identifier expected")
@@ -176,12 +176,12 @@ fn identifier_info(value : @core.Value) -> (String, Array[Int], Int?) raise @cor
 ///|
 fn is_identifier_value(value : @core.Value) -> Bool {
   match value {
-    @core.Value::Datum(d) =>
+    Datum(d) =>
       match @runtime.datum_unlabel(d) {
         Symbol(_) => true
         _ => false
       }
-    @core.Value::SyntaxObject(obj) =>
+    SyntaxObject(obj) =>
       match @runtime.datum_unlabel(obj.datum) {
         Symbol(_) => true
         _ => false
@@ -198,7 +198,7 @@ fn bool_value(value : Bool) -> @core.Value {
 ///|
 fn is_false(value : @core.Value) -> Bool {
   match value {
-    @core.Value::Datum(Bool(false)) => true
+    Datum(Bool(false)) => true
     _ => false
   }
 }
@@ -206,8 +206,8 @@ fn is_false(value : @core.Value) -> Bool {
 ///|
 fn value_as_datum(value : @core.Value) -> @core.Datum raise @core.EvalError {
   match value {
-    @core.Value::Datum(d) => d
-    @core.Value::Record(record) => Record(record)
+    Datum(d) => d
+    Record(record) => Record(record)
     _ => raise @core.EvalError("type error: datum expected")
   }
 }
@@ -215,8 +215,8 @@ fn value_as_datum(value : @core.Value) -> @core.Datum raise @core.EvalError {
 ///|
 fn value_to_datum_element(value : @core.Value) -> @core.Datum {
   match value {
-    @core.Value::Datum(d) => d
-    @core.Value::Record(record) => Record(record)
+    Datum(d) => d
+    Record(record) => Record(record)
     _ => Value(value)
   }
 }
@@ -224,7 +224,7 @@ fn value_to_datum_element(value : @core.Value) -> @core.Datum {
 ///|
 fn value_as_pair(value : @core.Value) -> (@core.Datum,@core.Datum) raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Pair(a, b) => (a.val, b.val)
         _ => raise @core.EvalError("type error: pair expected")
@@ -238,7 +238,7 @@ fn value_as_pair_cells(
   value : @core.Value,
 ) -> (Ref[@core.Datum], Ref[@core.Datum]) raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Pair(a, b) => (a, b)
         _ => raise @core.EvalError("type error: pair expected")
@@ -255,7 +255,7 @@ fn datum_list_to_value_array(list : @core.Datum) -> Array[@core.Value] raise @co
 ///|
 fn value_as_number(value : @core.Value) -> @core.Datum raise @core.EvalError {
   match value {
-    @core.Value::Datum(d) => {
+    Datum(d) => {
       let unlabel = @runtime.datum_unlabel(d)
       match unlabel {
         Int(_)
@@ -1249,7 +1249,7 @@ fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
 ///|
 fn value_as_string(value : @core.Value) -> String raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         String(s) => s.val
         _ => raise @core.EvalError("type error: string expected")
@@ -1261,7 +1261,7 @@ fn value_as_string(value : @core.Value) -> String raise @core.EvalError {
 ///|
 fn value_as_string_ref(value : @core.Value) -> Ref[String] raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         String(s) => s
         _ => raise @core.EvalError("type error: string expected")
@@ -1304,7 +1304,7 @@ fn string_replace_range(
 ///|
 fn value_as_char(value : @core.Value) -> Char raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Char(ch) => ch
         _ => raise @core.EvalError("type error: char expected")
@@ -1422,7 +1422,7 @@ fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
 ///|
 fn value_as_int_index(value : @core.Value) -> Int raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Int(n) => n
         BigInt(n) =>
@@ -1453,7 +1453,7 @@ fn value_as_int_index(value : @core.Value) -> Int raise @core.EvalError {
 ///|
 fn value_as_exact_integer(value : @core.Value) -> @core.Datum raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Int(n) => Int(n)
         BigInt(n) => BigInt(n)
@@ -1617,7 +1617,7 @@ fn datum_fixnum_bigint(datum : @core.Datum) -> @bigint.BigInt? {
 ///|
 fn value_is_fixnum(value : @core.Value) -> Bool {
   match value {
-    @core.Value::Datum(datum) => datum_fixnum_bigint(datum) is Some(_)
+    Datum(datum) => datum_fixnum_bigint(datum) is Some(_)
     _ => false
   }
 }
@@ -1625,7 +1625,7 @@ fn value_is_fixnum(value : @core.Value) -> Bool {
 ///|
 fn value_as_fixnum_bigint(value : @core.Value) -> @bigint.BigInt raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match datum_fixnum_bigint(datum) {
         Some(n) => n
         None => raise @core.EvalError("type error: fixnum expected")
@@ -1687,7 +1687,7 @@ fn bigint_floor_div(
 ///|
 fn value_as_flonum(value : @core.Value) -> Float raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Float(f) => f
         _ => raise @core.EvalError("type error: flonum expected")
@@ -2312,7 +2312,7 @@ fn list_assoc(
 ///|
 fn value_as_vector(value : @core.Value) -> Array[@core.Datum] raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Vector(items) => items
         _ => raise @core.EvalError("type error: vector expected")
@@ -2324,7 +2324,7 @@ fn value_as_vector(value : @core.Value) -> Array[@core.Datum] raise @core.EvalEr
 ///|
 fn value_as_bool(value : @core.Value) -> Bool raise @core.EvalError {
   match value {
-    @core.Value::Datum(Bool(flag)) => flag
+    Datum(Bool(flag)) => flag
     _ => raise @core.EvalError("type error: boolean expected")
   }
 }
@@ -2332,7 +2332,7 @@ fn value_as_bool(value : @core.Value) -> Bool raise @core.EvalError {
 ///|
 fn value_as_symbol(value : @core.Value) -> String raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Symbol(name) => name
         _ => raise @core.EvalError("type error: symbol expected")
@@ -2369,7 +2369,7 @@ fn parse_field_specs(
 ///|
 fn value_as_bytevector(value : @core.Value) -> Array[Int] raise @core.EvalError {
   match value {
-    @core.Value::Datum(datum) =>
+    Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         ByteVector(items) => items
         _ => raise @core.EvalError("type error: bytevector expected")
@@ -2381,7 +2381,7 @@ fn value_as_bytevector(value : @core.Value) -> Array[Int] raise @core.EvalError 
 ///|
 fn value_as_byte(value : @core.Value) -> Int raise @core.EvalError {
   match value {
-    @core.Value::Datum(Int(n)) => {
+    Datum(Int(n)) => {
       if n < 0 || n > 255 {
         raise @core.EvalError("type error: byte expected")
       }
@@ -2704,7 +2704,7 @@ fn bytevector_sint_to_uint(
 ///|
 fn value_as_port(value : @core.Value) -> @core.Port raise @core.EvalError {
   match value {
-    @core.Value::Port(port) => port
+    Port(port) => port
     _ => raise @core.EvalError("type error: port expected")
   }
 }
@@ -2714,7 +2714,7 @@ fn value_as_record_type_descriptor(
   value : @core.Value,
 ) -> @core.RecordTypeDescriptor raise @core.EvalError {
   match value {
-    @core.Value::RecordTypeDescriptor(desc) => desc
+    RecordTypeDescriptor(desc) => desc
     _ => raise @core.EvalError("type error: record type descriptor expected")
   }
 }
@@ -2724,7 +2724,7 @@ fn value_as_record_constructor_descriptor(
   value : @core.Value,
 ) -> @core.RecordConstructorDescriptor raise @core.EvalError {
   match value {
-    @core.Value::RecordConstructorDescriptor(desc) => desc
+    RecordConstructorDescriptor(desc) => desc
     _ =>
       raise @core.EvalError(
         "type error: record constructor descriptor expected",
@@ -2735,7 +2735,7 @@ fn value_as_record_constructor_descriptor(
 ///|
 fn value_as_hashtable(value : @core.Value) -> @core.Hashtable raise @core.EvalError {
   match value {
-    @core.Value::Hashtable(table) => table
+    Hashtable(table) => table
     _ => raise @core.EvalError("type error: hashtable expected")
   }
 }
@@ -2743,7 +2743,7 @@ fn value_as_hashtable(value : @core.Value) -> @core.Hashtable raise @core.EvalEr
 ///|
 fn value_as_enum_set(value : @core.Value) -> @core.EnumSet raise @core.EvalError {
   match value {
-    @core.Value::EnumSet(set) => set
+    EnumSet(set) => set
     _ => raise @core.EvalError("type error: enum-set expected")
   }
 }
@@ -2751,9 +2751,9 @@ fn value_as_enum_set(value : @core.Value) -> @core.EnumSet raise @core.EvalError
 ///|
 fn hashtable_equiv_from_value(value : @core.Value) -> @core.HashtableEquiv raise @core.EvalError {
   match value {
-    @core.Value::Primitive(@core.Primitive::Eq) => @core.HashtableEquiv::Eq
-    @core.Value::Primitive(@core.Primitive::Eqv) => @core.HashtableEquiv::Eqv
-    @core.Value::Primitive(@core.Primitive::Equal) => @core.HashtableEquiv::Equal
+    Primitive(@core.Primitive::Eq) => @core.HashtableEquiv::Eq
+    Primitive(@core.Primitive::Eqv) => @core.HashtableEquiv::Eqv
+    Primitive(@core.Primitive::Equal) => @core.HashtableEquiv::Equal
     _ => {
       if !@runtime.is_procedure_value(value) {
         raise @core.EvalError("type error: procedure expected")
@@ -2824,7 +2824,7 @@ fn value_as_condition_type_descriptor(
 ///|
 fn record_accessor_info(value : @core.Value) -> (@core.RecordType, Int) raise @core.EvalError {
   match value {
-    @core.Value::RecordProc(proc) =>
+    RecordProc(proc) =>
       match proc.kind {
         Accessor(record_type, idx) => (record_type, idx)
         _ => raise @core.EvalError("type error: record accessor expected")
@@ -2843,9 +2843,9 @@ fn char_to_raw_string(ch : Char) -> String {
 ///|
 fn display_string(value : @core.Value) -> String {
   match value {
-    @core.Value::Datum(String(s)) => s.val
-    @core.Value::Datum(Char(ch)) => char_to_raw_string(ch)
-    @core.Value::Datum(Symbol(name)) => name
+    Datum(String(s)) => s.val
+    Datum(Char(ch)) => char_to_raw_string(ch)
+    Datum(Symbol(name)) => name
     _ => @runtime.value_to_string(value)
   }
 }

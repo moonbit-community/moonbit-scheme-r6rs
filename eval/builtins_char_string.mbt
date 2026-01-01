@@ -27,7 +27,7 @@ fn apply_char_string_primitive(
       Some(bool_value(compare_chain_char(args, CmpGe, true)))
     @core.Primitive::CharP =>
       match args {
-        [@core.Value::Datum(Char(_))] => Some(bool_value(true))
+        [Datum(Char(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
@@ -182,7 +182,7 @@ fn apply_char_string_primitive(
       }
     @core.Primitive::StringP =>
       match args {
-        [@core.Value::Datum(String(_))] => Some(bool_value(true))
+        [Datum(String(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }

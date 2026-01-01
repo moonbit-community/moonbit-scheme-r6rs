@@ -136,6 +136,7 @@ moon info
 - When the matched type is known, drop the `Type::` prefix in patterns to reduce noise.
 - Keep explicit qualifiers in expressions where the constructor type is not obvious.
 - For value predicates over `Array[@core.Value]`, switch `[@core.Value::Datum(...)]` to `[Datum(...)]` and keep `@core.Value::Datum(...)` in constructors.
+- Use a quick scan to list pattern-only `@core.Value::Datum` hits before editing a whole package.
 
 Example:
 ```mbt
@@ -150,6 +151,22 @@ match args {
 }
 
 let v = @core.Value::Datum(Symbol("x"))
+```
+
+Scan example:
+```bash
+python3 - <<'PY'
+from pathlib import Path
+for path in sorted(Path('eval').glob('builtins_*.mbt')):
+    lines = path.read_text().splitlines()
+    for i, line in enumerate(lines, 1):
+        if '=>' in line and '@core.Value::Datum' in line:
+            before, _ = line.split('=>', 1)
+            if '@core.Value::Datum' in before:
+                print(f\"{path}:{i}: {line.strip()}\")
+        elif line.lstrip().startswith('|') and '@core.Value::Datum' in line:
+            print(f\"{path}:{i}: {line.strip()}\")
+PY
 ```
 
 ## Batch remove Datum constructor prefixes safely

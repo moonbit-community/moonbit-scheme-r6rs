@@ -133,7 +133,7 @@ fn apply_hashtable_enumset_primitive_core(
       }
     @core.Primitive::HashtableP =>
       match args {
-        [@core.Value::Hashtable(_)] => bool_value(true)
+        [Hashtable(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
@@ -296,7 +296,7 @@ fn apply_hashtable_enumset_primitive_core(
       }
     @core.Primitive::EnumSetP =>
       match args {
-        [@core.Value::EnumSet(_)] => bool_value(true)
+        [EnumSet(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }

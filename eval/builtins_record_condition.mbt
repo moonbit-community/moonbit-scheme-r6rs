@@ -43,13 +43,13 @@ fn apply_record_condition_primitive_core(
   match prim {
     @core.Primitive::RecordP =>
       match args {
-        [@core.Value::Record(record)] => bool_value(!record.record_type.is_opaque)
+        [Record(record)] => bool_value(!record.record_type.is_opaque)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::RecordRtd =>
       match args {
-        [@core.Value::Record(record)] =>
+        [Record(record)] =>
           if record.record_type.is_opaque {
             raise @core.EvalError("record type is opaque")
           } else {
@@ -63,13 +63,13 @@ fn apply_record_condition_primitive_core(
       }
     @core.Primitive::RecordTypeDescriptorP =>
       match args {
-        [@core.Value::RecordTypeDescriptor(_)] => bool_value(true)
+        [RecordTypeDescriptor(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::RecordConstructorDescriptorP =>
       match args {
-        [@core.Value::RecordConstructorDescriptor(_)] => bool_value(true)
+        [RecordConstructorDescriptor(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
@@ -207,8 +207,8 @@ fn apply_record_condition_primitive_core(
         [name_value, parent_value, uid_value, sealed_value, opaque_value, fields_value] => {
           let name = value_as_symbol(name_value)
           let parent_desc = match parent_value {
-            @core.Value::Datum(Bool(false)) => None
-            @core.Value::RecordTypeDescriptor(desc) => Some(desc)
+            Datum(Bool(false)) => None
+            RecordTypeDescriptor(desc) => Some(desc)
             _ =>
               raise @core.EvalError(
                 "type error: record type descriptor expected",
@@ -226,8 +226,8 @@ fn apply_record_condition_primitive_core(
             None => ()
           }
           let uid = match uid_value {
-            @core.Value::Datum(Bool(false)) => None
-            @core.Value::Datum(Symbol(uid_name)) => Some(uid_name)
+            Datum(Bool(false)) => None
+            Datum(Symbol(uid_name)) => Some(uid_name)
             _ => raise @core.EvalError("type error: symbol expected")
           }
           let is_sealed = value_as_bool(sealed_value)
@@ -293,7 +293,7 @@ fn apply_record_condition_primitive_core(
           let rtd = value_as_record_type_descriptor(rtd_value)
           let record_type = rtd.record_type
           let parent_desc = match parent_value {
-            @core.Value::Datum(Bool(false)) =>
+            Datum(Bool(false)) =>
               match record_type.parent {
                 Some(parent) => Some(default_constructor_descriptor(parent))
                 None => None
@@ -320,7 +320,7 @@ fn apply_record_condition_primitive_core(
               }
           }
           let protocol = match protocol_value {
-            @core.Value::Datum(Bool(false)) => None
+            Datum(Bool(false)) => None
             value => {
               if !@runtime.is_procedure_value(value) {
                 raise @core.EvalError("type error: procedure expected")

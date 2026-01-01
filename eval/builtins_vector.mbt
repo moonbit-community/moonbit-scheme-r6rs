@@ -47,7 +47,7 @@ fn apply_vector_primitive(
       }
     @core.Primitive::VectorP =>
       match args {
-        [@core.Value::Datum(Vector(_))] => Some(bool_value(true))
+        [Datum(Vector(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }

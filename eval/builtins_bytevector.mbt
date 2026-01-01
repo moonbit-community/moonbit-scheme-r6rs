@@ -46,7 +46,7 @@ fn apply_bytevector_primitive(
       }
     @core.Primitive::ByteVectorP =>
       match args {
-        [@core.Value::Datum(ByteVector(_))] => Some(bool_value(true))
+        [Datum(ByteVector(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
