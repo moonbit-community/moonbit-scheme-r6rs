@@ -1529,13 +1529,8 @@ fn arity_mismatch_at_least(expected : Int, got : Int) -> EvalError {
 
 ///|
 fn values_to_list_value(values : Array[Value]) -> Value {
-  let items : Array[Datum] = []
-  for value in values {
-    // invariant : values.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : values.length() >= 0
-    items.push(value_to_datum_element(value))
-  }
+  let items : Array[Datum] =
+    values.map((value) => value_to_datum_element(value))
   Datum(list_from_array(items))
 }
 
