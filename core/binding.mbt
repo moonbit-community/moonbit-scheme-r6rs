@@ -14,12 +14,31 @@ pub fn Binding::new(id : Int, value : Value) -> Binding {
 
 ///|
 /// Read the binding id.
+///
+/// # Example
+/// ```mbt check
+/// test "Binding::id" {
+///   let binding = Binding::new(7, Value::Void)
+///   inspect(binding.id(), content="7")
+/// }
+/// ```
 pub fn Binding::id(self : Binding) -> Int {
   self.id
 }
 
 ///|
 /// Read the binding value.
+///
+/// # Example
+/// ```mbt check
+/// test "Binding::value" {
+///   let binding = Binding::new(1, Value::Void)
+///   match binding.value() {
+///     Value::Void => ()
+///     _ => fail("expected void")
+///   }
+/// }
+/// ```
 pub fn Binding::value(self : Binding) -> Value {
   self.value
 }

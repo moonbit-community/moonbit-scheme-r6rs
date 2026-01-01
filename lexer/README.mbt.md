@@ -78,6 +78,12 @@ test "bar identifiers" {
 }
 
 ///|
+test "bar identifiers with escape" {
+  let r = Reader::new("|a\\|b|")
+  inspect(r.read_token(), content="a|b")
+}
+
+///|
 test "string escapes" {
   let r = Reader::new("\"a\\n\"")
   ignore(r.next())

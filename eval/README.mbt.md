@@ -82,6 +82,12 @@ test "map over lists" {
 }
 
 ///|
+test "let bindings" {
+  let value = eval_program("(let ((x 2) (y 3)) (+ x y))")
+  inspect(@runtime.value_to_string(value), content="5")
+}
+
+///|
 test "flonum min/max" {
   let value = eval_program("(list (flmax 1.0 2.5 2.0) (flmin 1.0 -1.0 0.0))")
   inspect(@runtime.value_to_string(value), content="(2.5 -1)")

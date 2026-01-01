@@ -69,6 +69,24 @@ test "unicode char case" {
 }
 
 ///|
+test "binding helpers" {
+  let binding = Binding::new(1, Value::Void)
+  inspect(binding.id(), content="1")
+  match binding.value() {
+    Value::Void => ()
+    _ => fail("expected void")
+  }
+}
+
+///|
+test "record field binding helpers" {
+  let binding = RecordFieldBinding::new("get", 0, None)
+  inspect(binding.accessor(), content="get")
+  inspect(binding.index(), content="0")
+  inspect(binding.mutator(), content="None")
+}
+
+///|
 test "datum constructors" {
   match Datum::Int(42) {
     Int(42) => ()

@@ -156,6 +156,16 @@ pub struct RecordFieldBinding {
 
 ///|
 /// Create a record field binding.
+///
+/// # Example
+/// ```mbt check
+/// test "record field binding" {
+///   let binding = RecordFieldBinding::new("get", 0, None)
+///   inspect(binding.accessor(), content="get")
+///   inspect(binding.index(), content="0")
+///   inspect(binding.mutator(), content="None")
+/// }
+/// ```
 pub fn RecordFieldBinding::new(
   accessor : String,
   index : Int,
