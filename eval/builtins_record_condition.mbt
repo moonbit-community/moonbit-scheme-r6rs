@@ -365,12 +365,7 @@ fn apply_record_condition_primitive_core(
             // TODO(decreases) : loop index not exposed; possible bug
             // assert : args.length() >= 0
             let parts = condition_components(arg, base)
-            for record in parts {
-              // invariant : parts.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : parts.length() >= 0
-              components.push(record)
-            }
+            components.push_iter(parts.iter())
           }
           if components.length() == 1 {
             Record(components[0])
@@ -394,13 +389,8 @@ fn apply_record_condition_primitive_core(
         [condition_value] => {
           let base = condition_base_type()
           let components = condition_components(condition_value, base)
-          let items : Array[Datum] = []
-          for record in components {
-            // invariant : components.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : components.length() >= 0
-            items.push(Record(record))
-          }
+          let items : Array[Datum] =
+            components.map((record) => Datum::Record(record))
           Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())

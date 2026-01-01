@@ -2086,6 +2086,22 @@ pub fn parse_program(src : String, fold_case? : Bool = false) -> Array[Datum] ra
 let forms = parse_program("ABC", fold_case=true)
 ```
 
+## Replace nested loops with push_iter/map
+- Use `Array::push_iter` to append a whole array in one call.
+- Use `Array::map` to build new arrays without a mutable accumulator.
+
+Example:
+```mbt
+let components : Array[Record] = []
+for arg in args {
+  let parts = condition_components(arg, base)
+  components.push_iter(parts.iter())
+}
+
+let items : Array[Datum] =
+  components.map((record) => Datum::Record(record))
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.
