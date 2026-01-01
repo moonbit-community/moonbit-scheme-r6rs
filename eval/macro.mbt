@@ -507,13 +507,7 @@ fn binding_clone(value : BindingVal) -> BindingVal {
   match value {
     Leaf(datum) => Leaf(datum)
     Seq(values) => {
-      let cloned : Array[BindingVal] = []
-      for item in values {
-        // invariant : values.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : values.length() >= 0
-        cloned.push(binding_clone(item))
-      }
+      let cloned : Array[BindingVal] = values.map((item) => binding_clone(item))
       Seq(cloned)
     }
   }
