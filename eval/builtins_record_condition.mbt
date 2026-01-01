@@ -137,9 +137,6 @@ fn apply_record_condition_primitive_core(
           let desc = value_as_record_type_descriptor(desc_value)
           let items : Array[Datum] = []
           for field in desc.record_type.fields {
-            // invariant : desc.record_type.fields.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : desc.record_type.fields.length() >= 0
             items.push(Symbol(field.name))
           }
           Datum(list_from_array(items))
@@ -240,17 +237,11 @@ fn apply_record_condition_primitive_core(
           match parent_type {
             Some(parent) =>
               for field in parent.fields {
-                // invariant : parent.fields.length() >= 0
-                // TODO(decreases) : loop index not exposed; possible bug
-                // assert : parent.fields.length() >= 0
                 fields.push(field)
               }
             None => ()
           }
           for field in new_fields {
-            // invariant : new_fields.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : new_fields.length() >= 0
             fields.push(field)
           }
           let effective_opaque = match parent_type {
@@ -361,9 +352,6 @@ fn apply_record_condition_primitive_core(
           let base = condition_base_type()
           let components : Array[Record] = []
           for arg in args {
-            // invariant : args.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : args.length() >= 0
             let parts = condition_components(arg, base)
             components.push_iter(parts.iter())
           }

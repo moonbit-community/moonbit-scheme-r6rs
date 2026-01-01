@@ -272,9 +272,6 @@ fn apply_vector_primitive(
     VectorAppend => {
       let items : Array[Datum] = []
       for arg in args {
-        // invariant : args.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : args.length() >= 0
         let vec = value_as_vector(arg)
         items.push_iter(vec.iter())
       }

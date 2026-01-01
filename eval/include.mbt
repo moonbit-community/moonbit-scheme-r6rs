@@ -50,9 +50,6 @@ fn include_forms(
 ) -> Array[Datum] raise EvalError {
   let forms : Array[Datum] = []
   for arg in args {
-    // invariant : args.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : args.length() >= 0
     let path = include_path_from_arg(arg)
     let parsed = include_parse_file(path, fold_case)
     forms.push_iter(parsed.iter())

@@ -2,9 +2,6 @@
 fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
   let exports = env_export_map(env)
   for name in base_syntax_keywords() {
-    // invariant : base_syntax_keywords().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : base_syntax_keywords().length() >= 0
     exports[name] = make_binding(SyntaxKeyword(name))
   }
   register_library_entry("rnrs.base", Some([6]), exports)
@@ -28,9 +25,6 @@ fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
     "make-undefined-violation", "undefined-violation?",
   ]
   for name in condition_names {
-    // invariant : condition_names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : condition_names.length() >= 0
     condition_exports[name] = env_lookup_binding(env, name)
   }
   condition_exports["define-condition-type"] =
@@ -48,9 +42,6 @@ fn register_builtin_libraries(env : Env) -> Unit raise EvalError {
     "&no-nans", "make-no-nans-violation", "no-nans-violation?",
   ]
   for name in flonum_names {
-    // invariant : flonum_names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : flonum_names.length() >= 0
     flonum_exports[name] = env_lookup_binding(env, name)
   }
   register_library_entry("rnrs.arithmetic.flonums", Some([6]), flonum_exports)
@@ -293,9 +284,6 @@ pub fn eval_program_all(src : String) -> Array[Value] raise {
   register_builtin_libraries(env)
   let results : Array[Value] = []
   for form in forms {
-    // invariant : forms.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : forms.length() >= 0
     let value = eval_expr(form, env)
     results.push(value)
   }
@@ -615,9 +603,6 @@ fn eval_expr_impl(
             let bound = formals_bindings(formals, values)
             let next_collected : Array[Array[(String, Value)]] = []
             for item in collected {
-              // invariant : collected.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : collected.length() >= 0
               next_collected.push(item)
             }
             next_collected.push(bound)
@@ -640,9 +625,6 @@ fn eval_expr_impl(
                 // assert : i <= bindings.length()
                 let binding_values = next_collected[i]
                 for binding in binding_values {
-                  // invariant : binding_values.length() >= 0
-                  // TODO(decreases) : loop index not exposed; possible bug
-                  // assert : binding_values.length() >= 0
                   let (name, bound_value) = binding
                   env_define(new_env, name, bound_value)
                 }
@@ -657,9 +639,6 @@ fn eval_expr_impl(
             let binding_values = formals_bindings(formals, values)
             let new_env = env_extend(env)
             for binding in binding_values {
-              // invariant : binding_values.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : binding_values.length() >= 0
               let (name, bound_value) = binding
               env_define(new_env, name, bound_value)
             }
@@ -680,9 +659,6 @@ fn eval_expr_impl(
             let values = value_to_values(value)
             let binding_values = formals_bindings(formals, values)
             for binding in binding_values {
-              // invariant : binding_values.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : binding_values.length() >= 0
               let (name, bound_value) = binding
               env_define(env, name, bound_value)
             }
@@ -721,9 +697,6 @@ fn eval_expr_impl(
             let param = value_as_parameter(param_value)
             let next_params : Array[Parameter] = []
             for item in params {
-              // invariant : params.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : params.length() >= 0
               next_params.push(item)
             }
             next_params.push(param)
@@ -979,9 +952,6 @@ fn eval_expr_impl(
               ),
             )
             for binding in bindings {
-              // invariant : bindings.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : bindings.length() >= 0
               env_define(
                 env,
                 binding.accessor,
@@ -1028,9 +998,6 @@ fn eval_expr_impl(
               ),
             )
             for binding in bindings {
-              // invariant : bindings.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : bindings.length() >= 0
               env_define(
                 env,
                 binding.accessor,
@@ -1339,18 +1306,12 @@ fn quasiquote_expand(
       let expanded : Array[Datum] = []
       if depth == 1 {
         for item in items {
-          // invariant : items.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : items.length() >= 0
           match unwrap_form(item, "unquote-splicing") {
             Some(arg) => {
               let value = eval_expr(arg, env)
               let datum = value_as_datum(value)
               let list_items = datum_list_to_array(datum)
               for list_item in list_items {
-                // invariant : list_items.length() >= 0
-                // TODO(decreases) : loop index not exposed; possible bug
-                // assert : list_items.length() >= 0
                 expanded.push(list_item)
               }
             }
@@ -1359,9 +1320,6 @@ fn quasiquote_expand(
         }
       } else {
         for item in items {
-          // invariant : items.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : items.length() >= 0
           expanded.push(quasiquote_expand(item, env, depth))
         }
       }
@@ -1435,9 +1393,6 @@ fn quasisyntax_expand(
       let expanded : Array[Datum] = []
       if depth == 1 {
         for item in items {
-          // invariant : items.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : items.length() >= 0
           match unwrap_form(item, "unsyntax-splicing") {
             Some(arg) => {
               let value = eval_expr(arg, env)
@@ -1447,9 +1402,6 @@ fn quasisyntax_expand(
               }
               let list_items = datum_list_to_array(datum)
               for list_item in list_items {
-                // invariant : list_items.length() >= 0
-                // TODO(decreases) : loop index not exposed; possible bug
-                // assert : list_items.length() >= 0
                 expanded.push(list_item)
               }
             }
@@ -1458,9 +1410,6 @@ fn quasisyntax_expand(
         }
       } else {
         for item in items {
-          // invariant : items.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : items.length() >= 0
           expanded.push(quasisyntax_expand(item, env, depth))
         }
       }
@@ -1628,9 +1577,6 @@ fn parse_syntax_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(String, MacroTransformer)] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("type error: syntax binding expected")
@@ -1648,9 +1594,6 @@ fn parse_bindings(expr : Datum) -> Array[(String, Datum)] raise EvalError {
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(String, Datum)] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("type error: binding expected")
@@ -1669,9 +1612,6 @@ fn parse_value_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(Formals, Datum)] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("invalid let-values")
@@ -1690,9 +1630,6 @@ fn parse_parameterize_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(Datum, Datum)] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("invalid parameterize")
@@ -1827,9 +1764,6 @@ fn handle_guard(
 fn wind_push(winder : Winder) -> Unit {
   let next : Array[Winder] = []
   for item in wind_stack.val {
-    // invariant : wind_stack.val.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : wind_stack.val.length() >= 0
     next.push(item)
   }
   next.push(winder)
@@ -1856,9 +1790,6 @@ fn apply_winder_before(
     Proc(before, _) => apply_proc(before, [], kont, handlers)
     Params(bindings) => {
       for binding in bindings {
-        // invariant : bindings.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : bindings.length() >= 0
         parameter_set(binding.param, binding.new_value)
       }
       Apply(Void, kont, handlers)
@@ -1876,9 +1807,6 @@ fn apply_winder_after(
     Proc(_, after) => apply_proc(after, [], kont, handlers)
     Params(bindings) => {
       for binding in bindings {
-        // invariant : bindings.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : bindings.length() >= 0
         parameter_set(binding.param, binding.old_value)
       }
       Apply(Void, kont, handlers)
@@ -1963,9 +1891,6 @@ fn eval_begin_for_syntax_state(
 ) -> MachineState raise EvalError {
   let syntax_env = env_clone(env)
   for form in args {
-    // invariant : args.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : args.length() >= 0
     let _ = eval_expr(form, syntax_env)
 
   }
@@ -2081,9 +2006,6 @@ fn eval_guard_state(
     )
     let guard_handlers : Array[Value] = []
     for item in handlers {
-      // invariant : handlers.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : handlers.length() >= 0
       guard_handlers.push(item)
     }
     let handler = Value::GuardHandler(
@@ -2091,9 +2013,6 @@ fn eval_guard_state(
     )
     let next_handlers : Array[Value] = []
     for item in handlers {
-      // invariant : handlers.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : handlers.length() >= 0
       next_handlers.push(item)
     }
     next_handlers.push(handler)
@@ -2302,9 +2221,6 @@ fn eval_letrec_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
-      // invariant : bindings.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : bindings.length() >= 0
       let (name, _) = binding
       env_define(new_env, name, Void)
     }
@@ -2336,9 +2252,6 @@ fn eval_letrec_star_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
-      // invariant : bindings.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : bindings.length() >= 0
       let (name, _) = binding
       env_define(new_env, name, Void)
     }
@@ -2365,9 +2278,6 @@ fn expand_named_let(
   let param_items : Array[Datum] = []
   let arg_items : Array[Datum] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let (param, expr) = binding
     param_items.push(Symbol(param))
     arg_items.push(expr)
@@ -2376,9 +2286,6 @@ fn expand_named_let(
   lambda_items.push(Symbol("lambda"))
   lambda_items.push(list_from_array(param_items))
   for expr in body {
-    // invariant : body.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : body.length() >= 0
     lambda_items.push(expr)
   }
   let lambda_expr = list_from_array(lambda_items)
@@ -2387,9 +2294,6 @@ fn expand_named_let(
   let call_items : Array[Datum] = []
   call_items.push(Symbol(name))
   for arg in arg_items {
-    // invariant : arg_items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : arg_items.length() >= 0
     call_items.push(arg)
   }
   let call_expr = list_from_array(call_items)
@@ -2410,9 +2314,6 @@ fn eval_let_syntax_state(
     let body = args.sub(start=1).to_array()
     let new_env = env_extend(env)
     for binding in bindings {
-      // invariant : bindings.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : bindings.length() >= 0
       let (name, transformer) = binding
       env_define(new_env, name, Macro(transformer))
     }
@@ -2454,9 +2355,6 @@ fn eval_letrec_syntax_state(
     let bindings = parse_syntax_bindings(args[0], new_env)
     let body = args.sub(start=1).to_array()
     for binding in bindings {
-      // invariant : bindings.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : bindings.length() >= 0
       let (name, transformer) = binding
       env_define(new_env, name, Value::Macro(transformer))
     }
@@ -2469,9 +2367,6 @@ fn build_begin(exprs : Array[Datum]) -> Datum {
   let items : Array[Datum] = []
   items.push(Symbol("begin"))
   for expr in exprs {
-    // invariant : exprs.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : exprs.length() >= 0
     items.push(expr)
   }
   list_from_array(items)
@@ -2486,9 +2381,6 @@ fn parse_do_bindings(
   let inits : Array[Datum] = []
   let steps : Array[Datum] = []
   for binding in bindings {
-    // invariant : bindings.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.length() >= 0
     let parts = datum_list_to_array(binding)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid do")
@@ -2526,25 +2418,16 @@ fn eval_do_state(
   let loop_name = next_do_name()
   let params : Array[Datum] = []
   for name in names {
-    // invariant : names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : names.length() >= 0
     params.push(Symbol(name))
   }
   let call_items : Array[Datum] = []
   call_items.push(Symbol(loop_name))
   for step in steps {
-    // invariant : steps.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : steps.length() >= 0
     call_items.push(step)
   }
   let call_expr = list_from_array(call_items)
   let else_body : Array[Datum] = []
   for expr in command_exprs {
-    // invariant : command_exprs.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : command_exprs.length() >= 0
     else_body.push(expr)
   }
   else_body.push(call_expr)
@@ -2566,9 +2449,6 @@ fn eval_do_state(
   let init_call_items : Array[Datum] = []
   init_call_items.push(Symbol(loop_name))
   for init in inits {
-    // invariant : inits.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : inits.length() >= 0
     init_call_items.push(init)
   }
   let init_call_expr = list_from_array(init_call_items)
@@ -2695,9 +2575,6 @@ fn eval_define_record_type_state(
   let mutable : Map[String, Bool] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    // invariant : field_specs.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : field_specs.length() >= 0
     let parts = datum_list_to_array(spec)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid define-record-type")
@@ -2863,9 +2740,6 @@ fn eval_define_condition_type_state(
   let accessors : Map[String, String] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    // invariant : field_specs.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : field_specs.length() >= 0
     let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
       raise @core.EvalError("invalid define-condition-type")
@@ -2942,9 +2816,6 @@ fn eval_define_enumeration_state(
   let ctor_name = parse_symbol(args[2])
   let seen : Map[String, Bool] = {}
   for name in symbols {
-    // invariant : symbols.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : symbols.length() >= 0
     if seen.contains(name) {
       raise @core.EvalError("invalid define-enumeration")
     }
@@ -2970,9 +2841,6 @@ fn eval_define_enumeration_state(
 ///|
 fn array_contains_name(items : Array[String], name : String) -> Bool {
   for item in items {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : items.length() >= 0
     if item == name {
       return true
     }
@@ -3550,9 +3418,6 @@ fn reset_library_version_registry() -> Unit {
 fn format_version_suffix(version : Array[Int]) -> String {
   let versions : Array[String] = []
   for part in version {
-    // invariant : version.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : version.length() >= 0
     versions.push(part.to_string())
   }
   let joined = versions.join(".")
@@ -3600,9 +3465,6 @@ fn parse_version_items(items : Array[Datum]) -> Array[Int] raise EvalError {
   }
   let versions : Array[Int] = []
   for part in items {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : items.length() >= 0
     match part {
       Int(n) =>
         if n < 0 {
@@ -4007,13 +3869,7 @@ fn is_syntax_keyword(name : String) -> Bool {
     conditions_syntax_keywords(),
   ]
   for keywords in lists {
-    // invariant : lists.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : lists.length() >= 0
     for kw in keywords {
-      // invariant : keywords.length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : keywords.length() >= 0
       if kw == name {
         return true
       }
@@ -4053,9 +3909,6 @@ fn import_set_only(
 ) -> Map[String, Binding] raise EvalError {
   let result : Map[String, Binding] = {}
   for name in names {
-    // invariant : names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : names.length() >= 0
     match exports.get(name) {
       Some(binding) => result[name] = binding
       None => raise @core.EvalError("unknown import: \{name}")
@@ -4071,9 +3924,6 @@ fn import_set_except(
 ) -> Map[String, Binding] raise EvalError {
   let excluded : Map[String, Bool] = {}
   for name in names {
-    // invariant : names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : names.length() >= 0
     if !exports.contains(name) {
       raise @core.EvalError("unknown import: \{name}")
     }
@@ -4095,9 +3945,6 @@ fn import_set_rename(
 ) -> Map[String, Binding] raise EvalError {
   let rename_map : Map[String, String] = {}
   for rename in renames {
-    // invariant : renames.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : renames.length() >= 0
     let (old_name, new_name) = rename
     if !exports.contains(old_name) {
       raise @core.EvalError("unknown import: \{old_name}")
@@ -4109,9 +3956,6 @@ fn import_set_rename(
   }
   let result : Map[String, Binding] = {}
   for key in exports.keys() {
-    // invariant : exports.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : exports.keys().length() >= 0
     let target = match rename_map.get(key) {
       Some(name) => name
       None => key
@@ -4303,23 +4147,14 @@ fn eval_library_state(
   let body = args.sub(start=3).to_array()
   let lib_env = init_env()
   for import_set in imports {
-    // invariant : imports.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : imports.length() >= 0
     import_set_into_env(import_set, lib_env)
   }
   for form in body {
-    // invariant : body.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : body.length() >= 0
     let _ = eval_expr(form, lib_env)
 
   }
   let export_map : Map[String, Binding] = {}
   for export_spec in exports {
-    // invariant : exports.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : exports.length() >= 0
     let (external, internal) = export_spec
     if is_syntax_keyword(internal) {
       export_map[external] = make_binding(SyntaxKeyword(external))
@@ -4339,9 +4174,6 @@ fn eval_import_state(
   handlers : Array[Value],
 ) -> MachineState raise EvalError {
   for spec in args {
-    // invariant : args.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : args.length() >= 0
     import_set_into_env(spec, env)
   }
   Apply(Void, kont, handlers)
@@ -4692,9 +4524,6 @@ fn map_step(
   let args : Array[Value] = []
   let next_lists : Array[Datum] = []
   for list in lists {
-    // invariant : lists.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : lists.length() >= 0
     match list {
       Nil => {
         if for_each {
@@ -4822,9 +4651,6 @@ fn apply_proc(
         _ => {
           let env = env_new()
           for arg in args {
-            // invariant : args.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : args.length() >= 0
             let spec = value_as_datum(arg)
             import_set_into_env(spec, env)
           }
@@ -4867,9 +4693,6 @@ fn apply_proc(
         [handler, thunk] => {
           let next_handlers : Array[Value] = []
           for item in handlers {
-            // invariant : handlers.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : handlers.length() >= 0
             next_handlers.push(item)
           }
           next_handlers.push(handler)
@@ -5015,9 +4838,6 @@ fn apply_proc(
           let lists : Array[Datum] = []
           lists.push(value_as_datum(first_list))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             lists.push(value_as_datum(item))
           }
           map_step(proc_value, lists, [], false, kont, handlers)
@@ -5030,9 +4850,6 @@ fn apply_proc(
           let lists : Array[Datum] = []
           lists.push(value_as_datum(first_list))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             lists.push(value_as_datum(item))
           }
           map_step(proc_value, lists, [], true, kont, handlers)
@@ -5045,9 +4862,6 @@ fn apply_proc(
           let vectors : Array[Array[Datum]] = []
           vectors.push(value_as_vector(first_vector))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             vectors.push(value_as_vector(item))
           }
           let len = vectors[0].length()
@@ -5085,9 +4899,6 @@ fn apply_proc(
           let vectors : Array[Array[Datum]] = []
           vectors.push(value_as_vector(first_vector))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             vectors.push(value_as_vector(item))
           }
           let len = vectors[0].length()
@@ -5120,9 +4931,6 @@ fn apply_proc(
           let lists : Array[Datum] = []
           lists.push(string_to_char_list(first))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             let s = value_as_string(item)
             if s.length() != len {
               raise @core.EvalError("string length mismatch")
@@ -5148,9 +4956,6 @@ fn apply_proc(
           let lists : Array[Datum] = []
           lists.push(string_to_char_list(first))
           for item in rest {
-            // invariant : rest.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : rest.length() >= 0
             let s = value_as_string(item)
             if s.length() != len {
               raise @core.EvalError("string length mismatch")
@@ -5168,9 +4973,6 @@ fn apply_proc(
       let bindings = formals_bindings(formals, args)
       let new_env = env_extend(cl.env)
       for binding in bindings {
-        // invariant : bindings.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : bindings.length() >= 0
         let (name, bound_value) = binding
         env_define(new_env, name, bound_value)
       }
@@ -5210,9 +5012,6 @@ fn apply_proc(
           }
           let expected_parts : Array[String] = []
           for clause in cl.clauses {
-            // invariant : cl.clauses.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : cl.clauses.length() >= 0
             let clause_formals = Formals::{
               params: clause.params,
               rest: clause.rest,
@@ -5228,9 +5027,6 @@ fn apply_proc(
           let new_env = env_extend(cl.env)
           let bindings = formals_bindings(matched_formals, args)
           for binding in bindings {
-            // invariant : bindings.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : bindings.length() >= 0
             let (name, bound_value) = binding
             env_define(new_env, name, bound_value)
           }

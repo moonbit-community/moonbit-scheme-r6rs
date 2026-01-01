@@ -407,9 +407,6 @@ fn define_primitives(env : Env, defs : Array[(String, Primitive)]) -> Unit {
 ///|
 fn define_cxr_primitives(env : Env) -> Unit {
   for chain in cxr_chains {
-    // invariant : cxr_chains.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : cxr_chains.length() >= 0
     env_define(env, "c\{chain}r", Primitive(Cxr(chain)))
   }
 }
@@ -450,9 +447,6 @@ fn init_env() -> Env {
 fn env_export_map(env : Env) -> Map[String, Binding] {
   let exports : Map[String, Binding] = {}
   for frame in env {
-    // invariant : env.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : env.length() >= 0
     frame.iter2().each((key, binding) => exports[key] = binding)
   }
   exports

@@ -184,9 +184,6 @@ fn stdlib_source() -> String {
 fn load_stdlib(env : Env) -> Unit raise {
   let forms = parse_program(stdlib_source())
   for form in forms {
-    // invariant : forms.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : forms.length() >= 0
     let _ = eval_expr(form, env)
 
   }

@@ -146,9 +146,6 @@ let unicode_general_category_order : ReadOnlyArray[String] = [
 pub fn UnicodeChar::general_category(self : UnicodeChar) -> String {
   let ch = self.value
   for category in unicode_general_category_order {
-    // invariant : unicode_general_category_order.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : unicode_general_category_order.length() >= 0
     match general_category_ranges.get(category) {
       Some(ranges) => if char_in_ranges(ch, ranges) { return category }
       None => ()
@@ -193,9 +190,6 @@ fn unicode_pick_equivalent_category(
     _ => return None
   }
   for ch in chars {
-    // invariant : chars.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : chars.length() >= 0
     if char_in_ranges(ch, ranges) {
       return Some(ch)
     }
@@ -292,9 +286,6 @@ pub fn UnicodeChar::foldcase(self : UnicodeChar) -> Char {
 pub fn UnicodeString::upcase(self : UnicodeString) -> UnicodeString {
   let buf = @buffer.new()
   for ch in self.value {
-    // invariant : self.value.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : self.value.length() >= 0
     buf.write_char(unicode_char(ch).upcase())
   }
   { value: buf.to_string() }
@@ -312,9 +303,6 @@ pub fn UnicodeString::upcase(self : UnicodeString) -> UnicodeString {
 pub fn UnicodeString::downcase(self : UnicodeString) -> UnicodeString {
   let buf = @buffer.new()
   for ch in self.value {
-    // invariant : self.value.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : self.value.length() >= 0
     buf.write_char(unicode_char(ch).downcase())
   }
   { value: buf.to_string() }
@@ -332,9 +320,6 @@ pub fn UnicodeString::downcase(self : UnicodeString) -> UnicodeString {
 pub fn UnicodeString::foldcase(self : UnicodeString) -> UnicodeString {
   let buf = @buffer.new()
   for ch in self.value {
-    // invariant : self.value.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : self.value.length() >= 0
     buf.write_char(unicode_char(ch).foldcase())
   }
   { value: buf.to_string() }

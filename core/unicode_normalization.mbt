@@ -193,9 +193,6 @@ fn decompose_char(ch : Char, compat : Bool, out : Array[Char]) -> Unit {
   match mapping {
     Some(seq) =>
       for item in seq {
-        // invariant : seq.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : seq.length() >= 0
         decompose_char(item, compat, out)
       }
     None => out.push(ch)
@@ -206,9 +203,6 @@ fn decompose_char(ch : Char, compat : Bool, out : Array[Char]) -> Unit {
 fn decompose_string(s : String, compat : Bool) -> Array[Char] {
   let out : Array[Char] = []
   for ch in s {
-    // invariant : s.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : s.length() >= 0
     decompose_char(ch, compat, out)
   }
   out
@@ -247,9 +241,6 @@ fn canonical_order(chars : Array[Char]) -> Array[Char] {
     if ccc == 0 {
       if segment.length() > 0 {
         for item in segment {
-          // invariant : segment.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : segment.length() >= 0
           out.push(item)
         }
       }
@@ -268,9 +259,6 @@ fn canonical_order(chars : Array[Char]) -> Array[Char] {
     segment
   }
   for item in segment {
-    // invariant : segment.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : segment.length() >= 0
     out.push(item)
   }
   out
@@ -372,9 +360,6 @@ fn normalize_string(s : String, compat : Bool, compose_output : Bool) -> String 
   let result = if compose_output { compose(ordered) } else { ordered }
   let buf = @buffer.new()
   for ch in result {
-    // invariant : result.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : result.length() >= 0
     buf.write_char(ch)
   }
   buf.to_string()

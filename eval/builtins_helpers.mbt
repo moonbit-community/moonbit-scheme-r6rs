@@ -56,9 +56,6 @@ fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
     false
   } else {
     for i, value in left {
-      // invariant : i >= 0 && i < left.length()
-      // decreases : left.length() - i
-      // assert : i < right.length()
       if value != right[i] {
         return false
       }
@@ -2488,9 +2485,6 @@ fn string_to_utf8_bytes(
   }
   let bytes : Array[Int] = []
   for i, ch in chars {
-    // invariant : i >= 0 && i < chars.length()
-    // decreases : chars.length() - i
-    // assert : i < chars.length()
     if i >= start && i < end {
       utf8_encode_char(ch.to_int(), bytes)
     }
@@ -2804,9 +2798,6 @@ fn enum_set_symbol_list(value : Value) -> Array[String] raise EvalError {
 fn ensure_unique_symbols(names : Array[String]) -> Unit raise EvalError {
   let seen : Map[String, Bool] = {}
   for name in names {
-    // invariant : names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : names.length() >= 0
     if seen.contains(name) {
       raise @core.EvalError("type error: duplicate symbol")
     }

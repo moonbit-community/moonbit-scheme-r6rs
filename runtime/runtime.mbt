@@ -280,9 +280,6 @@ pub fn enum_set_universe_equal(a : EnumSet, b : EnumSet) -> Bool {
     return false
   }
   for i, name in a.universe {
-    // invariant : i >= 0 && i < a.universe.length()
-    // decreases : a.universe.length() - i
-    // assert : i < b.universe.length()
     if b.universe[i] != name {
       return false
     }
@@ -294,9 +291,6 @@ pub fn enum_set_universe_equal(a : EnumSet, b : EnumSet) -> Bool {
 /// Find the index of a symbol in an enum-set universe.
 pub fn enum_set_index_of(universe : Array[String], name : String) -> Int? {
   for i, item in universe {
-    // invariant : i >= 0 && i < universe.length()
-    // decreases : universe.length() - i
-    // assert : i < universe.length()
     if item == name {
       return Some(i)
     }
@@ -330,9 +324,6 @@ pub fn enum_set_from_names(
 ) -> EnumSet raise EvalError {
   let members = enum_set_members_all_false(universe)
   for name in names {
-    // invariant : names.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : names.length() >= 0
     match enum_set_index_of(universe, name) {
       Some(idx) => members[idx] = true
       None => raise @core.EvalError("enum-set: unknown symbol")
@@ -460,9 +451,6 @@ pub fn record_type_matches(
     return false
   }
   for i, expected in fields {
-    // invariant : i >= 0 && i < fields.length()
-    // decreases : fields.length() - i
-    // assert : i < existing.fields.length()
     let actual = existing.fields[i]
     if expected.name != actual.name || expected.mutable != actual.mutable {
       return false

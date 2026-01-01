@@ -202,9 +202,6 @@ fn apply_primitive_core(
           let items = datum_list_to_array(datum)
           let results : Array[Datum] = []
           for item in items {
-            // invariant : items.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : items.length() >= 0
             let (name, scopes, binding_id) = match datum_unlabel(item) {
               Symbol(name) => (name, [], None)
               Value(SyntaxObject(obj)) =>
@@ -212,9 +209,6 @@ fn apply_primitive_core(
                   Symbol(name) => {
                     let copied : Array[Int] = []
                     for scope in obj.scopes {
-                      // invariant : obj.scopes.length() >= 0
-                      // TODO(decreases) : loop index not exposed; possible bug
-                      // assert : obj.scopes.length() >= 0
                       copied.push(scope)
                     }
                     (name, copied, obj.binding_id)

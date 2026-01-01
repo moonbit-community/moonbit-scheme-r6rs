@@ -504,9 +504,6 @@ fn apply_char_string_primitive(
             let items = datum_list_to_array(datum)
             let buf = @buffer.new()
             for item in items {
-              // invariant : items.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : items.length() >= 0
               match item {
                 Char(ch) => buf.write_char(ch)
                 _ => raise @core.EvalError("type error: char expected")

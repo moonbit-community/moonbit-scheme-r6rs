@@ -157,16 +157,10 @@ fn parse_identifier_syntax(
   let pattern_vars : Map[String, Bool] = {}
   let pattern_literals = ["set!"]
   for rule in rules {
-    // invariant : rules.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : rules.length() >= 0
     collect_pattern_vars(rule.pattern, pattern_literals, "...", pattern_vars)
   }
   let literal_set : Map[String, Bool] = {}
   for rule in rules {
-    // invariant : rules.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : rules.length() >= 0
     collect_template_symbols(rule.template, literal_set)
   }
   let literals : Array[String] =
@@ -346,9 +340,6 @@ fn parse_literal_list(expr : Datum) -> Array[String] raise EvalError {
   let items = datum_list_to_array(expr)
   let literals : Array[String] = []
   for item in items {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : items.length() >= 0
     match item {
       Symbol(name) => literals.push(name)
       _ => raise @core.EvalError("invalid syntax-rules")
@@ -531,9 +522,6 @@ fn merge_bindings(
   src : Map[String, BindingVal],
 ) -> Bool {
   for name in src.keys() {
-    // invariant : src.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : src.keys().length() >= 0
     match src.get(name) {
       Some(value) =>
         match dest.get(name) {
@@ -684,9 +672,6 @@ fn scopes_equal_macro(left : Array[Int], right : Array[Int]) -> Bool {
     false
   } else {
     for i, item in left {
-      // invariant : i >= 0 && i < left.length()
-      // decreases : left.length() - i - 1
-      // assert : i < left.length()
       if right[i] != item {
         return false
       }
@@ -1061,9 +1046,6 @@ fn rewrite_template_expr(
           }
           let rewritten : Array[Datum] = []
           for item in items {
-            // invariant : items.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : items.length() >= 0
             rewritten.push(
               rewrite_template_expr(
                 item, bindings, renames, ellipsis, ellipsis_active, error_message,
@@ -1445,9 +1427,6 @@ fn collect_pattern_vars(
       match datum_list_to_array_opt(pattern) {
         Some(items) =>
           for item in items {
-            // invariant : items.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : items.length() >= 0
             collect_pattern_vars(item, literals, ellipsis, names)
           }
         None =>
@@ -1461,9 +1440,6 @@ fn collect_pattern_vars(
       }
     Vector(items) =>
       for item in items {
-        // invariant : items.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : items.length() >= 0
         collect_pattern_vars(item, literals, ellipsis, names)
       }
     _ => ()
@@ -1710,9 +1686,6 @@ fn collect_renames(
         Some(items) =>
           if !is_quote_form(items) {
             for item in items {
-              // invariant : items.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : items.length() >= 0
               collect_renames(
                 item, bindings, literals, ellipsis, def_env, env, renames, captures,
               )
@@ -1747,9 +1720,6 @@ fn collect_renames(
       }
     Vector(items) =>
       for item in items {
-        // invariant : items.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : items.length() >= 0
         collect_renames(
           item, bindings, literals, ellipsis, def_env, env, renames, captures,
         )
@@ -1770,9 +1740,6 @@ fn collect_template_symbols(
         Some(items) =>
           if !is_quote_form(items) {
             for item in items {
-              // invariant : items.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : items.length() >= 0
               collect_template_symbols(item, symbols)
             }
           }
@@ -1787,9 +1754,6 @@ fn collect_template_symbols(
       }
     Vector(items) =>
       for item in items {
-        // invariant : items.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : items.length() >= 0
         collect_template_symbols(item, symbols)
       }
     _ => ()
@@ -1815,9 +1779,6 @@ fn expand_with_syntax(
   let expanded = bindings_clone(bindings)
   let fenv = template_env_with_bindings(env, bindings)
   for spec in binding_specs {
-    // invariant : binding_specs.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : binding_specs.length() >= 0
     let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
       raise @core.EvalError("invalid with-syntax")
@@ -2151,9 +2112,6 @@ fn expand_template_list(
         // assert : j <= count
         let next_indices : Array[Int] = []
         for idx in indices {
-          // invariant : indices.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : indices.length() >= 0
           next_indices.push(idx)
         }
         next_indices.push(j)
@@ -2221,9 +2179,6 @@ fn expand_template_list_quasisyntax(
         // assert : j <= count
         let next_indices : Array[Int] = []
         for idx in indices {
-          // invariant : indices.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : indices.length() >= 0
           next_indices.push(idx)
         }
         next_indices.push(j)
@@ -2291,9 +2246,6 @@ fn expand_template_vector(
         // assert : j <= count
         let next_indices : Array[Int] = []
         for idx in indices {
-          // invariant : indices.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : indices.length() >= 0
           next_indices.push(idx)
         }
         next_indices.push(j)
@@ -2361,9 +2313,6 @@ fn expand_template_vector_quasisyntax(
         // assert : j <= count
         let next_indices : Array[Int] = []
         for idx in indices {
-          // invariant : indices.length() >= 0
-          // TODO(decreases) : loop index not exposed; possible bug
-          // assert : indices.length() >= 0
           next_indices.push(idx)
         }
         next_indices.push(j)

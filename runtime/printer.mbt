@@ -2,9 +2,6 @@
 fn escape_string(s : String) -> String {
   let buf = @buffer.new()
   for ch in s {
-    // invariant : s.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : s.length() >= 0
     match ch {
       '"' => buf.write_string("\\\"")
       '\\' => buf.write_string("\\\\")

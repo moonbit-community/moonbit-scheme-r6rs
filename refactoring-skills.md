@@ -2405,3 +2405,33 @@ match datum {
   _ => 0
 }
 ```
+
+## Add specs only for functional `for` loops
+- Skip invariant/decreases/assert comments for `for item in items { ... }` loops; keep specs for state-update `for i = 0, ...; ... { ... }` loops.
+- If a decreases clause cannot be expressed for a functional loop, leave a `TODO(decreases)` note there only.
+
+Example:
+```mbt
+// before
+for item in items {
+  // invariant : items.length() >= 0
+  // TODO(decreases) : loop index not exposed; possible bug
+  // assert : items.length() >= 0
+  consume(item)
+}
+
+// after
+for item in items {
+  consume(item)
+}
+
+// keep specs for functional loops
+for i = 0, j = xs.length(); i < j; {
+  // invariant : i >= 0 && i <= j && j <= xs.length()
+  // decreases : j - i
+  // assert : i <= j
+  ...
+} else {
+  ...
+}
+```

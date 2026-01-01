@@ -243,9 +243,6 @@ fn apply_bytevector_primitive(
     ByteVectorAppend => {
       let items : Array[Int] = []
       for arg in args {
-        // invariant : args.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : args.length() >= 0
         let vec = value_as_bytevector(arg)
         items.push_iter(vec.iter())
       }
