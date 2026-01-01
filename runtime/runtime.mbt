@@ -1000,7 +1000,7 @@ pub fn strip_syntax_datum(datum : Datum) -> Datum {
 
 ///|
 /// Wrap datum leaves in syntax objects with given scopes.
-pub fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
+fn syntax_wrap_datum(datum : Datum, scopes : Array[Int]) -> Datum {
   match datum {
     Symbol(name) =>
       Value(

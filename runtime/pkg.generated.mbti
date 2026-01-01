@@ -149,8 +149,6 @@ pub fn symbol_name(@core.Datum) -> String?
 
 pub fn syntax_add_scope(@core.Datum, Int) -> @core.Datum
 
-pub fn syntax_wrap_datum(@core.Datum, Array[Int]) -> @core.Datum
-
 pub fn syntax_wrap_root(@core.Datum, Array[Int]) -> @core.Datum
 
 pub fn value_as_datum(@core.Value) -> @core.Datum raise @core.EvalError
