@@ -194,6 +194,55 @@ fn is_identifier_value(value : Value) -> Bool {
 }
 
 ///|
+fn value_as_datum(value : Value) -> Datum raise EvalError {
+  match value {
+    Datum(d) => d
+    Record(record) => Record(record)
+    _ => raise @core.EvalError("type error: datum expected")
+  }
+}
+
+///|
+fn value_to_datum_element(value : Value) -> Datum {
+  match value {
+    Datum(d) => d
+    Record(record) => Record(record)
+    _ => Value(value)
+  }
+}
+
+///|
+fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
+  match value {
+    Datum(datum) =>
+      match datum_unlabel(datum) {
+        Pair(a, b) => (a.val, b.val)
+        _ => raise @core.EvalError("type error: pair expected")
+      }
+    _ => raise @core.EvalError("type error: pair expected")
+  }
+}
+
+///|
+fn value_as_pair_cells(
+  value : Value,
+) -> (Ref[Datum], Ref[Datum]) raise EvalError {
+  match value {
+    Datum(datum) =>
+      match datum_unlabel(datum) {
+        Pair(a, b) => (a, b)
+        _ => raise @core.EvalError("type error: pair expected")
+      }
+    _ => raise @core.EvalError("type error: pair expected")
+  }
+}
+
+///|
+fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
+  datum_list_to_array(list).map((item) => value_from_datum(item))
+}
+
+///|
 fn value_as_number(value : Value) -> Datum raise EvalError {
   match value {
     Datum(d) => {

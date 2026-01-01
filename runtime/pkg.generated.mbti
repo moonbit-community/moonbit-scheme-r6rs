@@ -27,8 +27,6 @@ pub fn condition_components_opt(@core.Value, @core.RecordType) -> Array[@core.Re
 
 pub fn datum_list_to_array(@core.Datum) -> Array[@core.Datum] raise @core.EvalError
 
-pub fn datum_list_to_value_array(@core.Datum) -> Array[@core.Value] raise @core.EvalError
-
 pub fn datum_unlabel(@core.Datum) -> @core.Datum
 
 pub fn default_constructor_descriptor(@core.RecordType) -> @core.RecordConstructorDescriptor
@@ -147,15 +145,7 @@ pub fn syntax_add_scope(@core.Datum, Int) -> @core.Datum
 
 pub fn syntax_wrap_root(@core.Datum, Array[Int]) -> @core.Datum
 
-pub fn value_as_datum(@core.Value) -> @core.Datum raise @core.EvalError
-
-pub fn value_as_pair(@core.Value) -> (@core.Datum, @core.Datum) raise @core.EvalError
-
-pub fn value_as_pair_cells(@core.Value) -> (Ref[@core.Datum], Ref[@core.Datum]) raise @core.EvalError
-
 pub fn value_from_datum(@core.Datum) -> @core.Value
-
-pub fn value_to_datum_element(@core.Value) -> @core.Datum
 
 pub fn value_to_string(@core.Value) -> String
 

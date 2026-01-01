@@ -2137,6 +2137,15 @@ pub fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] { ...
 fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] { ... }
 ```
 
+Example:
+```mbt
+// runtime before (exported helper)
+pub fn value_as_datum(value : Value) -> Datum raise EvalError { ... }
+
+// eval after (package-private helper)
+fn value_as_datum(value : Value) -> Datum raise EvalError { ... }
+```
+
 ## Fold variants into optional parameters
 - Replace `fn name_with_options(...)` with a single public entrypoint + optional parameters.
 - Update call sites with `moon ide find-references` before removing the old API.

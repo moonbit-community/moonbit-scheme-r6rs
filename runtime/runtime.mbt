@@ -605,36 +605,6 @@ pub fn is_false(value : Value) -> Bool {
 }
 
 ///|
-/// Convert a Value into a Datum or raise on type mismatch.
-///
-/// # Example
-/// ```mbt check
-/// test "value_as_datum" {
-///   match value_as_datum(Datum(Int(1))) {
-///     Int(1) => ()
-///     _ => fail("expected int datum")
-///   }
-/// }
-/// ```
-pub fn value_as_datum(value : Value) -> Datum raise EvalError {
-  match value {
-    Datum(d) => d
-    Record(record) => Record(record)
-    _ => raise @core.EvalError("type error: datum expected")
-  }
-}
-
-///|
-/// Convert a Value into a Datum suitable for list/vector elements.
-pub fn value_to_datum_element(value : Value) -> Datum {
-  match value {
-    Datum(d) => d
-    Record(record) => Record(record)
-    _ => Value(value)
-  }
-}
-
-///|
 /// Convert a Datum back to a Value.
 pub fn value_from_datum(datum : Datum) -> Value {
   match datum {
@@ -854,34 +824,6 @@ pub fn datum_unlabel(value : Datum) -> Datum {
 }
 
 ///|
-/// Extract pair elements as datums or raise on type mismatch.
-pub fn value_as_pair(value : Value) -> (Datum, Datum) raise EvalError {
-  match value {
-    Datum(datum) =>
-      match datum_unlabel(datum) {
-        Pair(a, b) => (a.val, b.val)
-        _ => raise @core.EvalError("type error: pair expected")
-      }
-    _ => raise @core.EvalError("type error: pair expected")
-  }
-}
-
-///|
-/// Extract pair cells as mutable references or raise on mismatch.
-pub fn value_as_pair_cells(
-  value : Value,
-) -> (Ref[Datum], Ref[Datum]) raise EvalError {
-  match value {
-    Datum(datum) =>
-      match datum_unlabel(datum) {
-        Pair(a, b) => (a, b)
-        _ => raise @core.EvalError("type error: pair expected")
-      }
-    _ => raise @core.EvalError("type error: pair expected")
-  }
-}
-
-///|
 /// Allocate a new pair datum.
 pub fn pair_new(car : Datum, cdr : Datum) -> Datum {
   Pair(Ref::new(car), Ref::new(cdr))
@@ -919,12 +861,6 @@ pub fn datum_list_to_array(list : Datum) -> Array[Datum] raise EvalError {
     ()
   }
   items
-}
-
-///|
-/// Convert a list datum into an array of values.
-pub fn datum_list_to_value_array(list : Datum) -> Array[Value] raise EvalError {
-  datum_list_to_array(list).map((item) => value_from_datum(item))
 }
 
 ///|

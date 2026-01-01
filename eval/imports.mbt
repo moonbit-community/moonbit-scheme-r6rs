@@ -59,7 +59,6 @@ using @runtime {
   condition_components,
   condition_components_opt,
   datum_list_to_array,
-  datum_list_to_value_array,
   datum_unlabel,
   default_constructor_descriptor,
   enum_set_from_names,
@@ -119,11 +118,7 @@ using @runtime {
   syntax_add_scope,
   syntax_wrap_root,
   symbol_name,
-  value_as_datum,
-  value_as_pair,
-  value_as_pair_cells,
   value_from_datum,
-  value_to_datum_element,
   value_to_string,
 }
 
