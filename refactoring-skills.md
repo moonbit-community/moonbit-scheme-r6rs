@@ -2056,6 +2056,19 @@ fn digit_value(ch : Char) -> Int? {
 }
 ```
 
+## Fold variants into optional parameters
+- Replace `fn name_with_options(...)` with a single public entrypoint + optional parameters.
+- Update call sites with `moon ide find-references` before removing the old API.
+
+Example:
+```mbt
+pub fn parse_program(src : String, fold_case? : Bool = false) -> Array[Datum] raise ParseError {
+  ...
+}
+
+let forms = parse_program("ABC", fold_case=true)
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.

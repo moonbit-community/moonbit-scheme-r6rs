@@ -92,7 +92,7 @@ test "parse basics" {
       }
     _ => fail("expected list")
   }
-  match parse_program_with_fold_case("ABC", true) {
+  match parse_program("ABC", fold_case=true) {
     [Symbol("abc"), ..] => ()
     _ => fail("expected folded symbol")
   }

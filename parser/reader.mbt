@@ -1276,26 +1276,20 @@ fn read_expr(r : Reader) -> Datum raise ParseError {
 ///   }
 /// }
 /// ```
-pub fn parse_program(src : String) -> Array[Datum] raise ParseError {
-  parse_program_with_fold_case(src, false)
-}
-
-///|
-/// Parse all top-level datums with optional case folding.
 ///
 /// # Example
 /// ```mbt check
-/// test "parse program with fold case" {
-///   let forms = parse_program_with_fold_case("ABC", true)
+/// test "parse program fold case" {
+///   let forms = parse_program("ABC", fold_case=true)
 ///   match forms {
 ///     [Symbol("abc"), ..] => ()
 ///     _ => fail("expected folded symbol")
 ///   }
 /// }
 /// ```
-pub fn parse_program_with_fold_case(
+pub fn parse_program(
   src : String,
-  fold_case : Bool,
+  fold_case? : Bool = false,
 ) -> Array[Datum] raise ParseError {
   let r = {
     let r = make_reader(src)

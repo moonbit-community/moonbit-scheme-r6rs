@@ -14,7 +14,7 @@ pub fn parse_number_token(String) -> @core.Datum?
 
 pub fn parse_number_token_with_radix(String, Int) -> @core.Datum?
 
-pub fn parse_program(String) -> Array[@core.Datum] raise @core.ParseError
+pub fn parse_program(String, fold_case? : Bool) -> Array[@core.Datum] raise @core.ParseError
 
 pub fn register_include_source(String, String) -> Unit
 

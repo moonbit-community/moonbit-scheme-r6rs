@@ -38,14 +38,8 @@ fn include_parse_file(
   fold_case : Bool,
 ) -> Array[Datum] raise EvalError {
   let content = include_read_text(path)
-  if fold_case {
-    parse_program_with_fold_case(content, true) catch {
-      _ => raise @core.EvalError("include: parse error: \{path}")
-    }
-  } else {
-    parse_program(content) catch {
-      _ => raise @core.EvalError("include: parse error: \{path}")
-    }
+  parse_program(content, fold_case=fold_case) catch {
+    _ => raise @core.EvalError("include: parse error: \{path}")
   }
 }
 
@@ -82,4 +76,3 @@ fn eval_include_state(
   let forms = include_forms(args, fold_case)
   eval_sequence_state(forms, env, kont, handlers)
 }
-

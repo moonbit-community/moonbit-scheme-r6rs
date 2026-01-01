@@ -132,7 +132,6 @@ using @runtime {
 ///|
 using @parser {
   parse_program,
-  parse_program_with_fold_case,
   parse_number_token,
   parse_number_token_with_radix,
 }
