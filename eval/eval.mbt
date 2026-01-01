@@ -966,13 +966,8 @@ fn eval_expr_impl(
                 "type error: record type mismatch: expected \{parent_type.name}",
               )
             }
-            let parent_values : Array[Value] = []
-            for field in record.fields {
-              // invariant : record.fields.length() >= 0
-              // TODO(decreases) : loop index not exposed; possible bug
-              // assert : record.fields.length() >= 0
-              parent_values.push(field.val)
-            }
+            let parent_values : Array[Value] =
+              record.fields.map((field) => field.val)
             let proc = Value::RecordProc(
               make_record_proc(
                 RecordProcKind::ProtocolP(record_type, parent_values),
