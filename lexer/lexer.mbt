@@ -14,12 +14,12 @@ pub struct Reader {
 ///
 /// # Example
 /// ```mbt check
-/// test "make_reader basics" {
-///   let r = make_reader("foo bar")
+/// test "Reader::new basics" {
+///   let r = Reader::new("foo bar")
 ///   inspect(r.read_token(), content="foo")
 /// }
 /// ```
-pub fn make_reader(src : String) -> Reader {
+pub fn Reader::new(src : String) -> Reader {
   let chars = src.to_array()
   { chars, pos: 0, fold_case: false, labels: Map::new() }
 }
@@ -30,7 +30,7 @@ pub fn make_reader(src : String) -> Reader {
 /// # Example
 /// ```mbt check
 /// test "peek does not consume" {
-///   let r = make_reader("ab")
+///   let r = Reader::new("ab")
 ///   guard r.peek() is Some('a') else { fail("expected a") }
 ///   guard r.peek() is Some('a') else { fail("expected a again") }
 /// }
@@ -51,7 +51,7 @@ fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
 /// # Example
 /// ```mbt check
 /// test "peek_next" {
-///   let r = make_reader("ab")
+///   let r = Reader::new("ab")
 ///   guard r.peek_next() is Some('b') else { fail("expected b") }
 ///   guard r.peek() is Some('a') else { fail("expected a") }
 /// }
@@ -84,7 +84,7 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[Datum]? {
 /// # Example
 /// ```mbt check
 /// test "label set/get" {
-///   let r = make_reader("x")
+///   let r = Reader::new("x")
 ///   let cell = Ref::new(@core.Datum::Nil)
 ///   r.label_set(1, cell)
 ///   guard r.label_get(1) is Some(_) else { fail("expected label") }
@@ -101,7 +101,7 @@ pub fn Reader::label_set(self : Reader, label : Int, cell : Ref[Datum]) -> Unit 
 /// # Example
 /// ```mbt check
 /// test "next advances reader" {
-///   let r = make_reader("ab")
+///   let r = Reader::new("ab")
 ///   guard r.next() is Some('a') else { fail("expected a") }
 ///   guard r.next() is Some('b') else { fail("expected b") }
 ///   guard r.next() is None else { fail("expected eof") }
@@ -138,7 +138,7 @@ fn is_delim(ch : Char) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "skip whitespace and comments" {
-///   let r = make_reader("  ; hi\nfoo")
+///   let r = Reader::new("  ; hi\nfoo")
 ///   r.skip_ws_and_comments()
 ///   guard r.peek() is Some('f') else { fail("expected f") }
 /// }
@@ -227,7 +227,7 @@ fn Reader::skip_block_comment(self : Reader) -> Unit raise ParseError {
 /// # Example
 /// ```mbt check
 /// test "ellipsis start" {
-///   let r = make_reader("...")
+///   let r = Reader::new("...")
 ///   inspect(r.is_ellipsis_start(), content="true")
 /// }
 /// ```
@@ -252,7 +252,7 @@ pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "vector start" {
-///   let r = make_reader("#(1)")
+///   let r = Reader::new("#(1)")
 ///   inspect(r.is_vector_start(), content="true")
 /// }
 /// ```
@@ -266,7 +266,7 @@ pub fn Reader::is_vector_start(self : Reader) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "bytevector start" {
-///   let r = make_reader("#vu8(1)")
+///   let r = Reader::new("#vu8(1)")
 ///   inspect(r.is_bytevector_start(), content="true")
 /// }
 /// ```
@@ -288,7 +288,7 @@ pub fn Reader::is_bytevector_start(self : Reader) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "read token" {
-///   let r = make_reader("alpha beta")
+///   let r = Reader::new("alpha beta")
 ///   inspect(r.read_token(), content="alpha")
 /// }
 /// ```
@@ -384,7 +384,7 @@ fn digit_value(ch : Char) -> Int? {
 /// # Example
 /// ```mbt check
 /// test "read string literal" {
-///   let r = make_reader("\"hi\"")
+///   let r = Reader::new("\"hi\"")
 ///   ignore(r.next()) // consume opening quote
 ///   inspect(r.read_string(), content="hi")
 /// }

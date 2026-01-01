@@ -6,7 +6,6 @@ import(
 )
 
 // Values
-pub fn make_reader(String) -> Reader
 
 // Errors
 
@@ -23,6 +22,7 @@ pub fn Reader::is_ellipsis_start(Self) -> Bool
 pub fn Reader::is_vector_start(Self) -> Bool
 pub fn Reader::label_get(Self, Int) -> Ref[@core.Datum]?
 pub fn Reader::label_set(Self, Int, Ref[@core.Datum]) -> Unit
+pub fn Reader::new(String) -> Self
 pub fn Reader::next(Self) -> Char?
 pub fn Reader::peek(Self) -> Char?
 pub fn Reader::peek_next(Self) -> Char?

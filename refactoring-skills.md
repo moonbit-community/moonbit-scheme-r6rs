@@ -1521,7 +1521,7 @@ fn string_to_utf8_bytes(s : String, start : Int, end : Int) -> Array[Int] raise 
 
 Example:
 ```mbt
-pub fn make_reader(src : String) -> Reader {
+pub fn Reader::new(src : String) -> Reader {
   let chars = src.to_array()
   { chars, pos: 0, fold_case: false, labels: Map::new() }
 }
@@ -1531,7 +1531,7 @@ fn reader_peek_offset(r : Reader, offset : Int) -> Char? {
 }
 
 let token =
-  make_reader(" ;c\nfoo")
+  Reader::new(" ;c\nfoo")
     ..skip_ws_and_comments()
     .read_token()
 ```
@@ -1897,7 +1897,7 @@ match r.label_get(label) { ... }
 Example:
 ```mbt
 let r = {
-  let r = make_reader(src)
+  let r = Reader::new(src)
   r..set_fold_case(true)
   r
 }
@@ -1905,7 +1905,7 @@ let r = {
 
 ## Make struct fields opaque
 - Use `pub struct` (instead of `pub(all)`) when callers should not construct or mutate fields directly.
-- Provide a constructor helper like `make_reader` and methods for the allowed operations.
+- Provide a constructor helper like `Reader::new` and methods for the allowed operations.
 
 Example:
 ```mbt
@@ -1916,7 +1916,7 @@ pub struct Reader {
   labels : Map[Int, Ref[Datum]]
 }
 
-pub fn make_reader(src : String) -> Reader {
+pub fn Reader::new(src : String) -> Reader {
   ...
 }
 ```
@@ -1956,7 +1956,7 @@ match lookup_library("doc/runtime-lib") {
 
 Example:
 ```mbt
-let r = make_reader("ABC")
+let r = Reader::new("ABC")
 r.set_fold_case(true)
 inspect(r.read_token(), content="abc")
 ```
@@ -2087,7 +2087,7 @@ fn env_lookup_binding_optional(env : Env, name : String) -> Binding? {
 
 Example:
 ```mbt
-using @lexer { type Reader, make_reader }
+using @lexer { type Reader }
 
 fn digit_value(ch : Char) -> Int? {
   match ch {
@@ -2259,4 +2259,18 @@ pub let general_category_ranges : Map[String, ReadOnlyArray[Char]] = { ... }
 
 // after
 let general_category_ranges : Map[String, ReadOnlyArray[Char]] = { ... }
+```
+
+## Prefer Type::new over free constructor helpers
+- Move `make_*` constructors onto the type to shrink the public API and keep call sites OO-friendly.
+
+Example:
+```mbt
+// before
+pub fn make_reader(src : String) -> Reader { ... }
+let r = make_reader("foo")
+
+// after
+pub fn Reader::new(src : String) -> Reader { ... }
+let r = Reader::new("foo")
 ```

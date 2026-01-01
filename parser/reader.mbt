@@ -4,7 +4,6 @@ using @core {type Datum, type ParseError}
 ///|
 using @lexer {
   type Reader,
-  make_reader,
 }
 
 ///|
@@ -1287,7 +1286,7 @@ pub fn parse_program(
   fold_case? : Bool = false,
 ) -> Array[Datum] raise ParseError {
   let r = {
-    let r = make_reader(src)
+    let r = Reader::new(src)
     r..set_fold_case(fold_case)
     r
   }
