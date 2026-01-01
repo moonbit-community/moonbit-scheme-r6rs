@@ -453,15 +453,7 @@ fn env_export_map(env : Env) -> Map[String, Binding] {
     // invariant : env.length() >= 0
     // TODO(decreases) : loop index not exposed; possible bug
     // assert : env.length() >= 0
-    for key in frame.keys() {
-      // invariant : frame.keys().length() >= 0
-      // TODO(decreases) : loop index not exposed; possible bug
-      // assert : frame.keys().length() >= 0
-      match frame.get(key) {
-        Some(binding) => exports[key] = binding
-        None => ()
-      }
-    }
+    frame.iter2().each((key, binding) => exports[key] = binding)
   }
   exports
 }
