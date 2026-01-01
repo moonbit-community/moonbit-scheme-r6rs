@@ -3500,22 +3500,24 @@ fn register_library_entry(
 
 ///|
 fn parse_version_items(items : Array[@core.Datum]) -> Array[Int] raise @core.EvalError {
-  if items.is_empty() {
-    raise @core.EvalError("invalid library name")
-  }
-  let versions : Array[Int] = []
-  for part in items {
-    match part {
-      Int(n) =>
-        if n < 0 {
-          raise @core.EvalError("invalid library name")
-        } else {
-          versions.push(n)
+  match items {
+    [] => raise @core.EvalError("invalid library name")
+    _ => {
+      let versions : Array[Int] = []
+      for part in items {
+        match part {
+          Int(n) =>
+            if n < 0 {
+              raise @core.EvalError("invalid library name")
+            } else {
+              versions.push(n)
+            }
+          _ => raise @core.EvalError("invalid library name")
         }
-      _ => raise @core.EvalError("invalid library name")
+      }
+      versions
     }
   }
-  versions
 }
 
 ///|
@@ -3889,12 +3891,8 @@ fn is_syntax_keyword(name : String) -> Bool {
 
 ///|
 fn parse_import_clause(expr : @core.Datum) -> Array[@core.Datum] raise @core.EvalError {
-  let items = datum_list_to_array(expr)
-  if items.is_empty() {
-    raise @core.EvalError("invalid library")
-  }
-  match items[0] {
-    Symbol("import") => items.sub(start=1).to_array()
+  match datum_list_to_array(expr) {
+    [Symbol("import"), ..rest] => rest.to_array()
     _ => raise @core.EvalError("invalid library")
   }
 }
@@ -4016,40 +4014,42 @@ priv struct ImportPhases {
 
 ///|
 fn parse_for_phases(items : Array[@core.Datum]) -> ImportPhases raise @core.EvalError {
-  if items.is_empty() {
-    raise @core.EvalError("invalid import set")
-  }
-  let (run, expand) = for i = 0, run = false, expand = false;
-    i < items.length(); {
-    // invariant : i >= 0 && i <= items.length()
-    // decreases : items.length() - i
-    // assert : i <= items.length()
-    let item = items[i]
-    match item {
-      Symbol("run") => continue i + 1, true, expand
-      Symbol("expand") => continue i + 1, run, true
-      Pair(_, _) | Nil => {
-        match datum_list_to_array(item) {
-          [Symbol("meta"), Int(n)] =>
-            if n == 0 {
-              continue i + 1, true, expand
-            } else if n > 0 {
-              continue i + 1, run, true
-            } else {
-              raise @core.EvalError("invalid import set")
+  match items {
+    [] => raise @core.EvalError("invalid import set")
+    _ => {
+      let (run, expand) = for i = 0, run = false, expand = false;
+        i < items.length(); {
+        // invariant : i >= 0 && i <= items.length()
+        // decreases : items.length() - i
+        // assert : i <= items.length()
+        let item = items[i]
+        match item {
+          Symbol("run") => continue i + 1, true, expand
+          Symbol("expand") => continue i + 1, run, true
+          Pair(_, _) | Nil => {
+            match datum_list_to_array(item) {
+              [Symbol("meta"), Int(n)] =>
+                if n == 0 {
+                  continue i + 1, true, expand
+                } else if n > 0 {
+                  continue i + 1, run, true
+                } else {
+                  raise @core.EvalError("invalid import set")
+                }
+              _ => raise @core.EvalError("invalid import set")
             }
+          }
           _ => raise @core.EvalError("invalid import set")
         }
+      } else {
+        (run, expand)
       }
-      _ => raise @core.EvalError("invalid import set")
+      if !run && !expand {
+        raise @core.EvalError("invalid import set")
+      }
+      { run, expand }
     }
-  } else {
-    (run, expand)
   }
-  if !run && !expand {
-    raise @core.EvalError("invalid import set")
-  }
-  { run, expand }
 }
 
 ///|
@@ -4073,51 +4073,53 @@ fn filter_exports_by_phase(
 
 ///|
 fn import_set_exports(expr : @core.Datum) -> Map[String,@core.Binding] raise @core.EvalError {
-  let items = datum_list_to_array(expr)
-  if items.is_empty() {
-    raise @core.EvalError("invalid import set")
-  }
-  match items[0] {
-    Symbol("only") => {
-      if items.length() < 3 {
-        raise @core.EvalError("invalid import set")
+  match datum_list_to_array(expr) {
+    [Symbol("only"), base_expr, name_expr, ..rest] => {
+      let names : Array[@core.Datum] = [name_expr]
+      for item in rest {
+        names.push(item)
       }
-      let base = import_set_exports(items[1])
-      let names = parse_symbol_list(items.sub(start=2).to_array())
+      let base = import_set_exports(base_expr)
+      let names = parse_symbol_list(names)
       import_set_only(base, names)
     }
-    Symbol("except") => {
-      if items.length() < 3 {
-        raise @core.EvalError("invalid import set")
+    [Symbol("only"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("except"), base_expr, name_expr, ..rest] => {
+      let names : Array[@core.Datum] = [name_expr]
+      for item in rest {
+        names.push(item)
       }
-      let base = import_set_exports(items[1])
-      let names = parse_symbol_list(items.sub(start=2).to_array())
+      let base = import_set_exports(base_expr)
+      let names = parse_symbol_list(names)
       import_set_except(base, names)
     }
-    Symbol("rename") => {
-      if items.length() < 3 {
-        raise @core.EvalError("invalid import set")
+    [Symbol("except"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("rename"), base_expr, spec_expr, ..rest] => {
+      let specs : Array[@core.Datum] = [spec_expr]
+      for item in rest {
+        specs.push(item)
       }
-      let base = import_set_exports(items[1])
-      let renames = parse_rename_specs(items.sub(start=2).to_array())
+      let base = import_set_exports(base_expr)
+      let renames = parse_rename_specs(specs)
       import_set_rename(base, renames)
     }
-    Symbol("prefix") => {
-      if items.length() != 3 {
-        raise @core.EvalError("invalid import set")
-      }
-      let base = import_set_exports(items[1])
-      let prefix = parse_symbol(items[2])
+    [Symbol("rename"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("prefix"), base_expr, prefix_expr] => {
+      let base = import_set_exports(base_expr)
+      let prefix = parse_symbol(prefix_expr)
       import_set_prefix(base, prefix)
     }
-    Symbol("for") => {
-      if items.length() < 3 {
-        raise @core.EvalError("invalid import set")
+    [Symbol("prefix"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("for"), base_expr, phase_expr, ..rest] => {
+      let phases : Array[@core.Datum] = [phase_expr]
+      for item in rest {
+        phases.push(item)
       }
-      let phases = parse_for_phases(items.sub(start=2).to_array())
-      let base = import_set_exports(items[1])
+      let base = import_set_exports(base_expr)
+      let phases = parse_for_phases(phases)
       filter_exports_by_phase(base, phases)
     }
+    [Symbol("for"), ..] => raise @core.EvalError("invalid import set")
     _ => {
       let reference = parse_library_ref(expr)
       library_exports_from_ref(reference)
@@ -4188,11 +4190,12 @@ fn eval_and_state(
   kont : @core.Kont,
   handlers : Array[@core.Value],
 ) -> MachineState {
-  if args.is_empty() {
-    MachineState::Apply(bool_value(true), kont, handlers)
-  } else {
-    let rest = args.sub(start=1).to_array()
-    MachineState::Eval(args[0], env, @core.Kont::And(rest, env, kont), handlers)
+  match args {
+    [] => MachineState::Apply(bool_value(true), kont, handlers)
+    [head, ..rest] => {
+      let tail = rest.to_array()
+      MachineState::Eval(head, env, @core.Kont::And(tail, env, kont), handlers)
+    }
   }
 }
 
@@ -4203,11 +4206,12 @@ fn eval_or_state(
   kont : @core.Kont,
   handlers : Array[@core.Value],
 ) -> MachineState {
-  if args.is_empty() {
-    MachineState::Apply(bool_value(false), kont, handlers)
-  } else {
-    let rest = args.sub(start=1).to_array()
-    MachineState::Eval(args[0], env, @core.Kont::Or(rest, env, kont), handlers)
+  match args {
+    [] => MachineState::Apply(bool_value(false), kont, handlers)
+    [head, ..rest] => {
+      let tail = rest.to_array()
+      MachineState::Eval(head, env, @core.Kont::Or(tail, env, kont), handlers)
+    }
   }
 }
 
@@ -4409,84 +4413,88 @@ fn eval_pair(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   let expr_unwrapped = datum_unwrap_syntax(expr)
-  let items = datum_list_to_array(expr_unwrapped)
-  if items.is_empty() {
-    MachineState::Apply(@core.Value::Datum(Nil), kont, handlers)
-  } else {
-    let head = items[0]
-    let args = items.sub(start=1).to_array()
-    match @runtime.symbol_name(datum_unwrap_syntax(head)) {
-      Some("define-syntax") =>
-        MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
-      Some("library") => eval_library_state(args, env, kont, handlers)
-      Some("import") => eval_import_state(args, env, kont, handlers)
-      Some("include") => eval_include_state(args, env, kont, handlers, false)
-      Some("include-ci") => eval_include_state(args, env, kont, handlers, true)
-      Some("include-library-declarations") =>
-        eval_include_state(args, env, kont, handlers, false)
-      Some("define-record-type") =>
-        eval_define_record_type_state(args, env, kont, handlers)
-      Some("define-condition-type") =>
-        eval_define_condition_type_state(args, env, kont, handlers)
-      Some("define-enumeration") =>
-        eval_define_enumeration_state(args, env, kont, handlers)
-      Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
-      Some("quasiquote") =>
-        MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
-      Some("syntax") =>
-        MachineState::Apply(eval_syntax(args, env), kont, handlers)
-      Some("quasisyntax") =>
-        MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
-      Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
-      Some("delay") =>
-        MachineState::Apply(eval_delay(args, env), kont, handlers)
-      Some("if") => eval_if_state(args, env, kont, handlers)
-      Some("begin") => eval_sequence_state(args, env, kont, handlers)
-      Some("begin-for-syntax") =>
-        eval_begin_for_syntax_state(args, env, kont, handlers)
-      Some("lambda") =>
-        MachineState::Apply(eval_lambda(args, env), kont, handlers)
-      Some("case-lambda") =>
-        MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
-      Some("define") => eval_define_state(args, env, kont, handlers)
-      Some("define-values") =>
-        eval_define_values_state(args, env, kont, handlers)
-      Some("set!") => eval_set_state(args, env, kont, handlers)
-      Some("let") => eval_let_state(args, env, kont, handlers)
-      Some("let-values") => eval_let_values_state(args, env, kont, handlers)
-      Some("let*-values") =>
-        eval_let_star_values_state(args, env, kont, handlers)
-      Some("let*") => eval_let_star_state(args, env, kont, handlers)
-      Some("letrec") => eval_letrec_state(args, env, kont, handlers)
-      Some("letrec*") => eval_letrec_star_state(args, env, kont, handlers)
-      Some("parameterize") => eval_parameterize_state(args, env, kont, handlers)
-      Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
-      Some("letrec-syntax") =>
-        eval_letrec_syntax_state(args, env, kont, handlers)
-      Some("and") => eval_and_state(args, env, kont, handlers)
-      Some("or") => eval_or_state(args, env, kont, handlers)
-      Some("cond") => cond_start(args, env, kont, handlers)
-      Some("cond-expand") => eval_cond_expand_state(args, env, kont, handlers)
-      Some("guard") => eval_guard_state(args, env, kont, handlers)
-      Some("do") => eval_do_state(args, env, kont, handlers)
-      Some("case") => eval_case_state(args, env, kont, handlers)
-      Some(name) =>
-        match @runtime.env_get_macro(env, name) {
-          Some(transformer) => {
-            let expansion = expand_macro(transformer, expr_unwrapped, env)
-            let next_env = env_with_captures(env, expansion.captures)
-            MachineState::Eval(expansion.datum, next_env, kont, handlers)
+  match datum_list_to_array(expr_unwrapped) {
+    [] => MachineState::Apply(@core.Value::Datum(Nil), kont, handlers)
+    [head, ..rest] => {
+      let args = rest.to_array()
+      match @runtime.symbol_name(datum_unwrap_syntax(head)) {
+        Some("define-syntax") =>
+          MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
+        Some("library") => eval_library_state(args, env, kont, handlers)
+        Some("import") => eval_import_state(args, env, kont, handlers)
+        Some("include") => eval_include_state(args, env, kont, handlers, false)
+        Some("include-ci") => eval_include_state(args, env, kont, handlers, true)
+        Some("include-library-declarations") =>
+          eval_include_state(args, env, kont, handlers, false)
+        Some("define-record-type") =>
+          eval_define_record_type_state(args, env, kont, handlers)
+        Some("define-condition-type") =>
+          eval_define_condition_type_state(args, env, kont, handlers)
+        Some("define-enumeration") =>
+          eval_define_enumeration_state(args, env, kont, handlers)
+        Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
+        Some("quasiquote") =>
+          MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
+        Some("syntax") =>
+          MachineState::Apply(eval_syntax(args, env), kont, handlers)
+        Some("quasisyntax") =>
+          MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
+        Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
+        Some("delay") =>
+          MachineState::Apply(eval_delay(args, env), kont, handlers)
+        Some("if") => eval_if_state(args, env, kont, handlers)
+        Some("begin") => eval_sequence_state(args, env, kont, handlers)
+        Some("begin-for-syntax") =>
+          eval_begin_for_syntax_state(args, env, kont, handlers)
+        Some("lambda") =>
+          MachineState::Apply(eval_lambda(args, env), kont, handlers)
+        Some("case-lambda") =>
+          MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
+        Some("define") => eval_define_state(args, env, kont, handlers)
+        Some("define-values") =>
+          eval_define_values_state(args, env, kont, handlers)
+        Some("set!") => eval_set_state(args, env, kont, handlers)
+        Some("let") => eval_let_state(args, env, kont, handlers)
+        Some("let-values") => eval_let_values_state(args, env, kont, handlers)
+        Some("let*-values") =>
+          eval_let_star_values_state(args, env, kont, handlers)
+        Some("let*") => eval_let_star_state(args, env, kont, handlers)
+        Some("letrec") => eval_letrec_state(args, env, kont, handlers)
+        Some("letrec*") => eval_letrec_star_state(args, env, kont, handlers)
+        Some("parameterize") => eval_parameterize_state(args, env, kont, handlers)
+        Some("let-syntax") => eval_let_syntax_state(args, env, kont, handlers)
+        Some("letrec-syntax") =>
+          eval_letrec_syntax_state(args, env, kont, handlers)
+        Some("and") => eval_and_state(args, env, kont, handlers)
+        Some("or") => eval_or_state(args, env, kont, handlers)
+        Some("cond") => cond_start(args, env, kont, handlers)
+        Some("cond-expand") => eval_cond_expand_state(args, env, kont, handlers)
+        Some("guard") => eval_guard_state(args, env, kont, handlers)
+        Some("do") => eval_do_state(args, env, kont, handlers)
+        Some("case") => eval_case_state(args, env, kont, handlers)
+        Some(name) =>
+          match @runtime.env_get_macro(env, name) {
+            Some(transformer) => {
+              let expansion = expand_macro(transformer, expr_unwrapped, env)
+              let next_env = env_with_captures(env, expansion.captures)
+              MachineState::Eval(expansion.datum, next_env, kont, handlers)
+            }
+            None =>
+              MachineState::Eval(
+                head,
+                env,
+                @core.Kont::AppFun(args, env, kont),
+                handlers,
+              )
           }
-          None =>
-            MachineState::Eval(
-              head,
-              env,
-              @core.Kont::AppFun(args, env, kont),
-              handlers,
-            )
-        }
-      None =>
-        MachineState::Eval(head, env, @core.Kont::AppFun(args, env, kont), handlers)
+        None =>
+          MachineState::Eval(
+            head,
+            env,
+            @core.Kont::AppFun(args, env, kont),
+            handlers,
+          )
+      }
     }
   }
 }
