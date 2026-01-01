@@ -319,7 +319,7 @@ fn apply_bytevector_primitive(
               datums.push(@core.Datum::Int(items[i]))
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(datums))
+            @core.Value::Datum(list_from_array(datums))
           })
         [vec_value, start_value] =>
           Some({
@@ -335,7 +335,7 @@ fn apply_bytevector_primitive(
               datums.push(@core.Datum::Int(items[i]))
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(datums))
+            @core.Value::Datum(list_from_array(datums))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -351,7 +351,7 @@ fn apply_bytevector_primitive(
               datums.push(@core.Datum::Int(items[i]))
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(datums))
+            @core.Value::Datum(list_from_array(datums))
           })
         _ =>
           raise @core.EvalError(
@@ -363,7 +363,7 @@ fn apply_bytevector_primitive(
         [datum_value] =>
           Some({
             let datum = value_as_datum(datum_value)
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             let bytes : Array[Int] = items.map((item) =>
               match item {
                 @core.Datum::Int(n) => {

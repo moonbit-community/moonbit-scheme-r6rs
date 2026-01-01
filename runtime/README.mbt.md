@@ -70,10 +70,11 @@ test "gensym unique suffix" {
 }
 
 ///|
-test "list from array" {
-  let list = list_from_array([@core.Datum::Int(1), @core.Datum::Int(2)])
-  let value = @core.Value::Datum(list)
-  inspect(value_to_string(value), content="(1 2)")
+test "symbol name" {
+  match symbol_name(@core.Datum::Symbol("x")) {
+    Some("x") => ()
+    _ => fail("expected symbol name")
+  }
 }
 
 ///|
@@ -104,11 +105,10 @@ test "value to string" {
 }
 
 ///|
-test "value from datum" {
-  let value = value_from_datum(@core.Datum::Int(3))
-  match value {
-    @core.Value::Datum(@core.Datum::Int(3)) => ()
-    _ => fail("expected datum value")
+test "datum unlabel" {
+  match datum_unlabel(@core.Datum::Int(3)) {
+    @core.Datum::Int(3) => ()
+    _ => fail("expected same datum")
   }
 }
 

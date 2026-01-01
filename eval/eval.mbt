@@ -334,7 +334,7 @@ fn eval_expr_impl(
                 current_expr
               }
               state = MachineState::Apply(
-                @runtime.value_from_datum(literal),
+                value_from_datum(literal),
                 kont,
                 handlers,
               )
@@ -360,7 +360,7 @@ fn eval_expr_impl(
               current_expr
             }
             state = MachineState::Apply(
-              @runtime.value_from_datum(literal),
+              value_from_datum(literal),
               kont,
               handlers,
             )
@@ -1053,7 +1053,7 @@ fn eval_expr_impl(
           @core.Kont::VectorMapFinalize(next) => {
             let single = expect_single(value)
             let result_datum = value_as_datum(single)
-            let items = @runtime.datum_list_to_array(result_datum)
+            let items = datum_list_to_array(result_datum)
             state = MachineState::Apply(
               @core.Value::Datum(@core.Datum::Vector(items)),
               next,
@@ -1253,7 +1253,7 @@ fn quasiquote_expand(
 ) -> @core.Datum raise @core.EvalError {
   match unwrap_form(expr, "quasiquote") {
     Some(arg) =>
-      return @runtime.list_from_array([
+      return list_from_array([
         @core.Datum::Symbol("quasiquote"),
         quasiquote_expand(arg, env, depth + 1),
       ])
@@ -1264,7 +1264,7 @@ fn quasiquote_expand(
       if depth == 1 {
         return value_to_datum_element(eval_expr(arg, env))
       } else {
-        return @runtime.list_from_array([
+        return list_from_array([
           @core.Datum::Symbol("unquote"),
           quasiquote_expand(arg, env, depth - 1),
         ])
@@ -1276,7 +1276,7 @@ fn quasiquote_expand(
       if depth == 1 {
         raise @core.EvalError("unquote-splicing not in list context")
       } else {
-        return @runtime.list_from_array([
+        return list_from_array([
           @core.Datum::Symbol("unquote-splicing"),
           quasiquote_expand(arg, env, depth - 1),
         ])
@@ -1290,14 +1290,14 @@ fn quasiquote_expand(
           Some(arg) => {
             let value = eval_expr(arg, env)
             let datum = value_as_datum(value)
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             let tail = quasiquote_expand(cdr.val, env, depth)
             return list_with_tail(items, tail)
           }
           None => ()
         }
       }
-      @runtime.pair_new(
+      pair_new(
         quasiquote_expand(car.val, env, depth),
         quasiquote_expand(cdr.val, env, depth),
       )
@@ -1310,7 +1310,7 @@ fn quasiquote_expand(
             Some(arg) => {
               let value = eval_expr(arg, env)
               let datum = value_as_datum(value)
-              let list_items = @runtime.datum_list_to_array(datum)
+              let list_items = datum_list_to_array(datum)
               for list_item in list_items {
                 expanded.push(list_item)
               }
@@ -1337,7 +1337,7 @@ fn quasisyntax_expand(
 ) -> @core.Datum raise @core.EvalError {
   match unwrap_form(expr, "quasisyntax") {
     Some(arg) =>
-      return @runtime.list_from_array([
+      return list_from_array([
         @core.Datum::Symbol("quasisyntax"),
         quasisyntax_expand(arg, env, depth + 1),
       ])
@@ -1348,7 +1348,7 @@ fn quasisyntax_expand(
       if depth == 1 {
         return value_to_datum_element(eval_expr(arg, env))
       } else {
-        return @runtime.list_from_array([
+        return list_from_array([
           @core.Datum::Symbol("unsyntax"),
           quasisyntax_expand(arg, env, depth - 1),
         ])
@@ -1360,7 +1360,7 @@ fn quasisyntax_expand(
       if depth == 1 {
         raise @core.EvalError("unsyntax-splicing not in list context")
       } else {
-        return @runtime.list_from_array([
+        return list_from_array([
           @core.Datum::Symbol("unsyntax-splicing"),
           quasisyntax_expand(arg, env, depth - 1),
         ])
@@ -1377,14 +1377,14 @@ fn quasisyntax_expand(
               @core.Value::SyntaxObject(obj) => obj.datum
               _ => value_as_datum(value)
             }
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             let tail = quasisyntax_expand(cdr.val, env, depth)
             return list_with_tail(items, tail)
           }
           None => ()
         }
       }
-      @runtime.pair_new(
+      pair_new(
         quasisyntax_expand(car.val, env, depth),
         quasisyntax_expand(cdr.val, env, depth),
       )
@@ -1400,7 +1400,7 @@ fn quasisyntax_expand(
                 @core.Value::SyntaxObject(obj) => obj.datum
                 _ => value_as_datum(value)
               }
-              let list_items = @runtime.datum_list_to_array(datum)
+              let list_items = datum_list_to_array(datum)
               for list_item in list_items {
                 expanded.push(list_item)
               }
@@ -1426,7 +1426,7 @@ fn list_with_tail(items : Array[@core.Datum], tail : @core.Datum) -> @core.Datum
     // decreases : i
     // assert : i <= items.length()
     let idx = i - 1
-    continue i - 1, @runtime.pair_new(items[idx], result)
+    continue i - 1, pair_new(items[idx], result)
   } else {
     result
   }
@@ -1463,7 +1463,7 @@ fn arity_mismatch_at_least(expected : Int, got : Int) -> @core.EvalError {
 fn values_to_list_value(values : Array[@core.Value]) -> @core.Value {
   let items : Array[@core.Datum] =
     values.map((value) => value_to_datum_element(value))
-  @core.Value::Datum(@runtime.list_from_array(items))
+  @core.Value::Datum(list_from_array(items))
 }
 
 ///|
@@ -1541,7 +1541,7 @@ fn eval_case_lambda(args : Array[@core.Datum], env : @core.Env) -> @core.Value r
     raise arity_mismatch(1, 0)
   }
   let clauses : Array[@core.CaseClause] = args.map((clause) => {
-    let parts = @runtime.datum_list_to_array(clause)
+    let parts = datum_list_to_array(clause)
     if parts.length() < 2 {
       raise @core.EvalError("invalid case-lambda")
     }
@@ -1574,10 +1574,10 @@ fn parse_syntax_bindings(
   expr : @core.Datum,
   env : @core.Env,
 ) -> Array[(String,@core.MacroTransformer)] raise @core.EvalError {
-  let bindings = @runtime.datum_list_to_array(expr)
+  let bindings = datum_list_to_array(expr)
   let parsed : Array[(String,@core.MacroTransformer)] = []
   for binding in bindings {
-    let parts = @runtime.datum_list_to_array(binding)
+    let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("type error: syntax binding expected")
     } else {
@@ -1591,10 +1591,10 @@ fn parse_syntax_bindings(
 
 ///|
 fn parse_bindings(expr : @core.Datum) -> Array[(String,@core.Datum)] raise @core.EvalError {
-  let bindings = @runtime.datum_list_to_array(expr)
+  let bindings = datum_list_to_array(expr)
   let parsed : Array[(String,@core.Datum)] = []
   for binding in bindings {
-    let parts = @runtime.datum_list_to_array(binding)
+    let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("type error: binding expected")
     } else {
@@ -1609,10 +1609,10 @@ fn parse_bindings(expr : @core.Datum) -> Array[(String,@core.Datum)] raise @core
 fn parse_value_bindings(
   expr : @core.Datum,
 ) -> Array[(@core.Formals,@core.Datum)] raise @core.EvalError {
-  let bindings = @runtime.datum_list_to_array(expr)
+  let bindings = datum_list_to_array(expr)
   let parsed : Array[(@core.Formals,@core.Datum)] = []
   for binding in bindings {
-    let parts = @runtime.datum_list_to_array(binding)
+    let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("invalid let-values")
     } else {
@@ -1627,10 +1627,10 @@ fn parse_value_bindings(
 fn parse_parameterize_bindings(
   expr : @core.Datum,
 ) -> Array[(@core.Datum,@core.Datum)] raise @core.EvalError {
-  let bindings = @runtime.datum_list_to_array(expr)
+  let bindings = datum_list_to_array(expr)
   let parsed : Array[(@core.Datum,@core.Datum)] = []
   for binding in bindings {
-    let parts = @runtime.datum_list_to_array(binding)
+    let parts = datum_list_to_array(binding)
     if parts.length() != 2 {
       raise @core.EvalError("invalid parameterize")
     } else {
@@ -1714,7 +1714,7 @@ fn guard_start(
     // invariant : i >= 0 && i <= clauses.length()
     // decreases : clauses.length() - i
     // assert : i <= clauses.length()
-    let parts = @runtime.datum_list_to_array(clauses[i])
+    let parts = datum_list_to_array(clauses[i])
     if parts.is_empty() {
       continue i + 1
     } else {
@@ -1994,7 +1994,7 @@ fn eval_guard_state(
   if args.length() < 2 {
     raise arity_mismatch(2, args.length())
   } else {
-    let spec = @runtime.datum_list_to_array(args[0])
+    let spec = datum_list_to_array(args[0])
     if spec.is_empty() {
       raise @core.EvalError("invalid guard")
     }
@@ -2065,7 +2065,7 @@ fn eval_set_state(
         Some(transformer) => {
           let expansion = expand_macro(
             transformer,
-            @runtime.list_from_array([
+            list_from_array([
               @core.Datum::Symbol("set!"),
               @core.Datum::Symbol(name),
               value_expr,
@@ -2284,20 +2284,20 @@ fn expand_named_let(
   }
   let lambda_items : Array[@core.Datum] = []
   lambda_items.push(@core.Datum::Symbol("lambda"))
-  lambda_items.push(@runtime.list_from_array(param_items))
+  lambda_items.push(list_from_array(param_items))
   for expr in body {
     lambda_items.push(expr)
   }
-  let lambda_expr = @runtime.list_from_array(lambda_items)
-  let binding_expr = @runtime.list_from_array([@core.Datum::Symbol(name), lambda_expr])
-  let bindings_expr = @runtime.list_from_array([binding_expr])
+  let lambda_expr = list_from_array(lambda_items)
+  let binding_expr = list_from_array([@core.Datum::Symbol(name), lambda_expr])
+  let bindings_expr = list_from_array([binding_expr])
   let call_items : Array[@core.Datum] = []
   call_items.push(@core.Datum::Symbol(name))
   for arg in arg_items {
     call_items.push(arg)
   }
-  let call_expr = @runtime.list_from_array(call_items)
-  @runtime.list_from_array([@core.Datum::Symbol("letrec"), bindings_expr, call_expr])
+  let call_expr = list_from_array(call_items)
+  list_from_array([@core.Datum::Symbol("letrec"), bindings_expr, call_expr])
 }
 
 ///|
@@ -2332,12 +2332,12 @@ fn eval_letrec_syntax_state(
     raise arity_mismatch(2, args.length())
   } else {
     let new_env = @runtime.env_extend(env)
-    let binding_specs = @runtime.datum_list_to_array(args[0])
+    let binding_specs = datum_list_to_array(args[0])
     for i = 0; i < binding_specs.length(); {
       // invariant : i >= 0 && i <= binding_specs.length()
       // decreases : binding_specs.length() - i
       // assert : i <= binding_specs.length()
-      let parts = @runtime.datum_list_to_array(binding_specs[i])
+      let parts = datum_list_to_array(binding_specs[i])
       if parts.length() != 2 {
         raise @core.EvalError("type error: syntax binding expected")
       }
@@ -2369,19 +2369,19 @@ fn build_begin(exprs : Array[@core.Datum]) -> @core.Datum {
   for expr in exprs {
     items.push(expr)
   }
-  @runtime.list_from_array(items)
+  list_from_array(items)
 }
 
 ///|
 fn parse_do_bindings(
   expr : @core.Datum,
 ) -> (Array[String], Array[@core.Datum], Array[@core.Datum]) raise @core.EvalError {
-  let bindings = @runtime.datum_list_to_array(expr)
+  let bindings = datum_list_to_array(expr)
   let names : Array[String] = []
   let inits : Array[@core.Datum] = []
   let steps : Array[@core.Datum] = []
   for binding in bindings {
-    let parts = @runtime.datum_list_to_array(binding)
+    let parts = datum_list_to_array(binding)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid do")
     }
@@ -2408,7 +2408,7 @@ fn eval_do_state(
     raise arity_mismatch(2, args.length())
   }
   let (names, inits, steps) = parse_do_bindings(args[0])
-  let test_parts = @runtime.datum_list_to_array(args[1])
+  let test_parts = datum_list_to_array(args[1])
   if test_parts.is_empty() {
     raise @core.EvalError("invalid do")
   }
@@ -2425,7 +2425,7 @@ fn eval_do_state(
   for step in steps {
     call_items.push(step)
   }
-  let call_expr = @runtime.list_from_array(call_items)
+  let call_expr = list_from_array(call_items)
   let else_body : Array[@core.Datum] = []
   for expr in command_exprs {
     else_body.push(expr)
@@ -2433,26 +2433,26 @@ fn eval_do_state(
   else_body.push(call_expr)
   let then_expr = build_begin(result_exprs)
   let else_expr = build_begin(else_body)
-  let if_expr = @runtime.list_from_array([
+  let if_expr = list_from_array([
     @core.Datum::Symbol("if"),
     test_expr,
     then_expr,
     else_expr,
   ])
-  let lambda_expr = @runtime.list_from_array([
+  let lambda_expr = list_from_array([
     @core.Datum::Symbol("lambda"),
-    @runtime.list_from_array(params),
+    list_from_array(params),
     if_expr,
   ])
-  let binding_expr = @runtime.list_from_array([@core.Datum::Symbol(loop_name), lambda_expr])
-  let bindings_expr = @runtime.list_from_array([binding_expr])
+  let binding_expr = list_from_array([@core.Datum::Symbol(loop_name), lambda_expr])
+  let bindings_expr = list_from_array([binding_expr])
   let init_call_items : Array[@core.Datum] = []
   init_call_items.push(@core.Datum::Symbol(loop_name))
   for init in inits {
     init_call_items.push(init)
   }
-  let init_call_expr = @runtime.list_from_array(init_call_items)
-  let expanded = @runtime.list_from_array([
+  let init_call_expr = list_from_array(init_call_items)
+  let expanded = list_from_array([
     @core.Datum::Symbol("letrec"),
     bindings_expr,
     init_call_expr,
@@ -2471,7 +2471,7 @@ fn eval_define_record_type_state(
     raise @core.EvalError("invalid define-record-type")
   }
   let record_name = parse_symbol(args[0])
-  let ctor_parts = @runtime.datum_list_to_array(args[1])
+  let ctor_parts = datum_list_to_array(args[1])
   if ctor_parts.is_empty() {
     raise @core.EvalError("invalid define-record-type")
   }
@@ -2492,7 +2492,7 @@ fn eval_define_record_type_state(
       // decreases : raw_specs.length() - i
       // assert : i <= raw_specs.length()
       let spec = raw_specs[i]
-      let parts = @runtime.datum_list_to_array(spec)
+      let parts = datum_list_to_array(spec)
       if parts.length() >= 1 && parts.length() <= 2 {
         match @runtime.symbol_name(parts[0]) {
           Some("parent") if parts.length() == 2 => {
@@ -2575,7 +2575,7 @@ fn eval_define_record_type_state(
   let mutable : Map[String, Bool] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    let parts = @runtime.datum_list_to_array(spec)
+    let parts = datum_list_to_array(spec)
     if parts.length() < 2 || parts.length() > 3 {
       raise @core.EvalError("invalid define-record-type")
     }
@@ -2736,7 +2736,7 @@ fn eval_define_condition_type_state(
   let accessors : Map[String, String] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    let parts = @runtime.datum_list_to_array(spec)
+    let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
       raise @core.EvalError("invalid define-condition-type")
     }
@@ -2804,7 +2804,7 @@ fn eval_define_enumeration_state(
     raise @core.EvalError("invalid define-enumeration")
   }
   let type_name = parse_symbol(args[0])
-  let symbols = parse_symbol_list(@runtime.datum_list_to_array(args[1]))
+  let symbols = parse_symbol_list(datum_list_to_array(args[1]))
   let ctor_name = parse_symbol(args[2])
   let seen : Map[String, Bool] = {}
   for name in symbols {
@@ -3084,7 +3084,7 @@ fn apply_enum_set_proc(
         raise arity_mismatch(1, args.length())
       }
       let names = parse_symbol_list(
-        @runtime.datum_list_to_array(value_as_datum(args[0])),
+        datum_list_to_array(value_as_datum(args[0])),
       )
       let subset = @runtime.enum_set_from_names(set.universe, names)
       MachineState::Apply(@core.Value::EnumSet(subset), kont, handlers)
@@ -3493,7 +3493,7 @@ fn parse_version_items(items : Array[@core.Datum]) -> Array[Int] raise @core.Eva
 
 ///|
 fn parse_version_list(expr : @core.Datum) -> Array[Int] raise @core.EvalError {
-  parse_version_items(@runtime.datum_list_to_array(expr))
+  parse_version_items(datum_list_to_array(expr))
 }
 
 ///|
@@ -3515,7 +3515,7 @@ fn parse_version_ref_version(
 
 ///|
 fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
-  let items = @runtime.datum_list_to_array(expr)
+  let items = datum_list_to_array(expr)
   if items.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -3569,7 +3569,7 @@ fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
 
 ///|
 fn parse_library_name_spec(expr : @core.Datum) -> LibraryNameSpec raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -3606,7 +3606,7 @@ fn parse_library_name_spec(expr : @core.Datum) -> LibraryNameSpec raise @core.Ev
 
 ///|
 fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.is_empty() {
     raise @core.EvalError("invalid library name")
   }
@@ -3776,7 +3776,7 @@ fn library_exports_from_ref(
 
 ///|
 fn parse_export_clause(expr : @core.Datum) -> Array[(String, String)] raise @core.EvalError {
-  let items = @runtime.datum_list_to_array(expr)
+  let items = datum_list_to_array(expr)
   if items.is_empty() {
     raise @core.EvalError("invalid library")
   }
@@ -3790,7 +3790,7 @@ fn parse_export_clause(expr : @core.Datum) -> Array[(String, String)] raise @cor
         match items[i] {
           @core.Datum::Symbol(name) => exports.push((name, name))
           @core.Datum::Pair(_, _) => {
-            let spec_items = @runtime.datum_list_to_array(items[i])
+            let spec_items = datum_list_to_array(items[i])
             if spec_items.is_empty() {
               raise @core.EvalError("invalid library")
             }
@@ -3800,7 +3800,7 @@ fn parse_export_clause(expr : @core.Datum) -> Array[(String, String)] raise @cor
                   // invariant : j >= 1 && j <= spec_items.length()
                   // decreases : spec_items.length() - j
                   // assert : j <= spec_items.length()
-                  let rename_parts = @runtime.datum_list_to_array(spec_items[j])
+                  let rename_parts = datum_list_to_array(spec_items[j])
                   if rename_parts.length() != 2 {
                     raise @core.EvalError("invalid library")
                   }
@@ -3893,7 +3893,7 @@ fn is_syntax_keyword(name : String) -> Bool {
 
 ///|
 fn parse_import_clause(expr : @core.Datum) -> Array[@core.Datum] raise @core.EvalError {
-  let items = @runtime.datum_list_to_array(expr)
+  let items = datum_list_to_array(expr)
   if items.is_empty() {
     raise @core.EvalError("invalid library")
   }
@@ -4001,7 +4001,7 @@ fn parse_rename_specs(
   items : Array[@core.Datum],
 ) -> Array[(String, String)] raise @core.EvalError {
   items.map(fn (item) raise @core.EvalError {
-    let parts = @runtime.datum_list_to_array(item)
+    let parts = datum_list_to_array(item)
     if parts.length() != 2 {
       raise @core.EvalError("invalid import set")
     }
@@ -4032,7 +4032,7 @@ fn parse_for_phases(items : Array[@core.Datum]) -> ImportPhases raise @core.Eval
       @core.Datum::Symbol("run") => continue i + 1, true, expand
       @core.Datum::Symbol("expand") => continue i + 1, run, true
       @core.Datum::Pair(_, _) | @core.Datum::Nil => {
-        let parts = @runtime.datum_list_to_array(item)
+        let parts = datum_list_to_array(item)
         if parts.length() != 2 {
           raise @core.EvalError("invalid import set")
         }
@@ -4084,7 +4084,7 @@ fn filter_exports_by_phase(
 
 ///|
 fn import_set_exports(expr : @core.Datum) -> Map[String,@core.Binding] raise @core.EvalError {
-  let items = @runtime.datum_list_to_array(expr)
+  let items = datum_list_to_array(expr)
   if items.is_empty() {
     raise @core.EvalError("invalid import set")
   }
@@ -4249,7 +4249,7 @@ fn case_dispatch(
     // invariant : i >= 0 && i <= clauses.length()
     // decreases : clauses.length() - i
     // assert : i <= clauses.length()
-    let parts = @runtime.datum_list_to_array(clauses[i])
+    let parts = datum_list_to_array(clauses[i])
     if parts.is_empty() {
       continue i + 1
     } else {
@@ -4260,7 +4260,7 @@ fn case_dispatch(
         }
         _ => ()
       }
-      let datums = @runtime.datum_list_to_array(parts[0])
+      let datums = datum_list_to_array(parts[0])
       let matched = for j = 0; j < datums.length(); {
         // invariant : j >= 0 && j <= datums.length()
         // decreases : datums.length() - j
@@ -4304,7 +4304,7 @@ fn cond_start(
     // invariant : i >= 0 && i <= clauses.length()
     // decreases : clauses.length() - i
     // assert : i <= clauses.length()
-    let parts = @runtime.datum_list_to_array(clauses[i])
+    let parts = datum_list_to_array(clauses[i])
     if parts.is_empty() {
       continue i + 1
     } else {
@@ -4344,7 +4344,7 @@ fn cond_expand_feature(expr : @core.Datum) -> Bool raise @core.EvalError {
   match expr {
     @core.Datum::Symbol(name) => feature_enabled(name)
     @core.Datum::Pair(_, _) => {
-      let items = @runtime.datum_list_to_array(expr)
+      let items = datum_list_to_array(expr)
       if items.is_empty() {
         raise @core.EvalError("invalid cond-expand")
       }
@@ -4409,7 +4409,7 @@ fn eval_cond_expand_state(
     // invariant : i >= 0 && i <= clauses.length()
     // decreases : clauses.length() - i
     // assert : i <= clauses.length()
-    let parts = @runtime.datum_list_to_array(clauses[i])
+    let parts = datum_list_to_array(clauses[i])
     if parts.is_empty() {
       raise @core.EvalError("invalid cond-expand")
     }
@@ -4440,7 +4440,7 @@ fn eval_pair(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   let expr_unwrapped = datum_unwrap_syntax(expr)
-  let items = @runtime.datum_list_to_array(expr_unwrapped)
+  let items = datum_list_to_array(expr_unwrapped)
   if items.is_empty() {
     MachineState::Apply(@core.Value::Datum(@core.Datum::Nil), kont, handlers)
   } else {
@@ -4543,13 +4543,13 @@ fn map_step(
           return MachineState::Apply(@core.Value::Void, kont, handlers)
         }
         return MachineState::Apply(
-          @core.Value::Datum(@runtime.list_from_array(results)),
+          @core.Value::Datum(list_from_array(results)),
           kont,
           handlers,
         )
       }
       @core.Datum::Pair(car, cdr) => {
-        args.push(@runtime.value_from_datum(car.val))
+        args.push(value_from_datum(car.val))
         next_lists.push(cdr.val)
       }
       _ => raise @core.EvalError("type error: proper list expected")
@@ -4576,7 +4576,7 @@ fn string_to_char_list(s : String) -> @core.Datum raise @core.EvalError {
     }
     continue i + 1
   }
-  @runtime.list_from_array(items)
+  list_from_array(items)
 }
 
 ///|
@@ -4892,7 +4892,7 @@ fn apply_proc(
             // invariant : k >= 0 && k <= vectors.length()
             // decreases : vectors.length() - k
             // assert : k <= vectors.length()
-            lists.push(@runtime.list_from_array(vectors[k]))
+            lists.push(list_from_array(vectors[k]))
             continue k + 1
           }
           map_step(
@@ -4929,7 +4929,7 @@ fn apply_proc(
             // invariant : k >= 0 && k <= vectors.length()
             // decreases : vectors.length() - k
             // assert : k <= vectors.length()
-            lists.push(@runtime.list_from_array(vectors[k]))
+            lists.push(list_from_array(vectors[k]))
             continue k + 1
           }
           map_step(proc_value, lists, [], true, kont, handlers)

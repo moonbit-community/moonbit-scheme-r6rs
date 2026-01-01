@@ -453,7 +453,7 @@ fn apply_hashtable_enumset_primitive_core(
             }
             continue i + 1
           }
-          @core.Value::Datum(@runtime.list_from_array(items))
+          @core.Value::Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }

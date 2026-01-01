@@ -451,7 +451,7 @@ fn apply_char_string_primitive(
               }
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(items))
+            @core.Value::Datum(list_from_array(items))
           })
         [string_value, start_value] =>
           Some({
@@ -470,7 +470,7 @@ fn apply_char_string_primitive(
               }
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(items))
+            @core.Value::Datum(list_from_array(items))
           })
         [string_value, start_value, end_value] =>
           Some({
@@ -489,7 +489,7 @@ fn apply_char_string_primitive(
               }
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(items))
+            @core.Value::Datum(list_from_array(items))
           })
         _ =>
           raise @core.EvalError(
@@ -501,7 +501,7 @@ fn apply_char_string_primitive(
         [datum_value] =>
           Some({
             let datum = value_as_datum(datum_value)
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             let buf = @buffer.new()
             for item in items {
               match item {

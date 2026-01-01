@@ -249,7 +249,7 @@ fn value_as_pair_cells(
 
 ///|
 fn datum_list_to_value_array(list : @core.Datum) -> Array[@core.Value] raise @core.EvalError {
-  @runtime.datum_list_to_array(list).map((item) => @runtime.value_from_datum(item))
+  datum_list_to_array(list).map((item) => value_from_datum(item))
 }
 
 ///|
@@ -2263,7 +2263,7 @@ fn list_member(
     match cur {
       @core.Datum::Nil => break bool_value(false)
       @core.Datum::Pair(car, cdr) => {
-        if equality_match(mode, item, @runtime.value_from_datum(car.val)) {
+        if equality_match(mode, item, value_from_datum(car.val)) {
           break @core.Value::Datum(cur)
         }
         continue cdr.val
@@ -2295,7 +2295,7 @@ fn list_assoc(
         let entry_val = entry.val
         match entry_val {
           @core.Datum::Pair(car, _) =>
-            if equality_match(mode, key, @runtime.value_from_datum(car.val)) {
+            if equality_match(mode, key, value_from_datum(car.val)) {
               break @core.Value::Datum(entry_val)
             }
           _ => raise @core.EvalError("type error: pair expected")
@@ -2343,7 +2343,7 @@ fn value_as_symbol(value : @core.Value) -> String raise @core.EvalError {
 
 ///|
 fn parse_field_spec(item : @core.Datum) -> @core.RecordField raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(item)
+  let parts = datum_list_to_array(item)
   if parts.length() != 2 {
     raise @core.EvalError("invalid record field spec")
   }
@@ -2794,7 +2794,7 @@ fn enum_set_require_same_universe(
 ///|
 fn enum_set_symbol_list(value : @core.Value) -> Array[String] raise @core.EvalError {
   let datum = value_as_datum(value)
-  let items = @runtime.datum_list_to_array(datum)
+  let items = datum_list_to_array(datum)
   parse_symbol_list(items)
 }
 

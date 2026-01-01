@@ -199,7 +199,7 @@ fn apply_primitive_core(
       match args {
         [datum_value] => {
           let datum = value_as_datum(datum_value)
-          let items = @runtime.datum_list_to_array(datum)
+          let items = datum_list_to_array(datum)
           let results : Array[@core.Datum] = []
           for item in items {
             let (name, scopes, binding_id) = match @runtime.datum_unlabel(item) {
@@ -225,7 +225,7 @@ fn apply_primitive_core(
             })
             results.push(value_to_datum_element(temp))
           }
-          @core.Value::Datum(@runtime.list_from_array(results))
+          @core.Value::Datum(list_from_array(results))
         }
         _ => raise arity_mismatch(1, args.length())
       }

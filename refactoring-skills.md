@@ -68,6 +68,25 @@ fn stdlib_source() -> String { ... }
 fn load_stdlib(env : Env) -> Unit raise { ... }
 ```
 
+## Shrink runtime APIs by relocating eval-only helpers
+- If a helper is only used by eval, move it into the eval package as a private helper and replace `@runtime.*` call sites.
+- Update README doctests that referenced the removed runtime APIs.
+- Regenerate `pkg.generated.mbti` with `moon info` to confirm the API surface shrank.
+
+Example:
+```mbt
+// eval/datum_helpers.mbt
+fn datum_list_to_array(list : @core.Datum) -> Array[@core.Datum] raise @core.EvalError {
+  ...
+}
+```
+
+Tooling:
+```bash
+moon ide find-references datum_list_to_array
+moon info
+```
+
 ## Table-driven env bindings
 - Replace long `env_define` chains with a data table of `(name, Primitive)` and a small helper loop.
 - Keep special cases (like `Cxr(chain)`) in dedicated helpers so the list stays declarative.

@@ -65,7 +65,7 @@ fn apply_vector_primitive(
           let items = value_as_vector(vec_value)
           let idx = value_as_int_index(idx_value)
           check_index(idx, items.length())
-          Some(@runtime.value_from_datum(items[idx]))
+          Some(value_from_datum(items[idx]))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -285,7 +285,7 @@ fn apply_vector_primitive(
             let start = 0
             let end = items.length()
             check_slice_range(start, end, items.length())
-            @core.Value::Datum(@runtime.list_from_array(items.sub(start~, end~).to_array()))
+            @core.Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         [vec_value, start_value] =>
           Some({
@@ -293,7 +293,7 @@ fn apply_vector_primitive(
             let start = value_as_int_index(start_value)
             let end = items.length()
             check_slice_range(start, end, items.length())
-            @core.Value::Datum(@runtime.list_from_array(items.sub(start~, end~).to_array()))
+            @core.Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         [vec_value, start_value, end_value] =>
           Some({
@@ -301,7 +301,7 @@ fn apply_vector_primitive(
             let start = value_as_int_index(start_value)
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, items.length())
-            @core.Value::Datum(@runtime.list_from_array(items.sub(start~, end~).to_array()))
+            @core.Value::Datum(list_from_array(items.sub(start~, end~).to_array()))
           })
         _ =>
           raise @core.EvalError(
@@ -312,7 +312,7 @@ fn apply_vector_primitive(
       match args {
         [datum_value] => {
           let datum = value_as_datum(datum_value)
-          let items = @runtime.datum_list_to_array(datum)
+          let items = datum_list_to_array(datum)
           Some(@core.Value::Datum(@core.Datum::Vector(items)))
         }
         _ => raise arity_mismatch(1, args.length())

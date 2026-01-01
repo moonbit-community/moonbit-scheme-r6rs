@@ -11,7 +11,7 @@ fn apply_pair_list_primitive(
           Some({
             let car = value_to_datum_element(car_value)
             let cdr = value_to_datum_element(cdr_value)
-            @core.Value::Datum(@runtime.pair_new(car, cdr))
+            @core.Value::Datum(pair_new(car, cdr))
           })
         _ => raise arity_mismatch(2, args.length())
       }
@@ -40,7 +40,7 @@ fn apply_pair_list_primitive(
         [pair_value] =>
           Some({
             let (car, _) = value_as_pair(pair_value)
-            @runtime.value_from_datum(car)
+            value_from_datum(car)
           })
         _ => raise arity_mismatch(1, args.length())
       }
@@ -49,7 +49,7 @@ fn apply_pair_list_primitive(
         [pair_value] =>
           Some({
             let (_, cdr) = value_as_pair(pair_value)
-            @runtime.value_from_datum(cdr)
+            value_from_datum(cdr)
           })
         _ => raise arity_mismatch(1, args.length())
       }
@@ -80,14 +80,14 @@ fn apply_pair_list_primitive(
             } else {
               cur
             }
-            @runtime.value_from_datum(cur)
+            value_from_datum(cur)
           })
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::List => {
       let items : Array[@core.Datum] =
         args.map((arg) => value_to_datum_element(arg))
-      Some(@core.Value::Datum(@runtime.list_from_array(items)))
+      Some(@core.Value::Datum(list_from_array(items)))
     }
     @core.Primitive::MakeList =>
       match args {
@@ -103,7 +103,7 @@ fn apply_pair_list_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(items))
+            @core.Value::Datum(list_from_array(items))
           })
         [len_value, fill_value] =>
           Some({
@@ -117,7 +117,7 @@ fn apply_pair_list_primitive(
               items.push(fill)
               continue i + 1
             }
-            @core.Value::Datum(@runtime.list_from_array(items))
+            @core.Value::Datum(list_from_array(items))
           })
         _ =>
           raise @core.EvalError(
@@ -146,7 +146,7 @@ fn apply_pair_list_primitive(
       match args {
         [@core.Value::Datum(d)] =>
           Some({
-            let items = @runtime.datum_list_to_array(d)
+            let items = datum_list_to_array(d)
             @core.Value::Datum(@core.Datum::Int(items.length()))
           })
         [_] => raise @core.EvalError("type error: list expected")
@@ -167,7 +167,7 @@ fn apply_pair_list_primitive(
                 @core.Value::Datum(d) => d
                 _ => raise @core.EvalError("type error: list expected")
               }
-              let part = @runtime.datum_list_to_array(datum)
+              let part = datum_list_to_array(datum)
               items.push_iter(part.iter())
               continue i + 1
             }
@@ -180,12 +180,12 @@ fn apply_pair_list_primitive(
       match args {
         [@core.Value::Datum(datum)] =>
           Some({
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             let result = for i = 0, result = @core.Datum::Nil; i < items.length(); {
               // invariant : i >= 0 && i <= items.length()
               // decreases : items.length() - i
               // assert : i <= items.length()
-              continue i + 1, @runtime.pair_new(items[i], result)
+              continue i + 1, pair_new(items[i], result)
             } else {
               result
             }
@@ -200,9 +200,9 @@ fn apply_pair_list_primitive(
           Some({
             let datum = value_as_datum(list_value)
             let idx = value_as_int_index(idx_value)
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             check_index(idx, items.length())
-            @runtime.value_from_datum(items[idx])
+            value_from_datum(items[idx])
           })
         _ => raise arity_mismatch(2, args.length())
       }
@@ -212,11 +212,11 @@ fn apply_pair_list_primitive(
           Some({
             let datum = value_as_datum(list_value)
             let idx = value_as_int_index(idx_value)
-            let items = @runtime.datum_list_to_array(datum)
+            let items = datum_list_to_array(datum)
             if idx < 0 || idx > items.length() {
               raise @core.EvalError("index out of range")
             }
-            @core.Value::Datum(@runtime.list_from_array(items.sub(start=idx).to_array()))
+            @core.Value::Datum(list_from_array(items.sub(start=idx).to_array()))
           })
         _ => raise arity_mismatch(2, args.length())
       }
@@ -225,8 +225,8 @@ fn apply_pair_list_primitive(
         [list_value] =>
           Some({
             let datum = value_as_datum(list_value)
-            let items = @runtime.datum_list_to_array(datum)
-            @core.Value::Datum(@runtime.list_from_array(items))
+            let items = datum_list_to_array(datum)
+            @core.Value::Datum(list_from_array(items))
           })
         _ => raise arity_mismatch(1, args.length())
       }

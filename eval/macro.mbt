@@ -65,7 +65,7 @@ fn is_core_identifier(name : String) -> Bool {
 
 ///|
 fn parse_syntax_rules(expr : @core.Datum, env : @core.Env) -> @core.SyntaxRules raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.length() < 3 {
     raise @core.EvalError("invalid syntax-rules")
   }
@@ -89,7 +89,7 @@ fn parse_syntax_rules(expr : @core.Datum, env : @core.Env) -> @core.SyntaxRules 
     // invariant : i >= literal_idx + 1 && i <= parts.length()
     // decreases : parts.length() - i
     // assert : i < parts.length()
-    let rule_parts = @runtime.datum_list_to_array(parts[i])
+    let rule_parts = datum_list_to_array(parts[i])
     if rule_parts.length() != 2 {
       raise @core.EvalError("invalid syntax-rules")
     }
@@ -120,7 +120,7 @@ fn parse_identifier_syntax(
   name : String,
   env : @core.Env,
 ) -> @core.SyntaxRules raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.length() < 2 {
     raise @core.EvalError("invalid identifier-syntax")
   }
@@ -140,7 +140,7 @@ fn parse_identifier_syntax(
       // invariant : i >= 1 && i <= parts.length()
       // decreases : parts.length() - i
       // assert : i < parts.length()
-      let rule_parts = @runtime.datum_list_to_array(parts[i])
+      let rule_parts = datum_list_to_array(parts[i])
       if rule_parts.length() != 2 {
         raise @core.EvalError("invalid identifier-syntax")
       }
@@ -190,7 +190,7 @@ fn parse_syntax_case_rules(
     // invariant : i >= 0 && i <= clauses.length()
     // decreases : clauses.length() - i
     // assert : i < clauses.length()
-    let rule_parts = @runtime.datum_list_to_array(clauses[i])
+    let rule_parts = datum_list_to_array(clauses[i])
     if rule_parts.length() == 2 {
       validate_pattern(
         rule_parts[0],
@@ -238,7 +238,7 @@ fn parse_syntax_case_transformer(
   expr : @core.Datum,
   env : @core.Env,
 ) -> @core.SyntaxRules raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.length() < 3 {
     raise @core.EvalError("invalid syntax-case")
   }
@@ -246,7 +246,7 @@ fn parse_syntax_case_transformer(
     @core.Datum::Symbol("lambda") => ()
     _ => raise @core.EvalError("invalid syntax-case")
   }
-  let params = @runtime.datum_list_to_array(parts[1])
+  let params = datum_list_to_array(parts[1])
   if params.length() != 1 {
     raise @core.EvalError("invalid syntax-case")
   }
@@ -255,7 +255,7 @@ fn parse_syntax_case_transformer(
   if body.length() != 1 {
     raise @core.EvalError("invalid syntax-case")
   }
-  let sc_parts = @runtime.datum_list_to_array(body[0])
+  let sc_parts = datum_list_to_array(body[0])
   if sc_parts.length() < 4 {
     raise @core.EvalError("invalid syntax-case")
   }
@@ -308,7 +308,7 @@ fn parse_transformer(
   name : String,
   env : @core.Env,
 ) -> @core.MacroTransformer raise @core.EvalError {
-  let parts = @runtime.datum_list_to_array(expr)
+  let parts = datum_list_to_array(expr)
   if parts.is_empty() {
     raise @core.EvalError("invalid syntax transformer")
   }
@@ -337,7 +337,7 @@ fn parse_transformer(
 
 ///|
 fn parse_literal_list(expr : @core.Datum) -> Array[String] raise @core.EvalError {
-  let items = @runtime.datum_list_to_array(expr)
+  let items = datum_list_to_array(expr)
   let literals : Array[String] = []
   for item in items {
     match item {
@@ -619,7 +619,7 @@ fn binding_to_datum(value : BindingVal) -> @core.Datum {
     Seq(values) => {
       let items : Array[@core.Datum] =
         values.map((item) => binding_to_datum(item))
-      @runtime.list_from_array(items)
+      list_from_array(items)
     }
   }
 }
@@ -632,7 +632,7 @@ fn fender_allows(
 ) -> Bool raise @core.EvalError {
   let fenv = @runtime.env_extend(env)
   bindings.iter2().each((name, value) =>
-    @runtime.env_define(fenv, name, @runtime.value_from_datum(binding_to_datum(value)))
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
   )
   let result = eval_expr(expr, fenv)
   !is_false(result)
@@ -645,7 +645,7 @@ fn template_env_with_bindings(
 ) -> @core.Env {
   let fenv = @runtime.env_extend(env)
   bindings.iter2().each((name, value) =>
-    @runtime.env_define(fenv, name, @runtime.value_from_datum(binding_to_datum(value)))
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
   )
   fenv
 }
@@ -713,7 +713,7 @@ fn rename_proc_datum(
   match datum {
     @core.Datum::Symbol(name) => rename_proc_symbol(name, def_env, renames, captures)
     @core.Datum::Pair(a, b) =>
-      @runtime.pair_new(
+      pair_new(
         rename_proc_datum(a.val, def_env, call_ctx, renames, captures),
         rename_proc_datum(b.val, def_env, call_ctx, renames, captures),
       )
@@ -884,7 +884,7 @@ fn expand_macro_proc(
         binding_id: None,
       })
   }
-  let call_expr = @runtime.list_from_array([
+  let call_expr = list_from_array([
     @core.Datum::Symbol(temp_name),
     @core.Datum::Value(stx),
   ])
@@ -951,7 +951,7 @@ fn syntax_add_scope_with_env(datum : @core.Datum, scope : Int, env : @core.Env) 
       )
     }
     @core.Datum::Pair(a, b) =>
-      @runtime.pair_new(
+      pair_new(
         syntax_add_scope_with_env(a.val, scope, env),
         syntax_add_scope_with_env(b.val, scope, env),
       )
@@ -1053,12 +1053,12 @@ fn rewrite_template_expr(
               ),
             )
           }
-          @runtime.list_from_array(rewritten)
+          list_from_array(rewritten)
         }
         None =>
           match expr {
             @core.Datum::Pair(a, b) =>
-              @runtime.pair_new(
+              pair_new(
                 rewrite_template_expr(
                   a.val,
                   bindings,
@@ -1191,7 +1191,7 @@ fn match_pattern(
         @core.Datum::Condition(other) => cond.id == other.id
         _ => false
       }
-    @core.Datum::Value(value) => value_eqv(value, @runtime.value_from_datum(inp))
+    @core.Datum::Value(value) => value_eqv(value, value_from_datum(inp))
     @core.Datum::Pair(pa, pb) =>
       match (datum_list_to_array_opt(pat), datum_list_to_array_opt(inp)) {
         (Some(pats), Some(inputs)) =>
@@ -1591,8 +1591,8 @@ fn datum_equal(a : @core.Datum, b : @core.Datum) -> Bool {
     (@core.Datum::ByteVector(ax), @core.Datum::ByteVector(bx)) => array_int_equal(ax, bx)
     (@core.Datum::Record(ax), @core.Datum::Record(bx)) => ax.id == bx.id
     (@core.Datum::Condition(ax), @core.Datum::Condition(bx)) => ax.id == bx.id
-    (@core.Datum::Value(ax), _) => value_eqv(ax, @runtime.value_from_datum(b))
-    (_, @core.Datum::Value(bx)) => value_eqv(@runtime.value_from_datum(a), bx)
+    (@core.Datum::Value(ax), _) => value_eqv(ax, value_from_datum(b))
+    (_, @core.Datum::Value(bx)) => value_eqv(value_from_datum(a), bx)
     _ => false
   }
 }
@@ -1775,11 +1775,11 @@ fn expand_with_syntax(
   if items.length() < 3 {
     raise @core.EvalError("invalid with-syntax")
   }
-  let binding_specs = @runtime.datum_list_to_array(items[1])
+  let binding_specs = datum_list_to_array(items[1])
   let expanded = bindings_clone(bindings)
   let fenv = template_env_with_bindings(env, bindings)
   for spec in binding_specs {
-    let parts = @runtime.datum_list_to_array(spec)
+    let parts = datum_list_to_array(spec)
     if parts.length() != 2 {
       raise @core.EvalError("invalid with-syntax")
     }
@@ -1837,7 +1837,7 @@ fn expand_with_syntax(
       )
       continue i + 1
     }
-    @runtime.list_from_array(forms)
+    list_from_array(forms)
   }
 }
 
@@ -1850,7 +1850,7 @@ fn rename_datum(datum : @core.Datum, renames : Map[String, String]) -> @core.Dat
         None => datum
       }
     @core.Datum::Pair(a, b) =>
-      @runtime.pair_new(rename_datum(a.val, renames), rename_datum(b.val, renames))
+      pair_new(rename_datum(a.val, renames), rename_datum(b.val, renames))
     @core.Datum::Vector(items) =>
       @core.Datum::Vector(items.map((item) => rename_datum(item, renames)))
     @core.Datum::Label(tag, value) =>
@@ -1947,7 +1947,7 @@ fn expand_template_indexed(
         None =>
           match template {
             @core.Datum::Pair(a, b) =>
-              @runtime.pair_new(
+              pair_new(
                 expand_template_indexed(
                   a.val,
                   bindings,
@@ -2020,7 +2020,7 @@ fn expand_template_quasisyntax(
         None =>
           match template {
             @core.Datum::Pair(a, b) =>
-              @runtime.pair_new(
+              pair_new(
                 expand_template_quasisyntax(
                   a.val,
                   bindings,
@@ -2141,7 +2141,7 @@ fn expand_template_list(
       continue i + 1
     }
   }
-  @runtime.list_from_array(expanded)
+  list_from_array(expanded)
 }
 
 ///|
@@ -2207,7 +2207,7 @@ fn expand_template_list_quasisyntax(
       continue i + 1
     }
   }
-  @runtime.list_from_array(expanded)
+  list_from_array(expanded)
 }
 
 ///|

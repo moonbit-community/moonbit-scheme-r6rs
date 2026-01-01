@@ -6,8 +6,6 @@ import(
 )
 
 // Values
-pub fn datum_list_to_array(@core.Datum) -> Array[@core.Datum] raise @core.EvalError
-
 pub fn datum_unlabel(@core.Datum) -> @core.Datum
 
 pub fn enum_set_from_names(Array[String], Array[String]) -> @core.EnumSet raise @core.EvalError
@@ -46,8 +44,6 @@ pub fn get_current_output_port() -> @core.Port
 
 pub fn is_procedure_value(@core.Value) -> Bool
 
-pub fn list_from_array(Array[@core.Datum]) -> @core.Datum
-
 pub fn lookup_library(String) -> Map[String, @core.Binding]?
 
 pub fn lookup_record_type_descriptor(String) -> @core.RecordTypeDescriptor?
@@ -82,8 +78,6 @@ pub fn new_output_string_port() -> @core.Port
 
 pub fn next_syntax_context() -> Int
 
-pub fn pair_new(@core.Datum, @core.Datum) -> @core.Datum
-
 pub fn port_get_output_string(@core.Port) -> String
 
 pub fn port_write(@core.Port, String) -> Unit
@@ -109,8 +103,6 @@ pub fn symbol_name(@core.Datum) -> String?
 pub fn syntax_add_scope(@core.Datum, Int) -> @core.Datum
 
 pub fn syntax_wrap_root(@core.Datum, Array[Int]) -> @core.Datum
-
-pub fn value_from_datum(@core.Datum) -> @core.Value
 
 pub fn value_to_string(@core.Value) -> String
 

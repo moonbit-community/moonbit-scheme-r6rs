@@ -139,7 +139,7 @@ fn apply_record_condition_primitive_core(
           for field in desc.record_type.fields {
             items.push(@core.Datum::Symbol(field.name))
           }
-          @core.Value::Datum(@runtime.list_from_array(items))
+          @core.Value::Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -379,7 +379,7 @@ fn apply_record_condition_primitive_core(
           let components = condition_components(condition_value, base)
           let items : Array[@core.Datum] =
             components.map((record) => @core.Datum::Record(record))
-          @core.Value::Datum(@runtime.list_from_array(items))
+          @core.Value::Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }

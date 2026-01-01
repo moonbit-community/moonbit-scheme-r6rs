@@ -511,16 +511,6 @@ pub fn port_get_output_string(port : @core.Port) -> String {
 }
 
 ///|
-/// Convert a @core.Datum back to a @core.Value.
-pub fn value_from_datum(datum : @core.Datum) -> @core.Value {
-  match datum {
-    @core.Datum::Record(record) => @core.Value::Record(record)
-    @core.Datum::Value(value) => value
-    _ => @core.Value::Datum(datum)
-  }
-}
-
-///|
 /// Strip a datum label wrapper if present.
 pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
   let seen : Array[Int] = []
@@ -545,67 +535,8 @@ pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
 
 ///|
 /// Allocate a new pair datum.
-pub fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
+fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
   Pair(Ref::new(car), Ref::new(cdr))
-}
-
-///|
-/// Convert a proper list datum into an array.
-///
-/// # Example
-/// ```mbt check
-/// test "datum list to array" {
-///   let list = list_from_array([Int(1), Int(2)])
-///   inspect(datum_list_to_array(list).length(), content="2")
-/// }
-/// ```
-pub fn datum_list_to_array(list : @core.Datum) -> Array[@core.Datum] raise @core.EvalError {
-  let items : Array[@core.Datum] = []
-  for cur = list; true; {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : list length not explicit; possible bug
-    // assert :
-    //   match datum_unlabel(cur) {
-    //     Pair(_, _) | Nil => true
-    //     _ => false
-    //   }
-    match datum_unlabel(cur) {
-      Nil => break
-      Pair(a, b) => {
-        items.push(a.val)
-        continue b.val
-      }
-      _ => raise @core.EvalError("type error: proper list expected")
-    }
-  } else {
-    ()
-  }
-  items
-}
-
-///|
-/// Build a list datum from an array.
-///
-/// # Example
-/// ```mbt check
-/// test "list from array" {
-///   let list = list_from_array([Int(1), Int(2)])
-///   match list {
-///     Pair(_, _) => ()
-///     _ => fail("expected list")
-///   }
-/// }
-/// ```
-pub fn list_from_array(items : Array[@core.Datum]) -> @core.Datum {
-  for i = items.length(), tail = @core.Datum::Nil; i > 0; {
-    // invariant : i >= 0 && i <= items.length()
-    // decreases : i
-    // assert : i <= items.length()
-    let idx = i - 1
-    continue i - 1, pair_new(items[idx], tail)
-  } else {
-    tail
-  }
 }
 
 ///|
