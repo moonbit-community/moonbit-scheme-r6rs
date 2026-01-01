@@ -1577,13 +1577,13 @@ fn parse_syntax_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(String,@core.MacroTransformer)] = []
   for binding in bindings {
-    let parts = datum_list_to_array(binding)
-    if parts.length() != 2 {
-      raise @core.EvalError("type error: syntax binding expected")
-    } else {
-      let name = parse_symbol(parts[0])
-      let transformer = parse_transformer(parts[1], name, env)
-      parsed.push((name, transformer))
+    match datum_list_to_array(binding)[:] {
+      [name_expr, transformer_expr] => {
+        let name = parse_symbol(name_expr)
+        let transformer = parse_transformer(transformer_expr, name, env)
+        parsed.push((name, transformer))
+      }
+      _ => raise @core.EvalError("type error: syntax binding expected")
     }
   }
   parsed
@@ -1594,12 +1594,12 @@ fn parse_bindings(expr : @core.Datum) -> Array[(String,@core.Datum)] raise @core
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(String,@core.Datum)] = []
   for binding in bindings {
-    let parts = datum_list_to_array(binding)
-    if parts.length() != 2 {
-      raise @core.EvalError("type error: binding expected")
-    } else {
-      let name = parse_symbol(parts[0])
-      parsed.push((name, parts[1]))
+    match datum_list_to_array(binding)[:] {
+      [name_expr, value_expr] => {
+        let name = parse_symbol(name_expr)
+        parsed.push((name, value_expr))
+      }
+      _ => raise @core.EvalError("type error: binding expected")
     }
   }
   parsed
@@ -1612,12 +1612,12 @@ fn parse_value_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(@core.Formals,@core.Datum)] = []
   for binding in bindings {
-    let parts = datum_list_to_array(binding)
-    if parts.length() != 2 {
-      raise @core.EvalError("invalid let-values")
-    } else {
-      let formals = parse_formals(parts[0])
-      parsed.push((formals, parts[1]))
+    match datum_list_to_array(binding)[:] {
+      [formals_expr, body_expr] => {
+        let formals = parse_formals(formals_expr)
+        parsed.push((formals, body_expr))
+      }
+      _ => raise @core.EvalError("invalid let-values")
     }
   }
   parsed
@@ -1630,11 +1630,9 @@ fn parse_parameterize_bindings(
   let bindings = datum_list_to_array(expr)
   let parsed : Array[(@core.Datum,@core.Datum)] = []
   for binding in bindings {
-    let parts = datum_list_to_array(binding)
-    if parts.length() != 2 {
-      raise @core.EvalError("invalid parameterize")
-    } else {
-      parsed.push((parts[0], parts[1]))
+    match datum_list_to_array(binding)[:] {
+      [param_expr, value_expr] => parsed.push((param_expr, value_expr))
+      _ => raise @core.EvalError("invalid parameterize")
     }
   }
   parsed

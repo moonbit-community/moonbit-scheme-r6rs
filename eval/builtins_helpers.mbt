@@ -2343,20 +2343,17 @@ fn value_as_symbol(value : @core.Value) -> String raise @core.EvalError {
 
 ///|
 fn parse_field_spec(item : @core.Datum) -> @core.RecordField raise @core.EvalError {
-  let parts = datum_list_to_array(item)
-  if parts.length() != 2 {
-    raise @core.EvalError("invalid record field spec")
-  }
-  let mut_flag = match @runtime.symbol_name(parts[0]) {
-    Some("mutable") => true
-    Some("immutable") => false
+  match datum_list_to_array(item)[:] {
+    [mutability, name_datum] =>
+      match (@runtime.symbol_name(mutability), @runtime.symbol_name(name_datum)) {
+        (Some("mutable"), Some(field_name)) =>
+          @core.RecordField::{ name: field_name, mutable: true }
+        (Some("immutable"), Some(field_name)) =>
+          @core.RecordField::{ name: field_name, mutable: false }
+        _ => raise @core.EvalError("invalid record field spec")
+      }
     _ => raise @core.EvalError("invalid record field spec")
   }
-  let name = match @runtime.symbol_name(parts[1]) {
-    Some(field_name) => field_name
-    None => raise @core.EvalError("invalid record field spec")
-  }
- @core.RecordField::{ name, mutable: mut_flag }
 }
 
 ///|
