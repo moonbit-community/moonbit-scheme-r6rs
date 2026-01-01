@@ -68,7 +68,7 @@ fn apply_pair_list_primitive(
                 None => raise @core.EvalError("internal error: invalid cxr")
               }
               let next = match cur {
-                @core.Datum::Pair(car, cdr) =>
+                Pair(car, cdr) =>
                   match op {
                     'a' => car.val
                     'd' => cdr.val
@@ -126,25 +126,25 @@ fn apply_pair_list_primitive(
       }
     @core.Primitive::NullP =>
       match args {
-        [@core.Value::Datum(@core.Datum::Nil)] => Some(bool_value(true))
+        [Datum(Nil)] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::PairP =>
       match args {
-        [@core.Value::Datum(@core.Datum::Pair(_, _))] => Some(bool_value(true))
+        [Datum(Pair(_, _))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::ListP =>
       match args {
-        [@core.Value::Datum(d)] => Some(bool_value(is_proper_list(d)))
+        [Datum(d)] => Some(bool_value(is_proper_list(d)))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::Length =>
       match args {
-        [@core.Value::Datum(d)] =>
+        [Datum(d)] =>
           Some({
             let items = datum_list_to_array(d)
             @core.Value::Datum(@core.Datum::Int(items.length()))
@@ -164,7 +164,7 @@ fn apply_pair_list_primitive(
               // decreases : args.length() - 1 - i
               // assert : i <= args.length() - 1
               let datum = match args[i] {
-                @core.Value::Datum(d) => d
+                Datum(d) => d
                 _ => raise @core.EvalError("type error: list expected")
               }
               let part = datum_list_to_array(datum)
@@ -178,7 +178,7 @@ fn apply_pair_list_primitive(
       )
     @core.Primitive::Reverse =>
       match args {
-        [@core.Value::Datum(datum)] =>
+        [Datum(datum)] =>
           Some({
             let items = datum_list_to_array(datum)
             let result = for i = 0, result = @core.Datum::Nil; i < items.length(); {

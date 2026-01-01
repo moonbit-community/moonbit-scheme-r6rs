@@ -132,6 +132,18 @@ moon ide find-references @lexer.reader_peek
 moon info
 ```
 
+## Simplify constructor prefixes in patterns
+- When the matched type is known, drop the `Type::` prefix in patterns to reduce noise.
+- Keep explicit qualifiers in expressions where the constructor type is not obvious.
+
+Example:
+```mbt
+match datum {
+  Pair(a, b) => ...
+  Nil => ...
+}
+```
+
 ## Private helper methods on Reader
 - Convert `Reader`-only helpers to private methods to keep lookahead and escape logic local to the reader API.
 
