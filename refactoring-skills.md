@@ -2183,6 +2183,16 @@ fn bindings_clone(
 }
 ```
 
+## Use Map::iter2 for side-effectful passes
+- Iterate key/value pairs without extra lookups when mutating other structures.
+
+Example:
+```mbt
+bindings.iter2().each((name, value) =>
+  env_define(fenv, name, value_from_datum(binding_to_datum(value)))
+)
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.
