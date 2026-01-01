@@ -54,6 +54,24 @@ fn clone_hashtable_entries(
 }
 
 ///|
+fn enum_set_members_fill(
+  universe : Array[String],
+  value : Bool,
+) -> Array[Bool] {
+  universe.map((_name) => value)
+}
+
+///|
+fn enum_set_members_all_true(universe : Array[String]) -> Array[Bool] {
+  enum_set_members_fill(universe, true)
+}
+
+///|
+fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] {
+  enum_set_members_fill(universe, false)
+}
+
+///|
 /// Apply hashtable and enumset primitives (core match).
 fn apply_hashtable_enumset_primitive_core(
   prim : Primitive,

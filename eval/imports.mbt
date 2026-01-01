@@ -65,8 +65,6 @@ using @runtime {
   enum_set_from_names,
   enum_set_index_of,
   enum_set_member_by_name,
-  enum_set_members_all_false,
-  enum_set_members_all_true,
   enum_set_universe_equal,
   env_clone,
   env_define,

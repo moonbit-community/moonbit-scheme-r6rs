@@ -39,10 +39,6 @@ pub fn enum_set_index_of(Array[String], String) -> Int?
 
 pub fn enum_set_member_by_name(@core.EnumSet, String) -> Bool
 
-pub fn enum_set_members_all_false(Array[String]) -> Array[Bool]
-
-pub fn enum_set_members_all_true(Array[String]) -> Array[Bool]
-
 pub fn enum_set_universe_equal(@core.EnumSet, @core.EnumSet) -> Bool
 
 pub fn env_binding_id_optional(Array[Map[String, @core.Binding]], String) -> Int?

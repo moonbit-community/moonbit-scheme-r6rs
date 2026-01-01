@@ -2093,6 +2093,7 @@ let base : Datum = match datum_unlabel(base) {
 - Move any public README examples to docstring tests before making the helper private.
 - If only one downstream package needs it, add a local helper there to avoid exporting it.
 - Convert truly unused public helpers to private to shrink `pkg.generated.mbti`.
+- After trimming exports, run `moon info` to refresh `pkg.generated.mbti` and prune imports.
 
 Example:
 ```mbt
@@ -2125,6 +2126,15 @@ fn digit_value(ch : Char) -> Int? {
     _ => None
   }
 }
+```
+
+Example:
+```mbt
+// runtime before (exported helper)
+pub fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] { ... }
+
+// eval after (package-private helper)
+fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] { ... }
 ```
 
 ## Fold variants into optional parameters

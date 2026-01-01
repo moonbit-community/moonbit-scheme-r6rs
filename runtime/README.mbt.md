@@ -97,8 +97,8 @@ test "enum set index" {
 ///|
 test "enum set universe equal" {
   let base = ["a", "b"]
-  let same = make_enum_set(base, enum_set_members_all_false(base))
-  let other = make_enum_set(["b", "a"], enum_set_members_all_false(["b", "a"]))
+  let same = enum_set_from_names(base, [])
+  let other = enum_set_from_names(["b", "a"], [])
   inspect(enum_set_universe_equal(same, same), content="true")
   inspect(enum_set_universe_equal(same, other), content="false")
 }
