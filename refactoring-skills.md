@@ -176,6 +176,7 @@ let zero = @core.Datum::Int(0)
 ## Audit exported APIs for minimal surface
 - Scrape `pkg.generated.mbti` to list exported functions and search for `@pkg.fn` usages outside the package.
 - For methods, use `moon ide find-references Type::method` instead of text search.
+- Instance calls like `binding.accessor()` will not show up as `@core.RecordFieldBinding::accessor` in text searches.
 
 Example:
 ```bash
@@ -185,6 +186,7 @@ pkg = 'runtime'
 mbti = Path(pkg) / 'pkg.generated.mbti'
 pub = [line.split('pub fn ',1)[1].split('(')[0]\n       for line in mbti.read_text().splitlines()\n       if line.strip().startswith('pub fn ')]\nroot = Path('.')\ntext = '\\n'.join(p.read_text() for p in root.rglob('*.mbt')\n                 if pkg not in p.parts and '.mooncakes' not in p.parts)\nprint([name for name in pub if f'@{pkg}.{name}' not in text])\nPY
 moon ide find-references 'Reader::read_token'
+moon ide find-references 'RecordFieldBinding::accessor'
 ```
 
 ## Private helper methods on Reader
