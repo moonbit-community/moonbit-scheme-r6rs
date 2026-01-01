@@ -2205,6 +2205,14 @@ let literals : Array[String] =
     .to_array()
 ```
 
+## Use Iter::each to avoid manual loops
+- Works well with `Map::keys()` when you only need the keys.
+
+Example:
+```mbt
+names.keys().each((name) => result[name] = Seq([]))
+```
+
 ## Small state helpers on private structs
 - Add `State::new()` and tiny accessors to keep state logic focused in one place.
 - Use `..` chaining for short builder-style sequences.
