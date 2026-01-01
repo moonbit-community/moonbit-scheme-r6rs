@@ -3169,13 +3169,7 @@ fn apply_record_proc(
           if args.length() != parent_type.fields.length() {
             raise arity_mismatch(parent_type.fields.length(), args.length())
           }
-          let parent_values : Array[Value] = []
-          for arg in args {
-            // invariant : args.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : args.length() >= 0
-            parent_values.push(arg)
-          }
+          let parent_values = args.copy()
           let proc = Value::RecordProc(
             make_record_proc(
               RecordProcKind::ProtocolP(record_type, parent_values),
@@ -3184,13 +3178,7 @@ fn apply_record_proc(
           Apply(proc, kont, handlers)
         }
         Some(_) => {
-          let parent_args : Array[Value] = []
-          for arg in args {
-            // invariant : args.length() >= 0
-            // TODO(decreases) : loop index not exposed; possible bug
-            // assert : args.length() >= 0
-            parent_args.push(arg)
-          }
+          let parent_args = args.copy()
           record_constructor_from_descriptor(
             parent_desc,
             Kont::RecordProtocolNApply(record_type, parent_args, kont),
@@ -3208,19 +3196,8 @@ fn apply_record_proc(
       if args.length() != child_count {
         raise arity_mismatch(child_count, args.length())
       }
-      let values : Array[Value] = []
-      for value in parent_values {
-        // invariant : parent_values.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : parent_values.length() >= 0
-        values.push(value)
-      }
-      for arg in args {
-        // invariant : args.length() >= 0
-        // TODO(decreases) : loop index not exposed; possible bug
-        // assert : args.length() >= 0
-        values.push(arg)
-      }
+      let values = parent_values.copy()
+      values.push_iter(args.iter())
       let record = make_record_instance(record_type, values)
       Apply(Record(record), kont, handlers)
     }
