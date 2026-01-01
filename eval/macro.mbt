@@ -517,17 +517,7 @@ fn binding_clone(value : BindingVal) -> BindingVal {
 fn bindings_clone(
   bindings : Map[String, BindingVal],
 ) -> Map[String, BindingVal] {
-  let result : Map[String, BindingVal] = {}
-  for name in bindings.keys() {
-    // invariant : bindings.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : bindings.keys().length() >= 0
-    match bindings.get(name) {
-      Some(value) => result[name] = binding_clone(value)
-      None => ()
-    }
-  }
-  result
+  bindings.map((_, value) => binding_clone(value))
 }
 
 ///|
