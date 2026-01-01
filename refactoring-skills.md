@@ -2741,6 +2741,7 @@ match datum_list_to_array(binding) {
 ## Use rest patterns to encode arity and special markers
 - `[head, arg]` matches exactly two items; `[head, arg, ..]` matches two or more.
 - Pair with guards to handle markers like `=>` without manual length checks.
+- Use middle rests like `[..prefix, last]` or `[head, ..mid, tail]` to split out tails while validating prefixes.
 
 Example:
 ```mbt
@@ -2753,6 +2754,26 @@ match parts {
   _ => {
     let body = parts.sub(start=1).to_array()
     state = eval_sequence_state(body, env, next, handlers)
+  }
+}
+```
+
+Example (split last element):
+```mbt
+match datum_list_to_array(expr) {
+  [] => raise @core.EvalError("invalid library name")
+  [..prefix, last] => {
+    for part in prefix {
+      match part {
+        Symbol(_) => ()
+        _ => raise @core.EvalError("invalid library name")
+      }
+    }
+    match last {
+      Symbol(_) => ()
+      Pair(_, _) | Nil => ()
+      _ => raise @core.EvalError("invalid library name")
+    }
   }
 }
 ```

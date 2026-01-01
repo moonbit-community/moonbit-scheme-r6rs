@@ -3600,76 +3600,58 @@ fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
 
 ///|
 fn parse_library_name_spec(expr : @core.Datum) -> LibraryNameSpec raise @core.EvalError {
-  let parts = datum_list_to_array(expr)
-  if parts.is_empty() {
-    raise @core.EvalError("invalid library name")
-  }
-  let names : Array[String] = []
-  let version : Array[Int]? =
-    for i = 0, version = None; i < parts.length(); {
-      // invariant : i >= 0 && i <= parts.length()
-      // decreases : parts.length() - i
-      // assert : i <= parts.length()
-      match parts[i] {
+  match datum_list_to_array(expr) {
+    [] => raise @core.EvalError("invalid library name")
+    [..prefix, last] => {
+      let names : Array[String] = []
+      for part in prefix {
+        match part {
+          Symbol(name) => names.push(name)
+          _ => raise @core.EvalError("invalid library name")
+        }
+      }
+      let version = match last {
         Symbol(name) => {
-          if version is Some(_) {
-            raise @core.EvalError("invalid library name")
-          }
           names.push(name)
-          continue i + 1, version
+          None
         }
-        Pair(_, _) | Nil => {
-          if i != parts.length() - 1 {
-            raise @core.EvalError("invalid library name")
-          }
-          continue i + 1, Some(parse_version_list(parts[i]))
-        }
+        Pair(_, _) | Nil => Some(parse_version_list(last))
         _ => raise @core.EvalError("invalid library name")
       }
-    } else {
-      version
+      if names.is_empty() {
+        raise @core.EvalError("invalid library name")
+      }
+      { base: names.join("."), version }
     }
-  if names.is_empty() {
-    raise @core.EvalError("invalid library name")
   }
-  { base: names.join("."), version }
 }
 
 ///|
 fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
-  let parts = datum_list_to_array(expr)
-  if parts.is_empty() {
-    raise @core.EvalError("invalid library name")
-  }
-  let names : Array[String] = []
-  let version_ref : VersionRef? =
-    for i = 0, version_ref = None; i < parts.length(); {
-      // invariant : i >= 0 && i <= parts.length()
-      // decreases : parts.length() - i
-      // assert : names.length() <= i
-      match parts[i] {
+  match datum_list_to_array(expr) {
+    [] => raise @core.EvalError("invalid library name")
+    [..prefix, last] => {
+      let names : Array[String] = []
+      for part in prefix {
+        match part {
+          Symbol(name) => names.push(name)
+          _ => raise @core.EvalError("invalid library name")
+        }
+      }
+      let version_ref = match last {
         Symbol(name) => {
-          if version_ref is Some(_) {
-            raise @core.EvalError("invalid library name")
-          }
           names.push(name)
-          continue i + 1, version_ref
+          None
         }
-        Pair(_, _) | Nil => {
-          if i != parts.length() - 1 {
-            raise @core.EvalError("invalid library name")
-          }
-          continue i + 1, Some(parse_version_ref(parts[i]))
-        }
+        Pair(_, _) | Nil => Some(parse_version_ref(last))
         _ => raise @core.EvalError("invalid library name")
       }
-    } else {
-      version_ref
+      if names.is_empty() {
+        raise @core.EvalError("invalid library name")
+      }
+      { base: names.join("."), version_ref }
     }
-  if names.is_empty() {
-    raise @core.EvalError("invalid library name")
   }
-  { base: names.join("."), version_ref }
 }
 
 ///|
@@ -4353,53 +4335,31 @@ fn cond_expand_feature(expr : @core.Datum) -> Bool raise @core.EvalError {
   match expr {
     Symbol(name) => feature_enabled(name)
     Pair(_, _) => {
-      let items = datum_list_to_array(expr)
-      if items.is_empty() {
-        raise @core.EvalError("invalid cond-expand")
-      }
-      match items[0] {
-        Symbol("and") =>
-          if items.length() == 1 {
-            true
-          } else {
-            for i = 1; i < items.length(); {
-              // invariant : i >= 1 && i <= items.length()
-              // decreases : items.length() - i
-              // assert : i <= items.length()
-              if !cond_expand_feature(items[i]) {
-                break false
-              }
-              continue i + 1
-            } else {
-              true
+      match datum_list_to_array(expr) {
+        [Symbol("and")] => true
+        [Symbol("and"), ..rest] =>
+          for item in rest {
+            if !cond_expand_feature(item) {
+              break false
             }
+          } else {
+            true
           }
-        Symbol("or") => {
-          for i = 1; i < items.length(); {
-            // invariant : i >= 1 && i <= items.length()
-            // decreases : items.length() - i
-            // assert : i <= items.length()
-            if cond_expand_feature(items[i]) {
+        [Symbol("or"), ..rest] =>
+          for item in rest {
+            if cond_expand_feature(item) {
               break true
             }
-            continue i + 1
           } else {
             false
           }
-        }
-        Symbol("not") => {
-          if items.length() != 2 {
-            raise @core.EvalError("invalid cond-expand")
-          }
-          !cond_expand_feature(items[1])
-        }
-        Symbol("library") => {
-          if items.length() != 2 {
-            raise @core.EvalError("invalid cond-expand")
-          }
-          let reference = parse_library_ref(items[1])
+        [Symbol("not"), item] => !cond_expand_feature(item)
+        [Symbol("not"), ..] => raise @core.EvalError("invalid cond-expand")
+        [Symbol("library"), item] => {
+          let reference = parse_library_ref(item)
           select_library_for_ref(reference) is Some(_)
         }
+        [Symbol("library"), ..] => raise @core.EvalError("invalid cond-expand")
         _ => raise @core.EvalError("invalid cond-expand")
       }
     }
