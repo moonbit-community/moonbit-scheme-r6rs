@@ -490,21 +490,23 @@ fn eval_expr_impl(
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = cond_start(rest, env, next, handlers)
-            } else if parts.length() == 1 {
-              state = MachineState::Apply(test_value, next, handlers)
-            } else if parts.length() >= 2 && @runtime.symbol_name(parts[1]) is Some("=>") {
-              if parts.length() != 3 {
-                raise @core.EvalError("invalid cond")
-              }
-              state = MachineState::Eval(
-                parts[2],
-                env,
-                @core.Kont::CondArrow(test_value, next),
-                handlers,
-              )
             } else {
-              let body = parts.sub(start=1).to_array()
-              state = eval_sequence_state(body, env, next, handlers)
+              match parts {
+                [_] => state = MachineState::Apply(test_value, next, handlers)
+                [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
+                  state = MachineState::Eval(
+                    proc,
+                    env,
+                    @core.Kont::CondArrow(test_value, next),
+                    handlers,
+                  )
+                [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
+                  raise @core.EvalError("invalid cond")
+                _ => {
+                  let body = parts.sub(start=1).to_array()
+                  state = eval_sequence_state(body, env, next, handlers)
+                }
+              }
             }
           }
           @core.Kont::CondArrow(test_value, next) => {
@@ -845,31 +847,34 @@ fn eval_expr_impl(
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = guard_start(rest, env, info, handlers)
-            } else if parts.length() == 1 {
-              state = apply_proc(
-                info.resume_value,
-                [test_value],
-                kont,
-                info.handlers,
-              )
-            } else if parts.length() >= 2 && @runtime.symbol_name(parts[1]) is Some("=>") {
-              if parts.length() != 3 {
-                raise @core.EvalError("invalid guard")
-              }
-              state = MachineState::Eval(
-                parts[2],
-                env,
-                @core.Kont::GuardCondArrow(test_value, info),
-                handlers,
-              )
             } else {
-              let body = parts.sub(start=1).to_array()
-              state = eval_sequence_state(
-                body,
-                env,
-                @core.Kont::GuardResult(info),
-                handlers,
-              )
+              match parts {
+                [_] =>
+                  state = apply_proc(
+                    info.resume_value,
+                    [test_value],
+                    kont,
+                    info.handlers,
+                  )
+                [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
+                  state = MachineState::Eval(
+                    proc,
+                    env,
+                    @core.Kont::GuardCondArrow(test_value, info),
+                    handlers,
+                  )
+                [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
+                  raise @core.EvalError("invalid guard")
+                _ => {
+                  let body = parts.sub(start=1).to_array()
+                  state = eval_sequence_state(
+                    body,
+                    env,
+                    @core.Kont::GuardResult(info),
+                    handlers,
+                  )
+                }
+              }
             }
           }
           @core.Kont::GuardCondArrow(test_value, info) => {
@@ -1541,16 +1546,21 @@ fn eval_case_lambda(args : Array[@core.Datum], env : @core.Env) -> @core.Value r
     raise arity_mismatch(1, 0)
   }
   let clauses : Array[@core.CaseClause] = args.map((clause) => {
-    let parts = datum_list_to_array(clause)
-    if parts.length() < 2 {
-      raise @core.EvalError("invalid case-lambda")
+    let (formals_expr, body_exprs) = match datum_list_to_array(clause) {
+      [formals_expr, first_body, ..rest] => {
+        let body : Array[@core.Datum] = [first_body]
+        for expr in rest {
+          body.push(expr)
+        }
+        (formals_expr, body)
+      }
+      _ => raise @core.EvalError("invalid case-lambda")
     }
-    let formals = parse_formals(parts[0])
-    let body = parts.sub(start=1).to_array()
+    let formals = parse_formals(formals_expr)
    @core.CaseClause::{
       params: formals.params,
       rest: formals.rest,
-      body,
+      body: body_exprs,
     }
   })
   @core.Value::CaseClosure(make_case_closure(clauses, env))
@@ -2335,11 +2345,10 @@ fn eval_letrec_syntax_state(
       // invariant : i >= 0 && i <= binding_specs.length()
       // decreases : binding_specs.length() - i
       // assert : i <= binding_specs.length()
-      let parts = datum_list_to_array(binding_specs[i])
-      if parts.length() != 2 {
-        raise @core.EvalError("type error: syntax binding expected")
+      let name = match datum_list_to_array(binding_specs[i]) {
+        [name_expr, _] => parse_symbol(name_expr)
+        _ => raise @core.EvalError("type error: syntax binding expected")
       }
-      let name = parse_symbol(parts[0])
       let placeholder =@core.MacroTransformer::Rules(@core.SyntaxRules::{
         literals: [],
         rules: [],
@@ -2379,17 +2388,20 @@ fn parse_do_bindings(
   let inits : Array[@core.Datum] = []
   let steps : Array[@core.Datum] = []
   for binding in bindings {
-    let parts = datum_list_to_array(binding)
-    if parts.length() < 2 || parts.length() > 3 {
-      raise @core.EvalError("invalid do")
-    }
-    let name = parse_symbol(parts[0])
-    names.push(name)
-    inits.push(parts[1])
-    if parts.length() == 3 {
-      steps.push(parts[2])
-    } else {
-      steps.push(Symbol(name))
+    match datum_list_to_array(binding) {
+      [name_expr, init_expr] => {
+        let name = parse_symbol(name_expr)
+        names.push(name)
+        inits.push(init_expr)
+        steps.push(Symbol(name))
+      }
+      [name_expr, init_expr, step_expr] => {
+        let name = parse_symbol(name_expr)
+        names.push(name)
+        inits.push(init_expr)
+        steps.push(step_expr)
+      }
+      _ => raise @core.EvalError("invalid do")
     }
   }
   (names, inits, steps)
@@ -2406,12 +2418,16 @@ fn eval_do_state(
     raise arity_mismatch(2, args.length())
   }
   let (names, inits, steps) = parse_do_bindings(args[0])
-  let test_parts = datum_list_to_array(args[1])
-  if test_parts.is_empty() {
-    raise @core.EvalError("invalid do")
+  let (test_expr, result_exprs) = match datum_list_to_array(args[1]) {
+    [test_expr, ..rest] => {
+      let results : Array[@core.Datum] = []
+      for expr in rest {
+        results.push(expr)
+      }
+      (test_expr, results)
+    }
+    _ => raise @core.EvalError("invalid do")
   }
-  let test_expr = test_parts[0]
-  let result_exprs = test_parts.sub(start=1).to_array()
   let command_exprs = args.sub(start=2).to_array()
   let loop_name = next_do_name()
   let params : Array[@core.Datum] = []
@@ -2491,51 +2507,60 @@ fn eval_define_record_type_state(
       // assert : i <= raw_specs.length()
       let spec = raw_specs[i]
       let parts = datum_list_to_array(spec)
-      if parts.length() >= 1 && parts.length() <= 2 {
-        match @runtime.symbol_name(parts[0]) {
-          Some("parent") if parts.length() == 2 => {
-            if parent_name is Some(_) {
-              raise @core.EvalError("invalid define-record-type")
+      match parts {
+        [head] =>
+          match @runtime.symbol_name(head) {
+            Some("sealed") => {
+              let is_sealed = true
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
             }
-            let parent_name = Some(parse_symbol(parts[1]))
-            continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            Some("opaque") => {
+              let is_opaque = true
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            Some("nongenerative") => {
+              if uid is Some(_) {
+                raise @core.EvalError("invalid define-record-type")
+              }
+              let uid = Some(record_name)
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            _ => ()
           }
-          Some("protocol") if parts.length() == 2 => {
-            if protocol_expr is Some(_) {
-              raise @core.EvalError("invalid define-record-type")
+        [head, arg] =>
+          match @runtime.symbol_name(head) {
+            Some("parent") => {
+              if parent_name is Some(_) {
+                raise @core.EvalError("invalid define-record-type")
+              }
+              let parent_name = Some(parse_symbol(arg))
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
             }
-            let protocol_expr = Some(parts[1])
-            continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            Some("protocol") => {
+              if protocol_expr is Some(_) {
+                raise @core.EvalError("invalid define-record-type")
+              }
+              let protocol_expr = Some(arg)
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            Some("sealed") => {
+              let is_sealed = parse_bool(arg)
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            Some("opaque") => {
+              let is_opaque = parse_bool(arg)
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            Some("nongenerative") => {
+              if uid is Some(_) {
+                raise @core.EvalError("invalid define-record-type")
+              }
+              let uid = Some(parse_symbol(arg))
+              continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
+            }
+            _ => ()
           }
-          Some("sealed") => {
-            let is_sealed = if parts.length() == 1 {
-              true
-            } else {
-              parse_bool(parts[1])
-            }
-            continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
-          }
-          Some("opaque") => {
-            let is_opaque = if parts.length() == 1 {
-              true
-            } else {
-              parse_bool(parts[1])
-            }
-            continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
-          }
-          Some("nongenerative") => {
-            if uid is Some(_) {
-              raise @core.EvalError("invalid define-record-type")
-            }
-            let uid = if parts.length() == 1 {
-              Some(record_name)
-            } else {
-              Some(parse_symbol(parts[1]))
-            }
-            continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
-          }
-          _ => ()
-        }
+        _ => ()
       }
       field_specs.push(spec)
       continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
@@ -2573,25 +2598,29 @@ fn eval_define_record_type_state(
   let mutable : Map[String, Bool] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    let parts = datum_list_to_array(spec)
-    if parts.length() < 2 || parts.length() > 3 {
-      raise @core.EvalError("invalid define-record-type")
-    }
-    let field_name = parse_symbol(parts[0])
+    let (field_name_expr, accessor_expr, mutator_expr) =
+      match datum_list_to_array(spec) {
+        [field_name_expr, accessor_expr] => (field_name_expr, accessor_expr, None)
+        [field_name_expr, accessor_expr, mutator_expr] =>
+          (field_name_expr, accessor_expr, Some(mutator_expr))
+        _ => raise @core.EvalError("invalid define-record-type")
+      }
+    let field_name = parse_symbol(field_name_expr)
     if array_contains_name(parent_field_names, field_name) {
       raise @core.EvalError("invalid define-record-type")
     }
     if accessors.contains(field_name) {
       raise @core.EvalError("invalid define-record-type")
     }
-    let accessor = parse_symbol(parts[1])
+    let accessor = parse_symbol(accessor_expr)
     accessors[field_name] = accessor
-    if parts.length() == 3 {
-      let mutator = parse_symbol(parts[2])
-      mutators[field_name] = mutator
-      mutable[field_name] = true
-    } else {
-      mutable[field_name] = false
+    match mutator_expr {
+      Some(expr) => {
+        let mutator = parse_symbol(expr)
+        mutators[field_name] = mutator
+        mutable[field_name] = true
+      }
+      None => mutable[field_name] = false
     }
     new_field_names.push(field_name)
   }
@@ -2734,18 +2763,18 @@ fn eval_define_condition_type_state(
   let accessors : Map[String, String] = {}
   let new_field_names : Array[String] = []
   for spec in field_specs {
-    let parts = datum_list_to_array(spec)
-    if parts.length() != 2 {
-      raise @core.EvalError("invalid define-condition-type")
+    let (field_name_expr, accessor_expr) = match datum_list_to_array(spec) {
+      [field_name_expr, accessor_expr] => (field_name_expr, accessor_expr)
+      _ => raise @core.EvalError("invalid define-condition-type")
     }
-    let field_name = parse_symbol(parts[0])
+    let field_name = parse_symbol(field_name_expr)
     if array_contains_name(parent_field_names, field_name) {
       raise @core.EvalError("invalid define-condition-type")
     }
     if accessors.contains(field_name) {
       raise @core.EvalError("invalid define-condition-type")
     }
-    let accessor = parse_symbol(parts[1])
+    let accessor = parse_symbol(accessor_expr)
     accessors[field_name] = accessor
     new_field_names.push(field_name)
   }
@@ -3498,69 +3527,73 @@ fn parse_version_list(expr : @core.Datum) -> Array[Int] raise @core.EvalError {
 fn parse_version_ref_version(
   items : Array[@core.Datum],
 ) -> Array[Int] raise @core.EvalError {
-  if items.is_empty() {
-    raise @core.EvalError("invalid library name")
-  }
-  if items.length() == 1 {
-    match items[0] {
-      Pair(_, _) | Nil => parse_version_list(items[0])
-      _ => parse_version_items(items)
-    }
-  } else {
-    parse_version_items(items)
+  match items {
+    [] => raise @core.EvalError("invalid library name")
+    [item] =>
+      match item {
+        Pair(_, _) | Nil => parse_version_list(item)
+        _ => parse_version_items(items)
+      }
+    _ => parse_version_items(items)
   }
 }
 
 ///|
 fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
   let items = datum_list_to_array(expr)
-  if items.is_empty() {
-    raise @core.EvalError("invalid library name")
-  }
-  match items[0] {
-    Symbol("and") => {
-      if items.length() == 1 {
+  match items {
+    [] => raise @core.EvalError("invalid library name")
+    [Symbol("and"), ..refs] => {
+      if refs.is_empty() {
         raise @core.EvalError("invalid library name")
       }
-      let refs : Array[VersionRef] = []
-      for i = 1; i < items.length(); {
-        // invariant : i >= 1 && i <= items.length()
-        // decreases : items.length() - i
-        // assert : i <= items.length()
-        refs.push(parse_version_ref(items[i]))
-        continue i + 1
+      let parsed : Array[VersionRef] = []
+      for item in refs {
+        parsed.push(parse_version_ref(item))
       }
-      VersionAnd(refs)
+      VersionAnd(parsed)
     }
-    Symbol("or") => {
-      if items.length() == 1 {
+    [Symbol("or"), ..refs] => {
+      if refs.is_empty() {
         raise @core.EvalError("invalid library name")
       }
-      let refs : Array[VersionRef] = []
-      for i = 1; i < items.length(); {
-        // invariant : i >= 1 && i <= items.length()
-        // decreases : items.length() - i
-        // assert : i <= items.length()
-        refs.push(parse_version_ref(items[i]))
-        continue i + 1
+      let parsed : Array[VersionRef] = []
+      for item in refs {
+        parsed.push(parse_version_ref(item))
       }
-      VersionOr(refs)
+      VersionOr(parsed)
     }
-    Symbol("not") => {
-      if items.length() != 2 {
-        raise @core.EvalError("invalid library name")
+    [Symbol("not"), ref_expr] =>
+      VersionNot(Ref::new(parse_version_ref(ref_expr)))
+    [Symbol(">"), ..rest] => {
+      let parts : Array[@core.Datum] = []
+      for item in rest {
+        parts.push(item)
       }
-      VersionNot(Ref::new(parse_version_ref(items[1])))
+      VersionGt(parse_version_ref_version(parts))
     }
-    Symbol(">") =>
-      VersionGt(parse_version_ref_version(items.sub(start=1).to_array()))
-    Symbol(">=") =>
-      VersionGe(parse_version_ref_version(items.sub(start=1).to_array()))
-    Symbol("<") =>
-      VersionLt(parse_version_ref_version(items.sub(start=1).to_array()))
-    Symbol("<=") =>
-      VersionLe(parse_version_ref_version(items.sub(start=1).to_array()))
-    Int(_) => VersionExact(parse_version_items(items))
+    [Symbol(">="), ..rest] => {
+      let parts : Array[@core.Datum] = []
+      for item in rest {
+        parts.push(item)
+      }
+      VersionGe(parse_version_ref_version(parts))
+    }
+    [Symbol("<"), ..rest] => {
+      let parts : Array[@core.Datum] = []
+      for item in rest {
+        parts.push(item)
+      }
+      VersionLt(parse_version_ref_version(parts))
+    }
+    [Symbol("<="), ..rest] => {
+      let parts : Array[@core.Datum] = []
+      for item in rest {
+        parts.push(item)
+      }
+      VersionLe(parse_version_ref_version(parts))
+    }
+    [Int(_), ..] => VersionExact(parse_version_items(items))
     _ => raise @core.EvalError("invalid library name")
   }
 }
@@ -3774,46 +3807,29 @@ fn library_exports_from_ref(
 
 ///|
 fn parse_export_clause(expr : @core.Datum) -> Array[(String, String)] raise @core.EvalError {
-  let items = datum_list_to_array(expr)
-  if items.is_empty() {
-    raise @core.EvalError("invalid library")
-  }
-  match items[0] {
-    Symbol("export") => {
+  match datum_list_to_array(expr) {
+    [Symbol("export"), ..specs] => {
       let exports : Array[(String, String)] = []
-      for i = 1; i < items.length(); {
-        // invariant : i >= 1 && i <= items.length()
-        // decreases : items.length() - i
-        // assert : i <= items.length()
-        match items[i] {
+      for spec in specs {
+        match spec {
           Symbol(name) => exports.push((name, name))
-          Pair(_, _) => {
-            let spec_items = datum_list_to_array(items[i])
-            if spec_items.is_empty() {
-              raise @core.EvalError("invalid library")
-            }
-            match spec_items[0] {
-              Symbol("rename") => {
-                for j = 1; j < spec_items.length(); {
-                  // invariant : j >= 1 && j <= spec_items.length()
-                  // decreases : spec_items.length() - j
-                  // assert : j <= spec_items.length()
-                  let rename_parts = datum_list_to_array(spec_items[j])
-                  if rename_parts.length() != 2 {
-                    raise @core.EvalError("invalid library")
+          Pair(_, _) =>
+            match datum_list_to_array(spec) {
+              [Symbol("rename"), ..rename_specs] =>
+                for rename_spec in rename_specs {
+                  match datum_list_to_array(rename_spec) {
+                    [internal_expr, external_expr] => {
+                      let internal = parse_symbol(internal_expr)
+                      let external = parse_symbol(external_expr)
+                      exports.push((external, internal))
+                    }
+                    _ => raise @core.EvalError("invalid library")
                   }
-                  let internal = parse_symbol(rename_parts[0])
-                  let external = parse_symbol(rename_parts[1])
-                  exports.push((external, internal))
-                  continue j + 1
                 }
-              }
               _ => raise @core.EvalError("invalid library")
             }
-          }
           _ => raise @core.EvalError("invalid library")
         }
-        continue i + 1
       }
       exports
     }
@@ -3999,13 +4015,14 @@ fn parse_rename_specs(
   items : Array[@core.Datum],
 ) -> Array[(String, String)] raise @core.EvalError {
   items.map(fn (item) raise @core.EvalError {
-    let parts = datum_list_to_array(item)
-    if parts.length() != 2 {
-      raise @core.EvalError("invalid import set")
+    match datum_list_to_array(item) {
+      [old_expr, new_expr] => {
+        let old_name = parse_symbol(old_expr)
+        let new_name = parse_symbol(new_expr)
+        (old_name, new_name)
+      }
+      _ => raise @core.EvalError("invalid import set")
     }
-    let old_name = parse_symbol(parts[0])
-    let new_name = parse_symbol(parts[1])
-    (old_name, new_name)
   })
 }
 
@@ -4030,22 +4047,14 @@ fn parse_for_phases(items : Array[@core.Datum]) -> ImportPhases raise @core.Eval
       Symbol("run") => continue i + 1, true, expand
       Symbol("expand") => continue i + 1, run, true
       Pair(_, _) | Nil => {
-        let parts = datum_list_to_array(item)
-        if parts.length() != 2 {
-          raise @core.EvalError("invalid import set")
-        }
-        match parts[0] {
-          Symbol("meta") =>
-            match parts[1] {
-              Int(n) =>
-                if n == 0 {
-                  continue i + 1, true, expand
-                } else if n > 0 {
-                  continue i + 1, run, true
-                } else {
-                  raise @core.EvalError("invalid import set")
-                }
-              _ => raise @core.EvalError("invalid import set")
+        match datum_list_to_array(item) {
+          [Symbol("meta"), Int(n)] =>
+            if n == 0 {
+              continue i + 1, true, expand
+            } else if n > 0 {
+              continue i + 1, run, true
+            } else {
+              raise @core.EvalError("invalid import set")
             }
           _ => raise @core.EvalError("invalid import set")
         }
@@ -4271,19 +4280,21 @@ fn case_dispatch(
         false
       }
       if matched {
-        if parts.length() >= 2 && @runtime.symbol_name(parts[1]) is Some("=>") {
-          if parts.length() != 3 {
+        match parts {
+          [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
+            return MachineState::Eval(
+              proc,
+              env,
+              @core.Kont::CaseArrow(key, kont),
+              handlers,
+            )
+          [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
             raise @core.EvalError("invalid case")
+          _ => {
+            let body = parts.sub(start=1).to_array()
+            return eval_sequence_state(body, env, kont, handlers)
           }
-          return MachineState::Eval(
-            parts[2],
-            env,
-            @core.Kont::CaseArrow(key, kont),
-            handlers,
-          )
         }
-        let body = parts.sub(start=1).to_array()
-        return eval_sequence_state(body, env, kont, handlers)
       }
       continue i + 1
     }

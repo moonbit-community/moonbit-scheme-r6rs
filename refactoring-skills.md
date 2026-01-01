@@ -2737,3 +2737,22 @@ match datum_list_to_array(binding) {
   _ => raise @core.EvalError("invalid binding")
 }
 ```
+
+## Use rest patterns to encode arity and special markers
+- `[head, arg]` matches exactly two items; `[head, arg, ..]` matches two or more.
+- Pair with guards to handle markers like `=>` without manual length checks.
+
+Example:
+```mbt
+match parts {
+  [_] => state = MachineState::Apply(test_value, next, handlers)
+  [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
+    state = MachineState::Eval(proc, env, @core.Kont::CondArrow(test_value, next), handlers)
+  [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
+    raise @core.EvalError("invalid cond")
+  _ => {
+    let body = parts.sub(start=1).to_array()
+    state = eval_sequence_state(body, env, next, handlers)
+  }
+}
+```

@@ -1551,13 +1551,9 @@ fn datum_equal(a : @core.Datum, b : @core.Datum) -> Bool {
 
 ///|
 fn is_quote_form(items : Array[@core.Datum]) -> Bool {
-  if items.length() != 2 {
-    false
-  } else {
-    match items[0] {
-      Symbol("quote") => true
-      _ => false
-    }
+  match items {
+    [Symbol("quote"), _] => true
+    _ => false
   }
 }
 
@@ -1724,19 +1720,25 @@ fn expand_with_syntax(
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
-  if items.length() < 3 {
-    raise @core.EvalError("invalid with-syntax")
+  let (binding_expr, body_exprs) = match items {
+    [_, binding_expr, body_expr] => (binding_expr, [body_expr])
+    [_, binding_expr, body_expr, ..rest] => {
+      let bodies : Array[@core.Datum] = [body_expr]
+      for expr in rest {
+        bodies.push(expr)
+      }
+      (binding_expr, bodies)
+    }
+    _ => raise @core.EvalError("invalid with-syntax")
   }
-  let binding_specs = datum_list_to_array(items[1])
+  let binding_specs = datum_list_to_array(binding_expr)
   let expanded = bindings_clone(bindings)
   let fenv = template_env_with_bindings(env, bindings)
   for spec in binding_specs {
-    let parts = datum_list_to_array(spec)
-    if parts.length() != 2 {
-      raise @core.EvalError("invalid with-syntax")
+    let (pattern, expr) = match datum_list_to_array(spec) {
+      [pattern, expr] => (pattern, expr)
+      _ => raise @core.EvalError("invalid with-syntax")
     }
-    let pattern = parts[0]
-    let expr = parts[1]
     let value = eval_expr(expr, fenv)
     let datum = value_to_syntax_datum(value)
     let local_bindings : Map[String, BindingVal] = {}
@@ -1756,40 +1758,38 @@ fn expand_with_syntax(
       raise @core.EvalError("invalid with-syntax")
     }
   }
-  if items.length() == 3 {
-    expand_template_indexed(
-      items[2],
-      expanded,
-      renames,
-      ellipsis,
-      ellipsis_active,
-      error_message,
-      indices,
-      env,
-      template_forms,
-    )
-  } else {
-    let forms : Array[@core.Datum] = [Symbol("begin")]
-    for i = 2; i < items.length(); {
-      // invariant : i >= 2 && i <= items.length()
-      // decreases : items.length() - i
-      // assert : i <= items.length()
-      forms.push(
-        expand_template_indexed(
-          items[i],
-          expanded,
-          renames,
-          ellipsis,
-          ellipsis_active,
-          error_message,
-          indices,
-          env,
-          template_forms,
-        ),
+  match body_exprs {
+    [body_expr] =>
+      expand_template_indexed(
+        body_expr,
+        expanded,
+        renames,
+        ellipsis,
+        ellipsis_active,
+        error_message,
+        indices,
+        env,
+        template_forms,
       )
-      continue i + 1
+    _ => {
+      let forms : Array[@core.Datum] = [Symbol("begin")]
+      for expr in body_exprs {
+        forms.push(
+          expand_template_indexed(
+            expr,
+            expanded,
+            renames,
+            ellipsis,
+            ellipsis_active,
+            error_message,
+            indices,
+            env,
+            template_forms,
+          ),
+        )
+      }
+      list_from_array(forms)
     }
-    list_from_array(forms)
   }
 }
 
@@ -1853,43 +1853,46 @@ fn expand_template_indexed(
         Some(items) =>
           if is_quote_form(items) {
             template
-          } else if template_forms &&
-            items.length() == 2 &&
-            datum_is_symbol(items[0], "syntax") {
-            expand_template_indexed(
-              items[1],
-              bindings,
-              renames,
-              ellipsis,
-              ellipsis_active,
-              error_message,
-              indices,
-              env,
-              template_forms,
-            )
-          } else if template_forms &&
-            items.length() == 2 &&
-            datum_is_symbol(items[0], "quasisyntax") {
-            let fenv = template_env_with_bindings(env, bindings)
-            let expanded_template = expand_template_quasisyntax(
-              items[1],
-              bindings,
-              renames,
-              ellipsis,
-              ellipsis_active,
-              error_message,
-              indices,
-              env,
-            )
-            let expanded = quasisyntax_expand(expanded_template, fenv, 1)
-            rename_datum(expanded, renames)
-          } else if template_forms &&
-            items.length() >= 3 &&
-            datum_is_symbol(items[0], "with-syntax") {
-            expand_with_syntax(
-              items, bindings, renames, ellipsis, ellipsis_active, error_message,
-              indices, env, template_forms,
-            )
+          } else if template_forms {
+            match items {
+              [head, expr] if datum_is_symbol(head, "syntax") =>
+                expand_template_indexed(
+                  expr,
+                  bindings,
+                  renames,
+                  ellipsis,
+                  ellipsis_active,
+                  error_message,
+                  indices,
+                  env,
+                  template_forms,
+                )
+              [head, expr] if datum_is_symbol(head, "quasisyntax") => {
+                let fenv = template_env_with_bindings(env, bindings)
+                let expanded_template = expand_template_quasisyntax(
+                  expr,
+                  bindings,
+                  renames,
+                  ellipsis,
+                  ellipsis_active,
+                  error_message,
+                  indices,
+                  env,
+                )
+                let expanded = quasisyntax_expand(expanded_template, fenv, 1)
+                rename_datum(expanded, renames)
+              }
+              [head, _, _, ..] if datum_is_symbol(head, "with-syntax") =>
+                expand_with_syntax(
+                  items, bindings, renames, ellipsis, ellipsis_active, error_message,
+                  indices, env, template_forms,
+                )
+              _ =>
+                expand_template_list(
+                  items, bindings, renames, ellipsis, ellipsis_active, error_message,
+                  indices, env, template_forms,
+                )
+            }
           } else {
             expand_template_list(
               items, bindings, renames, ellipsis, ellipsis_active, error_message,
@@ -1958,16 +1961,16 @@ fn expand_template_quasisyntax(
         Some(items) =>
           if is_quote_form(items) {
             template
-          } else if items.length() == 2 && datum_is_symbol(items[0], "unsyntax") {
-            template
-          } else if items.length() == 2 &&
-            datum_is_symbol(items[0], "unsyntax-splicing") {
-            template
           } else {
-            expand_template_list_quasisyntax(
-              items, bindings, renames, ellipsis, ellipsis_active, error_message,
-              indices, env,
-            )
+            match items {
+              [head, _] if datum_is_symbol(head, "unsyntax") => template
+              [head, _] if datum_is_symbol(head, "unsyntax-splicing") => template
+              _ =>
+                expand_template_list_quasisyntax(
+                  items, bindings, renames, ellipsis, ellipsis_active, error_message,
+                  indices, env,
+                )
+            }
           }
         None =>
           match template {
