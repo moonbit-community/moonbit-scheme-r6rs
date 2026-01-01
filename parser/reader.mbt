@@ -406,10 +406,7 @@ fn split_exp_token(tok : String) -> (String, Int)? {
   } else {
     let base = String::from_array(chars.sub(end=idx).to_array())
     let exp_str = String::from_array(chars.sub(start=idx + 1).to_array())
-    match parse_int_token(exp_str) {
-      Some(exp) => Some((base, exp))
-      None => None
-    }
+    parse_int_token(exp_str).map((exp) => (base, exp))
   }
 }
 
