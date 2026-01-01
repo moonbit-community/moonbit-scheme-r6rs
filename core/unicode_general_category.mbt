@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ///|
-pub let general_category_ranges : Map[String, ReadOnlyArray[Char]] = {
+let general_category_ranges : Map[String, ReadOnlyArray[Char]] = {
   "LC": ReadOnlyArray::from_iter(LC.iter()),
   "L": ReadOnlyArray::from_iter(L.iter()),
   "M": ReadOnlyArray::from_iter(M.iter()),

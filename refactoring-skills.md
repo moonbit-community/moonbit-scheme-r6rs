@@ -2248,3 +2248,15 @@ fn PrinterState::label_flags(self : PrinterState, id : Int) -> Int {
 let buf = @buffer.new()
 buf..write_string("#\\")..write_char(ch)
 ```
+
+## Hide internal lookup tables
+- Keep large data tables private unless they are part of the API; verify usage with `moon ide find-references` or `rg`.
+
+Example:
+```mbt
+// before
+pub let general_category_ranges : Map[String, ReadOnlyArray[Char]] = { ... }
+
+// after
+let general_category_ranges : Map[String, ReadOnlyArray[Char]] = { ... }
+```

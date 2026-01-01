@@ -6,8 +6,6 @@ import(
 )
 
 // Values
-pub let general_category_ranges : Map[String, ReadOnlyArray[Char]]
-
 pub fn unicode_char(Char) -> UnicodeChar
 
 pub fn unicode_string(String) -> UnicodeString
