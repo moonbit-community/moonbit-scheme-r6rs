@@ -2161,14 +2161,7 @@ fn parse_field_spec(item : Datum) -> RecordField raise EvalError {
 fn parse_field_specs(
   items : Array[Datum],
 ) -> Array[RecordField] raise EvalError {
-  let fields : Array[RecordField] = []
-  for item in items {
-    // invariant : items.length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : items.length() >= 0
-    fields.push(parse_field_spec(item))
-  }
-  fields
+  items.map((item) => parse_field_spec(item))
 }
 
 ///|
