@@ -169,15 +169,11 @@ fn parse_identifier_syntax(
     // assert : rules.length() >= 0
     collect_template_symbols(rule.template, literal_set)
   }
-  let literals : Array[String] = []
-  for key in literal_set.keys() {
-    // invariant : literal_set.keys().length() >= 0
-    // TODO(decreases) : loop index not exposed; possible bug
-    // assert : literal_set.keys().length() >= 0
-    if !pattern_vars.contains(key) {
-      literals.push(key)
-    }
-  }
+  let literals : Array[String] =
+    literal_set
+      .keys()
+      .filter((key) => !pattern_vars.contains(key))
+      .to_array()
   {
     literals,
     rules,
