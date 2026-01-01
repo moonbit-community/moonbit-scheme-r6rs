@@ -4,13 +4,22 @@ using @core {type Datum, type ParseError}
 ///|
 using @lexer {
   type Reader,
-  digit_value,
   make_reader,
 }
 
 ///|
 fn string_to_chars(value : String) -> Array[Char] {
   value.to_array()
+}
+
+///|
+fn digit_value(ch : Char) -> Int? {
+  match ch {
+    '0'..='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    _ => None
+  }
 }
 
 ///|

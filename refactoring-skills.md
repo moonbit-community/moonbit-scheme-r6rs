@@ -2028,9 +2028,24 @@ let typed : Datum = Int(1)
 ## Minimize public helpers
 - Use `moon ide find-references` to confirm a helper is package-internal.
 - Move any public README examples to docstring tests before making the helper private.
+- If only one downstream package needs it, add a local helper there to avoid exporting it.
 
 Example:
 ```mbt
+fn digit_value(ch : Char) -> Int? {
+  match ch {
+    '0'..='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    _ => None
+  }
+}
+```
+
+Example:
+```mbt
+using @lexer { type Reader, make_reader }
+
 fn digit_value(ch : Char) -> Int? {
   match ch {
     '0'..='9' => Some(ch.to_int() - '0'.to_int())

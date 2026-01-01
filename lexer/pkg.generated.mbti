@@ -6,8 +6,6 @@ import(
 )
 
 // Values
-pub fn digit_value(Char) -> Int?
-
 pub fn make_reader(String) -> Reader
 
 // Errors

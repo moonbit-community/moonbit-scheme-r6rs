@@ -369,15 +369,7 @@ fn Reader::read_identifier_escape(self : Reader) -> Char raise ParseError {
 
 ///|
 /// Convert a digit character to its numeric value.
-///
-/// # Example
-/// ```mbt check
-/// test "digit value" {
-///   inspect(digit_value('9'), content="Some(9)")
-///   inspect(digit_value('a'), content="Some(10)")
-/// }
-/// ```
-pub fn digit_value(ch : Char) -> Int? {
+fn digit_value(ch : Char) -> Int? {
   match ch {
     '0'..='9' => Some(ch.to_int() - '0'.to_int())
     'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
