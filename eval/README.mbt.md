@@ -100,6 +100,79 @@ test "bytevector copy" {
 }
 
 ///|
+test "bytevector primitives" {
+  let is_bv = eval_program("(bytevector? #vu8(1 2))")
+  inspect(@runtime.value_to_string(is_bv), content="#t")
+  let not_bv = eval_program("(bytevector? '(1 2))")
+  inspect(@runtime.value_to_string(not_bv), content="#f")
+  let length = eval_program("(bytevector-length #vu8(1 2 3))")
+  inspect(@runtime.value_to_string(length), content="3")
+  let ref_value = eval_program("(bytevector-u8-ref #vu8(10 20) 1)")
+  inspect(@runtime.value_to_string(ref_value), content="20")
+  let set_value =
+    eval_program(
+      "(let ((bv (make-bytevector 3 7))) (bytevector-u8-set! bv 1 9) bv)",
+    )
+  inspect(@runtime.value_to_string(set_value), content="#vu8(7 9 7)")
+  let eq_false = eval_program("(bytevector=? #vu8(1 2) #vu8(1 2 3))")
+  inspect(@runtime.value_to_string(eq_false), content="#f")
+  let eq_true = eval_program("(bytevector=? #vu8(1 2) #vu8(1 2))")
+  inspect(@runtime.value_to_string(eq_true), content="#t")
+  let copy_all = eval_program("(bytevector-copy #vu8(1 2 3))")
+  inspect(@runtime.value_to_string(copy_all), content="#vu8(1 2 3)")
+  let copy_start = eval_program("(bytevector-copy #vu8(1 2 3) 1)")
+  inspect(@runtime.value_to_string(copy_start), content="#vu8(2 3)")
+  let copy_bang_full =
+    eval_program(
+      "(let ((dst (make-bytevector 4 0)) (src #vu8(1 2 3))) (bytevector-copy! dst 0 src) dst)",
+    )
+  inspect(@runtime.value_to_string(copy_bang_full), content="#vu8(1 2 3 0)")
+  let copy_bang_start =
+    eval_program(
+      "(let ((dst (make-bytevector 4 0)) (src #vu8(1 2 3))) (bytevector-copy! dst 0 src 1) dst)",
+    )
+  inspect(@runtime.value_to_string(copy_bang_start), content="#vu8(2 3 0 0)")
+  let copy_bang_slice =
+    eval_program(
+      "(let ((dst (make-bytevector 4 0)) (src #vu8(1 2 3))) (bytevector-copy! dst 1 src 0 2) dst)",
+    )
+  inspect(@runtime.value_to_string(copy_bang_slice), content="#vu8(0 1 2 0)")
+  let fill =
+    eval_program("(let ((bv #vu8(1 2 3))) (bytevector-fill! bv 7 1 3) bv)")
+  inspect(@runtime.value_to_string(fill), content="#vu8(1 7 7)")
+  let append = eval_program("(bytevector-append #vu8(1 2) #vu8(3 4))")
+  inspect(@runtime.value_to_string(append), content="#vu8(1 2 3 4)")
+  let to_list = eval_program("(bytevector->u8-list #vu8(1 2 3))")
+  inspect(@runtime.value_to_string(to_list), content="(1 2 3)")
+  let to_list_slice = eval_program("(bytevector->u8-list #vu8(1 2 3 4) 1 3)")
+  inspect(@runtime.value_to_string(to_list_slice), content="(2 3)")
+  let from_list = eval_program("(u8-list->bytevector '(1 2 3))")
+  inspect(@runtime.value_to_string(from_list), content="#vu8(1 2 3)")
+}
+
+///|
+test "bytevector arity errors" {
+  let pred_err = try? eval_program("(bytevector?)")
+  inspect(pred_err is Err(_), content="true")
+  let len_err = try? eval_program("(bytevector-length)")
+  inspect(len_err is Err(_), content="true")
+  let ref_err = try? eval_program("(bytevector-u8-ref #vu8(1))")
+  inspect(ref_err is Err(_), content="true")
+  let set_err = try? eval_program("(bytevector-u8-set! #vu8(1) 0)")
+  inspect(set_err is Err(_), content="true")
+  let copy_err = try? eval_program("(bytevector-copy)")
+  inspect(copy_err is Err(_), content="true")
+  let copy_bang_err = try? eval_program("(bytevector-copy! #vu8(1) 0)")
+  inspect(copy_bang_err is Err(_), content="true")
+  let fill_err = try? eval_program("(bytevector-fill! #vu8(1))")
+  inspect(fill_err is Err(_), content="true")
+  let list_err = try? eval_program("(bytevector->u8-list)")
+  inspect(list_err is Err(_), content="true")
+  let from_list_err = try? eval_program("(u8-list->bytevector)")
+  inspect(from_list_err is Err(_), content="true")
+}
+
+///|
 test "syntax-rules macro" {
   let program =
     "(begin (define-syntax add2 (syntax-rules () ((add2 x) (+ x 2)))) (add2 3))"
@@ -146,5 +219,7 @@ test "syntax helper errors" {
   inspect(var_err is Err(_), content="true")
   let temp_err = try? eval_program("(generate-temporaries '(1))")
   inspect(temp_err is Err(_), content="true")
+  let syntax_err = try? eval_program("(generate-temporaries (list #'(1)))")
+  inspect(syntax_err is Err(_), content="true")
 }
 ```
