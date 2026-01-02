@@ -140,6 +140,9 @@ test "bytevector primitives" {
   let fill =
     eval_program("(let ((bv #vu8(1 2 3))) (bytevector-fill! bv 7 1 3) bv)")
   inspect(@runtime.value_to_string(fill), content="#vu8(1 7 7)")
+  let fill_start =
+    eval_program("(let ((bv #vu8(1 2 3))) (bytevector-fill! bv 9 1) bv)")
+  inspect(@runtime.value_to_string(fill_start), content="#vu8(1 9 9)")
   let append = eval_program("(bytevector-append #vu8(1 2) #vu8(3 4))")
   inspect(@runtime.value_to_string(append), content="#vu8(1 2 3 4)")
   let to_list = eval_program("(bytevector->u8-list #vu8(1 2 3))")
@@ -148,6 +151,22 @@ test "bytevector primitives" {
   inspect(@runtime.value_to_string(to_list_slice), content="(2 3)")
   let from_list = eval_program("(u8-list->bytevector '(1 2 3))")
   inspect(@runtime.value_to_string(from_list), content="#vu8(1 2 3)")
+}
+
+///|
+test "bytevector utf8 helpers" {
+  let utf8 = eval_program("(string->utf8 \"hi\")")
+  inspect(@runtime.value_to_string(utf8), content="#vu8(104 105)")
+  let utf8_start = eval_program("(string->utf8 \"hi\" 1)")
+  inspect(@runtime.value_to_string(utf8_start), content="#vu8(105)")
+  let utf8_range = eval_program("(string->utf8 \"hi\" 0 1)")
+  inspect(@runtime.value_to_string(utf8_range), content="#vu8(104)")
+  let text = eval_program("(utf8->string #vu8(104 105))")
+  inspect(@runtime.value_to_string(text), content="\"hi\"")
+  let text_start = eval_program("(utf8->string #vu8(104 105) 1)")
+  inspect(@runtime.value_to_string(text_start), content="\"i\"")
+  let text_range = eval_program("(utf8->string #vu8(104 105) 0 1)")
+  inspect(@runtime.value_to_string(text_range), content="\"h\"")
 }
 
 ///|
@@ -170,6 +189,91 @@ test "bytevector arity errors" {
   inspect(list_err is Err(_), content="true")
   let from_list_err = try? eval_program("(u8-list->bytevector)")
   inspect(from_list_err is Err(_), content="true")
+  let from_list_type_err = try? eval_program("(u8-list->bytevector '(1 a))")
+  inspect(from_list_type_err is Err(_), content="true")
+  let utf8_err = try? eval_program("(string->utf8)")
+  inspect(utf8_err is Err(_), content="true")
+  let utf8_to_string_err = try? eval_program("(utf8->string)")
+  inspect(utf8_to_string_err is Err(_), content="true")
+  let endian_err = try? eval_program("(native-endianness 1)")
+  inspect(endian_err is Err(_), content="true")
+  let uint_ref_err = try? eval_program("(bytevector-uint-ref #vu8(1) 0)")
+  inspect(uint_ref_err is Err(_), content="true")
+  let sint_ref_err = try? eval_program("(bytevector-sint-ref #vu8(1) 0)")
+  inspect(sint_ref_err is Err(_), content="true")
+  let uint_set_err = try? eval_program("(bytevector-uint-set! #vu8(1) 0 0 1)")
+  inspect(uint_set_err is Err(_), content="true")
+  let sint_set_err = try? eval_program("(bytevector-sint-set! #vu8(1) 0 0 1)")
+  inspect(sint_set_err is Err(_), content="true")
+}
+
+///|
+test "char and string primitives" {
+  let char_ci =
+    eval_program(
+      "(list (char-ci>? #\\b #\\A) (char-ci<=? #\\a #\\A) (char-ci>=? #\\A #\\b))",
+    )
+  inspect(@runtime.value_to_string(char_ci), content="(#t #t #f)")
+  let char_preds =
+    eval_program(
+      "(list (char? #\\a) (char? 1) (char-alphabetic? #\\a) (char-numeric? #\\9) (char-whitespace? #\\space) (char-upper-case? #\\A) (char-lower-case? #\\a))",
+    )
+  inspect(@runtime.value_to_string(char_preds), content="(#t #f #t #t #t #t #t)")
+  let char_cases =
+    eval_program(
+      "(list (char->integer (char-upcase #\\a)) (char->integer (char-downcase #\\A)) (char->integer (char-foldcase #\\A)) (char->integer (integer->char 66)))",
+    )
+  inspect(@runtime.value_to_string(char_cases), content="(65 97 97 66)")
+  let string_ci =
+    eval_program(
+      "(list (string-ci>? \"b\" \"A\") (string-ci<=? \"a\" \"A\") (string-ci>=? \"A\" \"b\"))",
+    )
+  inspect(@runtime.value_to_string(string_ci), content="(#t #t #f)")
+  let string_basic =
+    eval_program(
+      "(let ((s (string-copy \"hi\"))) (string-set! s 0 #\\H) (list (string? s) (string? 1) (string-length s) (string-append \"a\" \"b\") (char->integer (string-ref s 1)) s))",
+    )
+  inspect(@runtime.value_to_string(string_basic), content="(#t #f 2 \"ab\" 105 \"Hi\")")
+}
+
+///|
+test "char and string arity errors" {
+  let char_p_err = try? eval_program("(char?)")
+  inspect(char_p_err is Err(_), content="true")
+  let char_to_int_err = try? eval_program("(char->integer)")
+  inspect(char_to_int_err is Err(_), content="true")
+  let int_to_char_err = try? eval_program("(integer->char)")
+  inspect(int_to_char_err is Err(_), content="true")
+  let alphabetic_err = try? eval_program("(char-alphabetic?)")
+  inspect(alphabetic_err is Err(_), content="true")
+  let numeric_err = try? eval_program("(char-numeric?)")
+  inspect(numeric_err is Err(_), content="true")
+  let whitespace_err = try? eval_program("(char-whitespace?)")
+  inspect(whitespace_err is Err(_), content="true")
+  let upper_err = try? eval_program("(char-upper-case?)")
+  inspect(upper_err is Err(_), content="true")
+  let lower_err = try? eval_program("(char-lower-case?)")
+  inspect(lower_err is Err(_), content="true")
+  let upcase_err = try? eval_program("(char-upcase)")
+  inspect(upcase_err is Err(_), content="true")
+  let downcase_err = try? eval_program("(char-downcase)")
+  inspect(downcase_err is Err(_), content="true")
+  let foldcase_err = try? eval_program("(char-foldcase)")
+  inspect(foldcase_err is Err(_), content="true")
+  let category_err = try? eval_program("(char-general-category)")
+  inspect(category_err is Err(_), content="true")
+  let make_string_err = try? eval_program("(make-string)")
+  inspect(make_string_err is Err(_), content="true")
+  let string_length_err = try? eval_program("(string-length)")
+  inspect(string_length_err is Err(_), content="true")
+  let string_ref_err = try? eval_program("(string-ref \"a\")")
+  inspect(string_ref_err is Err(_), content="true")
+  let string_set_err = try? eval_program("(string-set! \"a\" 0)")
+  inspect(string_set_err is Err(_), content="true")
+  let string_copy_err = try? eval_program("(string-copy \"a\" 0 1 2)")
+  inspect(string_copy_err is Err(_), content="true")
+  let substring_err = try? eval_program("(substring \"a\" 0)")
+  inspect(substring_err is Err(_), content="true")
 }
 
 ///|
