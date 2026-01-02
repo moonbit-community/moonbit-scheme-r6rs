@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "dii/scheme-r6rs/runtime"
+package "dii/scheme-r6rs/internal/runtime"
 
 import(
   "dii/scheme-r6rs/core"

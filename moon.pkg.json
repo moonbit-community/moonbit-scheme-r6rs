@@ -3,6 +3,6 @@
     "dii/scheme-r6rs/core",
     "dii/scheme-r6rs/eval",
     "dii/scheme-r6rs/parser",
-    "dii/scheme-r6rs/runtime"
+    "dii/scheme-r6rs/internal/runtime"
   ]
 }

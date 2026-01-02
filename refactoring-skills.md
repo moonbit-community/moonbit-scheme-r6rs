@@ -3092,6 +3092,17 @@ Notes:
 - `guard` only traps Scheme-raised conditions; primitive `EvalError` failures (like invalid record descriptors) must be caught with `try? eval_program` and setup repeated per program.
 - `eval_program` resets the record type registry, so tests that rely on existing UIDs must build the base descriptor and the mismatched call in the same program string.
 - To make a package internal (Go-style), move it under `<parent>/internal/<pkg>` and update `moon.pkg.json` imports to the new path; keep aliases so call sites don’t churn, then run `moon info` to regenerate `pkg.generated.mbti`.
+- When internalizing a concrete package, update every importing `moon.pkg.json` entry to the new internal path (alias stays the same), then run `moon ide find-references` or `rg` to confirm no old path remains.
+
+Tooling example:
+```bash
+moon ide outline runtime
+moon ide find-references value_to_string
+git mv runtime internal/runtime
+moon info
+moon check
+moon test
+```
 
 Example:
 ```mbt
