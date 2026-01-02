@@ -3079,3 +3079,5 @@ Notes:
 - Use large integers or large rationals (`1000000000000/1000000000001`) to exercise BigInt/BigRat code paths.
 - For eval primitive coverage, add black-box tests that return lists of booleans/ints, so multiple branches are asserted in one eval call.
 - Use `(char->integer (char-upcase ...))` and `(string->utf8 "hi" 1)` style calls to cover char/string and optional-arg paths without relying on platform-specific outputs.
+- For list/vector coverage, include both normal flows and arity errors; `vector-copy!` with 3/4/5 args hits all copy branches in a single test block.
+- For numeric predicates, mix exact/inexact literals and complex constructors (`make-rectangular`) to hit exact?/inexact?/zero?/finite?/nan? branches in one test.
