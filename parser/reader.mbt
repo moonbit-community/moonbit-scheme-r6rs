@@ -14,31 +14,27 @@ fn digit_value(ch : Char) -> Int? {
 }
 
 ///|
-fn parse_decimal_digits(chars : Array[Char]) -> Int? {
-  let (acc, has_digit) = for i = 0, acc = 0, has_digit = false;
-    i < chars.length(); {
-      // invariant : i >= 0 && i <= chars.length()
-      // decreases : chars.length() - i
-      // assert : i <= chars.length()
-      let ch = chars[i]
-      if !ch.is_ascii_digit() {
-        return None
-      }
-      continue i + 1, acc * 10 + (ch.to_int() - '0'.to_int()), true
-    } else {
-      (acc, has_digit)
+fn parse_decimal_digits(chars : StringView) -> Int? {
+  let mut acc = 0
+  let mut has_digit = false
+  for ch in chars {
+    if !ch.is_ascii_digit() {
+      return None
     }
+    acc = acc * 10 + (ch.to_int() - '0'.to_int())
+    has_digit = true
+  }
   if has_digit { Some(acc) } else { None }
 }
 
 ///|
 fn parse_int_token(tok : String) -> Int? {
-  let chars = tok.to_array()
-  match chars {
+  let view = tok[:]
+  match view {
     [] => None
-    ['+', ..rest] => parse_decimal_digits(rest.to_array())
-    ['-', ..rest] => parse_decimal_digits(rest.to_array()).map((value) => -value)
-    _ => parse_decimal_digits(chars)
+    ['+', ..rest] => parse_decimal_digits(rest)
+    ['-', ..rest] => parse_decimal_digits(rest).map((value) => -value)
+    _ => parse_decimal_digits(view)
   }
 }
 
@@ -46,8 +42,7 @@ fn parse_int_token(tok : String) -> Int? {
 
 ///|
 fn parse_label_token(tok : String) -> (Bool, Int)? {
-  let chars = string_to_chars(tok)
-  match chars {
+  match tok[:] {
     ['#', first, ..middle, last] => {
       if last != '=' && last != '#' {
         return None
@@ -55,20 +50,13 @@ fn parse_label_token(tok : String) -> (Bool, Int)? {
       if !first.is_ascii_digit() {
         return None
       }
-      let middle_chars = middle.to_array()
-      let acc = for i = 0, acc = first.to_int() - '0'.to_int();
-        i < middle_chars.length(); {
-          // invariant : i >= 0 && i <= middle_chars.length()
-          // decreases : middle_chars.length() - i
-          // assert : i <= middle_chars.length()
-          let ch = middle_chars[i]
-          if !ch.is_ascii_digit() {
-            return None
-          }
-          continue i + 1, acc * 10 + (ch.to_int() - '0'.to_int())
-        } else {
-          acc
+      let mut acc = first.to_int() - '0'.to_int()
+      for ch in middle {
+        if !ch.is_ascii_digit() {
+          return None
         }
+        acc = acc * 10 + (ch.to_int() - '0'.to_int())
+      }
       Some((last == '=', acc))
     }
     _ => None
@@ -437,38 +425,35 @@ fn parse_exact_decimal(tok : String) -> @core.Datum? {
     Some((b, e)) => (b, e)
     None => (tok, 0)
   }
-  let chars = string_to_chars(base)
-  let (sign, digits) = match chars {
+  let (sign, digits) = match base[:] {
     [] => return None
-    ['+', ..rest] => (1, rest.to_array())
-    ['-', ..rest] => (-1, rest.to_array())
-    _ => (1, chars)
+    ['+', ..rest] => (1, rest)
+    ['-', ..rest] => (-1, rest)
+    _ => (1, base[:])
   }
   let ten = bigint_from_int(10)
-  let (acc, frac_len, has_digit) = for i = 0,
-    acc = bigint_from_int(0), frac_len = 0, seen_dot = false, has_digit = false;
-    i < digits.length(); {
-      // invariant : i >= 0 && i <= digits.length()
-      // invariant : frac_len >= 0 && frac_len <= i
-      // invariant : acc.compare_int(0) >= 0
-      // decreases : digits.length() - i
-      // assert : i <= digits.length()
-      let ch = digits[i]
-      if ch == '.' {
-        if seen_dot {
-          return None
-        }
-        continue i + 1, acc, frac_len, true, has_digit
+  let mut acc = bigint_from_int(0)
+  let mut frac_len = 0
+  let mut seen_dot = false
+  let mut has_digit = false
+  for ch in digits {
+    if ch == '.' {
+      if seen_dot {
+        return None
       }
-      if ch.is_ascii_digit() {
-        let next_acc = acc * ten + bigint_from_int(ch.to_int() - '0'.to_int())
-        let next_frac = if seen_dot { frac_len + 1 } else { frac_len }
-        continue i + 1, next_acc, next_frac, seen_dot, true
-      }
-      return None
-    } else {
-      (acc, frac_len, has_digit)
+      seen_dot = true
+      continue
     }
+    if ch.is_ascii_digit() {
+      acc = acc * ten + bigint_from_int(ch.to_int() - '0'.to_int())
+      if seen_dot {
+        frac_len = frac_len + 1
+      }
+      has_digit = true
+      continue
+    }
+    return None
+  }
   if !has_digit {
     return None
   }
@@ -910,8 +895,7 @@ fn parse_hex_digits(chars : Array[Char]) -> Int? {
 
 ///|
 fn parse_char_token(tok : String) -> Char? {
-  let chars = string_to_chars(tok)
-  match chars {
+  match tok[:] {
     ['#', '\\', ..rest] => {
       let rest = rest.to_array()
       match rest {
