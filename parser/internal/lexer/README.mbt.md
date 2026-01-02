@@ -12,7 +12,7 @@ Reader and token utilities used by the parser.
 
 ```mbt
 ///|
-let reader = @lexer.Reader::new("(+ 1 2)")
+let reader = Reader::new("(+ 1 2)")
 
 ///|
 let tok = reader.read_token()

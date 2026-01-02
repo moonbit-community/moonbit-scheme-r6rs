@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "dii/scheme-r6rs/lexer"
+package "dii/scheme-r6rs/parser/internal/lexer"
 
 import(
   "dii/scheme-r6rs/core"

@@ -3091,6 +3091,7 @@ Notes:
 - `string-copy!` and `string-fill!` each have 3+ arity variants; add 3-arg/4-arg calls to cover the buffer and partial-fill branches.
 - `guard` only traps Scheme-raised conditions; primitive `EvalError` failures (like invalid record descriptors) must be caught with `try? eval_program` and setup repeated per program.
 - `eval_program` resets the record type registry, so tests that rely on existing UIDs must build the base descriptor and the mismatched call in the same program string.
+- To make a package internal (Go-style), move it under `<parent>/internal/<pkg>` and update `moon.pkg.json` imports to the new path; keep aliases so call sites don’t churn, then run `moon info` to regenerate `pkg.generated.mbti`.
 
 Example:
 ```mbt
