@@ -140,6 +140,7 @@ moon info
 - Use `s[:]` to get a `StringView` for pattern matching and slicing without allocating.
 - Indexing a `StringView` yields `UInt16` UTF-16 code units; use `view[i]` for efficiency when Unicode correctness is not required, or `for ch in view` to get `Char` values when you need Unicode-aware behavior.
 - Slicing a `String`/`StringView` can raise on invalid UTF-16 boundaries; use `try? s[start:end]` (or `try? view.sub(...)`) and fall back on `None`/error as needed.
+- Prefer `s.char_length()` over `s.to_array().length()` when you need Unicode character counts without allocating.
 - When parsing tokens, prefer `['+', ..rest]` / `['#', first, ..middle, last]` to replace length guards and index reads; keep digit loops in a small helper for reuse.
 - In tight loops with a mutable `Array`, use singleton patterns like `['#']` instead of `length() == 1 && arr[0] == '#'`.
 - Replace `length() <= 1` guards with `match arr { [] | [_] => ... }` to keep arity checks in the pattern.
