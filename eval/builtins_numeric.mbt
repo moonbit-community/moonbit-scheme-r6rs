@@ -229,98 +229,108 @@ fn apply_numeric_primitive_core(
         }
       }
     @core.Primitive::NumEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let first = value_as_number(args[0])
-        let ok = for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          if !num_equal(value_as_number(args[i]), first) {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let first = value_as_number(first)
+          let rest = rest.to_array()
+          let ok = for i = 0; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            if !num_equal(value_as_number(rest[i]), first) {
+              break false
+            }
+            continue i + 1
+          } else {
+            true
           }
-          continue i + 1
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::Less =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_number(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_number(args[i])
-          if !num_less(prev, cur) {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_number(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_number(rest[i])
+            if !num_less(prev, cur) {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::Greater =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_number(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_number(args[i])
-          if !num_greater(prev, cur) {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_number(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_number(rest[i])
+            if !num_greater(prev, cur) {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::LessEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_number(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_number(args[i])
-          if !num_less_eq(prev, cur) {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_number(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_number(rest[i])
+            if !num_less_eq(prev, cur) {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::GreaterEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_number(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_number(args[i])
-          if !num_greater_eq(prev, cur) {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_number(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_number(rest[i])
+            if !num_greater_eq(prev, cur) {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::ExactToInexact =>
       match args {
@@ -1563,98 +1573,108 @@ fn apply_numeric_primitive_core(
         _ => raise arity_mismatch(0, args.length())
       }
     @core.Primitive::FxEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let first = value_as_fixnum_int(args[0])
-        let ok = for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          if value_as_fixnum_int(args[i]) != first {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let first = value_as_fixnum_int(first)
+          let rest = rest.to_array()
+          let ok = for i = 0; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            if value_as_fixnum_int(rest[i]) != first {
+              break false
+            }
+            continue i + 1
+          } else {
+            true
           }
-          continue i + 1
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FxLess =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_fixnum_int(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_fixnum_int(args[i])
-          if prev >= cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_fixnum_int(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_fixnum_int(rest[i])
+            if prev >= cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FxGreater =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_fixnum_int(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_fixnum_int(args[i])
-          if prev <= cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_fixnum_int(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_fixnum_int(rest[i])
+            if prev <= cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FxLessEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_fixnum_int(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_fixnum_int(args[i])
-          if prev > cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_fixnum_int(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_fixnum_int(rest[i])
+            if prev > cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FxGreaterEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_fixnum_int(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_fixnum_int(args[i])
-          if prev < cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_fixnum_int(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_fixnum_int(rest[i])
+            if prev < cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FxZeroP =>
       match args {
@@ -2138,98 +2158,108 @@ fn apply_numeric_primitive_core(
         _ => raise arity_mismatch(1, args.length())
       }
     @core.Primitive::FlEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let first = value_as_flonum(args[0])
-        let ok = for i = 1; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          if value_as_flonum(args[i]) != first {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let first = value_as_flonum(first)
+          let rest = rest.to_array()
+          let ok = for i = 0; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            if value_as_flonum(rest[i]) != first {
+              break false
+            }
+            continue i + 1
+          } else {
+            true
           }
-          continue i + 1
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FlLess =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_flonum(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_flonum(args[i])
-          if prev >= cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_flonum(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_flonum(rest[i])
+            if prev >= cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FlGreater =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_flonum(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_flonum(args[i])
-          if prev <= cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_flonum(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_flonum(rest[i])
+            if prev <= cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FlLessEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_flonum(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_flonum(args[i])
-          if prev > cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_flonum(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_flonum(rest[i])
+            if prev > cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FlGreaterEq =>
-      if args.length() <= 1 {
-        bool_value(true)
-      } else {
-        let prev = value_as_flonum(args[0])
-        let ok = for i = 1, prev = prev; i < args.length(); {
-          // invariant : i >= 1 && i <= args.length()
-          // decreases : args.length() - i
-          // assert : i <= args.length()
-          let cur = value_as_flonum(args[i])
-          if prev < cur {
-            break false
+      match args {
+        [] | [_] => bool_value(true)
+        [first, ..rest] => {
+          let prev = value_as_flonum(first)
+          let rest = rest.to_array()
+          let ok = for i = 0, prev = prev; i < rest.length(); {
+            // invariant : i >= 0 && i <= rest.length()
+            // decreases : rest.length() - i
+            // assert : i <= rest.length()
+            let cur = value_as_flonum(rest[i])
+            if prev < cur {
+              break false
+            }
+            continue i + 1, cur
+          } else {
+            true
           }
-          continue i + 1, cur
-        } else {
-          true
+          bool_value(ok)
         }
-        bool_value(ok)
       }
     @core.Primitive::FlIntegerP =>
       match args {

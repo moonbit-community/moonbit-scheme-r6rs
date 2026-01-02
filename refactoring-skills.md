@@ -139,6 +139,7 @@ moon info
 - In tight loops with a mutable `Array`, use singleton patterns like `['#']` instead of `length() == 1 && arr[0] == '#'`.
 - Replace `length() <= 1` guards with `match arr { [] | [_] => ... }` to keep arity checks in the pattern.
 - For chain comparisons, match `[first, ..rest]` to remove index math and keep the loop over `rest`.
+- Apply the same pattern for numeric/fixnum/flonum comparison primitives to unify arity handling and simplify loops.
 
 Example:
 ```mbt
