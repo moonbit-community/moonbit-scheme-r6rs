@@ -2945,6 +2945,18 @@ let duplicate_label = try? parse_program("#1= #1= 1")
 inspect(duplicate_label is Err(_), content="true")
 ```
 
+## Polar complex tokens
+- `r@theta` parsing goes through `parse_complex_token`, which converts both sides to floats before calling `make_complex_datum`.
+- When the imaginary part is zero, `make_complex_datum` collapses the result to a real value, so expect `Float` not `Complex`.
+
+Example:
+```mbt
+match parse_number_token("1@0") {
+  Some(Float(f)) if f == 1.0 => ()
+  _ => fail("expected 1.0")
+}
+```
+
 ## Runtime coverage notes
 - Use `@core.SyntaxObject::new` with known scopes to hit `syntax_add_scope` branches (same scope vs new scope).
 - Call `reset_record_type_registry()` before registering aliases in tests to keep registries isolated.
@@ -2978,6 +2990,22 @@ unused = [n for n in fn_names if f'@runtime.{n}' not in text]
 print('\\n'.join(unused))
 PY
 ```
+
+## White-box tests for internal branches
+- Add `*_wbtest.mbt` files inside the package to call private helpers directly.
+- Prefer small `test` blocks that only check the error/branch you need, using `try?` for expected errors.
+
+Example:
+```mbt
+test "apply primitive core internal errors" {
+  let result = try? apply_primitive_core(@core.Primitive::Apply, [])
+  inspect(result is Err(_), content="true")
+}
+```
+
+## Unicode normalization coverage
+- Use Hangul syllables to exercise decomposition/composition, e.g. NFC of `\u{1100}\u{1161}\u{11A8}` → `\u{AC01}`.
+- Use compatibility-decomposable characters like `\u{2460}` to hit the NFKD compat map.
 
 ## Cover printer branches with constructor-built values
 - Use core constructors (RecordType::new/Record::new/Condition::new) to exercise

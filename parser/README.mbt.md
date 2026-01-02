@@ -154,6 +154,14 @@ test "parse number edge cases" {
     Some(Int(16)) => ()
     _ => fail("expected 16")
   }
+  match parse_number_token("#o10") {
+    Some(Int(8)) => ()
+    _ => fail("expected 8")
+  }
+  match parse_number_token("#d10") {
+    Some(Int(10)) => ()
+    _ => fail("expected 10")
+  }
   match parse_number_token("#x") {
     None => ()
     _ => fail("expected None")
@@ -178,12 +186,64 @@ test "parse number edge cases" {
     None => ()
     _ => fail("expected None")
   }
+  match parse_number_token("#xA/B") {
+    Some(Rat(10, 11)) => ()
+    _ => fail("expected hex rational")
+  }
+  match parse_number_token("1.5", radix=16) {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1/2", radix=16) {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1@@2") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("@1") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1@") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1@0") {
+    Some(Float(f)) if f == 1.0 => ()
+    _ => fail("expected 1.0")
+  }
+  match parse_number_token("i") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Int(1)) => ()
+        _ => fail("expected 0+1i")
+      }
+    _ => fail("expected complex")
+  }
+  match parse_number_token("+i") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Int(1)) => ()
+        _ => fail("expected 0+1i")
+      }
+    _ => fail("expected complex")
+  }
+  match parse_number_token("-i") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Int(-1)) => ()
+        _ => fail("expected 0-1i")
+      }
+    _ => fail("expected complex")
+  }
 }
 
 ///|
 test "parse char edge cases" {
-  match parse_program("#\\linefeed #\\backspace") {
-    [Char('\n'), Char('\u{8}'), ..] => ()
+  match parse_program("#\\linefeed #\\backspace #\\tab") {
+    [Char('\n'), Char('\u{8}'), Char('\t'), ..] => ()
     _ => fail("expected named chars")
   }
   match parse_program("#\\unknown #\\xZZ #\\") {

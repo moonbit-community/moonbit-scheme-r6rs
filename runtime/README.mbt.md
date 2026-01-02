@@ -315,6 +315,23 @@ test "syntax helpers extra" {
       }
     _ => fail("expected vector")
   }
+  let pair = @core.Datum::Pair(
+    Ref::new(@core.Datum::Symbol("p")),
+    Ref::new(@core.Datum::Nil),
+  )
+  let wrapped_pair = @core.Datum::Value(
+    @core.Value::SyntaxObject(
+      @core.SyntaxObject::new(pair, [3], None),
+    ),
+  )
+  match syntax_add_scope(wrapped_pair, 4) {
+    Value(SyntaxObject(obj)) =>
+      match obj.datum {
+        Pair(_, _) => ()
+        _ => fail("expected pair")
+      }
+    _ => fail("expected syntax object")
+  }
   let cell = Ref::new(@core.Datum::Nil)
   let label = @core.Datum::Label(1, cell)
   cell.val = label

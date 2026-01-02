@@ -69,6 +69,54 @@ test "unicode char case" {
 }
 
 ///|
+test "unicode titlecase" {
+  match UnicodeChar::new('\u{01C5}').general_category() {
+    "Lt" => ()
+    _ => fail("expected titlecase category")
+  }
+  match UnicodeChar::new('\u{01C5}').upcase() {
+    '\u{01C4}' | '\u{01C5}' => ()
+    _ => fail("expected titlecase upcase")
+  }
+  match UnicodeChar::new('\u{01C5}').downcase() {
+    '\u{01C6}' | '\u{01C5}' => ()
+    _ => fail("expected titlecase downcase")
+  }
+  match UnicodeChar::new('1').downcase() {
+    '1' => ()
+    _ => fail("expected unchanged")
+  }
+}
+
+///|
+test "unicode hangul normalization" {
+  inspect(
+    UnicodeString::new("\u{AC01}").normalize_nfd().into_string(),
+    content="\u{1100}\u{1161}\u{11A8}",
+  )
+  inspect(
+    UnicodeString::new("\u{1100}\u{1161}\u{11A8}").normalize_nfc().into_string(),
+    content="\u{AC01}",
+  )
+  inspect(
+    UnicodeString::new("\u{0301}A").normalize_nfd().into_string(),
+    content="\u{0301}A",
+  )
+  inspect(
+    UnicodeString::new("B\u{0301}").normalize_nfc().into_string(),
+    content="B\u{0301}",
+  )
+  inspect(
+    UnicodeString::new("\u{212B}").normalize_nfkd().into_string(),
+    content="A\u{030A}",
+  )
+  inspect(
+    UnicodeString::new("\u{2460}").normalize_nfkd().into_string(),
+    content="1",
+  )
+}
+
+///|
 test "binding helpers" {
   let binding = Binding::new(1, Value::Void)
   inspect(binding.id(), content="1")

@@ -113,4 +113,38 @@ test "include source" {
   let value = eval_program("(include \"mem.scm\")")
   inspect(@runtime.value_to_string(value), content="3")
 }
+
+///|
+test "primitive output helpers" {
+  let value = eval_program(
+    "(begin (write 1) (newline) (get-output-string (current-output-port)))",
+  )
+  inspect(@runtime.value_to_string(value), content="\"1\\n\"")
+}
+
+///|
+test "primitive arity errors" {
+  let display_err = try? eval_program("(display 1 2 3)")
+  inspect(display_err is Err(_), content="true")
+  let write_err = try? eval_program("(write)")
+  inspect(write_err is Err(_), content="true")
+  let newline_err = try? eval_program("(newline 1 2)")
+  inspect(newline_err is Err(_), content="true")
+  let open_out_err = try? eval_program("(open-output-string 1)")
+  inspect(open_out_err is Err(_), content="true")
+  let get_out_err = try? eval_program("(get-output-string)")
+  inspect(get_out_err is Err(_), content="true")
+  let current_err = try? eval_program("(current-output-port 1)")
+  inspect(current_err is Err(_), content="true")
+  let not_err = try? eval_program("(not)")
+  inspect(not_err is Err(_), content="true")
+}
+
+///|
+test "syntax helper errors" {
+  let var_err = try? eval_program("(make-variable-transformer 1)")
+  inspect(var_err is Err(_), content="true")
+  let temp_err = try? eval_program("(generate-temporaries '(1))")
+  inspect(temp_err is Err(_), content="true")
+}
 ```
