@@ -233,7 +233,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let first = value_as_number(first)
-          let rest = rest.to_array()
           let ok = for i = 0; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -253,7 +252,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_number(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -274,7 +272,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_number(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -295,7 +292,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_number(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -316,7 +312,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_number(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -1577,7 +1572,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let first = value_as_fixnum_int(first)
-          let rest = rest.to_array()
           let ok = for i = 0; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -1597,7 +1591,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_fixnum_int(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -1618,7 +1611,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_fixnum_int(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -1639,7 +1631,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_fixnum_int(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -1660,7 +1651,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_fixnum_int(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -2162,7 +2152,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let first = value_as_flonum(first)
-          let rest = rest.to_array()
           let ok = for i = 0; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -2182,7 +2171,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_flonum(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -2203,7 +2191,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_flonum(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -2224,7 +2211,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_flonum(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i
@@ -2245,7 +2231,6 @@ fn apply_numeric_primitive_core(
         [] | [_] => bool_value(true)
         [first, ..rest] => {
           let prev = value_as_flonum(first)
-          let rest = rest.to_array()
           let ok = for i = 0, prev = prev; i < rest.length(); {
             // invariant : i >= 0 && i <= rest.length()
             // decreases : rest.length() - i

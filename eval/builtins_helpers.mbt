@@ -2131,7 +2131,6 @@ fn compare_chain_char(
     [] | [_] => true
     [first, ..rest] => {
       let prev = foldcase_char_if(value_as_char(first), case_insensitive)
-      let rest = rest.to_array()
       for i = 0, prev = prev; i < rest.length(); {
         // invariant : i >= 0 && i <= rest.length()
         // decreases : rest.length() - i
@@ -2159,7 +2158,6 @@ fn compare_chain_string(
     [] | [_] => true
     [first, ..rest] => {
       let prev = foldcase_string_if(value_as_string(first), case_insensitive)
-      let rest = rest.to_array()
       for i = 0, prev = prev; i < rest.length(); {
         // invariant : i >= 0 && i <= rest.length()
         // decreases : rest.length() - i
@@ -2183,7 +2181,6 @@ fn compare_chain_bool(args : Array[@core.Value]) -> Bool raise @core.EvalError {
     [] | [_] => true
     [first, ..rest] => {
       let prev = value_as_bool(first)
-      let rest = rest.to_array()
       for i = 0, prev = prev; i < rest.length(); {
         // invariant : i >= 0 && i <= rest.length()
         // decreases : rest.length() - i
@@ -2206,7 +2203,6 @@ fn compare_chain_symbol(args : Array[@core.Value]) -> Bool raise @core.EvalError
     [] | [_] => true
     [first, ..rest] => {
       let prev = value_as_symbol(first)
-      let rest = rest.to_array()
       for i = 0, prev = prev; i < rest.length(); {
         // invariant : i >= 0 && i <= rest.length()
         // decreases : rest.length() - i

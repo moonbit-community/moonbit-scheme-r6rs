@@ -143,6 +143,7 @@ moon info
 - For functions that need the last argument (like `apply`/`append`), match `[..prefix, last]` instead of `length() - 1` indexing.
 - For non-raising helpers (like stack/env accessors), match `[.., last]` and `panic()` on `[]` to keep signatures while making the invariant explicit.
 - Replace `parts[0]` + `sub(start=1)` with `[head, ..rest]` matches when decoding list-like forms.
+- When `rest` is an ArrayView, iterate it directly (`for item in rest { ... }` or `for i = 0; i < rest.length(); { ... }`) and only call `to_array()` when an API demands an `Array`.
 
 Example:
 ```mbt

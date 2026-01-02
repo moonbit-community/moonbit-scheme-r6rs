@@ -4383,7 +4383,6 @@ fn eval_cond_expand_state(
   match clauses {
     [] => MachineState::Apply(@core.Value::Void, kont, handlers)
     [..prefix, last] => {
-      let prefix = prefix.to_array()
       for clause in prefix {
         let parts = datum_list_to_array(clause)
         match parts {
@@ -5108,18 +5107,12 @@ fn apply_apply(
   match args {
     [] | [_] => raise arity_mismatch(2, args.length())
     [proc, ..rest] => {
-      let rest = rest.to_array()
       match rest {
         [] => raise arity_mismatch(2, args.length())
         [..prefix, last] => {
           let flat : Array[@core.Value] = []
-          let prefix = prefix.to_array()
-          for i = 0; i < prefix.length(); {
-            // invariant : i >= 0 && i <= prefix.length()
-            // decreases : prefix.length() - i
-            // assert : i <= prefix.length()
-            flat.push(prefix[i])
-            continue i + 1
+          for item in prefix {
+            flat.push(item)
           }
           let list_value = value_as_datum(last)
           let tail = datum_list_to_value_array(list_value)
