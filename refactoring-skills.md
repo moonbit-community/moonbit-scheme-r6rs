@@ -146,6 +146,39 @@ moon info
 - When `rest` is an ArrayView, iterate it directly (`for item in rest { ... }` or `for i = 0; i < rest.length(); { ... }`) and only call `to_array()` when an API demands an `Array`.
 - Prefer `ArrayView[T]` parameters for read-only helpers; callers can pass `Array[T]` without conversion.
 
+## Detailed notes from recent refactors
+- **ArrayView parameters:** Accept `ArrayView[T]` for read-only helpers to avoid conversions at call sites. This keeps APIs flexible and reduces allocations. Example:
+```mbt
+fn parse_version_items(items : ArrayView[@core.Datum]) -> Array[Int] raise { ... }
+// Callers can pass `datum_list_to_array(expr)` or a view like `rest` directly.
+```
+- **Pattern-match instead of indexing:** Replace `arr[arr.length() - 1]` and `parts[0]` with `[.., last]` or `[head, ..rest]`. It encodes invariants in the pattern and makes invalid shapes explicit.
+```mbt
+match parts {
+  [] => raise @core.EvalError("invalid")
+  [head, ..rest] => eval_sequence_state(rest.to_array(), env, kont, handlers)
+}
+```
+- **ArrayView loops:** When a match yields `..rest`, treat it as a view and iterate without conversion. This removes temporary arrays while keeping functional loops.
+```mbt
+match args {
+  [first, ..rest] => {
+    let prev = value_as_number(first)
+    for i = 0, prev = prev; i < rest.length(); { ... }
+  }
+}
+```
+- **Last-arg extraction:** Use `[..prefix, last]` to split the tail once, then loop over `prefix` directly. This avoids `length()-1` math and clarifies intent.
+```mbt
+match args {
+  [..prefix, last] => {
+    for item in prefix { ... }
+    let tail = value_to_datum_element(last)
+    ...
+  }
+}
+```
+
 Example:
 ```mbt
 match chars {
