@@ -132,6 +132,20 @@ moon ide find-references @lexer.reader_peek
 moon info
 ```
 
+## Array view pattern matching
+- Match arrays directly; the compiler lowers to ArrayView, so `..rest` is a view (call `rest.to_array()` when you need an `Array`).
+- Use `..` in the middle to split prefix/suffix without manual length checks.
+
+Example:
+```mbt
+match chars {
+  ['#', first, ..middle, last] => ...
+  ['+', ..rest] => parse_decimal_digits(rest.to_array())
+  [..prefix, last] => ...
+  _ => None
+}
+```
+
 ## Simplify constructor prefixes in patterns
 - When the matched type is known, drop the `Type::` prefix in patterns to reduce noise.
 - Keep explicit qualifiers in expressions where the constructor type is not obvious.

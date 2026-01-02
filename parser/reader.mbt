@@ -14,19 +14,10 @@ fn digit_value(ch : Char) -> Int? {
 }
 
 ///|
-fn parse_int_token(tok : String) -> Int? {
-  let chars = tok.to_array()
-  if chars.is_empty() {
-    return None
-  }
-  let (start, sign) = match chars[0] {
-    '+' => (1, 1)
-    '-' => (1, -1)
-    _ => (0, 1)
-  }
-  let (acc, has_digit) = for i = start, acc = 0, has_digit = false;
+fn parse_decimal_digits(chars : Array[Char]) -> Int? {
+  let (acc, has_digit) = for i = 0, acc = 0, has_digit = false;
     i < chars.length(); {
-      // invariant : i >= start && i <= chars.length()
+      // invariant : i >= 0 && i <= chars.length()
       // decreases : chars.length() - i
       // assert : i <= chars.length()
       let ch = chars[i]
@@ -37,7 +28,18 @@ fn parse_int_token(tok : String) -> Int? {
     } else {
       (acc, has_digit)
     }
-  if has_digit { Some(sign * acc) } else { None }
+  if has_digit { Some(acc) } else { None }
+}
+
+///|
+fn parse_int_token(tok : String) -> Int? {
+  let chars = tok.to_array()
+  match chars {
+    [] => None
+    ['+', ..rest] => parse_decimal_digits(rest.to_array())
+    ['-', ..rest] => parse_decimal_digits(rest.to_array()).map((value) => -value)
+    _ => parse_decimal_digits(chars)
+  }
 }
 
 ///|
@@ -45,27 +47,32 @@ fn parse_int_token(tok : String) -> Int? {
 ///|
 fn parse_label_token(tok : String) -> (Bool, Int)? {
   let chars = string_to_chars(tok)
-  if chars.length() < 3 || chars[0] != '#' {
-    return None
-  }
-  let last = chars[chars.length() - 1]
-  if last != '=' && last != '#' {
-    return None
-  }
-  let end = chars.length() - 1
-  let acc = for i = 1, acc = 0; i < end; {
-    // invariant : i >= 1 && i <= end
-    // decreases : end - i
-    // assert : i <= end
-    let ch = chars[i]
-    if !ch.is_ascii_digit() {
-      return None
+  match chars {
+    ['#', first, ..middle, last] => {
+      if last != '=' && last != '#' {
+        return None
+      }
+      if !first.is_ascii_digit() {
+        return None
+      }
+      let middle_chars = middle.to_array()
+      let acc = for i = 0, acc = first.to_int() - '0'.to_int();
+        i < middle_chars.length(); {
+          // invariant : i >= 0 && i <= middle_chars.length()
+          // decreases : middle_chars.length() - i
+          // assert : i <= middle_chars.length()
+          let ch = middle_chars[i]
+          if !ch.is_ascii_digit() {
+            return None
+          }
+          continue i + 1, acc * 10 + (ch.to_int() - '0'.to_int())
+        } else {
+          acc
+        }
+      Some((last == '=', acc))
     }
-    continue i + 1, acc * 10 + (ch.to_int() - '0'.to_int())
-  } else {
-    acc
+    _ => None
   }
-  Some((last == '=', acc))
 }
 
 ///|
@@ -431,24 +438,22 @@ fn parse_exact_decimal(tok : String) -> @core.Datum? {
     None => (tok, 0)
   }
   let chars = string_to_chars(base)
-  if chars.is_empty() {
-    return None
-  }
-  let (sign, start) = match chars[0] {
-    '+' => (1, 1)
-    '-' => (-1, 1)
-    _ => (1, 0)
+  let (sign, digits) = match chars {
+    [] => return None
+    ['+', ..rest] => (1, rest.to_array())
+    ['-', ..rest] => (-1, rest.to_array())
+    _ => (1, chars)
   }
   let ten = bigint_from_int(10)
-  let (acc, frac_len, has_digit) = for i = start,
+  let (acc, frac_len, has_digit) = for i = 0,
     acc = bigint_from_int(0), frac_len = 0, seen_dot = false, has_digit = false;
-    i < chars.length(); {
-      // invariant : i >= start && i <= chars.length()
-      // invariant : frac_len >= 0 && frac_len <= i - start
+    i < digits.length(); {
+      // invariant : i >= 0 && i <= digits.length()
+      // invariant : frac_len >= 0 && frac_len <= i
       // invariant : acc.compare_int(0) >= 0
-      // decreases : chars.length() - i
-      // assert : i <= chars.length()
-      let ch = chars[i]
+      // decreases : digits.length() - i
+      // assert : i <= digits.length()
+      let ch = digits[i]
       if ch == '.' {
         if seen_dot {
           return None
@@ -906,43 +911,44 @@ fn parse_hex_digits(chars : Array[Char]) -> Int? {
 ///|
 fn parse_char_token(tok : String) -> Char? {
   let chars = string_to_chars(tok)
-  if chars.length() < 3 {
-    None
-  } else if chars[0] != '#' || chars[1] != '\\' {
-    None
-  } else {
-    let rest = chars.sub(start=2).to_array()
-    if rest.length() == 1 {
-      Some(rest[0])
-    } else {
-      let name = String::from_array(rest)
-      let lower = ascii_lower_string(name)
-      if lower.length() >= 2 {
-        match lower.get_char(0) {
-          Some('x') => {
-            let hex_chars = rest.sub(start=1).to_array()
-            return match parse_hex_digits(hex_chars) {
-              Some(value) => value.to_char()
-              None => None
+  match chars {
+    ['#', '\\', ..rest] => {
+      let rest = rest.to_array()
+      match rest {
+        [] => None
+        [ch] => Some(ch)
+        _ => {
+          let name = String::from_array(rest)
+          let lower = ascii_lower_string(name)
+          if lower.length() >= 2 {
+            match lower.get_char(0) {
+              Some('x') => {
+                let hex_chars = rest.sub(start=1).to_array()
+                return match parse_hex_digits(hex_chars) {
+                  Some(value) => value.to_char()
+                  None => None
+                }
+              }
+              _ => ()
             }
           }
-          _ => ()
+          match lower {
+            "space" => Some(' ')
+            "newline" => Some('\n')
+            "linefeed" => Some('\n')
+            "tab" => Some('\t')
+            "return" => Some('\r')
+            "alarm" => Some('\u{7}')
+            "backspace" => Some('\u{8}')
+            "escape" => Some('\u{1b}')
+            "delete" => Some('\u{7f}')
+            "null" => Some('\u{0}')
+            _ => None
+          }
         }
       }
-      match lower {
-        "space" => Some(' ')
-        "newline" => Some('\n')
-        "linefeed" => Some('\n')
-        "tab" => Some('\t')
-        "return" => Some('\r')
-        "alarm" => Some('\u{7}')
-        "backspace" => Some('\u{8}')
-        "escape" => Some('\u{1b}')
-        "delete" => Some('\u{7f}')
-        "null" => Some('\u{0}')
-        _ => None
-      }
     }
+    _ => None
   }
 }
 
