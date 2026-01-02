@@ -171,6 +171,7 @@ let cl = @core.Closure::new(id, params, rest, body, env)
 - For non-raising helpers (like stack/env accessors), match `[.., last]` and `panic()` on `[]` to keep signatures while making the invariant explicit.
 - Replace `parts[0]` + `sub(start=1)` with `[head, ..rest]` matches when decoding list-like forms.
 - When `rest` is an ArrayView, iterate it directly (`for item in rest { ... }` or `for i = 0; i < rest.length(); { ... }`) and only call `to_array()` when an API demands an `Array`.
+- If you switch a functional loop to `for item in rest`, remove invariant/decreases comments because `for-in` loops do not need specs.
 - Prefer `ArrayView[T]` parameters for read-only helpers; callers can pass `Array[T]` without conversion.
 
 ## Detailed notes from recent refactors
