@@ -163,14 +163,16 @@ fn value_equal(left : @core.Value, right : @core.Value) -> Bool {
 fn identifier_info(value : @core.Value) -> (String, Array[Int], Int?) raise @core.EvalError {
   match value {
     Datum(d) =>
-      match @runtime.datum_unlabel(d) {
-        Symbol(name) => (name, [], None)
-        _ => raise @core.EvalError("type error: identifier expected")
+      if @runtime.datum_unlabel(d) is Symbol(name) {
+        (name, [], None)
+      } else {
+        raise @core.EvalError("type error: identifier expected")
       }
     SyntaxObject(obj) =>
-      match @runtime.datum_unlabel(obj.datum) {
-        Symbol(name) => (name, obj.scopes, obj.binding_id)
-        _ => raise @core.EvalError("type error: identifier expected")
+      if @runtime.datum_unlabel(obj.datum) is Symbol(name) {
+        (name, obj.scopes, obj.binding_id)
+      } else {
+        raise @core.EvalError("type error: identifier expected")
       }
     _ => raise @core.EvalError("type error: identifier expected")
   }
@@ -179,16 +181,8 @@ fn identifier_info(value : @core.Value) -> (String, Array[Int], Int?) raise @cor
 ///|
 fn is_identifier_value(value : @core.Value) -> Bool {
   match value {
-    Datum(d) =>
-      match @runtime.datum_unlabel(d) {
-        Symbol(_) => true
-        _ => false
-      }
-    SyntaxObject(obj) =>
-      match @runtime.datum_unlabel(obj.datum) {
-        Symbol(_) => true
-        _ => false
-      }
+    Datum(d) => @runtime.datum_unlabel(d) is Symbol(_)
+    SyntaxObject(obj) => @runtime.datum_unlabel(obj.datum) is Symbol(_)
     _ => false
   }
 }
@@ -228,9 +222,10 @@ fn value_to_datum_element(value : @core.Value) -> @core.Datum {
 fn value_as_pair(value : @core.Value) -> (@core.Datum,@core.Datum) raise @core.EvalError {
   match value {
     Datum(datum) =>
-      match @runtime.datum_unlabel(datum) {
-        Pair(a, b) => (a.val, b.val)
-        _ => raise @core.EvalError("type error: pair expected")
+      if @runtime.datum_unlabel(datum) is Pair(a, b) {
+        (a.val, b.val)
+      } else {
+        raise @core.EvalError("type error: pair expected")
       }
     _ => raise @core.EvalError("type error: pair expected")
   }
@@ -242,9 +237,10 @@ fn value_as_pair_cells(
 ) -> (Ref[@core.Datum], Ref[@core.Datum]) raise @core.EvalError {
   match value {
     Datum(datum) =>
-      match @runtime.datum_unlabel(datum) {
-        Pair(a, b) => (a, b)
-        _ => raise @core.EvalError("type error: pair expected")
+      if @runtime.datum_unlabel(datum) is Pair(a, b) {
+        (a, b)
+      } else {
+        raise @core.EvalError("type error: pair expected")
       }
     _ => raise @core.EvalError("type error: pair expected")
   }

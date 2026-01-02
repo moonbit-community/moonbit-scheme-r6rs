@@ -3094,6 +3094,7 @@ Notes:
 - To make a package internal (Go-style), move it under `<parent>/internal/<pkg>` and update `moon.pkg.json` imports to the new path; keep aliases so call sites don’t churn, then run `moon info` to regenerate `pkg.generated.mbti`.
 - When internalizing a concrete package, update every importing `moon.pkg.json` entry to the new internal path (alias stays the same), then run `moon ide find-references` or `rg` to confirm no old path remains.
 - Update public-facing README examples to use facade functions instead of `@internal/...` packages so docs reinforce the minimal API surface.
+- Replace nested `match` chains with `is` pattern checks when you only need a single constructor, which keeps intent clear and removes one level of indentation.
 
 Tooling example:
 ```bash
@@ -3113,5 +3114,14 @@ test "cond/case arrow coverage" {
   )), content="4")
   let bad = try? eval_program("(case 2 ((2) => (lambda (x) x) 1) (else 0))")
   inspect(bad is Err(_), content="true")
+}
+```
+
+Pattern match in `is` example:
+```mbt
+let (car, cdr) = if @runtime.datum_unlabel(datum) is Pair(a, b) {
+  (a.val, b.val)
+} else {
+  raise @core.EvalError("type error: pair expected")
 }
 ```

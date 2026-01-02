@@ -205,15 +205,14 @@ fn apply_primitive_core(
             let (name, scopes, binding_id) = match @runtime.datum_unlabel(item) {
               Symbol(name) => (name, [], None)
               Value(SyntaxObject(obj)) =>
-                match @runtime.datum_unlabel(obj.datum) {
-                  Symbol(name) => {
-                    let copied : Array[Int] = []
-                    for scope in obj.scopes {
-                      copied.push(scope)
-                    }
-                    (name, copied, obj.binding_id)
+                if @runtime.datum_unlabel(obj.datum) is Symbol(name) {
+                  let copied : Array[Int] = []
+                  for scope in obj.scopes {
+                    copied.push(scope)
                   }
-                  _ => raise @core.EvalError("type error: identifier expected")
+                  (name, copied, obj.binding_id)
+                } else {
+                  raise @core.EvalError("type error: identifier expected")
                 }
               _ => raise @core.EvalError("type error: identifier expected")
             }
