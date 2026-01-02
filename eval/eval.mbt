@@ -399,16 +399,15 @@ fn eval_expr_impl(
             }
           }
           @core.Kont::Begin(rest, env, next) =>
-            if rest.is_empty() {
-              state = MachineState::Apply(value, next, handlers)
-            } else {
-              let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(
-                rest[0],
-                env,
-                @core.Kont::Begin(tail, env, next),
-                handlers,
-              )
+            match rest {
+              [] => state = MachineState::Apply(value, next, handlers)
+              [head, ..tail] =>
+                state = MachineState::Eval(
+                  head,
+                  env,
+                  @core.Kont::Begin(tail.to_array(), env, next),
+                  handlers,
+                )
             }
           @core.Kont::Set(name, env, next) => {
             let single = expect_single(value)
@@ -422,63 +421,63 @@ fn eval_expr_impl(
           }
           @core.Kont::AppFun(args, env, next) => {
             let proc_value = expect_single(value)
-            if args.is_empty() {
-              state = apply_proc(proc_value, [], next, handlers)
-            } else {
-              let rest = args.sub(start=1).to_array()
-              state = MachineState::Eval(
-                args[0],
-                env,
-                @core.Kont::AppArgs(proc_value, [], rest, env, next),
-                handlers,
-              )
+            match args {
+              [] => state = apply_proc(proc_value, [], next, handlers)
+              [head, ..rest] =>
+                state = MachineState::Eval(
+                  head,
+                  env,
+                  @core.Kont::AppArgs(proc_value, [], rest.to_array(), env, next),
+                  handlers,
+                )
             }
           }
           @core.Kont::AppArgs(proc, evaluated, remaining, env, next) => {
             let arg_value = expect_single(value)
             let next_values = values_with_push(evaluated, arg_value)
-            if remaining.is_empty() {
-              state = apply_proc(proc, next_values, next, handlers)
-            } else {
-              let rest = remaining.sub(start=1).to_array()
-              state = MachineState::Eval(
-                remaining[0],
-                env,
-                @core.Kont::AppArgs(proc, next_values, rest, env, next),
-                handlers,
-              )
+            match remaining {
+              [] => state = apply_proc(proc, next_values, next, handlers)
+              [head, ..rest] =>
+                state = MachineState::Eval(
+                  head,
+                  env,
+                  @core.Kont::AppArgs(proc, next_values, rest.to_array(), env, next),
+                  handlers,
+                )
             }
           }
           @core.Kont::And(rest, env, next) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = MachineState::Apply(test_value, next, handlers)
-            } else if rest.is_empty() {
-              state = MachineState::Apply(test_value, next, handlers)
             } else {
-              let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(
-                rest[0],
-                env,
-                @core.Kont::And(tail, env, next),
-                handlers,
-              )
+              match rest {
+                [] => state = MachineState::Apply(test_value, next, handlers)
+                [head, ..tail] =>
+                  state = MachineState::Eval(
+                    head,
+                    env,
+                    @core.Kont::And(tail.to_array(), env, next),
+                    handlers,
+                  )
+              }
             }
           }
           @core.Kont::Or(rest, env, next) => {
             let test_value = expect_single(value)
             if !is_false(test_value) {
               state = MachineState::Apply(test_value, next, handlers)
-            } else if rest.is_empty() {
-              state = MachineState::Apply(test_value, next, handlers)
             } else {
-              let tail = rest.sub(start=1).to_array()
-              state = MachineState::Eval(
-                rest[0],
-                env,
-                @core.Kont::Or(tail, env, next),
-                handlers,
-              )
+              match rest {
+                [] => state = MachineState::Apply(test_value, next, handlers)
+                [head, ..tail] =>
+                  state = MachineState::Eval(
+                    head,
+                    env,
+                    @core.Kont::Or(tail.to_array(), env, next),
+                    handlers,
+                  )
+              }
             }
           }
           @core.Kont::Cond(parts, rest, env, next) => {
