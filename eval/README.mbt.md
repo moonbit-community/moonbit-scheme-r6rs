@@ -277,6 +277,310 @@ test "char and string arity errors" {
 }
 
 ///|
+test "pair and list primitives" {
+  let pair =
+    eval_program("(let ((p (cons 1 2))) (set-car! p 3) (set-cdr! p 4) p)")
+  inspect(@runtime.value_to_string(pair), content="(3 . 4)")
+  let car_value = eval_program("(car (cons 1 2))")
+  inspect(@runtime.value_to_string(car_value), content="1")
+  let cdr_value = eval_program("(cdr (cons 1 2))")
+  inspect(@runtime.value_to_string(cdr_value), content="2")
+  let cadr_value = eval_program("(cadr '(1 2 3))")
+  inspect(@runtime.value_to_string(cadr_value), content="2")
+  let make_list = eval_program("(make-list 3 'x)")
+  inspect(@runtime.value_to_string(make_list), content="(x x x)")
+}
+
+///|
+test "pair and list arity errors" {
+  let cons_err = try? eval_program("(cons 1)")
+  inspect(cons_err is Err(_), content="true")
+  let set_car_err = try? eval_program("(set-car! (cons 1 2))")
+  inspect(set_car_err is Err(_), content="true")
+  let set_cdr_err = try? eval_program("(set-cdr! (cons 1 2))")
+  inspect(set_cdr_err is Err(_), content="true")
+  let car_err = try? eval_program("(car)")
+  inspect(car_err is Err(_), content="true")
+  let cdr_err = try? eval_program("(cdr)")
+  inspect(cdr_err is Err(_), content="true")
+  let cxr_err = try? eval_program("(cadr)")
+  inspect(cxr_err is Err(_), content="true")
+  let cadr_err = try? eval_program("(cadr 1)")
+  inspect(cadr_err is Err(_), content="true")
+  let make_list_err = try? eval_program("(make-list)")
+  inspect(make_list_err is Err(_), content="true")
+  let make_list_err2 = try? eval_program("(make-list 1 2 3)")
+  inspect(make_list_err2 is Err(_), content="true")
+  let null_err = try? eval_program("(null?)")
+  inspect(null_err is Err(_), content="true")
+  let pair_err = try? eval_program("(pair?)")
+  inspect(pair_err is Err(_), content="true")
+  let list_false = eval_program("(list? (lambda (x) x))")
+  inspect(@runtime.value_to_string(list_false), content="#f")
+  let list_err = try? eval_program("(list?)")
+  inspect(list_err is Err(_), content="true")
+  let length_err = try? eval_program("(length (lambda (x) x))")
+  inspect(length_err is Err(_), content="true")
+  let length_arity = try? eval_program("(length)")
+  inspect(length_arity is Err(_), content="true")
+  let append_err = try? eval_program("(append (lambda (x) x) '(1))")
+  inspect(append_err is Err(_), content="true")
+}
+
+///|
+test "vector primitives" {
+  let vec = eval_program("(vector 1 2 3)")
+  inspect(@runtime.value_to_string(vec), content="#(1 2 3)")
+  let make_vec = eval_program("(make-vector 3 'a)")
+  inspect(@runtime.value_to_string(make_vec), content="#(a a a)")
+  let vec_p = eval_program("(vector? 1)")
+  inspect(@runtime.value_to_string(vec_p), content="#f")
+  let vec_len = eval_program("(vector-length #(1 2 3))")
+  inspect(@runtime.value_to_string(vec_len), content="3")
+  let vec_ref = eval_program("(vector-ref #(1 2 3) 1)")
+  inspect(@runtime.value_to_string(vec_ref), content="2")
+  let vec_set =
+    eval_program("(let ((v (vector 1 2 3))) (vector-set! v 1 9) v)")
+  inspect(@runtime.value_to_string(vec_set), content="#(1 9 3)")
+  let vec_fill =
+    eval_program("(let ((v (vector 1 2 3))) (vector-fill! v 9 1) v)")
+  inspect(@runtime.value_to_string(vec_fill), content="#(1 9 9)")
+  let vec_copy = eval_program("(vector-copy #(1 2 3) 1)")
+  inspect(@runtime.value_to_string(vec_copy), content="#(2 3)")
+  let vec_copy_bang =
+    eval_program(
+      "(let ((dst (make-vector 4 0)) (src #(1 2 3))) (vector-copy! dst 0 src) dst)",
+    )
+  inspect(@runtime.value_to_string(vec_copy_bang), content="#(1 2 3 0)")
+  let vec_copy_bang_start =
+    eval_program(
+      "(let ((dst (make-vector 4 0)) (src #(1 2 3))) (vector-copy! dst 0 src 1) dst)",
+    )
+  inspect(@runtime.value_to_string(vec_copy_bang_start), content="#(2 3 0 0)")
+  let vec_copy_bang_slice =
+    eval_program(
+      "(let ((dst (make-vector 4 0)) (src #(1 2 3))) (vector-copy! dst 1 src 0 2) dst)",
+    )
+  inspect(@runtime.value_to_string(vec_copy_bang_slice), content="#(0 1 2 0)")
+  let vec_append = eval_program("(vector-append #(1) #(2 3))")
+  inspect(@runtime.value_to_string(vec_append), content="#(1 2 3)")
+  let vec_to_list = eval_program("(vector->list #(1 2 3) 1 3)")
+  inspect(@runtime.value_to_string(vec_to_list), content="(2 3)")
+  let list_to_vec = eval_program("(list->vector '(1 2))")
+  inspect(@runtime.value_to_string(list_to_vec), content="#(1 2)")
+}
+
+///|
+test "vector arity errors" {
+  let vec_p_err = try? eval_program("(vector?)")
+  inspect(vec_p_err is Err(_), content="true")
+  let vec_len_err = try? eval_program("(vector-length)")
+  inspect(vec_len_err is Err(_), content="true")
+  let vec_ref_err = try? eval_program("(vector-ref #(1))")
+  inspect(vec_ref_err is Err(_), content="true")
+  let vec_set_err = try? eval_program("(vector-set! #(1) 0)")
+  inspect(vec_set_err is Err(_), content="true")
+  let vec_fill_err = try? eval_program("(vector-fill! #(1) 0 1 2 3)")
+  inspect(vec_fill_err is Err(_), content="true")
+  let vec_copy_err = try? eval_program("(vector-copy)")
+  inspect(vec_copy_err is Err(_), content="true")
+  let vec_copy_bang_err = try? eval_program("(vector-copy! #(1) 0)")
+  inspect(vec_copy_bang_err is Err(_), content="true")
+  let vec_to_list_err = try? eval_program("(vector->list)")
+  inspect(vec_to_list_err is Err(_), content="true")
+  let list_to_vec_err = try? eval_program("(list->vector)")
+  inspect(list_to_vec_err is Err(_), content="true")
+  let make_vec_err = try? eval_program("(make-vector)")
+  inspect(make_vec_err is Err(_), content="true")
+}
+
+///|
+test "symbol and predicate basics" {
+  let preds =
+    eval_program(
+      "(list (symbol? 'a) (symbol? 1) (identifier? #'a) (identifier? 1) (syntax? #'a) (syntax? 'a) (boolean? #t) (boolean? 1) (number? 1) (number? 'a) (integer? 1) (integer? 1.2) (exact-integer? 1) (exact-integer? 1.2) (rational? 1/2) (rational? 1+2i) (real? 1.0) (real? 1+2i) (complex? 1.0) (complex? 1+2i))",
+    )
+  inspect(
+    @runtime.value_to_string(preds),
+    content="(#t #f #t #f #t #f #t #f #t #f #t #f #t #f #t #f #t #f #t #t)",
+  )
+  let non_datum =
+    eval_program(
+      "(let ((f (lambda (x) x))) (list (boolean? f) (number? f) (integer? f) (exact-integer? f) (rational? f) (real? f) (complex? f)))",
+    )
+  inspect(@runtime.value_to_string(non_datum), content="(#f #f #f #f #f #f #f)")
+  let hashes =
+    eval_program(
+      "(list (integer? (string-hash \"a\")) (integer? (string-ci-hash \"A\")) (integer? (symbol-hash 'a)) (integer? (equal-hash '(1 2))))",
+    )
+  inspect(@runtime.value_to_string(hashes), content="(#t #t #t #t)")
+  let sym_text = eval_program("(symbol->string 'abc)")
+  inspect(@runtime.value_to_string(sym_text), content="\"abc\"")
+  let sym = eval_program("(string->symbol \"abc\")")
+  inspect(@runtime.value_to_string(sym), content="abc")
+  let syn_value = eval_program("(syntax->datum (datum->syntax #'x #'y))")
+  inspect(@runtime.value_to_string(syn_value), content="y")
+  let syn_datum = eval_program("(syntax->datum 'x)")
+  inspect(@runtime.value_to_string(syn_datum), content="x")
+}
+
+///|
+test "symbol and predicate arity errors" {
+  let eq_err = try? eval_program("(eq? 1)")
+  inspect(eq_err is Err(_), content="true")
+  let eqv_err = try? eval_program("(eqv? 1)")
+  inspect(eqv_err is Err(_), content="true")
+  let equal_err = try? eval_program("(equal? 1)")
+  inspect(equal_err is Err(_), content="true")
+  let symbol_p_err = try? eval_program("(symbol?)")
+  inspect(symbol_p_err is Err(_), content="true")
+  let identifier_err = try? eval_program("(identifier?)")
+  inspect(identifier_err is Err(_), content="true")
+  let syntax_err = try? eval_program("(syntax?)")
+  inspect(syntax_err is Err(_), content="true")
+  let free_id_err = try? eval_program("(free-identifier=? #'a)")
+  inspect(free_id_err is Err(_), content="true")
+  let bound_id_err = try? eval_program("(bound-identifier=? #'a)")
+  inspect(bound_id_err is Err(_), content="true")
+  let sym_string_err = try? eval_program("(symbol->string 1)")
+  inspect(sym_string_err is Err(_), content="true")
+  let sym_string_arity = try? eval_program("(symbol->string)")
+  inspect(sym_string_arity is Err(_), content="true")
+  let sym_string_arity2 = try? eval_program("(symbol->string 'a 'b)")
+  inspect(sym_string_arity2 is Err(_), content="true")
+  let string_sym_err = try? eval_program("(string->symbol 1)")
+  inspect(string_sym_err is Err(_), content="true")
+  let string_sym_arity = try? eval_program("(string->symbol)")
+  inspect(string_sym_arity is Err(_), content="true")
+  let string_sym_arity2 = try? eval_program("(string->symbol \"a\" \"b\")")
+  inspect(string_sym_arity2 is Err(_), content="true")
+  let string_hash_err = try? eval_program("(string-hash)")
+  inspect(string_hash_err is Err(_), content="true")
+  let string_ci_hash_err = try? eval_program("(string-ci-hash)")
+  inspect(string_ci_hash_err is Err(_), content="true")
+  let symbol_hash_err = try? eval_program("(symbol-hash)")
+  inspect(symbol_hash_err is Err(_), content="true")
+  let equal_hash_err = try? eval_program("(equal-hash)")
+  inspect(equal_hash_err is Err(_), content="true")
+  let syntax_to_datum_err = try? eval_program("(syntax->datum (lambda (x) x))")
+  inspect(syntax_to_datum_err is Err(_), content="true")
+  let syntax_to_datum_arity = try? eval_program("(syntax->datum)")
+  inspect(syntax_to_datum_arity is Err(_), content="true")
+  let syntax_to_datum_arity2 = try? eval_program("(syntax->datum #'x #'y)")
+  inspect(syntax_to_datum_arity2 is Err(_), content="true")
+  let datum_to_syntax_err = try? eval_program("(datum->syntax #'x (lambda (x) x))")
+  inspect(datum_to_syntax_err is Err(_), content="true")
+  let datum_to_syntax_arity = try? eval_program("(datum->syntax #'x)")
+  inspect(datum_to_syntax_arity is Err(_), content="true")
+  let boolean_err = try? eval_program("(boolean?)")
+  inspect(boolean_err is Err(_), content="true")
+  let number_err = try? eval_program("(number?)")
+  inspect(number_err is Err(_), content="true")
+}
+
+///|
+test "numeric predicate edges" {
+  let exact_complex = eval_program("(exact? (make-rectangular 1 1000000000000))")
+  inspect(@runtime.value_to_string(exact_complex), content="#t")
+  let exact_complex_rat = eval_program("(exact? (make-rectangular 1 1/2))")
+  inspect(@runtime.value_to_string(exact_complex_rat), content="#t")
+  let exact_proc = eval_program("(exact? (lambda (x) x))")
+  inspect(@runtime.value_to_string(exact_proc), content="#f")
+  let inexact_complex = eval_program("(inexact? (make-rectangular 1 1.0))")
+  inspect(@runtime.value_to_string(inexact_complex), content="#t")
+  let inexact_exact = eval_program("(inexact? (make-rectangular 1 2))")
+  inspect(@runtime.value_to_string(inexact_exact), content="#f")
+  let zero_big = eval_program("(zero? 1000000000000)")
+  inspect(@runtime.value_to_string(zero_big), content="#f")
+  let zero_bigrat = eval_program("(zero? 1000000000000/3)")
+  inspect(@runtime.value_to_string(zero_bigrat), content="#f")
+  let zero_complex = eval_program("(zero? (make-rectangular 0 1))")
+  inspect(@runtime.value_to_string(zero_complex), content="#f")
+  let positive_big = eval_program("(positive? 1000000000000/3)")
+  inspect(@runtime.value_to_string(positive_big), content="#t")
+  let positive_float = eval_program("(positive? 1.0)")
+  inspect(@runtime.value_to_string(positive_float), content="#t")
+  let negative_int = eval_program("(negative? -1)")
+  inspect(@runtime.value_to_string(negative_int), content="#t")
+  let negative_rat = eval_program("(negative? -1/2)")
+  inspect(@runtime.value_to_string(negative_rat), content="#t")
+  let negative_big = eval_program("(negative? -1000000000000/3)")
+  inspect(@runtime.value_to_string(negative_big), content="#t")
+  let odd_complex = eval_program("(odd? (make-rectangular 3 0))")
+  inspect(@runtime.value_to_string(odd_complex), content="#t")
+  let even_complex = eval_program("(even? (make-rectangular 4 0))")
+  inspect(@runtime.value_to_string(even_complex), content="#t")
+  let finite_complex = eval_program("(finite? (make-rectangular 1 0))")
+  inspect(@runtime.value_to_string(finite_complex), content="#t")
+  let infinite_real = eval_program("(infinite? +inf.0)")
+  inspect(@runtime.value_to_string(infinite_real), content="#t")
+  let nan_real = eval_program("(nan? +nan.0)")
+  inspect(@runtime.value_to_string(nan_real), content="#t")
+  let proc_true = eval_program("(procedure? (lambda (x) x))")
+  inspect(@runtime.value_to_string(proc_true), content="#t")
+  let proc_false = eval_program("(procedure? 1)")
+  inspect(@runtime.value_to_string(proc_false), content="#f")
+}
+
+///|
+test "numeric predicate errors" {
+  let integer_err = try? eval_program("(integer?)")
+  inspect(integer_err is Err(_), content="true")
+  let exact_integer_err = try? eval_program("(exact-integer?)")
+  inspect(exact_integer_err is Err(_), content="true")
+  let rational_err = try? eval_program("(rational?)")
+  inspect(rational_err is Err(_), content="true")
+  let real_err = try? eval_program("(real?)")
+  inspect(real_err is Err(_), content="true")
+  let complex_err = try? eval_program("(complex?)")
+  inspect(complex_err is Err(_), content="true")
+  let exact_err = try? eval_program("(exact?)")
+  inspect(exact_err is Err(_), content="true")
+  let inexact_err = try? eval_program("(inexact?)")
+  inspect(inexact_err is Err(_), content="true")
+  let zero_err = try? eval_program("(zero?)")
+  inspect(zero_err is Err(_), content="true")
+  let positive_err = try? eval_program("(positive?)")
+  inspect(positive_err is Err(_), content="true")
+  let negative_err = try? eval_program("(negative?)")
+  inspect(negative_err is Err(_), content="true")
+  let odd_err = try? eval_program("(odd?)")
+  inspect(odd_err is Err(_), content="true")
+  let odd_float_err = try? eval_program("(odd? 1.2)")
+  inspect(odd_float_err is Err(_), content="true")
+  let odd_complex_err = try? eval_program("(odd? (make-rectangular 1 1))")
+  inspect(odd_complex_err is Err(_), content="true")
+  let odd_real_err = try? eval_program("(odd? (make-rectangular 1.2 0))")
+  inspect(odd_real_err is Err(_), content="true")
+  let even_err = try? eval_program("(even?)")
+  inspect(even_err is Err(_), content="true")
+  let even_float_err = try? eval_program("(even? 1.2)")
+  inspect(even_float_err is Err(_), content="true")
+  let even_complex_err = try? eval_program("(even? (make-rectangular 1 1))")
+  inspect(even_complex_err is Err(_), content="true")
+  let even_real_err = try? eval_program("(even? (make-rectangular 1.2 0))")
+  inspect(even_real_err is Err(_), content="true")
+  let finite_err = try? eval_program("(finite?)")
+  inspect(finite_err is Err(_), content="true")
+  let finite_complex_err = try? eval_program("(finite? (make-rectangular 1 1))")
+  inspect(finite_complex_err is Err(_), content="true")
+  let infinite_err = try? eval_program("(infinite?)")
+  inspect(infinite_err is Err(_), content="true")
+  let infinite_complex_err = try? eval_program("(infinite? (make-rectangular 1 1))")
+  inspect(infinite_complex_err is Err(_), content="true")
+  let infinite_type_err = try? eval_program("(infinite? 'a)")
+  inspect(infinite_type_err is Err(_), content="true")
+  let nan_err = try? eval_program("(nan?)")
+  inspect(nan_err is Err(_), content="true")
+  let nan_complex_err = try? eval_program("(nan? (make-rectangular 1 1))")
+  inspect(nan_complex_err is Err(_), content="true")
+  let nan_type_err = try? eval_program("(nan? 'a)")
+  inspect(nan_type_err is Err(_), content="true")
+  let procedure_err = try? eval_program("(procedure?)")
+  inspect(procedure_err is Err(_), content="true")
+}
+
+///|
 test "syntax-rules macro" {
   let program =
     "(begin (define-syntax add2 (syntax-rules () ((add2 x) (+ x 2)))) (add2 3))"
