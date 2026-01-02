@@ -198,6 +198,86 @@ test "parse number edge cases" {
     None => ()
     _ => fail("expected None")
   }
+  match parse_number_token("0/5") {
+    Some(Int(0)) => ()
+    _ => fail("expected 0/5 -> 0")
+  }
+  match parse_number_token("4/2") {
+    Some(Int(2)) => ()
+    _ => fail("expected 4/2 -> 2")
+  }
+  match parse_number_token("1/0") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1/-2") {
+    Some(Rat(-1, 2)) => ()
+    _ => fail("expected -1/2")
+  }
+  match parse_number_token("1e") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1.2.3") {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("#i10") {
+    Some(Float(f)) if f == 10.0 => ()
+    _ => fail("expected inexact 10.0")
+  }
+  match parse_number_token("#i1/2") {
+    Some(Float(f)) if f == 0.5 => ()
+    _ => fail("expected inexact 0.5")
+  }
+  match parse_number_token("#ii") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Float(f)) if f == 1.0 => ()
+        _ => fail("expected 0+1.0i")
+      }
+    _ => fail("expected complex")
+  }
+  match parse_number_token("#i+i") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Float(f)) if f == 1.0 => ()
+        _ => fail("expected 0+1.0i")
+      }
+    _ => fail("expected complex")
+  }
+  match parse_number_token("#i-i") {
+    Some(Complex(real, imag)) =>
+      match (real.val, imag.val) {
+        (Int(0), Float(f)) if f == -1.0 => ()
+        _ => fail("expected 0-1.0i")
+      }
+    _ => fail("expected complex")
+  }
+  match parse_number_token("#o10", radix=10) {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1/2", radix=10) {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1", radix=1) {
+    None => ()
+    _ => fail("expected None")
+  }
+  match parse_number_token("1000000000000000000000000000000/2") {
+    Some(BigInt(_)) => ()
+    _ => fail("expected big int")
+  }
+  match parse_number_token("0/1000000000000000000000000000000") {
+    Some(Int(0)) => ()
+    _ => fail("expected 0")
+  }
+  match parse_number_token("1000000000000000000000000000000/0") {
+    None => ()
+    _ => fail("expected None")
+  }
   match parse_number_token("1@@2") {
     None => ()
     _ => fail("expected None")
