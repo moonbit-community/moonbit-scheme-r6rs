@@ -3211,3 +3211,26 @@ test "identifier scopes" {
   inspect(@runtime.value_to_string(value), content="(#f #f)")
 }
 ```
+
+## Reuse token helpers with nested matches
+- Slice `StringView` with `try` and feed it into shared helpers (like `parse_decimal_digits`) to reduce duplicated loops and `mut`.
+
+Example:
+```mbt
+fn parse_label_token(tok : String) -> (Bool, Int)? {
+  let view = tok[:]
+  match view {
+    ['#', .., last] =>
+      match last {
+        '=' | '#' => {
+          let digits = try view[1:view.length() - 1] catch {
+            _ => return None
+          } noraise { view => view }
+          parse_decimal_digits(digits).map((acc) => (last == '=', acc))
+        }
+        _ => None
+      }
+    _ => None
+  }
+}
+```

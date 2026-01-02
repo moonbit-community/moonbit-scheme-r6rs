@@ -40,23 +40,20 @@ fn parse_int_token(tok : String) -> Int? {
 
 ///|
 fn parse_label_token(tok : String) -> (Bool, Int)? {
-  match tok[:] {
-    ['#', first, ..middle, last] => {
-      if last != '=' && last != '#' {
-        return None
-      }
-      if !first.is_ascii_digit() {
-        return None
-      }
-      let mut acc = first.to_int() - '0'.to_int()
-      for ch in middle {
-        if !ch.is_ascii_digit() {
-          return None
+  let view = tok[:]
+  match view {
+    ['#', .., last] =>
+      match last {
+        '=' | '#' => {
+          let digits = try view[1:view.length() - 1] catch {
+            _ => return None
+          } noraise {
+            view => view
+          }
+          parse_decimal_digits(digits).map((acc) => (last == '=', acc))
         }
-        acc = acc * 10 + (ch.to_int() - '0'.to_int())
+        _ => None
       }
-      Some((last == '=', acc))
-    }
     _ => None
   }
 }
