@@ -3310,3 +3310,21 @@ test "macro transformer vector" {
   inspect(@runtime.value_to_string(value), content="#(5 5)")
 }
 ```
+
+## Coverage-guided black-box tests
+- Start with `moon coverage analyze -- -f summary`, then drill into a file with `moon coverage analyze -- -f caret -F eval/builtins_list.mbt`.
+- Add black-box probes in `README.mbt.md` or `spec_*.mbt` (via `eval_program`) instead of importing private helpers.
+- For error paths, wrap `try? eval_program` and assert `Err(_)` to cover type/arity branches safely.
+- For expected panics in white-box tests, name the test `test "panic ..."` and wrap return values with `ignore(...)`.
+
+Example:
+```mbt
+test "list primitive error branches" {
+  let expect_err = (expr : String) => {
+    let err = try? eval_program(expr)
+    inspect(err is Err(_), content="true")
+  }
+  expect_err("(reverse)")
+  expect_err("(reverse (lambda (x) x))")
+}
+```
