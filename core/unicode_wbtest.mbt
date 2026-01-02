@@ -22,6 +22,11 @@ test "unicode internals" {
 }
 
 ///|
+test "panic unicode case folding odd data" {
+  ignore(build_case_folding("a"[:]))
+}
+
+///|
 test "unicode normalization internals" {
   let segment : Array[Char] = []
   insert_sorted_by_ccc(segment, 'a', 1)

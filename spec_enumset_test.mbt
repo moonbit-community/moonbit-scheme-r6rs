@@ -48,3 +48,21 @@ test "r6rs enum-sets: projection" {
     #|(enum-set->list proj)
   inspect(value_to_string(eval_program(program)), content="(d)")
 }
+
+///|
+test "r6rs enum-sets: universe mismatch error" {
+  let program =
+    #|(define a (make-enumeration '(a b)))
+    #|(define b (make-enumeration '(c d)))
+    #|(define sa ((enum-set-constructor a) '(a)))
+    #|(define sb ((enum-set-constructor b) '(c)))
+    #|(enum-set-union sa sb)
+  let result = try? eval_program(program)
+  inspect(result is Err(_), content="true")
+}
+
+///|
+test "r6rs enum-sets: duplicate symbol error" {
+  let result = try? eval_program("(make-enumeration '(a a))")
+  inspect(result is Err(_), content="true")
+}

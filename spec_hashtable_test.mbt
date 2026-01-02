@@ -34,6 +34,16 @@ test "r6rs hashtable: custom equivalence" {
 }
 
 ///|
+test "r6rs hashtable: eqv and equal equivalence" {
+  let program =
+    #|(define ht-eqv (make-hashtable (lambda (x) 0) eqv?))
+    #|(define ht-equal (make-hashtable (lambda (x) 0) equal?))
+    #|(list (eq? (hashtable-equivalence-function ht-eqv) eqv?)
+    #|      (eq? (hashtable-equivalence-function ht-equal) equal?))
+  inspect(value_to_string(eval_program(program)), content="(#t #t)")
+}
+
+///|
 test "r6rs hashtable: copy and entries" {
   let program =
     #|(define ht (make-eq-hashtable))
@@ -63,4 +73,13 @@ test "r6rs hashtable: immutable set fails" {
     Err(err) => inspect(err, content="EvalError(\"hashtable is immutable\")")
     _ => fail("expected immutable hashtable error")
   }
+}
+
+///|
+test "r6rs hashtable: invalid equivalence function" {
+  let program =
+    #|(define ht (make-hashtable (lambda (x) 0) 1))
+    #|(hashtable-size ht)
+  let result = try? eval_program(program)
+  inspect(result is Err(_), content="true")
 }

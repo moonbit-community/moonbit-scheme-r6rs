@@ -259,6 +259,15 @@ test "r6rs vectors" {
 }
 
 ///|
+test "r6rs vectors: equal? comparisons" {
+  let program =
+    #|(list (equal? #(1 2) #(1 2))
+    #|      (equal? #(1 2) #(1 2 3))
+    #|      (equal? #(1 2) #(1 3)))
+  inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
+}
+
+///|
 test "r6rs bytevectors" {
   inspect(
     value_to_string(
