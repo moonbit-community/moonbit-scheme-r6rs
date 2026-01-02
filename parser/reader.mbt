@@ -435,9 +435,10 @@ fn parse_float_token_with_exp(tok : String) -> Float? {
       let base_val = match parse_float_token(base) {
         Some(f) => Some(f)
         None =>
-          match parse_int_token(base) {
-            Some(n) => Some(Float::from_int(n))
-            None => None
+          if parse_int_token(base) is Some(n) {
+            Some(Float::from_int(n))
+          } else {
+            None
           }
       }
       match base_val {
@@ -566,6 +567,18 @@ fn datum_to_float(value : @core.Datum) -> Float? {
 }
 
 ///|
+fn apply_inexact_exactness(exactness : Char?, datum : @core.Datum) -> @core.Datum? {
+  match exactness {
+    Some('i') | Some('I') =>
+      match datum_to_float(datum) {
+        Some(f) => Some(@core.Datum::Float(f))
+        None => None
+      }
+    _ => Some(datum)
+  }
+}
+
+///|
 fn reader_datum_is_zero(value : @core.Datum) -> Bool {
   match value {
     Int(n) => n == 0
@@ -667,15 +680,7 @@ fn parse_real_token_with_settings(
       parse_integer_token_radix(tok, radix)
     }
     match parsed {
-      Some(datum) =>
-        match exactness {
-          Some('i') | Some('I') =>
-            match datum_to_float(datum) {
-              Some(f) => Some(@core.Datum::Float(f))
-              None => None
-            }
-          _ => Some(datum)
-        }
+      Some(datum) => apply_inexact_exactness(exactness, datum)
       None => None
     }
   } else if has_slash {
@@ -683,15 +688,7 @@ fn parse_real_token_with_settings(
       return None
     }
     match parse_rat_token(tok) {
-      Some(datum) =>
-        match exactness {
-          Some('i') | Some('I') =>
-            match datum_to_float(datum) {
-              Some(f) => Some(@core.Datum::Float(f))
-              None => None
-            }
-          _ => Some(datum)
-        }
+      Some(datum) => apply_inexact_exactness(exactness, datum)
       None => None
     }
   } else if has_dot || has_exp {
@@ -705,15 +702,7 @@ fn parse_real_token_with_settings(
     }
   } else {
     match parse_integer_token(tok) {
-      Some(datum) =>
-        match exactness {
-          Some('i') | Some('I') =>
-            match datum_to_float(datum) {
-              Some(f) => Some(@core.Datum::Float(f))
-              None => None
-            }
-          _ => Some(datum)
-        }
+      Some(datum) => apply_inexact_exactness(exactness, datum)
       None => None
     }
   }
@@ -1211,15 +1200,12 @@ fn token_to_datum(tok : String) -> @core.Datum {
     @core.Datum::Bool(true)
   } else if tok == "#f" {
     @core.Datum::Bool(false)
+  } else if parse_char_token(tok) is Some(ch) {
+    @core.Datum::Char(ch)
+  } else if parse_number_token(tok) is Some(num) {
+    num
   } else {
-    match parse_char_token(tok) {
-      Some(ch) => @core.Datum::Char(ch)
-      None =>
-        match parse_number_token(tok) {
-          Some(num) => num
-          None => @core.Datum::Symbol(tok)
-        }
-    }
+    @core.Datum::Symbol(tok)
   }
 }
 
@@ -1292,9 +1278,8 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
           let tok = r.read_token()
           match parse_label_token(tok) {
             Some((true, label)) => {
-              match r.label_get(label) {
-                Some(_) => raise @core.ParseError("duplicate label")
-                None => ()
+              if r.label_get(label) is Some(_) {
+                raise @core.ParseError("duplicate label")
               }
               let cell = Ref::new(@core.Datum::Nil)
               r.label_set(label, cell)
@@ -1303,9 +1288,10 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
               @core.Datum::Label(label, cell)
             }
             Some((false, label)) =>
-              match r.label_get(label) {
-                Some(cell) => @core.Datum::Label(label, cell)
-                None => raise @core.ParseError("undefined label")
+              if r.label_get(label) is Some(cell) {
+                @core.Datum::Label(label, cell)
+              } else {
+                raise @core.ParseError("undefined label")
               }
             None => token_to_datum(tok)
           }

@@ -3097,6 +3097,8 @@ Notes:
 - Replace nested `match` chains with `is` pattern checks when you only need a single constructor, which keeps intent clear and removes one level of indentation.
 - Flatten double-dispatch matches by matching on tuples (e.g. `(pat, inp)`) and use `is` guards with precomputed head names to avoid repeated `symbol_name` calls.
 - Use nested patterns like `Values([single])` to replace a `match` inside a `match` when destructuring a wrapper around an array.
+- Prefer `if opt is Some(x)` for Option checks inside loops to keep the happy path linear and avoid extra nested `match` blocks.
+- When the same exactness conversion logic appears multiple times, extract a helper (like `apply_inexact_exactness`) to collapse repeated nested matches.
 
 Tooling example:
 ```bash
@@ -3151,5 +3153,19 @@ match value {
   Values([single]) => single
   Values(_) => raise @core.EvalError("multiple values in single-value context")
   _ => value
+}
+```
+
+Exactness helper example:
+```mbt
+fn apply_inexact_exactness(exactness : Char?, datum : @core.Datum) -> @core.Datum? {
+  match exactness {
+    Some('i') | Some('I') =>
+      match datum_to_float(datum) {
+        Some(f) => Some(@core.Datum::Float(f))
+        None => None
+      }
+    _ => Some(datum)
+  }
 }
 ```

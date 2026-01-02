@@ -361,28 +361,25 @@ fn eval_expr_impl(
             )
           }
           Symbol(name) =>
-            match @runtime.env_get_macro(current_env, name) {
-              Some(transformer) => {
-                let expansion = expand_macro(
-                  transformer,
-                  Symbol(name),
-                  current_env,
-                )
-                let next_env = env_with_captures(
-                  current_env,
-                  expansion.captures,
-                )
-                state = MachineState::Eval(
-                  expansion.datum,
-                  next_env,
-                  kont,
-                  handlers,
-                )
-              }
-              None => {
-                let value = @runtime.env_lookup(current_env, name)
-                state = MachineState::Apply(value, kont, handlers)
-              }
+            if @runtime.env_get_macro(current_env, name) is Some(transformer) {
+              let expansion = expand_macro(
+                transformer,
+                Symbol(name),
+                current_env,
+              )
+              let next_env = env_with_captures(
+                current_env,
+                expansion.captures,
+              )
+              state = MachineState::Eval(
+                expansion.datum,
+                next_env,
+                kont,
+                handlers,
+              )
+            } else {
+              let value = @runtime.env_lookup(current_env, name)
+              state = MachineState::Apply(value, kont, handlers)
             }
           Pair(_, _) =>
             state = eval_pair(current_expr, current_env, kont, handlers)
@@ -1138,9 +1135,10 @@ fn eval_syntax(args : Array[@core.Datum], env : @core.Env) -> @core.Value raise 
       let scopes = [scope]
       let binding_id = match @runtime.datum_unlabel(arg) {
         Symbol(name) =>
-          match @runtime.env_lookup_optional(env, name) {
-            Some(SyntaxObject(obj)) => obj.binding_id
-            _ => @runtime.env_binding_id_optional(env, name)
+          if @runtime.env_lookup_optional(env, name) is Some(SyntaxObject(obj)) {
+            obj.binding_id
+          } else {
+            @runtime.env_binding_id_optional(env, name)
           }
         Value(SyntaxObject(obj)) => obj.binding_id
         _ => None
@@ -1175,9 +1173,10 @@ fn eval_quasisyntax(args : Array[@core.Datum], env : @core.Env) -> @core.Value r
           let scopes = [scope]
           let binding_id = match @runtime.datum_unlabel(expanded) {
             Symbol(name) =>
-              match @runtime.env_lookup_optional(env, name) {
-                Some(SyntaxObject(obj)) => obj.binding_id
-                _ => @runtime.env_binding_id_optional(env, name)
+              if @runtime.env_lookup_optional(env, name) is Some(SyntaxObject(obj)) {
+                obj.binding_id
+              } else {
+                @runtime.env_binding_id_optional(env, name)
               }
             _ => None
           }
@@ -1914,9 +1913,8 @@ fn eval_begin_for_syntax_state(
     [] => panic()
   }
   frame.iter2().each((key, binding) =>
-    match binding.value() {
-      Macro(rules) => @runtime.env_define(env, key, @core.Value::Macro(rules))
-      _ => ()
+    if binding.value() is Macro(rules) {
+      @runtime.env_define(env, key, @core.Value::Macro(rules))
     }
   )
   MachineState::Apply(@core.Value::Void, kont, handlers)
@@ -1950,21 +1948,16 @@ fn eval_define_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [first, ..rest] if !rest.is_empty() =>
-      match datum_unwrap_syntax(first) {
-        Symbol(_) => {
-          let name = parse_symbol(first)
-          match rest {
-            [value_expr] =>
-              MachineState::Eval(
-                value_expr,
-                env,
-                @core.Kont::Define(name, env, kont),
-                handlers,
-              )
-            _ => raise arity_mismatch(2, args.length())
-          }
-        }
-        Pair(head, tail) => {
+      match (datum_unwrap_syntax(first), rest) {
+        (Symbol(_), [value_expr]) =>
+          MachineState::Eval(
+            value_expr,
+            env,
+            @core.Kont::Define(parse_symbol(first), env, kont),
+            handlers,
+          )
+        (Symbol(_), _) => raise arity_mismatch(2, args.length())
+        (Pair(head, tail), _) => {
           let name = parse_symbol(head.val)
           let formals = parse_formals(tail.val)
           @runtime.env_define(
@@ -2594,9 +2587,10 @@ fn eval_define_record_type_state(
     }
   let parent_desc = match parent_name {
     Some(name) =>
-      match @runtime.lookup_record_type_descriptor(name) {
-        Some(desc) => Some(desc)
-        None => raise @core.EvalError("invalid define-record-type")
+      if @runtime.lookup_record_type_descriptor(name) is Some(desc) {
+        Some(desc)
+      } else {
+        raise @core.EvalError("invalid define-record-type")
       }
     None => None
   }
@@ -2604,12 +2598,10 @@ fn eval_define_record_type_state(
     Some(desc) => Some(desc.record_type)
     None => None
   }
-  match parent_type {
-    Some(parent) =>
-      if parent.is_sealed {
-        raise @core.EvalError("invalid define-record-type")
-      }
-    None => ()
+  if parent_type is Some(parent) {
+    if parent.is_sealed {
+      raise @core.EvalError("invalid define-record-type")
+    }
   }
   let parent_fields = match parent_type {
     Some(record_type) => record_type.fields
@@ -3574,11 +3566,8 @@ fn parse_version_ref_version(
 ) -> Array[Int] raise @core.EvalError {
   match items {
     [] => raise @core.EvalError("invalid library name")
-    [item] =>
-      match item {
-        Pair(_, _) | Nil => parse_version_list(item)
-        _ => parse_version_items(items)
-      }
+    [item] if item is Pair(_, _) || item is Nil => parse_version_list(item)
+    [_] => parse_version_items(items)
     _ => parse_version_items(items)
   }
 }
@@ -4416,29 +4405,23 @@ fn eval_cond_expand_state(
         let parts = datum_list_to_array(clause)
         match parts {
           [] => raise @core.EvalError("invalid cond-expand")
+          [Symbol("else"), ..] => raise @core.EvalError("invalid cond-expand")
           [head, ..rest] =>
-            match head {
-              Symbol("else") => raise @core.EvalError("invalid cond-expand")
-              _ =>
-                if cond_expand_feature(head) {
-                  return eval_sequence_state(rest.to_array(), env, kont, handlers)
-                }
+            if cond_expand_feature(head) {
+              return eval_sequence_state(rest.to_array(), env, kont, handlers)
             }
         }
       }
       let parts = datum_list_to_array(last)
       match parts {
         [] => raise @core.EvalError("invalid cond-expand")
+        [Symbol("else"), ..rest] =>
+          eval_sequence_state(rest.to_array(), env, kont, handlers)
         [head, ..rest] =>
-          match head {
-            Symbol("else") =>
-              eval_sequence_state(rest.to_array(), env, kont, handlers)
-            _ =>
-              if cond_expand_feature(head) {
-                eval_sequence_state(rest.to_array(), env, kont, handlers)
-              } else {
-                MachineState::Apply(@core.Value::Void, kont, handlers)
-              }
+          if cond_expand_feature(head) {
+            eval_sequence_state(rest.to_array(), env, kont, handlers)
+          } else {
+            MachineState::Apply(@core.Value::Void, kont, handlers)
           }
       }
     }
@@ -4513,19 +4496,17 @@ fn eval_pair(
         Some("do") => eval_do_state(args, env, kont, handlers)
         Some("case") => eval_case_state(args, env, kont, handlers)
         Some(name) =>
-          match @runtime.env_get_macro(env, name) {
-            Some(transformer) => {
-              let expansion = expand_macro(transformer, expr_unwrapped, env)
-              let next_env = env_with_captures(env, expansion.captures)
-              MachineState::Eval(expansion.datum, next_env, kont, handlers)
-            }
-            None =>
-              MachineState::Eval(
-                head,
-                env,
-                @core.Kont::AppFun(args, env, kont),
-                handlers,
-              )
+          if @runtime.env_get_macro(env, name) is Some(transformer) {
+            let expansion = expand_macro(transformer, expr_unwrapped, env)
+            let next_env = env_with_captures(env, expansion.captures)
+            MachineState::Eval(expansion.datum, next_env, kont, handlers)
+          } else {
+            MachineState::Eval(
+              head,
+              env,
+              @core.Kont::AppFun(args, env, kont),
+              handlers,
+            )
           }
         None =>
           MachineState::Eval(
