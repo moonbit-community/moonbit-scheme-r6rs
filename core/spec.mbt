@@ -509,7 +509,7 @@ pub type Env = Array[Map[String, Binding]]
 /// A syntax-rules transformer.
 
 ///|
-pub(all) struct SyntaxRule {
+pub struct SyntaxRule {
   pattern : Datum
   template : Datum
   fender : Datum?
@@ -544,7 +544,7 @@ pub(all) enum MacroTransformer {
 /// The interpreter may store extra data internally; tests treat it as opaque.
 
 ///|
-pub(all) struct Closure {
+pub struct Closure {
   id : Int
   params : Array[String]
   rest : String?
@@ -560,7 +560,7 @@ pub(all) struct CaseClause {
 }
 
 ///|
-pub(all) struct CaseClosure {
+pub struct CaseClosure {
   id : Int
   clauses : Array[CaseClause]
   env : Env
@@ -577,7 +577,7 @@ pub(all) struct GuardHandler {
 }
 
 ///|
-pub(all) struct Parameter {
+pub struct Parameter {
   id : Int
   value : Ref[Value]
   converter : Value?
@@ -590,13 +590,13 @@ pub(all) enum PromiseState {
 }
 
 ///|
-pub(all) struct Promise {
+pub struct Promise {
   id : Int
   state : Ref[PromiseState]
 }
 
 ///|
-pub(all) struct EvalEnv {
+pub struct EvalEnv {
   id : Int
   env : Env
 }

@@ -79,7 +79,7 @@ fn make_closure(
   body : Array[@core.Datum],
   env : @core.Env,
 ) -> @core.Closure {
-  { id: next_closure_id(), params, rest, body, env }
+  @core.Closure::new(next_closure_id(), params, rest, body, env)
 }
 
 ///|
@@ -92,7 +92,7 @@ fn next_parameter_id() -> Int {
 
 ///|
 fn make_parameter(value : @core.Value) -> @core.Parameter {
-  { id: next_parameter_id(), value: Ref::new(value), converter: None }
+  @core.Parameter::new(next_parameter_id(), value, None)
 }
 
 ///|
@@ -115,11 +115,7 @@ fn parameter_set(param : @core.Parameter, value : @core.Value) -> Unit {
 
 ///|
 fn parameter_with_converter(value : @core.Value, converter : @core.Value) -> @core.Parameter {
-  {
-    id: next_parameter_id(),
-    value: Ref::new(value),
-    converter: Some(converter),
-  }
+  @core.Parameter::new(next_parameter_id(), value, Some(converter))
 }
 
 ///|
@@ -132,7 +128,7 @@ fn next_promise_id() -> Int {
 
 ///|
 fn make_promise(thunk : @core.Value) -> @core.Promise {
-  { id: next_promise_id(), state: Ref::new(Thunk(thunk)) }
+  @core.Promise::new(next_promise_id(), @core.PromiseState::Thunk(thunk))
 }
 
 ///|
@@ -145,7 +141,7 @@ fn next_eval_env_id() -> Int {
 
 ///|
 fn make_eval_env(env : @core.Env) -> @core.EvalEnv {
-  { id: next_eval_env_id(), env }
+  @core.EvalEnv::new(next_eval_env_id(), env)
 }
 
 ///|
@@ -158,7 +154,7 @@ fn value_as_eval_env(value : @core.Value) -> @core.EvalEnv raise @core.EvalError
 
 ///|
 fn make_case_closure(clauses : Array[@core.CaseClause], env : @core.Env) -> @core.CaseClosure {
-  { id: next_closure_id(), clauses, env }
+  @core.CaseClosure::new(next_closure_id(), clauses, env)
 }
 
 ///|

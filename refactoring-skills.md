@@ -132,6 +132,23 @@ moon ide find-references @lexer.reader_peek
 moon info
 ```
 
+## Minimize construction surface with pub vs pub(all)
+- `pub` structs/enums can be pattern matched outside the package but cannot be constructed there; use this when only internal packages should create values.
+- Add explicit constructors like `Type::new(...)` in the defining package and update record literals in other packages to call them.
+- Use `rg -o "@core\\.[A-Za-z0-9_]+::\\{" -g "*.mbt" --glob "!core/*"` to find record-literal construction outside the package.
+
+Example:
+```mbt
+// core/spec.mbt
+pub struct Closure { ... }
+pub fn Closure::new(id : Int, params : Array[String], rest : String?, body : Array[Datum], env : Env) -> Closure {
+  { id, params, rest, body, env }
+}
+
+// eval
+let cl = @core.Closure::new(id, params, rest, body, env)
+```
+
 ## Array view pattern matching
 - Match arrays directly; the compiler lowers to ArrayView, so `..rest` is a view (call `rest.to_array()` when you need an `Array`).
 - Use `..` in the middle to split prefix/suffix without manual length checks.

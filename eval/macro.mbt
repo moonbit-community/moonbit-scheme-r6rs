@@ -94,7 +94,7 @@ fn parse_syntax_rules(expr : @core.Datum, env : @core.Env) -> @core.SyntaxRules 
           ellipsis_active,
           "invalid syntax-rules",
         )
-        rules.push({ pattern, template, fender: None })
+        rules.push(@core.SyntaxRule::new(pattern, template, None))
       }
       _ => raise @core.EvalError("invalid syntax-rules")
     }
@@ -119,11 +119,7 @@ fn parse_identifier_syntax(
   let rules : Array[@core.SyntaxRule] = []
   match datum_list_to_array(expr) {
     [Symbol("identifier-syntax"), rule_expr] =>
-      rules.push({
-        pattern: Symbol(name),
-        template: rule_expr,
-        fender: None,
-      })
+      rules.push(@core.SyntaxRule::new(Symbol(name), rule_expr, None))
     [Symbol("identifier-syntax"), ..rule_exprs] => {
       if rule_exprs.is_empty() {
         raise @core.EvalError("invalid identifier-syntax")
@@ -131,7 +127,7 @@ fn parse_identifier_syntax(
       for rule_expr in rule_exprs {
         match datum_list_to_array(rule_expr) {
           [pattern, template] =>
-            rules.push({ pattern, template, fender: None })
+            rules.push(@core.SyntaxRule::new(pattern, template, None))
           _ => raise @core.EvalError("invalid identifier-syntax")
         }
       }
@@ -183,7 +179,7 @@ fn parse_syntax_case_rules(
           ellipsis_active,
           "invalid syntax-case",
         )
-        rules.push({ pattern, template, fender: None })
+        rules.push(@core.SyntaxRule::new(pattern, template, None))
       }
       [pattern, fender, template] => {
         validate_pattern(
@@ -193,7 +189,7 @@ fn parse_syntax_case_rules(
           ellipsis_active,
           "invalid syntax-case",
         )
-        rules.push({ pattern, template, fender: Some(fender) })
+        rules.push(@core.SyntaxRule::new(pattern, template, Some(fender)))
       }
       _ => raise @core.EvalError("invalid syntax-case clause")
     }

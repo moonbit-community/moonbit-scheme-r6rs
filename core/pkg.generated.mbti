@@ -31,19 +31,21 @@ pub(all) struct CaseClause {
   body : Array[Datum]
 }
 
-pub(all) struct CaseClosure {
+pub struct CaseClosure {
   id : Int
   clauses : Array[CaseClause]
   env : Array[Map[String, Binding]]
 }
+pub fn CaseClosure::new(Int, Array[CaseClause], Array[Map[String, Binding]]) -> Self
 
-pub(all) struct Closure {
+pub struct Closure {
   id : Int
   params : Array[String]
   rest : String?
   body : Array[Datum]
   env : Array[Map[String, Binding]]
 }
+pub fn Closure::new(Int, Array[String], String?, Array[Datum], Array[Map[String, Binding]]) -> Self
 
 pub(all) struct Condition {
   id : Int
@@ -104,10 +106,11 @@ pub(all) enum EnumSetProcKind {
   Indexer(EnumSet)
 }
 
-pub(all) struct EvalEnv {
+pub struct EvalEnv {
   id : Int
   env : Array[Map[String, Binding]]
 }
+pub fn EvalEnv::new(Int, Array[Map[String, Binding]]) -> Self
 
 pub(all) struct Formals {
   params : Array[String]
@@ -221,11 +224,12 @@ pub(all) struct ParamBinding {
   new_value : Value
 }
 
-pub(all) struct Parameter {
+pub struct Parameter {
   id : Int
   value : Ref[Value]
   converter : Value?
 }
+pub fn Parameter::new(Int, Value, Value?) -> Self
 
 pub(all) struct Port {
   id : Int
@@ -621,10 +625,11 @@ pub(all) enum Primitive {
 }
 pub impl Eq for Primitive
 
-pub(all) struct Promise {
+pub struct Promise {
   id : Int
   state : Ref[PromiseState]
 }
+pub fn Promise::new(Int, PromiseState) -> Self
 
 pub(all) enum PromiseState {
   Thunk(Value)
@@ -695,11 +700,12 @@ pub(all) struct SyntaxObject {
   binding_id : Int?
 }
 
-pub(all) struct SyntaxRule {
+pub struct SyntaxRule {
   pattern : Datum
   template : Datum
   fender : Datum?
 }
+pub fn SyntaxRule::new(Datum, Datum, Datum?) -> Self
 
 pub(all) struct SyntaxRules {
   literals : Array[String]
