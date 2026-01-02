@@ -1846,4 +1846,472 @@ test "eval environment and promise" {
   let promise_err = try? eval_program("(make-promise 1)")
   inspect(promise_err is Err(_), content="true")
 }
+
+///|
+test "numeric error branches" {
+  let sqrt_err = try? eval_program("(exact-integer-sqrt 1/2)")
+  inspect(sqrt_err is Err(_), content="true")
+  let rat_err = try? eval_program("(rationalize (make-rectangular 1 1) 0.1)")
+  inspect(rat_err is Err(_), content="true")
+  let num_str_err = try? eval_program("(number->string 1/2 2)")
+  inspect(num_str_err is Err(_), content="true")
+  let str_num_err = try? eval_program("(string->number \"10\" 1)")
+  inspect(str_num_err is Err(_), content="true")
+  let expt_zero_err = try? eval_program("(expt 0 -1)")
+  inspect(expt_zero_err is Err(_), content="true")
+  let fx_bit_err = try? eval_program("(fxcopy-bit 0 0 2)")
+  inspect(fx_bit_err is Err(_), content="true")
+}
+
+///|
+test "numeric complex branches" {
+  let complex_flags =
+    eval_program(
+      "(list (complex? (sin (make-rectangular 1 1))) (complex? (cos (make-rectangular 1 1))) (complex? (tan (make-rectangular 1 1))) (complex? (exp (make-rectangular 1 1))) (complex? (log (make-rectangular 1 1))) (complex? (asin (make-rectangular 1 1))) (complex? (acos (make-rectangular 1 1))) (complex? (atan (make-rectangular 1 1))) (complex? (sqrt -1)))",
+    )
+  inspect(
+    @runtime.value_to_string(complex_flags),
+    content="(#t #t #t #t #t #t #t #t #t)",
+  )
+}
+
+///|
+test "macro pattern coverage" {
+  let program =
+    #|(begin
+    #|  (define-syntax classify
+    #|    (lambda (stx)
+    #|      (syntax-case stx (foo)
+    #|        ((_ ()) #'(quote nil))
+    #|        ((_ #t) #'(quote bool))
+    #|        ((_ 42) #'(quote int))
+    #|        ((_ 1/2) #'(quote rat))
+    #|        ((_ 1.0) #'(quote float))
+    #|        ((_ 1+2i) #'(quote complex))
+    #|        ((_ #\a) #'(quote char))
+    #|        ((_ "hi") #'(quote string))
+    #|        ((_ foo) #'(quote symbol))
+    #|        ((_ (1 2)) #'(quote pair))
+    #|        ((_ #(1 2)) #'(quote vector))
+    #|        ((_ #vu8(1 2)) #'(quote bytevector))
+    #|        ((_ 9999999999999999999999) #'(quote bigint))
+    #|        ((_ 9999999999999999999999/2) #'(quote bigrat))
+    #|        (_ #'(quote other)))))
+    #|  (list (classify ())
+    #|        (classify #t)
+    #|        (classify 42)
+    #|        (classify 1/2)
+    #|        (classify 1.0)
+    #|        (classify 1+2i)
+    #|        (classify #\a)
+    #|        (classify "hi")
+    #|        (classify foo)
+    #|        (classify (1 2))
+    #|        (classify #(1 2))
+    #|        (classify #vu8(1 2))
+    #|        (classify 9999999999999999999999)
+    #|        (classify 9999999999999999999999/2)))
+  let value = eval_program(program)
+  inspect(
+    @runtime.value_to_string(value),
+    content="(nil bool int rat float complex char string symbol pair vector bytevector bigint bigrat)",
+  )
+}
+
+///|
+test "macro vector template coverage" {
+  let program =
+    #|(begin
+    #|  (define-syntax list->vec
+    #|    (syntax-rules ()
+    #|      ((_ x ...) #(x ...))))
+    #|  (list->vec 1 2 3))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="#(1 2 3)")
+}
+
+///|
+test "macro with-syntax coverage" {
+  let program =
+    #|(begin
+    #|  (define-syntax dup
+    #|    (lambda (stx)
+    #|      (syntax-case stx ()
+    #|        ((_ x)
+    #|          (with-syntax ((y x))
+    #|            #'(list y y))))))
+    #|  (dup 7))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(7 7)")
+}
+
+///|
+test "macro procedure transformer vector and complex" {
+  let program =
+    #|(begin
+    #|  (define-syntax make-vec
+    #|    (lambda (stx)
+    #|      (syntax-case stx ()
+    #|        ((_ x) #'#(x x)))))
+    #|  (define-syntax make-cpx
+    #|    (lambda (stx)
+    #|      (syntax-case stx ()
+    #|        ((_) #'1+2i))))
+    #|  (list (make-vec 5) (make-cpx)))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(#(5 5) 1+2i)")
+}
+
+///|
+test "datum->syntax vector and complex" {
+  let program =
+    #|(begin
+    #|  (define v (datum->syntax #f '#(1 2 3)))
+    #|  (define c (datum->syntax #f '1+2i))
+    #|  (list (syntax->datum v) (syntax->datum c)))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(#(1 2 3) 1+2i)")
+}
+
+///|
+test "macro invalid forms" {
+  let expect_err = (expr : String) => {
+    let err = try? eval_program(expr)
+    guard err is Err(_) else {
+      fail(expr)
+    }
+  }
+  expect_err("(define-syntax bad ())")
+  expect_err("(define-syntax bad (make-variable-transformer))")
+  expect_err("(define-syntax bad 1)")
+  expect_err("(define-syntax bad (syntax-rules))")
+  expect_err("(define-syntax bad (syntax-rules (1) ((_ x) x)))")
+  expect_err("(define-syntax bad (identifier-syntax))")
+  expect_err("(define-syntax bad (lambda (x) (syntax-case x () 1)))")
+}
+
+///|
+test "macro ellipsis expansion" {
+  let program =
+    #|(begin
+    #|  (define-syntax swap-pairs
+    #|    (syntax-rules ()
+    #|      ((_ (a b) ...) (list (list b a) ...))))
+    #|  (swap-pairs (1 2) (3 4)))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="((2 1) (4 3))")
+}
+
+///|
+test "utf8 multibyte roundtrip" {
+  let roundtrip =
+    eval_program(
+      "(equal? (string->utf8 (utf8->string #vu8(65 194 162 226 130 172 240 144 141 136))) #vu8(65 194 162 226 130 172 240 144 141 136))",
+    )
+  inspect(@runtime.value_to_string(roundtrip), content="#t")
+}
+
+///|
+test "bytevector int refs" {
+  let uint_big = eval_program("(bytevector-uint-ref #vu8(1 2 3 4) 0 'big 2)")
+  inspect(@runtime.value_to_string(uint_big), content="258")
+  let uint_little =
+    eval_program("(bytevector-uint-ref #vu8(1 2 3 4) 0 'little 2)")
+  inspect(@runtime.value_to_string(uint_little), content="513")
+  let sint_neg = eval_program("(bytevector-sint-ref #vu8(255) 0 'big 1)")
+  inspect(@runtime.value_to_string(sint_neg), content="-1")
+  let uint_set =
+    eval_program(
+      "(let ((bv (make-bytevector 4 0))) (bytevector-uint-set! bv 0 'big 2 258) bv)",
+    )
+  inspect(@runtime.value_to_string(uint_set), content="#vu8(1 2 0 0)")
+  let sint_set =
+    eval_program(
+      "(let ((bv (make-bytevector 1 0))) (bytevector-sint-set! bv 0 'big 1 -1) bv)",
+    )
+  inspect(@runtime.value_to_string(sint_set), content="#vu8(255)")
+}
+
+///|
+test "complex exactness predicates" {
+  let exact_int = eval_program("(exact-integer? (make-rectangular 2 0))")
+  inspect(@runtime.value_to_string(exact_int), content="#t")
+  let integer_val = eval_program("(integer? (make-rectangular 3 0))")
+  inspect(@runtime.value_to_string(integer_val), content="#t")
+  let rational_val =
+    eval_program("(rational? (make-rectangular 3/2 0))")
+  inspect(@runtime.value_to_string(rational_val), content="#t")
+}
+
+///|
+test "inexact/exact conversions" {
+  let exact_zero = eval_program("(inexact->exact 0.0)")
+  inspect(@runtime.value_to_string(exact_zero), content="0")
+  let exact_half = eval_program("(inexact->exact 0.5)")
+  inspect(@runtime.value_to_string(exact_half), content="1/2")
+  let exact_err = try? eval_program("(inexact->exact +inf.0)")
+  inspect(exact_err is Err(_), content="true")
+  let inexact_big =
+    eval_program("(flonum? (exact->inexact 9999999999999999999999))")
+  inspect(@runtime.value_to_string(inexact_big), content="#t")
+  let inexact_bigrat =
+    eval_program("(flonum? (exact->inexact 9999999999999999999999/2))")
+  inspect(@runtime.value_to_string(inexact_bigrat), content="#t")
+}
+
+///|
+test "expt branch matrix" {
+  let program =
+    #|(let* ((big 9999999999999999999999)
+    #|       (zero (+ big (- big)))
+    #|       (one (+ 1 zero))
+    #|       (neg-one (- zero 1)))
+    #|  (list (expt 2/3 -1)
+    #|        (expt -2.0 -2)
+    #|        (complex? (expt (make-rectangular 1 1) 2))
+    #|        (integer? (expt big one))
+    #|        (rational? (expt big neg-one))
+    #|        (expt big zero)
+    #|        (complex? (expt (make-rectangular 1 1) one))
+    #|        (flonum? (expt -2.0 one))
+    #|        (complex? (expt (make-rectangular 1 1) 0.5))
+    #|        (complex? (expt (make-rectangular 1 1) 1/2))
+    #|        (complex? (expt 2 (make-rectangular 1 1)))))
+  let value = eval_program(program)
+  inspect(
+    @runtime.value_to_string(value),
+    content="(3/2 0.25 #t #t #t 1 #t #t #t #t #t)",
+  )
+}
+
+///|
+test "integer division and gcd/lcm bigints" {
+  let program =
+    #|(let ((big 9999999999999999999999))
+    #|  (list (integer? (quotient big 3))
+    #|        (integer? (remainder big 3))
+    #|        (= (modulo (- 0 big 1) 3) 2)
+    #|        (= (gcd big 3) 3)
+    #|        (= (lcm big 3) big)
+    #|        (flonum? (abs 1+2i))))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(#t #t #t #t #t #t)")
+  let div_zero = try? eval_program("(quotient 1 0)")
+  inspect(div_zero is Err(_), content="true")
+}
+
+///|
+test "expt bigint paths" {
+  let values =
+    eval_program(
+      "(let ((big 9999999999999999999999)) (list (expt 2 (+ 2 (- big big))) (expt 2 (- (+ big (- big)) 1))))",
+    )
+  inspect(@runtime.value_to_string(values), content="(4 1/2)")
+}
+
+///|
+test "numeric real/magnitude branches" {
+  let magnitude_rat = eval_program("(magnitude -2/3)")
+  inspect(@runtime.value_to_string(magnitude_rat), content="2/3")
+  let imag_rat = eval_program("(imag-part 2/3)")
+  inspect(@runtime.value_to_string(imag_rat), content="0")
+  let sqrt_real = eval_program("(sqrt (make-rectangular 9 0))")
+  inspect(@runtime.value_to_string(sqrt_real), content="3")
+  let complex_check = eval_program("(complex? (expt -2 0.5))")
+  inspect(@runtime.value_to_string(complex_check), content="#t")
+  let first_zero = eval_program("(fxfirst-bit-set 0)")
+  inspect(@runtime.value_to_string(first_zero), content="-1")
+}
+
+///|
+test "magnitude big branches" {
+  let program =
+    #|(list (magnitude -4)
+    #|      (magnitude -1.5)
+    #|      (magnitude 1.5)
+    #|      (magnitude -9999999999999999999999)
+    #|      (magnitude (- (/ 10000000000000000000001 3))))
+  let value = eval_program(program)
+  inspect(
+    @runtime.value_to_string(value),
+    content="(4 1.5 1.5 9999999999999999999999 10000000000000000000001/3)",
+  )
+}
+
+///|
+test "number->string radix branches" {
+  let ok = eval_program("(list (number->string 1/2 10) (number->string 1.5 10))")
+  inspect(@runtime.value_to_string(ok), content="(\"1/2\" \"1.5\")")
+  let err = try? eval_program("(number->string 1/2 16)")
+  inspect(err is Err(_), content="true")
+}
+
+///|
+test "expt rational int exponent branches" {
+  let program =
+    #|(let ((big 10000000000000000000001))
+    #|  (list (expt 2/3 1)
+    #|        (expt 2/3 -1)
+    #|        (expt (/ big 3) 1)
+    #|        (expt (/ big 3) -1)))
+  let value = eval_program(program)
+  inspect(
+    @runtime.value_to_string(value),
+    content="(2/3 3/2 10000000000000000000001/3 3/10000000000000000000001)",
+  )
+  let big_zero_err =
+    try? eval_program("(let ((big 10000000000000000000001)) (expt (- big big) -1))")
+  inspect(big_zero_err is Err(_), content="true")
+}
+
+///|
+test "expt bigint exponent branches" {
+  let program =
+    #|(let* ((big 10000000000000000000001)
+    #|       (exp big)
+    #|       (exp-neg (- big)))
+    #|  (list (integer? (expt 1 exp))
+    #|        (rational? (expt 1 exp-neg))
+    #|        (flonum? (expt 1.0 exp))
+    #|        (flonum? (expt 1.0 exp-neg))))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(#t #t #t #t)")
+  let zero_err =
+    try? eval_program(
+      "(let ((big 10000000000000000000001)) (expt (- big big) (- (abs big))))",
+    )
+  inspect(zero_err is Err(_), content="true")
+}
+
+///|
+test "fixnum empty and copy bit branches" {
+  let program =
+    #|(list (fxand)
+    #|      (fxior)
+    #|      (fxxor)
+    #|      (fxnot 0)
+    #|      (fxcopy-bit 10 1 0))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(-1 0 0 -1 8)")
+}
+
+///|
+test "fixnum division sign branches" {
+  let program =
+    #|(list (fxdiv 7 -2)
+    #|      (fxdiv -7 2)
+    #|      (fxmod 7 -2)
+    #|      (fxmod -7 2)
+    #|      (fxdiv0 -7 2)
+    #|      (fxmod0 -7 2))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(-4 -4 -1 1 -3 -1)")
+  let div_err = try? eval_program("(fxdiv 1 0)")
+  inspect(div_err is Err(_), content="true")
+  let mod_err = try? eval_program("(fxmod 1 0)")
+  inspect(mod_err is Err(_), content="true")
+  let div0_err = try? eval_program("(fxdiv0 1 0)")
+  inspect(div0_err is Err(_), content="true")
+  let mod0_err = try? eval_program("(fxmod0 1 0)")
+  inspect(mod0_err is Err(_), content="true")
+}
+
+///|
+test "numeric arity mismatch coverage" {
+  let expect_err = (expr : String) => {
+    let err = try? eval_program(expr)
+    inspect(err is Err(_), content="true")
+  }
+  expect_err("(exp)")
+  expect_err("(log)")
+  expect_err("(expt 1)")
+  expect_err("(fx+/carry 1 2)")
+  expect_err("(fx-/carry 1 2)")
+  expect_err("(fx*/carry 1 2)")
+  expect_err("(fxnot)")
+  expect_err("(fxbit-count)")
+  expect_err("(fxlength)")
+  expect_err("(fxfirst-bit-set)")
+  expect_err("(fxbit-set?)")
+  expect_err("(fxcopy-bit 1 2)")
+  expect_err("(fxbit-field 1 2)")
+  expect_err("(fxcopy-bit-field 1 2 3)")
+  expect_err("(fxrotate-bit-field 1 2 3)")
+  expect_err("(fxreverse-bit-field 1 2)")
+  expect_err("(fxarithmetic-shift 1)")
+  expect_err("(fxarithmetic-shift-left 1)")
+  expect_err("(fxarithmetic-shift-right 1)")
+  expect_err("(flonum? 1.0 2.0)")
+  expect_err("(real->flonum)")
+  expect_err("(fixnum->flonum)")
+  expect_err("(flinteger?)")
+  expect_err("(flzero?)")
+  expect_err("(flpositive?)")
+  expect_err("(flnegative?)")
+  expect_err("(flodd?)")
+  expect_err("(fleven?)")
+  expect_err("(flfinite?)")
+  expect_err("(flinfinite?)")
+  expect_err("(flnan?)")
+  expect_err("(flabs)")
+  expect_err("(fldiv-and-mod 1.0)")
+  expect_err("(fldiv 1.0)")
+  expect_err("(flmod 1.0)")
+  expect_err("(fldiv0-and-mod0 1.0)")
+  expect_err("(fldiv0 1.0)")
+  expect_err("(flmod0 1.0)")
+  expect_err("(flnumerator)")
+  expect_err("(fldenominator)")
+  expect_err("(flfloor)")
+  expect_err("(flceiling)")
+  expect_err("(fltruncate)")
+  expect_err("(flround)")
+  expect_err("(flexp)")
+  expect_err("(fllog)")
+  expect_err("(flsin)")
+  expect_err("(flcos)")
+  expect_err("(fltan)")
+  expect_err("(flasin)")
+  expect_err("(flacos)")
+  expect_err("(flatan)")
+  expect_err("(flsqrt)")
+  expect_err("(flexpt 1.0)")
+}
+
+///|
+test "flmax and flmin nan branches" {
+  let program =
+    #|(list (flnan? (flmax 1.0 +nan.0 2.0))
+    #|      (flnan? (flmin 1.0 +nan.0 2.0)))
+  let value = eval_program(program)
+  inspect(@runtime.value_to_string(value), content="(#t #t)")
+}
+
+///|
+test "flonum non-finite rounding" {
+  let values =
+    eval_program(
+      "(list (flonum? (lambda (x) x)) (flfloor +inf.0) (flceiling +inf.0) (fltruncate +inf.0) (flround +inf.0))",
+    )
+  inspect(
+    @runtime.value_to_string(values),
+    content="(#f Infinity Infinity Infinity Infinity)",
+  )
+}
+
+///|
+test "bytevector utf8 and endian errors" {
+  let native = eval_program("(native-endianness)")
+  inspect(@runtime.value_to_string(native), content="little")
+  let endian_err = try? eval_program("(bytevector-uint-ref #vu8(1 2) 0 'bogus 1)")
+  inspect(endian_err is Err(_), content="true")
+  let size_err = try? eval_program("(bytevector-uint-ref #vu8(1 2) 0 'big 0)")
+  inspect(size_err is Err(_), content="true")
+  let range_err = try? eval_program("(bytevector-uint-ref #vu8(1 2) 2 'big 1)")
+  inspect(range_err is Err(_), content="true")
+  let utf8_err = try? eval_program("(utf8->string #vu8(255))")
+  inspect(utf8_err is Err(_), content="true")
+  let utf8_range_err = try? eval_program("(string->utf8 \"abc\" 3 1)")
+  inspect(utf8_range_err is Err(_), content="true")
+}
 ```

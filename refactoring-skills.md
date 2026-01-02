@@ -3263,3 +3263,50 @@ match r.peek_next() {
   }
 }
 ```
+
+## Coverage without fragile float assertions
+- When exercising complex-number branches, assert with `(complex? ...)` to avoid exact float string comparisons while still covering complex math paths.
+- Use a minimal BigInt literal (like `2147483648`) and arithmetic to force BigInt branches without huge exponent costs.
+
+Example:
+```mbt
+test "complex math coverage" {
+  let flags =
+    eval_program(
+      "(list (complex? (sin (make-rectangular 1 1))) (complex? (exp (make-rectangular 1 1))))",
+    )
+  inspect(@runtime.value_to_string(flags), content="(#t #t)")
+}
+```
+
+## Coverage from arity mismatch probes
+- Use a tiny `expect_err` helper with `try? eval_program` to cover arity mismatch branches for fixnum/flonum primitives in one place.
+- Pair it with a single "sign/zero" test for `fxdiv/fxmod` to exercise the adjustment logic and division-by-zero guards.
+
+Example:
+```mbt
+test "numeric arity mismatch coverage" {
+  let expect_err = (expr : String) => {
+    let err = try? eval_program(expr)
+    guard err is Err(_) else { fail(expr) }
+  }
+  expect_err("(fxnot)")
+  expect_err("(flsqrt)")
+  expect_err("(fldiv-and-mod 1.0)")
+}
+```
+
+## Macro transformer coverage
+- Procedure-style macros (`define-syntax` with `lambda` + `syntax-case`) hit `rename_proc_datum` paths that `syntax-rules` does not.
+- Use vector/complex literals (and `datum->syntax`) in macro outputs to cover vector/complex rename + scope-walk branches.
+
+Example:
+```mbt
+test "macro transformer vector" {
+  let value =
+    eval_program(
+      "(begin (define-syntax make-vec (lambda (stx) (syntax-case stx () ((_ x) #'#(x x))))) (make-vec 5))",
+    )
+  inspect(@runtime.value_to_string(value), content="#(5 5)")
+}
+```
