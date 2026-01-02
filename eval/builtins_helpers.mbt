@@ -46,10 +46,6 @@ fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
 }
 
 ///|
-fn string_to_chars(value : String) -> Array[Char] {
-  value.to_array()
-}
-
 ///|
 fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
   if left.length() != right.length() {
@@ -67,17 +63,19 @@ fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
 ///|
 /// Strip a @runtime.gensym suffix like `__sg123` if present.
 fn strip_gensym_suffix(name : String) -> String? {
-  let chars = string_to_chars(name)
-  let len = chars.length()
+  let view = name[:]
+  let len = view.length()
   if len < 5 {
     return None
   }
+  let zero = '0'.to_int()
+  let nine = '9'.to_int()
   let i = for idx = len; idx > 0; {
     // invariant : idx >= 0 && idx <= len
     // decreases : idx
     // assert : idx <= len
-    let ch = chars[idx - 1]
-    if ch >= '0' && ch <= '9' {
+    let code = view[idx - 1].to_int()
+    if code >= zero && code <= nine {
       continue idx - 1
     }
     break idx
@@ -88,17 +86,22 @@ fn strip_gensym_suffix(name : String) -> String? {
     return None
   }
   if
-    chars[i - 1] != 's' ||
-    chars[i - 2] != 'g' ||
-    chars[i - 3] != '_' ||
-    chars[i - 4] != '_' {
+    view[i - 1].to_int() != 's'.to_int() ||
+    view[i - 2].to_int() != 'g'.to_int() ||
+    view[i - 3].to_int() != '_'.to_int() ||
+    view[i - 4].to_int() != '_'.to_int() {
     return None
   }
   let base_len = i - 4
   if base_len == 0 {
     return None
   }
-  Some(String::from_array(chars.sub(end=base_len).to_array()))
+  let prefix = try name[:base_len] catch {
+    _ => return None
+  } noraise {
+    view => view
+  }
+  Some(prefix.to_string())
 }
 
 ///|

@@ -138,7 +138,8 @@ moon info
 - String/StringView follow the same pattern-matching rules as Array/ArrayView, but matches are Unicode-aware (character-based), so do not assume byte indexing semantics.
 - For simple prefix/suffix checks, pattern match on `String`/`StringView` directly instead of converting to `Array[Char]`.
 - Use `s[:]` to get a `StringView` for pattern matching and slicing without allocating.
-- Indexing a `StringView` yields UTF-16 code units; use `view[i]` for efficiency when Unicode correctness is not required, or `for ch in view` to get `Char` values when you need Unicode-aware behavior.
+- Indexing a `StringView` yields `UInt16` UTF-16 code units; use `view[i]` for efficiency when Unicode correctness is not required, or `for ch in view` to get `Char` values when you need Unicode-aware behavior.
+- Slicing a `String`/`StringView` can raise on invalid UTF-16 boundaries; use `try? s[start:end]` (or `try? view.sub(...)`) and fall back on `None`/error as needed.
 - When parsing tokens, prefer `['+', ..rest]` / `['#', first, ..middle, last]` to replace length guards and index reads; keep digit loops in a small helper for reuse.
 - In tight loops with a mutable `Array`, use singleton patterns like `['#']` instead of `length() == 1 && arr[0] == '#'`.
 - Replace `length() <= 1` guards with `match arr { [] | [_] => ... }` to keep arity checks in the pattern.
