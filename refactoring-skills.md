@@ -2851,6 +2851,7 @@ match datum_list_to_array(binding) {
 - `[head, arg]` matches exactly two items; `[head, arg, ..]` matches two or more.
 - Pair with guards to handle markers like `=>` without manual length checks.
 - Use middle rests like `[..prefix, last]` or `[head, ..mid, tail]` to split out tails while validating prefixes.
+- If a form needs “at least N”, match `[head, ..rest]` and guard on `rest.length() >= N - 1` to keep the arity check local.
 
 Example:
 ```mbt

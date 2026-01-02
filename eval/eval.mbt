@@ -1200,16 +1200,15 @@ fn eval_syntax_case_state(
   kont : @core.Kont,
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
-  if args.length() < 3 {
-    raise arity_mismatch(3, args.length())
-  } else {
-    let rest = args.sub(start=1).to_array()
-    MachineState::Eval(
-      args[0],
-      env,
-      @core.Kont::SyntaxCase(rest, env, kont),
-      handlers,
-    )
+  match args {
+    [head, ..rest] if rest.length() >= 2 =>
+      MachineState::Eval(
+        head,
+        env,
+        @core.Kont::SyntaxCase(rest.to_array(), env, kont),
+        handlers,
+      )
+    _ => raise arity_mismatch(3, args.length())
   }
 }
 
@@ -1844,29 +1843,36 @@ fn run_wind_actions(
   final_handlers : Array[@core.Value],
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
-  if actions.is_empty() {
-    MachineState::Apply(resume_value, final_kont, final_handlers)
-  } else {
-    let rest = actions.sub(start=1).to_array()
-    match actions[0] {
-      After(winder) => {
-        let _ = wind_pop()
-        apply_winder_after(
-          winder,
-          @core.Kont::WindActions(rest, resume_value, final_kont, final_handlers),
-          handlers,
-        )
+  match actions {
+    [] => MachineState::Apply(resume_value, final_kont, final_handlers)
+    [action, ..rest] => {
+      let rest = rest.to_array()
+      match action {
+        After(winder) => {
+          let _ = wind_pop()
+          apply_winder_after(
+            winder,
+            @core.Kont::WindActions(rest, resume_value, final_kont, final_handlers),
+            handlers,
+          )
+        }
+        Before(winder) =>
+          apply_winder_before(
+            winder,
+            @core.Kont::WindPush(
+              winder,
+              rest,
+              resume_value,
+              final_kont,
+              final_handlers,
+            ),
+            handlers,
+          )
+        SwitchHandlers(next_handlers) =>
+          run_wind_actions(
+            rest, resume_value, final_kont, final_handlers, next_handlers,
+          )
       }
-      Before(winder) =>
-        apply_winder_before(
-          winder,
-          @core.Kont::WindPush(winder, rest, resume_value, final_kont, final_handlers),
-          handlers,
-        )
-      SwitchHandlers(next_handlers) =>
-        run_wind_actions(
-          rest, resume_value, final_kont, final_handlers, next_handlers,
-        )
     }
   }
 }
@@ -1878,11 +1884,15 @@ fn eval_sequence_state(
   kont : @core.Kont,
   handlers : Array[@core.Value],
 ) -> MachineState {
-  if exprs.is_empty() {
-    MachineState::Apply(@core.Value::Void, kont, handlers)
-  } else {
-    let rest = exprs.sub(start=1).to_array()
-    MachineState::Eval(exprs[0], env, @core.Kont::Begin(rest, env, kont), handlers)
+  match exprs {
+    [] => MachineState::Apply(@core.Value::Void, kont, handlers)
+    [head, ..rest] =>
+      MachineState::Eval(
+        head,
+        env,
+        @core.Kont::Begin(rest.to_array(), env, kont),
+        handlers,
+      )
   }
 }
 
