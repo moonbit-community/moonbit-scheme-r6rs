@@ -2958,6 +2958,27 @@ let desc = @core.RecordTypeDescriptor::new(50, record_type, ctor_desc)
 register_record_type_alias("doc/alias", desc)
 ```
 
+## Audit exports before shrinking a package API
+- Use a quick script to find exported runtime helpers that are only used inside eval.
+- Move those helpers into eval (as `fn`), then remove the runtime export and run `moon info` to refresh `pkg.generated.mbti`.
+
+Example audit snippet:
+```bash
+python3 - <<'PY'
+import re
+from pathlib import Path
+root = Path('.')
+mbti = (root / 'runtime' / 'pkg.generated.mbti').read_text()
+fn_names = re.findall(r'^pub fn\\s+([A-Za-z0-9_]+)\\(', mbti, flags=re.M)
+text = ''.join(
+    p.read_text() for p in root.rglob('*.mbt')
+    if not str(p).startswith('runtime/')
+)
+unused = [n for n in fn_names if f'@runtime.{n}' not in text]
+print('\\n'.join(unused))
+PY
+```
+
 ## Cover printer branches with constructor-built values
 - Use core constructors (RecordType::new/Record::new/Condition::new) to exercise
   `Datum::Record` and `Datum::Condition` without touching registries.

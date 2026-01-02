@@ -4116,11 +4116,17 @@ fn import_set_exports(expr : @core.Datum) -> Map[String,@core.Binding] raise @co
 }
 
 ///|
+fn env_define_binding(env : @core.Env, name : String, binding : @core.Binding) -> Unit {
+  match env {
+    [.., frame] => frame[name] = binding
+    [] => panic()
+  }
+}
+
+///|
 fn import_set_into_env(expr : @core.Datum, env : @core.Env) -> Unit raise @core.EvalError {
   let exports = import_set_exports(expr)
-  exports.iter2().each((key, binding) =>
-    @runtime.env_define_binding(env, key, binding)
-  )
+  exports.iter2().each((key, binding) => env_define_binding(env, key, binding))
 }
 
 ///|

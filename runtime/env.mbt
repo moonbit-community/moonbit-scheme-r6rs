@@ -113,14 +113,6 @@ pub fn make_binding(value : @core.Value) -> @core.Binding {
   @core.Binding::new(next_binding_id(), value)
 }
 
-///|
-/// Define an existing binding in the current frame.
-pub fn env_define_binding(env : @core.Env, name : String, binding : @core.Binding) -> Unit {
-  let frame = env.last_frame()
-  frame[name] = binding
-}
-
-///|
 /// Look up a binding by name or raise if it is unbound.
 pub fn env_lookup_binding(env : @core.Env, name : String) -> @core.Binding raise @core.EvalError {
   match env.get_binding(name) {
