@@ -99,4 +99,42 @@ test "string line continuation" {
   ignore(r.next())
   inspect(r.read_string(), content="ab")
 }
+
+///|
+test "reader comment at eof" {
+  let r = Reader::new("; trailing")
+  r.skip_ws_and_comments()
+  inspect(r.peek() is None, content="true")
+}
+
+///|
+test "reader token errors" {
+  let empty = try? Reader::new("").read_token()
+  inspect(empty is Err(_), content="true")
+  let unterminated = try? Reader::new("|abc").read_token()
+  inspect(unterminated is Err(_), content="true")
+  let escape_eof = try? Reader::new("\\").read_token()
+  inspect(escape_eof is Err(_), content="true")
+}
+
+///|
+test "string escape variants" {
+  let quote = Reader::new("\"a\\\"b\"")
+  ignore(quote.next())
+  inspect(quote.read_string(), content="a\"b")
+  let lower_hex = Reader::new("\"\\x6f;\"")
+  ignore(lower_hex.next())
+  inspect(lower_hex.read_string(), content="o")
+  let crlf = Reader::new("\"a\\\r\n  b\"")
+  ignore(crlf.next())
+  inspect(crlf.read_string(), content="ab")
+  let bad_hex_reader = Reader::new("\"\\xZZ;\"")
+  ignore(bad_hex_reader.next())
+  let bad_hex = try? bad_hex_reader.read_string()
+  inspect(bad_hex is Err(_), content="true")
+  let unterminated_reader = Reader::new("\"abc")
+  ignore(unterminated_reader.next())
+  let unterminated = try? unterminated_reader.read_string()
+  inspect(unterminated is Err(_), content="true")
+}
 ```
