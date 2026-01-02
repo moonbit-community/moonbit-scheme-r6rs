@@ -142,6 +142,7 @@ moon info
 - Apply the same pattern for numeric/fixnum/flonum comparison primitives to unify arity handling and simplify loops.
 - For functions that need the last argument (like `apply`/`append`), match `[..prefix, last]` instead of `length() - 1` indexing.
 - For non-raising helpers (like stack/env accessors), match `[.., last]` and `panic()` on `[]` to keep signatures while making the invariant explicit.
+- Replace `parts[0]` + `sub(start=1)` with `[head, ..rest]` matches when decoding list-like forms.
 
 Example:
 ```mbt

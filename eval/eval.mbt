@@ -4386,33 +4386,31 @@ fn eval_cond_expand_state(
       let prefix = prefix.to_array()
       for clause in prefix {
         let parts = datum_list_to_array(clause)
-        if parts.is_empty() {
-          raise @core.EvalError("invalid cond-expand")
-        }
-        match parts[0] {
-          Symbol("else") => raise @core.EvalError("invalid cond-expand")
-          _ =>
-            if cond_expand_feature(parts[0]) {
-              let body = parts.sub(start=1).to_array()
-              return eval_sequence_state(body, env, kont, handlers)
+        match parts {
+          [] => raise @core.EvalError("invalid cond-expand")
+          [head, ..rest] =>
+            match head {
+              Symbol("else") => raise @core.EvalError("invalid cond-expand")
+              _ =>
+                if cond_expand_feature(head) {
+                  return eval_sequence_state(rest.to_array(), env, kont, handlers)
+                }
             }
         }
       }
       let parts = datum_list_to_array(last)
-      if parts.is_empty() {
-        raise @core.EvalError("invalid cond-expand")
-      }
-      match parts[0] {
-        Symbol("else") => {
-          let body = parts.sub(start=1).to_array()
-          eval_sequence_state(body, env, kont, handlers)
-        }
-        _ =>
-          if cond_expand_feature(parts[0]) {
-            let body = parts.sub(start=1).to_array()
-            eval_sequence_state(body, env, kont, handlers)
-          } else {
-            MachineState::Apply(@core.Value::Void, kont, handlers)
+      match parts {
+        [] => raise @core.EvalError("invalid cond-expand")
+        [head, ..rest] =>
+          match head {
+            Symbol("else") =>
+              eval_sequence_state(rest.to_array(), env, kont, handlers)
+            _ =>
+              if cond_expand_feature(head) {
+                eval_sequence_state(rest.to_array(), env, kont, handlers)
+              } else {
+                MachineState::Apply(@core.Value::Void, kont, handlers)
+              }
           }
       }
     }
