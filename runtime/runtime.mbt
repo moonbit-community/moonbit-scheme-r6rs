@@ -458,8 +458,7 @@ pub fn lookup_library(name : String) -> Map[String, @core.Binding]? {
 /// }
 /// ```
 pub fn new_output_string_port() -> @core.Port {
-  let buffer = Ref::new("")
-  @core.Port::{ id: next_port_id(), kind: OutputString(buffer) }
+  @core.Port::new_output_string(next_port_id(), "")
 }
 
 ///|

@@ -202,12 +202,12 @@ fn next_winder_id() -> Int {
 
 ///|
 fn make_proc_winder(before : @core.Value, after : @core.Value) -> @core.Winder {
- @core.Winder::{ id: next_winder_id(), kind: Proc(before, after) }
+  @core.Winder::new_proc(next_winder_id(), before, after)
 }
 
 ///|
 fn make_param_winder(bindings : Array[@core.ParamBinding]) -> @core.Winder {
- @core.Winder::{ id: next_winder_id(), kind: Params(bindings) }
+  @core.Winder::new_params(next_winder_id(), bindings)
 }
 
 ///|

@@ -231,12 +231,13 @@ pub struct Parameter {
 }
 pub fn Parameter::new(Int, Value, Value?) -> Self
 
-pub(all) struct Port {
+pub struct Port {
   id : Int
   kind : PortKind
 }
+pub fn Port::new_output_string(Int, String) -> Self
 
-pub(all) enum PortKind {
+pub enum PortKind {
   OutputString(Ref[String])
 }
 
@@ -777,12 +778,14 @@ pub(all) enum WindAction {
   SwitchHandlers(Array[Value])
 }
 
-pub(all) struct Winder {
+pub struct Winder {
   id : Int
   kind : WinderKind
 }
+pub fn Winder::new_params(Int, Array[ParamBinding]) -> Self
+pub fn Winder::new_proc(Int, Value, Value) -> Self
 
-pub(all) enum WinderKind {
+pub enum WinderKind {
   Proc(Value, Value)
   Params(Array[ParamBinding])
 }

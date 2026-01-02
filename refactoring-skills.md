@@ -136,6 +136,7 @@ moon info
 - `pub` structs/enums can be pattern matched outside the package but cannot be constructed there; use this when only internal packages should create values.
 - Add explicit constructors like `Type::new(...)` in the defining package and update record literals in other packages to call them.
 - Use `rg -o "@core\\.[A-Za-z0-9_]+::\\{" -g "*.mbt" --glob "!core/*"` to find record-literal construction outside the package.
+- Use `moon ide find-references "PortKind::OutputString"` (or `WinderKind::Proc`) to locate enum-variant construction before tightening `pub(all)` to `pub`.
 
 Example:
 ```mbt

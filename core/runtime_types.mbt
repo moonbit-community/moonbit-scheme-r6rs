@@ -1,12 +1,12 @@
 ///|
 /// Kinds of runtime ports.
-pub(all) enum PortKind {
+pub enum PortKind {
   OutputString(Ref[String])
 }
 
 ///|
 /// Runtime port descriptor.
-pub(all) struct Port {
+pub struct Port {
   id : Int
   kind : PortKind
 }
@@ -211,13 +211,13 @@ pub(all) struct GuardInfo {
 }
 
 ///|
-pub(all) enum WinderKind {
+pub enum WinderKind {
   Proc(Value, Value)
   Params(Array[ParamBinding])
 }
 
 ///|
-pub(all) struct Winder {
+pub struct Winder {
   id : Int
   kind : WinderKind
 }
