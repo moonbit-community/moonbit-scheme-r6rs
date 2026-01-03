@@ -3328,3 +3328,29 @@ test "list primitive error branches" {
   expect_err("(reverse (lambda (x) x))")
 }
 ```
+
+## Targeting helper branches with big indices
+- Some helpers (like `value_as_int_index`) only trigger on bignum indices; use very large integers in tests to hit the "index out of range" path.
+- Apply this to vectors/bytevectors/strings so the same test also checks public API behavior.
+
+Example:
+```mbt
+test "large index errors" {
+  let err = try? eval_program("(vector-ref #(1 2) 123456789012345678901234567890)")
+  inspect(err is Err(_), content="true")
+}
+```
+
+## Record API error coverage
+- Use syntactic/procedural record APIs to trigger descriptor/type errors without touching internals.
+- Wrap in `try? eval_program` to cover error paths in `define-record-type`, `make-record-constructor-descriptor`, and `record-rtd`.
+
+Example:
+```mbt
+test "record descriptor errors" {
+  let err = try? eval_program(
+    "(begin (import (rnrs records procedural)) (make-record-constructor-descriptor 1 #f #f))",
+  )
+  inspect(err is Err(_), content="true")
+}
+```
