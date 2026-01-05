@@ -1,7 +1,7 @@
 {
   "import": [
-    "dii/scheme-r6rs/core",
-    "dii/scheme-r6rs/parser",
-    "dii/scheme-r6rs/internal/runtime"
+    "bobzhang/scheme-r6rs/core",
+    "bobzhang/scheme-r6rs/parser",
+    "bobzhang/scheme-r6rs/internal/runtime"
   ]
 }

@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "dii/scheme-r6rs/core"
+package "bobzhang/scheme-r6rs/core"
 
 import(
   "moonbitlang/core/bigint"

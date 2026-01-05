@@ -15,8 +15,8 @@ lexer, parser, macro expander, evaluator, and runtime helpers.
 
 ```mbt
 let program = "(+ 1 2)"
-let value = @dii/scheme-r6rs.eval_program(program)
-let text = @dii/scheme-r6rs.value_to_string(value)
+let value = @bobzhang/scheme-r6rs.eval_program(program)
+let text = @bobzhang/scheme-r6rs.value_to_string(value)
 ```
 
 ## Tests

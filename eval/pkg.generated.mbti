@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "dii/scheme-r6rs/eval"
+package "bobzhang/scheme-r6rs/eval"
 
 import(
-  "dii/scheme-r6rs/core"
+  "bobzhang/scheme-r6rs/core"
 )
 
 // Values
