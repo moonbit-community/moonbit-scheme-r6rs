@@ -1,172 +1,172 @@
 ///|
-/// @core.Primitive::Apply numeric primitives.
+/// Apply numeric primitives.
 fn apply_numeric_primitive(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value? raise @core.EvalError {
   match prim {
-    @core.Primitive::Add
-    | @core.Primitive::Sub
-    | @core.Primitive::Mul
-    | @core.Primitive::Div
-    | @core.Primitive::NumEq
-    | @core.Primitive::Less
-    | @core.Primitive::Greater
-    | @core.Primitive::LessEq
-    | @core.Primitive::GreaterEq
-    | @core.Primitive::ExactToInexact
-    | @core.Primitive::InexactToExact
-    | @core.Primitive::ExactIntegerSqrt
-    | @core.Primitive::Rationalize
-    | @core.Primitive::NumberToString
-    | @core.Primitive::StringToNumber
-    | @core.Primitive::MakeRectangular
-    | @core.Primitive::MakePolar
-    | @core.Primitive::RealPart
-    | @core.Primitive::ImagPart
-    | @core.Primitive::Magnitude
-    | @core.Primitive::Angle
-    | @core.Primitive::Sqrt
-    | @core.Primitive::Exp
-    | @core.Primitive::Log
-    | @core.Primitive::Expt
-    | @core.Primitive::Sin
-    | @core.Primitive::Cos
-    | @core.Primitive::Tan
-    | @core.Primitive::Asin
-    | @core.Primitive::Acos
-    | @core.Primitive::Atan
-    | @core.Primitive::Numerator
-    | @core.Primitive::Denominator
-    | @core.Primitive::Abs
-    | @core.Primitive::Quotient
-    | @core.Primitive::Remainder
-    | @core.Primitive::Modulo
-    | @core.Primitive::Gcd
-    | @core.Primitive::Lcm
-    | @core.Primitive::Max
-    | @core.Primitive::Min
-    | @core.Primitive::Floor
-    | @core.Primitive::Ceiling
-    | @core.Primitive::Truncate
-    | @core.Primitive::Round
-    | @core.Primitive::BitwiseAnd
-    | @core.Primitive::BitwiseIor
-    | @core.Primitive::BitwiseXor
-    | @core.Primitive::BitwiseNot
-    | @core.Primitive::BitwiseIf
-    | @core.Primitive::ArithmeticShift
-    | @core.Primitive::BitwiseBitCount
-    | @core.Primitive::BitwiseLength
-    | @core.Primitive::BitwiseFirstBitSet
-    | @core.Primitive::BitwiseBitSetP
-    | @core.Primitive::BitwiseCopyBit
-    | @core.Primitive::BitwiseBitField
-    | @core.Primitive::BitwiseCopyBitField
-    | @core.Primitive::BitwiseRotateBitField
-    | @core.Primitive::BitwiseReverseBitField
-    | @core.Primitive::FixnumP
-    | @core.Primitive::FixnumWidth
-    | @core.Primitive::LeastFixnum
-    | @core.Primitive::GreatestFixnum
-    | @core.Primitive::FxEq
-    | @core.Primitive::FxLess
-    | @core.Primitive::FxGreater
-    | @core.Primitive::FxLessEq
-    | @core.Primitive::FxGreaterEq
-    | @core.Primitive::FxZeroP
-    | @core.Primitive::FxPositiveP
-    | @core.Primitive::FxNegativeP
-    | @core.Primitive::FxOddP
-    | @core.Primitive::FxEvenP
-    | @core.Primitive::FxMin
-    | @core.Primitive::FxMax
-    | @core.Primitive::FxAdd
-    | @core.Primitive::FxSub
-    | @core.Primitive::FxMul
-    | @core.Primitive::FxDiv
-    | @core.Primitive::FxMod
-    | @core.Primitive::FxDiv0
-    | @core.Primitive::FxMod0
-    | @core.Primitive::FxAddCarry
-    | @core.Primitive::FxSubCarry
-    | @core.Primitive::FxMulCarry
-    | @core.Primitive::FxNot
-    | @core.Primitive::FxAnd
-    | @core.Primitive::FxIor
-    | @core.Primitive::FxXor
-    | @core.Primitive::FxIf
-    | @core.Primitive::FxBitCount
-    | @core.Primitive::FxLength
-    | @core.Primitive::FxFirstBitSet
-    | @core.Primitive::FxBitSetP
-    | @core.Primitive::FxCopyBit
-    | @core.Primitive::FxBitField
-    | @core.Primitive::FxCopyBitField
-    | @core.Primitive::FxRotateBitField
-    | @core.Primitive::FxReverseBitField
-    | @core.Primitive::FxArithmeticShift
-    | @core.Primitive::FxArithmeticShiftLeft
-    | @core.Primitive::FxArithmeticShiftRight
-    | @core.Primitive::FlonumP
-    | @core.Primitive::RealToFlonum
-    | @core.Primitive::FixnumToFlonum
-    | @core.Primitive::FlEq
-    | @core.Primitive::FlLess
-    | @core.Primitive::FlGreater
-    | @core.Primitive::FlLessEq
-    | @core.Primitive::FlGreaterEq
-    | @core.Primitive::FlIntegerP
-    | @core.Primitive::FlZeroP
-    | @core.Primitive::FlPositiveP
-    | @core.Primitive::FlNegativeP
-    | @core.Primitive::FlOddP
-    | @core.Primitive::FlEvenP
-    | @core.Primitive::FlFiniteP
-    | @core.Primitive::FlInfiniteP
-    | @core.Primitive::FlNanP
-    | @core.Primitive::FlMax
-    | @core.Primitive::FlMin
-    | @core.Primitive::FlAdd
-    | @core.Primitive::FlMul
-    | @core.Primitive::FlSub
-    | @core.Primitive::FlDiv
-    | @core.Primitive::FlAbs
-    | @core.Primitive::FlDivAndMod
-    | @core.Primitive::FlDivInt
-    | @core.Primitive::FlMod
-    | @core.Primitive::FlDiv0AndMod0
-    | @core.Primitive::FlDiv0
-    | @core.Primitive::FlMod0
-    | @core.Primitive::FlNumerator
-    | @core.Primitive::FlDenominator
-    | @core.Primitive::FlFloor
-    | @core.Primitive::FlCeiling
-    | @core.Primitive::FlTruncate
-    | @core.Primitive::FlRound
-    | @core.Primitive::FlExp
-    | @core.Primitive::FlLog
-    | @core.Primitive::FlSin
-    | @core.Primitive::FlCos
-    | @core.Primitive::FlTan
-    | @core.Primitive::FlAsin
-    | @core.Primitive::FlAcos
-    | @core.Primitive::FlAtan
-    | @core.Primitive::FlSqrt
-    | @core.Primitive::FlExpt
+    Add
+    | Sub
+    | Mul
+    | Div
+    | NumEq
+    | Less
+    | Greater
+    | LessEq
+    | GreaterEq
+    | ExactToInexact
+    | InexactToExact
+    | ExactIntegerSqrt
+    | Rationalize
+    | NumberToString
+    | StringToNumber
+    | MakeRectangular
+    | MakePolar
+    | RealPart
+    | ImagPart
+    | Magnitude
+    | Angle
+    | Sqrt
+    | Exp
+    | Log
+    | Expt
+    | Sin
+    | Cos
+    | Tan
+    | Asin
+    | Acos
+    | Atan
+    | Numerator
+    | Denominator
+    | Abs
+    | Quotient
+    | Remainder
+    | Modulo
+    | Gcd
+    | Lcm
+    | Max
+    | Min
+    | Floor
+    | Ceiling
+    | Truncate
+    | Round
+    | BitwiseAnd
+    | BitwiseIor
+    | BitwiseXor
+    | BitwiseNot
+    | BitwiseIf
+    | ArithmeticShift
+    | BitwiseBitCount
+    | BitwiseLength
+    | BitwiseFirstBitSet
+    | BitwiseBitSetP
+    | BitwiseCopyBit
+    | BitwiseBitField
+    | BitwiseCopyBitField
+    | BitwiseRotateBitField
+    | BitwiseReverseBitField
+    | FixnumP
+    | FixnumWidth
+    | LeastFixnum
+    | GreatestFixnum
+    | FxEq
+    | FxLess
+    | FxGreater
+    | FxLessEq
+    | FxGreaterEq
+    | FxZeroP
+    | FxPositiveP
+    | FxNegativeP
+    | FxOddP
+    | FxEvenP
+    | FxMin
+    | FxMax
+    | FxAdd
+    | FxSub
+    | FxMul
+    | FxDiv
+    | FxMod
+    | FxDiv0
+    | FxMod0
+    | FxAddCarry
+    | FxSubCarry
+    | FxMulCarry
+    | FxNot
+    | FxAnd
+    | FxIor
+    | FxXor
+    | FxIf
+    | FxBitCount
+    | FxLength
+    | FxFirstBitSet
+    | FxBitSetP
+    | FxCopyBit
+    | FxBitField
+    | FxCopyBitField
+    | FxRotateBitField
+    | FxReverseBitField
+    | FxArithmeticShift
+    | FxArithmeticShiftLeft
+    | FxArithmeticShiftRight
+    | FlonumP
+    | RealToFlonum
+    | FixnumToFlonum
+    | FlEq
+    | FlLess
+    | FlGreater
+    | FlLessEq
+    | FlGreaterEq
+    | FlIntegerP
+    | FlZeroP
+    | FlPositiveP
+    | FlNegativeP
+    | FlOddP
+    | FlEvenP
+    | FlFiniteP
+    | FlInfiniteP
+    | FlNanP
+    | FlMax
+    | FlMin
+    | FlAdd
+    | FlMul
+    | FlSub
+    | FlDiv
+    | FlAbs
+    | FlDivAndMod
+    | FlDivInt
+    | FlMod
+    | FlDiv0AndMod0
+    | FlDiv0
+    | FlMod0
+    | FlNumerator
+    | FlDenominator
+    | FlFloor
+    | FlCeiling
+    | FlTruncate
+    | FlRound
+    | FlExp
+    | FlLog
+    | FlSin
+    | FlCos
+    | FlTan
+    | FlAsin
+    | FlAcos
+    | FlAtan
+    | FlSqrt
+    | FlExpt
     => Some(apply_numeric_primitive_core(prim, args))
     _ => None
   }
 }
 
 ///|
-/// @core.Primitive::Apply numeric primitives (core match).
+/// Apply numeric primitives (core match).
 fn apply_numeric_primitive_core(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value raise @core.EvalError {
   match prim {
-    @core.Primitive::Add => {
+    Add => {
       let acc = for i = 0, acc = @core.Datum::Int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -177,7 +177,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(acc)
     }
-    @core.Primitive::Sub =>
+    Sub =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
@@ -197,7 +197,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(result)
         }
       }
-    @core.Primitive::Mul => {
+    Mul => {
       let product = for i = 0, product = @core.Datum::Int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -208,7 +208,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(product)
     }
-    @core.Primitive::Div =>
+    Div =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
@@ -228,7 +228,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(result)
         }
       }
-    @core.Primitive::NumEq =>
+    NumEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -247,7 +247,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::Less =>
+    Less =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -267,7 +267,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::Greater =>
+    Greater =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -287,7 +287,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::LessEq =>
+    LessEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -307,7 +307,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::GreaterEq =>
+    GreaterEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -327,7 +327,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::ExactToInexact =>
+    ExactToInexact =>
       match args {
         [Datum(Float(f))] => @core.Value::Datum(@core.Datum::Float(f))
         [Datum(Complex(real, imag))] => {
@@ -343,7 +343,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::InexactToExact =>
+    InexactToExact =>
       match args {
         [Datum(Float(f))] =>
           @core.Value::Datum(float_to_exact_datum(f))
@@ -360,7 +360,7 @@ fn apply_numeric_primitive_core(
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ExactIntegerSqrt =>
+    ExactIntegerSqrt =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
@@ -394,7 +394,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Rationalize =>
+    Rationalize =>
       match args {
         [x_value, tol_value] => {
           let x = value_as_number(x_value)
@@ -417,7 +417,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::NumberToString =>
+    NumberToString =>
       match args {
         [num_value] => {
           let num = value_as_number(num_value)
@@ -480,7 +480,7 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::StringToNumber =>
+    StringToNumber =>
       match args {
         [string_value] => {
           let s = value_as_string(string_value)
@@ -511,7 +511,7 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::MakeRectangular =>
+    MakeRectangular =>
       match args {
         [real_value, imag_value] => {
           let real = datum_to_real(value_as_number(real_value))
@@ -520,7 +520,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::MakePolar =>
+    MakePolar =>
       match args {
         [r_value, theta_value] => {
           let r = number_to_float(datum_to_real(value_as_number(r_value)))
@@ -531,7 +531,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::RealPart =>
+    RealPart =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
@@ -540,7 +540,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ImagPart =>
+    ImagPart =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
@@ -554,7 +554,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Magnitude =>
+    Magnitude =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
@@ -580,7 +580,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Angle =>
+    Angle =>
       match args {
         [num_value] =>
           match value_as_number(num_value) {
@@ -596,7 +596,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Sqrt =>
+    Sqrt =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -629,7 +629,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Exp =>
+    Exp =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -643,7 +643,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Log =>
+    Log =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -657,7 +657,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Expt =>
+    Expt =>
       match args {
         [base_value, exponent_value] => {
           let base = value_as_number(base_value)
@@ -880,7 +880,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::Sin =>
+    Sin =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -894,7 +894,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Cos =>
+    Cos =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -908,7 +908,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Tan =>
+    Tan =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -922,7 +922,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Asin =>
+    Asin =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -936,7 +936,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Acos =>
+    Acos =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -950,7 +950,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Atan =>
+    Atan =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -974,7 +974,7 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::Numerator =>
+    Numerator =>
       match args {
         [value] =>
           match value {
@@ -986,7 +986,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Denominator =>
+    Denominator =>
       match args {
         [value] =>
           match value {
@@ -998,7 +998,7 @@ fn apply_numeric_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Abs =>
+    Abs =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -1026,7 +1026,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Quotient =>
+    Quotient =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
@@ -1050,7 +1050,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::Remainder =>
+    Remainder =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
@@ -1074,7 +1074,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::Modulo =>
+    Modulo =>
       match args {
         [left_value, right_value] => {
           let left_val = value_as_exact_integer(left_value)
@@ -1116,7 +1116,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
     }
-    @core.Primitive::Gcd => {
+    Gcd => {
       let (use_big, acc_int, acc_big) =
         for i = 0,
           use_big = false,
@@ -1157,7 +1157,7 @@ fn apply_numeric_primitive_core(
         @core.Value::Datum(@core.Datum::Int(acc_int))
       }
     }
-    @core.Primitive::Lcm => {
+    Lcm => {
       let (use_big, acc_int, acc_big) =
         for i = 0,
           use_big = false,
@@ -1214,7 +1214,7 @@ fn apply_numeric_primitive_core(
         @core.Value::Datum(@core.Datum::Int(acc_int))
       }
     }
-    @core.Primitive::Max => {
+    Max => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -1240,7 +1240,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::Min => {
+    Min => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -1266,7 +1266,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::Floor =>
+    Floor =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -1287,7 +1287,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Ceiling =>
+    Ceiling =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -1308,7 +1308,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Truncate =>
+    Truncate =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -1329,7 +1329,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Round =>
+    Round =>
       match args {
         [num_value] => {
           let value = value_as_number(num_value)
@@ -1350,7 +1350,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BitwiseAnd =>
+    BitwiseAnd =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(-1))
         [first, ..rest] => {
@@ -1367,7 +1367,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(acc)
         }
       }
-    @core.Primitive::BitwiseIor =>
+    BitwiseIor =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(0))
         [first, ..rest] => {
@@ -1384,7 +1384,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(acc)
         }
       }
-    @core.Primitive::BitwiseXor =>
+    BitwiseXor =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(0))
         [first, ..rest] => {
@@ -1401,7 +1401,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(acc)
         }
       }
-    @core.Primitive::BitwiseNot =>
+    BitwiseNot =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
@@ -1409,7 +1409,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BitwiseIf =>
+    BitwiseIf =>
       match args {
         [mask_value, yes_value, no_value] => {
           let mask = value_as_exact_integer(mask_value)
@@ -1425,7 +1425,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::ArithmeticShift =>
+    ArithmeticShift =>
       match args {
         [value, shift_value] => {
           let value = value_as_exact_integer(value)
@@ -1434,7 +1434,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::BitwiseBitCount =>
+    BitwiseBitCount =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
@@ -1443,7 +1443,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BitwiseLength =>
+    BitwiseLength =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
@@ -1452,7 +1452,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BitwiseFirstBitSet =>
+    BitwiseFirstBitSet =>
       match args {
         [value] => {
           let value = value_as_exact_integer(value)
@@ -1467,7 +1467,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BitwiseBitSetP =>
+    BitwiseBitSetP =>
       match args {
         [value, index_value] => {
           let value = value_as_exact_integer(value)
@@ -1476,7 +1476,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::BitwiseCopyBit =>
+    BitwiseCopyBit =>
       match args {
         [value, index_value, bit_value] => {
           let value = value_as_exact_integer(value)
@@ -1506,7 +1506,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::BitwiseBitField =>
+    BitwiseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_exact_integer(value)
@@ -1516,7 +1516,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::BitwiseCopyBitField =>
+    BitwiseCopyBitField =>
       match args {
         [value, start_value, end_value, from_value] => {
           let value = value_as_exact_integer(value)
@@ -1527,7 +1527,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    @core.Primitive::BitwiseRotateBitField =>
+    BitwiseRotateBitField =>
       match args {
         [value, start_value, end_value, count_value] => {
           let value = value_as_exact_integer(value)
@@ -1538,7 +1538,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    @core.Primitive::BitwiseReverseBitField =>
+    BitwiseReverseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_exact_integer(value)
@@ -1548,17 +1548,17 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FixnumP =>
+    FixnumP =>
       match args {
         [value] => bool_value(value_is_fixnum(value))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FixnumWidth =>
+    FixnumWidth =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(fixnum_width_value()))
         _ => raise arity_mismatch(0, args.length())
       }
-    @core.Primitive::LeastFixnum =>
+    LeastFixnum =>
       match args {
         [] => {
           let half = fixnum_half_bigint()
@@ -1566,7 +1566,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(0, args.length())
       }
-    @core.Primitive::GreatestFixnum =>
+    GreatestFixnum =>
       match args {
         [] => {
           let half = fixnum_half_bigint()
@@ -1574,7 +1574,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(0, args.length())
       }
-    @core.Primitive::FxEq =>
+    FxEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -1593,7 +1593,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FxLess =>
+    FxLess =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -1613,7 +1613,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FxGreater =>
+    FxGreater =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -1633,7 +1633,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FxLessEq =>
+    FxLessEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -1653,7 +1653,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FxGreaterEq =>
+    FxGreaterEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -1673,32 +1673,32 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FxZeroP =>
+    FxZeroP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxPositiveP =>
+    FxPositiveP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) > 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxNegativeP =>
+    FxNegativeP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) < 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxOddP =>
+    FxOddP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) % 2 != 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxEvenP =>
+    FxEvenP =>
       match args {
         [value] => bool_value(value_as_fixnum_int(value) % 2 == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxMin => {
+    FxMin => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -1717,7 +1717,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::FxMax => {
+    FxMax => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -1736,7 +1736,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::FxAdd => {
+    FxAdd => {
       let acc = for i = 0, acc = bigint_from_int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -1748,7 +1748,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(fixnum_from_bigint(acc))
     }
-    @core.Primitive::FxSub =>
+    FxSub =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
@@ -1768,7 +1768,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(fixnum_from_bigint(result))
         }
       }
-    @core.Primitive::FxMul => {
+    FxMul => {
       let acc = for i = 0, acc = bigint_from_int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -1780,7 +1780,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(fixnum_from_bigint(acc))
     }
-    @core.Primitive::FxDiv =>
+    FxDiv =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1805,7 +1805,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxMod =>
+    FxMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1829,7 +1829,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxDiv0 =>
+    FxDiv0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1841,7 +1841,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxMod0 =>
+    FxMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1853,7 +1853,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxAddCarry =>
+    FxAddCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1871,7 +1871,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxSubCarry =>
+    FxSubCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1889,7 +1889,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxMulCarry =>
+    FxMulCarry =>
       match args {
         [left_value, right_value, carry_value] => {
           let left = value_as_fixnum_bigint(left_value)
@@ -1907,7 +1907,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxNot =>
+    FxNot =>
       match args {
         [value] => {
           let datum = value_as_fixnum_datum(value)
@@ -1916,7 +1916,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxAnd =>
+    FxAnd =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(-1))
         [first, ..rest] => {
@@ -1933,7 +1933,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(fixnum_from_datum(acc))
         }
       }
-    @core.Primitive::FxIor =>
+    FxIor =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(0))
         [first, ..rest] => {
@@ -1950,7 +1950,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(fixnum_from_datum(acc))
         }
       }
-    @core.Primitive::FxXor =>
+    FxXor =>
       match args {
         [] => @core.Value::Datum(@core.Datum::Int(0))
         [first, ..rest] => {
@@ -1967,7 +1967,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(fixnum_from_datum(acc))
         }
       }
-    @core.Primitive::FxIf =>
+    FxIf =>
       match args {
         [mask_value, yes_value, no_value] => {
           let mask = value_as_fixnum_datum(mask_value)
@@ -1987,7 +1987,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxBitCount =>
+    FxBitCount =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
@@ -1996,7 +1996,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxLength =>
+    FxLength =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
@@ -2005,7 +2005,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxFirstBitSet =>
+    FxFirstBitSet =>
       match args {
         [value] => {
           let value = value_as_fixnum_datum(value)
@@ -2020,7 +2020,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FxBitSetP =>
+    FxBitSetP =>
       match args {
         [value, index_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2029,7 +2029,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxCopyBit =>
+    FxCopyBit =>
       match args {
         [value, index_value, bit_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2052,7 +2052,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxBitField =>
+    FxBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2064,7 +2064,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxCopyBitField =>
+    FxCopyBitField =>
       match args {
         [value, start_value, end_value, from_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2079,7 +2079,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    @core.Primitive::FxRotateBitField =>
+    FxRotateBitField =>
       match args {
         [value, start_value, end_value, count_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2094,7 +2094,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(4, args.length())
       }
-    @core.Primitive::FxReverseBitField =>
+    FxReverseBitField =>
       match args {
         [value, start_value, end_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2108,7 +2108,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::FxArithmeticShift =>
+    FxArithmeticShift =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2117,7 +2117,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxArithmeticShiftLeft =>
+    FxArithmeticShiftLeft =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2126,7 +2126,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FxArithmeticShiftRight =>
+    FxArithmeticShiftRight =>
       match args {
         [value, shift_value] => {
           let value = value_as_fixnum_datum(value)
@@ -2135,7 +2135,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlonumP =>
+    FlonumP =>
       match args {
         [Datum(datum)] =>
           match @runtime.datum_unlabel(datum) {
@@ -2145,7 +2145,7 @@ fn apply_numeric_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::RealToFlonum =>
+    RealToFlonum =>
       match args {
         [value] => {
           let value = value_as_number(value)
@@ -2153,7 +2153,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FixnumToFlonum =>
+    FixnumToFlonum =>
       match args {
         [value] => {
           let value = value_as_fixnum_int(value)
@@ -2161,7 +2161,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlEq =>
+    FlEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -2180,7 +2180,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FlLess =>
+    FlLess =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -2200,7 +2200,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FlGreater =>
+    FlGreater =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -2220,7 +2220,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FlLessEq =>
+    FlLessEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -2240,7 +2240,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FlGreaterEq =>
+    FlGreaterEq =>
       match args {
         [] | [_] => bool_value(true)
         [first, ..rest] => {
@@ -2260,7 +2260,7 @@ fn apply_numeric_primitive_core(
           bool_value(ok)
         }
       }
-    @core.Primitive::FlIntegerP =>
+    FlIntegerP =>
       match args {
         [value] => {
           let f = value_as_flonum(value)
@@ -2269,47 +2269,47 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlZeroP =>
+    FlZeroP =>
       match args {
         [value] => bool_value(value_as_flonum(value) == 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlPositiveP =>
+    FlPositiveP =>
       match args {
         [value] => bool_value(value_as_flonum(value) > 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlNegativeP =>
+    FlNegativeP =>
       match args {
         [value] => bool_value(value_as_flonum(value) < 0.0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlOddP =>
+    FlOddP =>
       match args {
         [value] => bool_value(value_as_integer_flonum(value) % 2 != 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlEvenP =>
+    FlEvenP =>
       match args {
         [value] => bool_value(value_as_integer_flonum(value) % 2 == 0)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlFiniteP =>
+    FlFiniteP =>
       match args {
         [value] => bool_value(float_is_finite(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlInfiniteP =>
+    FlInfiniteP =>
       match args {
         [value] => bool_value(float_is_infinite(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlNanP =>
+    FlNanP =>
       match args {
         [value] => bool_value(float_is_nan(value_as_flonum(value)))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlMax => {
+    FlMax => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -2334,7 +2334,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::FlMin => {
+    FlMin => {
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, ..rest] => {
@@ -2359,7 +2359,7 @@ fn apply_numeric_primitive_core(
         }
       }
     }
-    @core.Primitive::FlAdd => {
+    FlAdd => {
       let acc = for i = 0, acc = Float::from_int(0); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -2370,7 +2370,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(@core.Datum::Float(acc))
     }
-    @core.Primitive::FlMul => {
+    FlMul => {
       let acc = for i = 0, acc = Float::from_int(1); i < args.length(); {
         // invariant : i >= 0 && i <= args.length()
         // decreases : args.length() - i
@@ -2381,7 +2381,7 @@ fn apply_numeric_primitive_core(
       }
       @core.Value::Datum(@core.Datum::Float(acc))
     }
-    @core.Primitive::FlSub =>
+    FlSub =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => @core.Value::Datum(@core.Datum::Float(-value_as_flonum(value)))
@@ -2398,7 +2398,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(@core.Datum::Float(result))
         }
       }
-    @core.Primitive::FlDiv =>
+    FlDiv =>
       match args {
         [] => raise arity_mismatch(1, 0)
         [value] => {
@@ -2418,7 +2418,7 @@ fn apply_numeric_primitive_core(
           @core.Value::Datum(@core.Datum::Float(result))
         }
       }
-    @core.Primitive::FlAbs =>
+    FlAbs =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2426,7 +2426,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlDivAndMod =>
+    FlDivAndMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2439,7 +2439,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlDivInt =>
+    FlDivInt =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2449,7 +2449,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlMod =>
+    FlMod =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2459,7 +2459,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlDiv0AndMod0 =>
+    FlDiv0AndMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2472,7 +2472,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlDiv0 =>
+    FlDiv0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2482,7 +2482,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlMod0 =>
+    FlMod0 =>
       match args {
         [left_value, right_value] => {
           let left = value_as_flonum(left_value)
@@ -2492,7 +2492,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlNumerator =>
+    FlNumerator =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2500,7 +2500,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlDenominator =>
+    FlDenominator =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2508,7 +2508,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlFloor =>
+    FlFloor =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2520,7 +2520,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlCeiling =>
+    FlCeiling =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2534,7 +2534,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlTruncate =>
+    FlTruncate =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2546,7 +2546,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlRound =>
+    FlRound =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2558,49 +2558,49 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlExp =>
+    FlExp =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.expf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlLog =>
+    FlLog =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.lnf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlSin =>
+    FlSin =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.sinf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlCos =>
+    FlCos =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.cosf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlTan =>
+    FlTan =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.tanf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlAsin =>
+    FlAsin =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.asinf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlAcos =>
+    FlAcos =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.acosf(value_as_flonum(value))))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlAtan =>
+    FlAtan =>
       match args {
         [value] =>
           @core.Value::Datum(@core.Datum::Float(@math.atanf(value_as_flonum(value))))
@@ -2611,7 +2611,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::FlSqrt =>
+    FlSqrt =>
       match args {
         [value] => {
           let num = value_as_flonum(value)
@@ -2619,7 +2619,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FlExpt =>
+    FlExpt =>
       match args {
         [base_value, exp_value] => {
           let base = value_as_flonum(base_value)

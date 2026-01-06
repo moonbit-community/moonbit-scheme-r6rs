@@ -1281,10 +1281,7 @@ fn string_replace_range(
     raise @core.EvalError("index out of range")
   }
   let buf = @buffer.new()
-  for i = 0; i < len; {
-    // invariant : i >= 0 && i <= len
-    // decreases : len - i
-    // assert : i <= len
+  for i in 0..<len {
     match s.get_char(i) {
       Some(ch) =>
         if i >= start && i < end {
@@ -1294,10 +1291,8 @@ fn string_replace_range(
         }
       None => raise @core.EvalError("index out of range")
     }
-    continue i + 1
-  } else {
-    buf.to_string()
   }
+  buf.to_string()
 }
 
 ///|
@@ -2756,9 +2751,9 @@ fn value_as_enum_set(value : @core.Value) -> @core.EnumSet raise @core.EvalError
 ///|
 fn hashtable_equiv_from_value(value : @core.Value) -> @core.HashtableEquiv raise @core.EvalError {
   match value {
-    Primitive(@core.Primitive::Eq) => @core.HashtableEquiv::Eq
-    Primitive(@core.Primitive::Eqv) => @core.HashtableEquiv::Eqv
-    Primitive(@core.Primitive::Equal) => @core.HashtableEquiv::Equal
+    Primitive(Eq) => @core.HashtableEquiv::Eq
+    Primitive(Eqv) => @core.HashtableEquiv::Eqv
+    Primitive(Equal) => @core.HashtableEquiv::Equal
     _ => {
       if !@runtime.is_procedure_value(value) {
         raise @core.EvalError("type error: procedure expected")
@@ -2771,9 +2766,9 @@ fn hashtable_equiv_from_value(value : @core.Value) -> @core.HashtableEquiv raise
 ///|
 fn hashtable_equiv_to_value(equiv : @core.HashtableEquiv) -> @core.Value {
   match equiv {
-    @core.HashtableEquiv::Eq => @core.Value::Primitive(@core.Primitive::Eq)
-    @core.HashtableEquiv::Eqv => @core.Value::Primitive(@core.Primitive::Eqv)
-    @core.HashtableEquiv::Equal => @core.Value::Primitive(@core.Primitive::Equal)
+    @core.HashtableEquiv::Eq => @core.Value::Primitive(Eq)
+    @core.HashtableEquiv::Eqv => @core.Value::Primitive(Eqv)
+    @core.HashtableEquiv::Equal => @core.Value::Primitive(Equal)
     @core.HashtableEquiv::Proc(proc) => proc
   }
 }

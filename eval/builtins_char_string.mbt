@@ -1,43 +1,43 @@
 ///|
-/// @core.Primitive::Apply character and string primitives.
+/// Apply character and string primitives.
 fn apply_char_string_primitive(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value? raise @core.EvalError {
   match prim {
-    @core.Primitive::CharEq =>
+    CharEq =>
       Some(bool_value(compare_chain_char(args, CmpEq, false)))
-    @core.Primitive::CharLess =>
+    CharLess =>
       Some(bool_value(compare_chain_char(args, CmpLt, false)))
-    @core.Primitive::CharGreater =>
+    CharGreater =>
       Some(bool_value(compare_chain_char(args, CmpGt, false)))
-    @core.Primitive::CharLessEq =>
+    CharLessEq =>
       Some(bool_value(compare_chain_char(args, CmpLe, false)))
-    @core.Primitive::CharGreaterEq =>
+    CharGreaterEq =>
       Some(bool_value(compare_chain_char(args, CmpGe, false)))
-    @core.Primitive::CharCiEq =>
+    CharCiEq =>
       Some(bool_value(compare_chain_char(args, CmpEq, true)))
-    @core.Primitive::CharCiLess =>
+    CharCiLess =>
       Some(bool_value(compare_chain_char(args, CmpLt, true)))
-    @core.Primitive::CharCiGreater =>
+    CharCiGreater =>
       Some(bool_value(compare_chain_char(args, CmpGt, true)))
-    @core.Primitive::CharCiLessEq =>
+    CharCiLessEq =>
       Some(bool_value(compare_chain_char(args, CmpLe, true)))
-    @core.Primitive::CharCiGreaterEq =>
+    CharCiGreaterEq =>
       Some(bool_value(compare_chain_char(args, CmpGe, true)))
-    @core.Primitive::CharP =>
+    CharP =>
       match args {
         [Datum(Char(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharToInteger =>
+    CharToInteger =>
       match args {
         [char_value] =>
           Some(@core.Value::Datum(Int(value_as_char(char_value).to_int())))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::IntegerToChar =>
+    IntegerToChar =>
       match args {
         [int_value] =>
           Some({
@@ -46,7 +46,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharAlphabeticP =>
+    CharAlphabeticP =>
       match args {
         [char_value] =>
           Some({
@@ -55,7 +55,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharNumericP =>
+    CharNumericP =>
       match args {
         [char_value] =>
           Some({
@@ -64,7 +64,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharWhitespaceP =>
+    CharWhitespaceP =>
       match args {
         [char_value] =>
           Some({
@@ -73,7 +73,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharUpperCaseP =>
+    CharUpperCaseP =>
       match args {
         [char_value] =>
           Some({
@@ -82,7 +82,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharLowerCaseP =>
+    CharLowerCaseP =>
       match args {
         [char_value] =>
           Some({
@@ -91,7 +91,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharUpcase =>
+    CharUpcase =>
       match args {
         [char_value] =>
           Some(
@@ -101,7 +101,7 @@ fn apply_char_string_primitive(
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharDowncase =>
+    CharDowncase =>
       match args {
         [char_value] =>
           Some(
@@ -111,7 +111,7 @@ fn apply_char_string_primitive(
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharFoldcase =>
+    CharFoldcase =>
       match args {
         [char_value] =>
           Some(
@@ -121,7 +121,7 @@ fn apply_char_string_primitive(
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CharGeneralCategory =>
+    CharGeneralCategory =>
       match args {
         [char_value] =>
           Some(
@@ -131,31 +131,31 @@ fn apply_char_string_primitive(
           )
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringEq =>
+    StringEq =>
       Some(bool_value(compare_chain_string(args, CmpEq, false)))
-    @core.Primitive::StringLess =>
+    StringLess =>
       Some(bool_value(compare_chain_string(args, CmpLt, false)))
-    @core.Primitive::StringGreater =>
+    StringGreater =>
       Some(bool_value(compare_chain_string(args, CmpGt, false)))
-    @core.Primitive::StringLessEq =>
+    StringLessEq =>
       Some(bool_value(compare_chain_string(args, CmpLe, false)))
-    @core.Primitive::StringGreaterEq =>
+    StringGreaterEq =>
       Some(bool_value(compare_chain_string(args, CmpGe, false)))
-    @core.Primitive::StringCiEq =>
+    StringCiEq =>
       Some(bool_value(compare_chain_string(args, CmpEq, true)))
-    @core.Primitive::StringCiLess =>
+    StringCiLess =>
       Some(bool_value(compare_chain_string(args, CmpLt, true)))
-    @core.Primitive::StringCiGreater =>
+    StringCiGreater =>
       Some(bool_value(compare_chain_string(args, CmpGt, true)))
-    @core.Primitive::StringCiLessEq =>
+    StringCiLessEq =>
       Some(bool_value(compare_chain_string(args, CmpLe, true)))
-    @core.Primitive::StringCiGreaterEq =>
+    StringCiGreaterEq =>
       Some(bool_value(compare_chain_string(args, CmpGe, true)))
-    @core.Primitive::String => {
+    String => {
       let chars : Array[Char] = args.map((arg) => value_as_char(arg))
       Some(@core.Value::Datum(String(Ref::new(String::from_array(chars)))))
     }
-    @core.Primitive::MakeString =>
+    MakeString =>
       match args {
         [len_value] =>
           Some({
@@ -180,13 +180,13 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::StringP =>
+    StringP =>
       match args {
         [Datum(String(_))] => Some(bool_value(true))
         [_] => Some(bool_value(false))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringLength =>
+    StringLength =>
       match args {
         [string_value] =>
           Some({
@@ -195,11 +195,11 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringAppend => {
+    StringAppend => {
       let items : Array[String] = args.map((arg) => value_as_string(arg))
       Some(@core.Value::Datum(String(Ref::new(items.join("")))))
     }
-    @core.Primitive::StringRef =>
+    StringRef =>
       match args {
         [string_value, idx_value] =>
           Some({
@@ -213,7 +213,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::StringSet =>
+    StringSet =>
       match args {
         [string_value, idx_value, char_value] =>
           Some({
@@ -226,7 +226,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::StringCopy =>
+    StringCopy =>
       match args {
         [string_value] =>
           Some({
@@ -272,7 +272,7 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    @core.Primitive::Substring =>
+    Substring =>
       match args {
         [string_value, start_value, end_value] =>
           Some({
@@ -289,7 +289,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(3, args.length())
       }
-    @core.Primitive::StringCopyBang =>
+    StringCopyBang =>
       match args {
         [to_value, at_value, from_value] =>
           Some({
@@ -302,10 +302,7 @@ fn apply_char_string_primitive(
             let to_len = to_str.length()
             let count = check_copy_range(start, end, from_str.length(), at, to_len)
             let buf = @buffer.new()
-            for i = 0; i < to_len; {
-              // invariant : i >= 0 && i <= to_len
-              // decreases : to_len - i
-              // assert : i <= to_len
+            for i in 0..<to_len {
               match to_str.get_char(i) {
                 Some(ch) =>
                   if i >= at && i < at + count {
@@ -319,7 +316,6 @@ fn apply_char_string_primitive(
                   }
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             to_ref.val = buf.to_string()
             @core.Value::Void
@@ -335,10 +331,7 @@ fn apply_char_string_primitive(
             let to_len = to_str.length()
             let count = check_copy_range(start, end, from_str.length(), at, to_len)
             let buf = @buffer.new()
-            for i = 0; i < to_len; {
-              // invariant : i >= 0 && i <= to_len
-              // decreases : to_len - i
-              // assert : i <= to_len
+            for i in 0..<to_len {
               match to_str.get_char(i) {
                 Some(ch) =>
                   if i >= at && i < at + count {
@@ -352,7 +345,6 @@ fn apply_char_string_primitive(
                   }
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             to_ref.val = buf.to_string()
             @core.Value::Void
@@ -368,10 +360,7 @@ fn apply_char_string_primitive(
             let to_len = to_str.length()
             let count = check_copy_range(start, end, from_str.length(), at, to_len)
             let buf = @buffer.new()
-            for i = 0; i < to_len; {
-              // invariant : i >= 0 && i <= to_len
-              // decreases : to_len - i
-              // assert : i <= to_len
+            for i in 0..<to_len {
               match to_str.get_char(i) {
                 Some(ch) =>
                   if i >= at && i < at + count {
@@ -385,7 +374,6 @@ fn apply_char_string_primitive(
                   }
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             to_ref.val = buf.to_string()
             @core.Value::Void
@@ -395,7 +383,7 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
           )
       }
-    @core.Primitive::StringFill =>
+    StringFill =>
       match args {
         [string_value, fill_value] =>
           Some({
@@ -432,7 +420,7 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 2 to 4 got \{args.length()}",
           )
       }
-    @core.Primitive::StringToList =>
+    StringToList =>
       match args {
         [string_value] =>
           Some({
@@ -441,15 +429,11 @@ fn apply_char_string_primitive(
             let end = s.length()
             check_slice_range(start, end, s.length())
             let items : Array[@core.Datum] = []
-            for i = start; i < end; {
-              // invariant : i >= start && i <= end
-              // decreases : end - i
-              // assert : i <= end
+            for i in start..<end {
               match s.get_char(i) {
                 Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             @core.Value::Datum(list_from_array(items))
           })
@@ -460,15 +444,11 @@ fn apply_char_string_primitive(
             let end = s.length()
             check_slice_range(start, end, s.length())
             let items : Array[@core.Datum] = []
-            for i = start; i < end; {
-              // invariant : i >= start && i <= end
-              // decreases : end - i
-              // assert : i <= end
+            for i in start..<end {
               match s.get_char(i) {
                 Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             @core.Value::Datum(list_from_array(items))
           })
@@ -479,15 +459,11 @@ fn apply_char_string_primitive(
             let end = value_as_int_index(end_value)
             check_slice_range(start, end, s.length())
             let items : Array[@core.Datum] = []
-            for i = start; i < end; {
-              // invariant : i >= start && i <= end
-              // decreases : end - i
-              // assert : i <= end
+            for i in start..<end {
               match s.get_char(i) {
                 Some(ch) => items.push(Char(ch))
                 None => raise @core.EvalError("index out of range")
               }
-              continue i + 1
             }
             @core.Value::Datum(list_from_array(items))
           })
@@ -496,7 +472,7 @@ fn apply_char_string_primitive(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
-    @core.Primitive::ListToString =>
+    ListToString =>
       match args {
         [datum_value] =>
           Some({
@@ -513,7 +489,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringUpcase =>
+    StringUpcase =>
       match args {
         [string_value] =>
           Some({
@@ -524,7 +500,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringDowncase =>
+    StringDowncase =>
       match args {
         [string_value] =>
           Some({
@@ -535,7 +511,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringFoldcase =>
+    StringFoldcase =>
       match args {
         [string_value] =>
           Some({
@@ -546,7 +522,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringNormalizeNfc =>
+    StringNormalizeNfc =>
       match args {
         [string_value] =>
           Some({
@@ -559,7 +535,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringNormalizeNfd =>
+    StringNormalizeNfd =>
       match args {
         [string_value] =>
           Some({
@@ -572,7 +548,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringNormalizeNfkc =>
+    StringNormalizeNfkc =>
       match args {
         [string_value] =>
           Some({
@@ -585,7 +561,7 @@ fn apply_char_string_primitive(
           })
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringNormalizeNfkd =>
+    StringNormalizeNfkd =>
       match args {
         [string_value] =>
           Some({

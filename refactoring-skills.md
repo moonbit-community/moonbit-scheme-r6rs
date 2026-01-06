@@ -233,6 +233,32 @@ Entry:
 let bad = try? eval_program("(import (1))")
 ```
 
+Entry:
+```
+## 2026-01-06: Prefer unqualified primitive variants in matches
+- Problem: Long `@core.Primitive::` prefixes made large matches noisy.
+- Change: Drop type paths when the matched value is already `@core.Primitive`.
+- Result: Cleaner dispatch tables without changing behavior.
+- Example:
+// Before
+match prim { @core.Primitive::CharEq => ... }
+// After
+match prim { CharEq => ... }
+```
+
+Entry:
+```
+## 2026-01-06: Convert simple index loops to range loops
+- Problem: Manual `continue i + 1` obscured iteration intent in string helpers.
+- Change: Use `for i in start..<end { ... }` for pure iteration loops.
+- Result: Fewer invariants and simpler control flow.
+- Example:
+// Before
+for i = 0; i < len; { ... continue i + 1 }
+// After
+for i in 0..<len { ... }
+```
+
 ## Moon IDE commands
 ```bash
 moon doc "<query>"
