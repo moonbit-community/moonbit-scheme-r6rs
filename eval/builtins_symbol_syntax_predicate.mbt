@@ -1,92 +1,92 @@
 ///|
-/// @core.Primitive::Apply symbol, syntax, hash, and predicate primitives.
+/// Apply symbol, syntax, hash, and predicate primitives.
 fn apply_symbol_syntax_predicate_primitive(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value? raise @core.EvalError {
   match prim {
-    @core.Primitive::Eq
-    | @core.Primitive::Eqv
-    | @core.Primitive::Equal
-    | @core.Primitive::SymbolP
-    | @core.Primitive::SymbolEq
-    | @core.Primitive::IdentifierP
-    | @core.Primitive::SyntaxP
-    | @core.Primitive::FreeIdentifierEq
-    | @core.Primitive::BoundIdentifierEq
-    | @core.Primitive::SymbolToString
-    | @core.Primitive::StringToSymbol
-    | @core.Primitive::StringHash
-    | @core.Primitive::StringCiHash
-    | @core.Primitive::SymbolHash
-    | @core.Primitive::EqualHash
-    | @core.Primitive::SyntaxToDatum
-    | @core.Primitive::DatumToSyntax
-    | @core.Primitive::BooleanP
-    | @core.Primitive::BooleanEq
-    | @core.Primitive::NumberP
-    | @core.Primitive::IntegerP
-    | @core.Primitive::ExactIntegerP
-    | @core.Primitive::RationalP
-    | @core.Primitive::RealP
-    | @core.Primitive::ComplexP
-    | @core.Primitive::ExactP
-    | @core.Primitive::InexactP
-    | @core.Primitive::ZeroP
-    | @core.Primitive::PositiveP
-    | @core.Primitive::NegativeP
-    | @core.Primitive::OddP
-    | @core.Primitive::EvenP
-    | @core.Primitive::FiniteP
-    | @core.Primitive::InfiniteP
-    | @core.Primitive::NanP
-    | @core.Primitive::ProcedureP
+    Eq
+    | Eqv
+    | Equal
+    | SymbolP
+    | SymbolEq
+    | IdentifierP
+    | SyntaxP
+    | FreeIdentifierEq
+    | BoundIdentifierEq
+    | SymbolToString
+    | StringToSymbol
+    | StringHash
+    | StringCiHash
+    | SymbolHash
+    | EqualHash
+    | SyntaxToDatum
+    | DatumToSyntax
+    | BooleanP
+    | BooleanEq
+    | NumberP
+    | IntegerP
+    | ExactIntegerP
+    | RationalP
+    | RealP
+    | ComplexP
+    | ExactP
+    | InexactP
+    | ZeroP
+    | PositiveP
+    | NegativeP
+    | OddP
+    | EvenP
+    | FiniteP
+    | InfiniteP
+    | NanP
+    | ProcedureP
     => Some(apply_symbol_syntax_predicate_primitive_core(prim, args))
     _ => None
   }
 }
 
 ///|
-/// @core.Primitive::Apply symbol, syntax, hash, and predicate primitives (core match).
+/// Apply symbol, syntax, hash, and predicate primitives (core match).
 fn apply_symbol_syntax_predicate_primitive_core(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value raise @core.EvalError {
   match prim {
-    @core.Primitive::Eq =>
+    Eq =>
       match args {
         [left, right] => bool_value(value_eqv(left, right))
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::Eqv =>
+    Eqv =>
       match args {
         [left, right] => bool_value(value_eqv(left, right))
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::Equal =>
+    Equal =>
       match args {
         [left, right] => bool_value(value_equal(left, right))
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::SymbolP =>
+    SymbolP =>
       match args {
         [Datum(Symbol(_))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::SymbolEq => bool_value(compare_chain_symbol(args))
-    @core.Primitive::IdentifierP =>
+    SymbolEq => bool_value(compare_chain_symbol(args))
+    IdentifierP =>
       match args {
         [value] => bool_value(is_identifier_value(value))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::SyntaxP =>
+    SyntaxP =>
       match args {
         [SyntaxObject(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FreeIdentifierEq =>
+    FreeIdentifierEq =>
       match args {
         [left, right] => {
           let (a, a_scopes, a_binding) = identifier_info(left)
@@ -101,7 +101,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::BoundIdentifierEq =>
+    BoundIdentifierEq =>
       match args {
         [left, right] => {
           let (a, a_scopes, a_binding) = identifier_info(left)
@@ -116,21 +116,21 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::SymbolToString =>
+    SymbolToString =>
       match args {
         [Datum(Symbol(name))] =>
           @core.Value::Datum(String(Ref::new(name)))
         [_] => raise @core.EvalError("type error: symbol expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringToSymbol =>
+    StringToSymbol =>
       match args {
         [Datum(String(name))] =>
           @core.Value::Datum(Symbol(name.val))
         [_] => raise @core.EvalError("type error: string expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringHash =>
+    StringHash =>
       match args {
         [value] => {
           let s = value_as_string(value)
@@ -138,7 +138,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::StringCiHash =>
+    StringCiHash =>
       match args {
         [value] => {
           let s = value_as_string(value)
@@ -147,7 +147,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::SymbolHash =>
+    SymbolHash =>
       match args {
         [value] => {
           let name = value_as_symbol(value)
@@ -155,7 +155,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EqualHash =>
+    EqualHash =>
       match args {
         [value] => {
           let repr = @runtime.value_to_string(value)
@@ -163,7 +163,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::SyntaxToDatum =>
+    SyntaxToDatum =>
       match args {
         [SyntaxObject(obj)] =>
           @core.Value::Datum(@runtime.strip_syntax_datum(obj.datum))
@@ -171,7 +171,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => raise @core.EvalError("type error: syntax expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::DatumToSyntax =>
+    DatumToSyntax =>
       match args {
         [context, base] | [context, base, _] => {
           let scopes = match context {
@@ -227,14 +227,14 @@ fn apply_symbol_syntax_predicate_primitive_core(
             "arity mismatch: expected 2 or 3 got \{args.length()}",
           )
       }
-    @core.Primitive::BooleanP =>
+    BooleanP =>
       match args {
         [Datum(Bool(_))] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::BooleanEq => bool_value(compare_chain_bool(args))
-    @core.Primitive::NumberP =>
+    BooleanEq => bool_value(compare_chain_bool(args))
+    NumberP =>
       match args {
         [Datum(Int(_))]
         | [Datum(BigInt(_))]
@@ -245,25 +245,25 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::IntegerP =>
+    IntegerP =>
       match args {
         [Datum(datum)] => bool_value(datum_is_integer_valued(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ExactIntegerP =>
+    ExactIntegerP =>
       match args {
         [Datum(datum)] => bool_value(datum_is_exact_integer(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::RationalP =>
+    RationalP =>
       match args {
         [Datum(datum)] => bool_value(datum_is_rational_valued(datum))
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::RealP =>
+    RealP =>
       match args {
         [Datum(Int(_))]
         | [Datum(BigInt(_))]
@@ -275,7 +275,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ComplexP =>
+    ComplexP =>
       match args {
         [Datum(Int(_))]
         | [Datum(BigInt(_))]
@@ -286,7 +286,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ExactP =>
+    ExactP =>
       match args {
         [Datum(Int(_))]
         | [Datum(BigInt(_))]
@@ -315,7 +315,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::InexactP =>
+    InexactP =>
       match args {
         [Datum(Float(_))] => bool_value(true)
         [Datum(Complex(real, imag))] =>
@@ -327,7 +327,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ZeroP =>
+    ZeroP =>
       match args {
         [Datum(Int(n))] => bool_value(n == 0)
         [Datum(Rat(n, _))] => bool_value(n == 0)
@@ -339,7 +339,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::PositiveP =>
+    PositiveP =>
       match args {
         [value] => {
           let value = datum_to_real(value_as_number(value))
@@ -354,7 +354,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::NegativeP =>
+    NegativeP =>
       match args {
         [value] => {
           let value = datum_to_real(value_as_number(value))
@@ -369,7 +369,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::OddP =>
+    OddP =>
       match args {
         [value] => {
           let value = match value {
@@ -397,7 +397,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EvenP =>
+    EvenP =>
       match args {
         [value] => {
           let value = match value {
@@ -425,7 +425,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::FiniteP =>
+    FiniteP =>
       match args {
         [Datum(Float(f))] => bool_value(float_is_finite(f))
         [Datum(Int(_))]
@@ -448,7 +448,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::InfiniteP =>
+    InfiniteP =>
       match args {
         [Datum(Float(f))] => bool_value(float_is_infinite(f))
         [Datum(Int(_))]
@@ -471,7 +471,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::NanP =>
+    NanP =>
       match args {
         [Datum(Float(f))] => bool_value(float_is_nan(f))
         [Datum(Int(_))]
@@ -494,7 +494,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [_] => raise @core.EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::ProcedureP =>
+    ProcedureP =>
       match args {
         [Primitive(_)]
         | [Closure(_)]

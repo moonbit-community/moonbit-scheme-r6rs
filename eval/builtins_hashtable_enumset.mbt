@@ -1,41 +1,41 @@
 ///|
-/// @core.Primitive::Apply hashtable and enumset primitives.
+/// Apply hashtable and enumset primitives.
 fn apply_hashtable_enumset_primitive(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value? raise @core.EvalError {
   match prim {
-    @core.Primitive::MakeEqHashtable
-    | @core.Primitive::MakeEqvHashtable
-    | @core.Primitive::MakeHashtable
-    | @core.Primitive::HashtableP
-    | @core.Primitive::HashtableSize
-    | @core.Primitive::HashtableRef
-    | @core.Primitive::HashtableSet
-    | @core.Primitive::HashtableDelete
-    | @core.Primitive::HashtableContainsP
-    | @core.Primitive::HashtableUpdate
-    | @core.Primitive::HashtableCopy
-    | @core.Primitive::HashtableClear
-    | @core.Primitive::HashtableKeys
-    | @core.Primitive::HashtableEntries
-    | @core.Primitive::HashtableEquivalenceFunction
-    | @core.Primitive::HashtableHashFunction
-    | @core.Primitive::HashtableMutableP
-    | @core.Primitive::MakeEnumeration
-    | @core.Primitive::EnumSetUniverse
-    | @core.Primitive::EnumSetIndexer
-    | @core.Primitive::EnumSetConstructor
-    | @core.Primitive::EnumSetP
-    | @core.Primitive::EnumSetMemberP
-    | @core.Primitive::EnumSetSubsetP
-    | @core.Primitive::EnumSetEq
-    | @core.Primitive::EnumSetUnion
-    | @core.Primitive::EnumSetIntersection
-    | @core.Primitive::EnumSetDifference
-    | @core.Primitive::EnumSetComplement
-    | @core.Primitive::EnumSetProjection
-    | @core.Primitive::EnumSetToList
+    MakeEqHashtable
+    | MakeEqvHashtable
+    | MakeHashtable
+    | HashtableP
+    | HashtableSize
+    | HashtableRef
+    | HashtableSet
+    | HashtableDelete
+    | HashtableContainsP
+    | HashtableUpdate
+    | HashtableCopy
+    | HashtableClear
+    | HashtableKeys
+    | HashtableEntries
+    | HashtableEquivalenceFunction
+    | HashtableHashFunction
+    | HashtableMutableP
+    | MakeEnumeration
+    | EnumSetUniverse
+    | EnumSetIndexer
+    | EnumSetConstructor
+    | EnumSetP
+    | EnumSetMemberP
+    | EnumSetSubsetP
+    | EnumSetEq
+    | EnumSetUnion
+    | EnumSetIntersection
+    | EnumSetDifference
+    | EnumSetComplement
+    | EnumSetProjection
+    | EnumSetToList
     => Some(apply_hashtable_enumset_primitive_core(prim, args))
     _ => None
   }
@@ -77,13 +77,13 @@ fn enum_set_members_all_false(universe : Array[String]) -> Array[Bool] {
 }
 
 ///|
-/// @core.Primitive::Apply hashtable and enumset primitives (core match).
+/// Apply hashtable and enumset primitives (core match).
 fn apply_hashtable_enumset_primitive_core(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value raise @core.EvalError {
   match prim {
-    @core.Primitive::MakeEqHashtable =>
+    MakeEqHashtable =>
       match args {
         [] => @core.Value::Hashtable(
           @runtime.make_hashtable(@core.HashtableEquiv::Eq, None, true),
@@ -96,7 +96,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::MakeEqvHashtable =>
+    MakeEqvHashtable =>
       match args {
         [] => @core.Value::Hashtable(
           @runtime.make_hashtable(@core.HashtableEquiv::Eqv, None, true),
@@ -109,7 +109,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::MakeHashtable =>
+    MakeHashtable =>
       match args {
         [hash_value, equiv_value] => {
           if !@runtime.is_procedure_value(hash_value) {
@@ -128,13 +128,13 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::HashtableP =>
+    HashtableP =>
       match args {
         [Hashtable(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableSize =>
+    HashtableSize =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -142,27 +142,27 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableRef =>
+    HashtableRef =>
       raise @core.EvalError(
         "internal error: hashtable-ref should be handled in apply_proc",
       )
-    @core.Primitive::HashtableSet =>
+    HashtableSet =>
       raise @core.EvalError(
         "internal error: hashtable-set! should be handled in apply_proc",
       )
-    @core.Primitive::HashtableDelete =>
+    HashtableDelete =>
       raise @core.EvalError(
         "internal error: hashtable-delete! should be handled in apply_proc",
       )
-    @core.Primitive::HashtableContainsP =>
+    HashtableContainsP =>
       raise @core.EvalError(
         "internal error: hashtable-contains? should be handled in apply_proc",
       )
-    @core.Primitive::HashtableUpdate =>
+    HashtableUpdate =>
       raise @core.EvalError(
         "internal error: hashtable-update! should be handled in apply_proc",
       )
-    @core.Primitive::HashtableCopy =>
+    HashtableCopy =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -175,7 +175,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableClear =>
+    HashtableClear =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -196,7 +196,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableKeys =>
+    HashtableKeys =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -208,7 +208,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableEntries =>
+    HashtableEntries =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -227,7 +227,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableEquivalenceFunction =>
+    HashtableEquivalenceFunction =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -235,7 +235,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableHashFunction =>
+    HashtableHashFunction =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -246,7 +246,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::HashtableMutableP =>
+    HashtableMutableP =>
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
@@ -254,7 +254,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::MakeEnumeration =>
+    MakeEnumeration =>
       match args {
         [names_value] => {
           let names = enum_set_symbol_list(names_value)
@@ -264,7 +264,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetUniverse =>
+    EnumSetUniverse =>
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
@@ -273,7 +273,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetIndexer =>
+    EnumSetIndexer =>
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
@@ -281,7 +281,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetConstructor =>
+    EnumSetConstructor =>
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
@@ -291,13 +291,13 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetP =>
+    EnumSetP =>
       match args {
         [EnumSet(_)] => bool_value(true)
         [_] => bool_value(false)
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetMemberP =>
+    EnumSetMemberP =>
       match args {
         [name_value, set_value] => {
           let name = parse_symbol(value_as_datum(name_value))
@@ -306,7 +306,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetSubsetP =>
+    EnumSetSubsetP =>
       match args {
         [left_value, right_value] => {
           let left = value_as_enum_set(left_value)
@@ -327,7 +327,7 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetEq =>
+    EnumSetEq =>
       match args {
         [left_value, right_value] => {
           let left = value_as_enum_set(left_value)
@@ -348,107 +348,83 @@ fn apply_hashtable_enumset_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetUnion =>
+    EnumSetUnion =>
       match args {
         [left_value, right_value] => {
           let left = value_as_enum_set(left_value)
           let right = value_as_enum_set(right_value)
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          for i = 0; i < members.length(); {
-            // invariant : i >= 0 && i <= members.length()
-            // decreases : members.length() - i
-            // assert : i <= members.length()
+          for i in 0..<members.length() {
             members[i] = left.members[i] || right.members[i]
-            continue i + 1
           }
           @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetIntersection =>
+    EnumSetIntersection =>
       match args {
         [left_value, right_value] => {
           let left = value_as_enum_set(left_value)
           let right = value_as_enum_set(right_value)
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          for i = 0; i < members.length(); {
-            // invariant : i >= 0 && i <= members.length()
-            // decreases : members.length() - i
-            // assert : i <= members.length()
+          for i in 0..<members.length() {
             members[i] = left.members[i] && right.members[i]
-            continue i + 1
           }
           @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetDifference =>
+    EnumSetDifference =>
       match args {
         [left_value, right_value] => {
           let left = value_as_enum_set(left_value)
           let right = value_as_enum_set(right_value)
           enum_set_require_same_universe(left, right)
           let members = enum_set_members_all_false(left.universe)
-          for i = 0; i < members.length(); {
-            // invariant : i >= 0 && i <= members.length()
-            // decreases : members.length() - i
-            // assert : i <= members.length()
+          for i in 0..<members.length() {
             members[i] = left.members[i] && !right.members[i]
-            continue i + 1
           }
           @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetComplement =>
+    EnumSetComplement =>
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
           let members = enum_set_members_all_false(set.universe)
-          for i = 0; i < members.length(); {
-            // invariant : i >= 0 && i <= members.length()
-            // decreases : members.length() - i
-            // assert : i <= members.length()
+          for i in 0..<members.length() {
             members[i] = !set.members[i]
-            continue i + 1
           }
           @core.Value::EnumSet(@runtime.make_enum_set(set.universe, members))
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::EnumSetProjection =>
+    EnumSetProjection =>
       match args {
         [source_value, target_value] => {
           let source = value_as_enum_set(source_value)
           let target = value_as_enum_set(target_value)
           let members = enum_set_members_all_false(target.universe)
-          for i = 0; i < target.universe.length(); {
-            // invariant : i >= 0 && i <= target.universe.length()
-            // decreases : target.universe.length() - i
-            // assert : i <= target.universe.length()
+          for i in 0..<target.universe.length() {
             let name = target.universe[i]
             members[i] = @runtime.enum_set_member_by_name(source, name)
-            continue i + 1
           }
           @core.Value::EnumSet(@runtime.make_enum_set(target.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    @core.Primitive::EnumSetToList =>
+    EnumSetToList =>
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
           let items : Array[@core.Datum] = []
-          for i = 0; i < set.universe.length(); {
-            // invariant : i >= 0 && i <= set.universe.length()
-            // decreases : set.universe.length() - i
-            // assert : i <= set.universe.length()
+          for i in 0..<set.universe.length() {
             if set.members[i] {
               items.push(Symbol(set.universe[i]))
             }
-            continue i + 1
           }
           @core.Value::Datum(list_from_array(items))
         }

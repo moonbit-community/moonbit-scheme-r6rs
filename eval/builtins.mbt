@@ -1,5 +1,5 @@
 ///|
-/// @core.Primitive::Apply a primitive to evaluated arguments.
+/// Apply a primitive to evaluated arguments.
 fn apply_primitive(
   prim : @core.Primitive,
   args : Array[@core.Value],
@@ -40,13 +40,13 @@ fn apply_primitive(
 }
 
 ///|
-/// @core.Primitive::Apply primitives not handled by specialized dispatchers.
+/// Apply primitives not handled by specialized dispatchers.
 fn apply_primitive_core(
   prim : @core.Primitive,
   args : Array[@core.Value],
 ) -> @core.Value raise @core.EvalError {
   match prim {
-    @core.Primitive::Display =>
+    Display =>
       match args {
         [value] => {
           let port = @runtime.get_current_output_port()
@@ -63,7 +63,7 @@ fn apply_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::Write =>
+    Write =>
       match args {
         [value] => {
           let port = @runtime.get_current_output_port()
@@ -80,7 +80,7 @@ fn apply_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    @core.Primitive::Newline =>
+    Newline =>
       match args {
         [] => {
           let port = @runtime.get_current_output_port()
@@ -97,12 +97,12 @@ fn apply_primitive_core(
             "arity mismatch: expected 0 or 1 got \{args.length()}",
           )
       }
-    @core.Primitive::OpenOutputString =>
+    OpenOutputString =>
       match args {
         [] => @core.Value::Port(@runtime.new_output_string_port())
         _ => raise arity_mismatch(0, args.length())
       }
-    @core.Primitive::GetOutputString =>
+    GetOutputString =>
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
@@ -110,83 +110,83 @@ fn apply_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CurrentOutputPort =>
+    CurrentOutputPort =>
       match args {
         [] => @core.Value::Port(@runtime.get_current_output_port())
         _ => raise arity_mismatch(0, args.length())
       }
-    @core.Primitive::WithExceptionHandler =>
+    WithExceptionHandler =>
       raise @core.EvalError(
         "internal error: with-exception-handler should be handled in apply_proc",
       )
-    @core.Primitive::Raise =>
+    Raise =>
       raise @core.EvalError(
         "internal error: raise should be handled in apply_proc",
       )
-    @core.Primitive::RaiseContinuable =>
+    RaiseContinuable =>
       raise @core.EvalError(
         "internal error: raise-continuable should be handled in apply_proc",
       )
-    @core.Primitive::Error =>
+    Error =>
       raise @core.EvalError(
         "internal error: error should be handled in apply_proc",
       )
-    @core.Primitive::AssertionViolation =>
+    AssertionViolation =>
       raise @core.EvalError(
         "internal error: assertion-violation should be handled in apply_proc",
       )
-    @core.Primitive::ImplementationRestrictionViolation =>
+    ImplementationRestrictionViolation =>
       raise @core.EvalError(
         "internal error: implementation-restriction-violation should be handled in apply_proc",
       )
-    @core.Primitive::UndefinedViolation =>
+    UndefinedViolation =>
       raise @core.EvalError(
         "internal error: undefined-violation should be handled in apply_proc",
       )
-    @core.Primitive::SyntaxViolation =>
+    SyntaxViolation =>
       raise @core.EvalError(
         "internal error: syntax-violation should be handled in apply_proc",
       )
-    @core.Primitive::Not =>
+    Not =>
       match args {
         [value] => bool_value(is_false(value))
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::Apply =>
+    Apply =>
       // handled by apply_proc to allow proper argument flattening
       raise @core.EvalError(
         "internal error: apply should be handled in apply_proc",
       )
-    @core.Primitive::CallCC =>
+    CallCC =>
       raise @core.EvalError(
         "internal error: call/cc should be handled in apply_proc",
       )
-    @core.Primitive::Map =>
+    Map =>
       raise @core.EvalError(
         "internal error: map should be handled in apply_proc",
       )
-    @core.Primitive::ForEach =>
+    ForEach =>
       raise @core.EvalError(
         "internal error: for-each should be handled in apply_proc",
       )
-    @core.Primitive::VectorMap =>
+    VectorMap =>
       raise @core.EvalError(
         "internal error: vector-map should be handled in apply_proc",
       )
-    @core.Primitive::VectorForEach =>
+    VectorForEach =>
       raise @core.EvalError(
         "internal error: vector-for-each should be handled in apply_proc",
       )
-    @core.Primitive::StringMap =>
+    StringMap =>
       raise @core.EvalError(
         "internal error: string-map should be handled in apply_proc",
       )
-    @core.Primitive::StringForEach =>
+    StringForEach =>
       raise @core.EvalError(
         "internal error: string-for-each should be handled in apply_proc",
       )
-    @core.Primitive::Values => @core.Value::Values(args)
-    @core.Primitive::MakeVariableTransformer =>
+    Values => @core.Value::Values(args)
+    MakeVariableTransformer =>
       match args {
         [proc_value] => {
           if !@runtime.is_procedure_value(proc_value) {
@@ -196,7 +196,7 @@ fn apply_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::GenerateTemporaries =>
+    GenerateTemporaries =>
       match args {
         [datum_value] => {
           let datum = value_as_datum(datum_value)
@@ -227,27 +227,27 @@ fn apply_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::CallWithValues =>
+    CallWithValues =>
       raise @core.EvalError(
         "internal error: call-with-values should be handled in apply_proc",
       )
-    @core.Primitive::MakeParameter =>
+    MakeParameter =>
       raise @core.EvalError(
         "internal error: make-parameter should be handled in apply_proc",
       )
-    @core.Primitive::DynamicWind =>
+    DynamicWind =>
       raise @core.EvalError(
         "internal error: dynamic-wind should be handled in apply_proc",
       )
-    @core.Primitive::Eval =>
+    Eval =>
       raise @core.EvalError(
         "internal error: eval should be handled in apply_proc",
       )
-    @core.Primitive::Environment =>
+    Environment =>
       raise @core.EvalError(
         "internal error: environment should be handled in apply_proc",
       )
-    @core.Primitive::PromiseP =>
+    PromiseP =>
       match args {
         [value] =>
           match value {
@@ -256,11 +256,11 @@ fn apply_primitive_core(
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    @core.Primitive::MakePromise =>
+    MakePromise =>
       raise @core.EvalError(
         "internal error: make-promise should be handled in apply_proc",
       )
-    @core.Primitive::Force =>
+    Force =>
       raise @core.EvalError(
         "internal error: force should be handled in apply_proc",
       )
