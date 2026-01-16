@@ -2,6 +2,10 @@
   "import": [
     "bobzhang/scheme-r6rs/core",
     "bobzhang/scheme-r6rs/parser",
-    "bobzhang/scheme-r6rs/internal/runtime"
+    "bobzhang/scheme-r6rs/internal/runtime",
+    "moonbitlang/core/bigint",
+    "moonbitlang/core/buffer",
+    "moonbitlang/core/strconv",
+    "moonbitlang/core/math"
   ]
 }
