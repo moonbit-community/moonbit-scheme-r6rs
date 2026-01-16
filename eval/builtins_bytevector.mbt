@@ -110,7 +110,7 @@ fn apply_bytevector_primitive(
       }
     ByteVectorCopy =>
       match args {
-        [vec_value, .. rest] => {
+        [vec_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
           let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
           let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { items.length() }
@@ -125,81 +125,22 @@ fn apply_bytevector_primitive(
       }
     ByteVectorCopyBang =>
       match args {
-        [to_value, at_value, from_value] =>
-          Some(
-            {
-              let to_items = value_as_bytevector(to_value)
-              let at = value_as_int_index(at_value)
-              let from_items = value_as_bytevector(from_value)
-              let start = 0
-              let end = from_items.length()
-              let count = check_copy_range(
-                start,
-                end,
-                from_items.length(),
-                at,
-                to_items.length(),
-              )
-              let temp : Array[Int] = []
-              for i in 0..<count {
-                temp.push(from_items[start + i])
-              }
-              for j in 0..<count {
-                to_items[at + j] = temp[j]
-              }
-              @core.Value::Void
-            },
-          )
-        [to_value, at_value, from_value, start_value] =>
-          Some(
-            {
-              let to_items = value_as_bytevector(to_value)
-              let at = value_as_int_index(at_value)
-              let from_items = value_as_bytevector(from_value)
-              let start = value_as_int_index(start_value)
-              let end = from_items.length()
-              let count = check_copy_range(
-                start,
-                end,
-                from_items.length(),
-                at,
-                to_items.length(),
-              )
-              let temp : Array[Int] = []
-              for i in 0..<count {
-                temp.push(from_items[start + i])
-              }
-              for j in 0..<count {
-                to_items[at + j] = temp[j]
-              }
-              @core.Value::Void
-            },
-          )
-        [to_value, at_value, from_value, start_value, end_value] =>
-          Some(
-            {
-              let to_items = value_as_bytevector(to_value)
-              let at = value_as_int_index(at_value)
-              let from_items = value_as_bytevector(from_value)
-              let start = value_as_int_index(start_value)
-              let end = value_as_int_index(end_value)
-              let count = check_copy_range(
-                start,
-                end,
-                from_items.length(),
-                at,
-                to_items.length(),
-              )
-              let temp : Array[Int] = []
-              for i in 0..<count {
-                temp.push(from_items[start + i])
-              }
-              for j in 0..<count {
-                to_items[at + j] = temp[j]
-              }
-              @core.Value::Void
-            },
-          )
+        [to_value, at_value, from_value, .. rest] if rest.length() <= 2 => {
+          let to_items = value_as_bytevector(to_value)
+          let at = value_as_int_index(at_value)
+          let from_items = value_as_bytevector(from_value)
+          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
+          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { from_items.length() }
+          let count = check_copy_range(start, end, from_items.length(), at, to_items.length())
+          let temp : Array[Int] = []
+          for i in 0..<count {
+            temp.push(from_items[start + i])
+          }
+          for j in 0..<count {
+            to_items[at + j] = temp[j]
+          }
+          Some(@core.Value::Void)
+        }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
@@ -215,7 +156,7 @@ fn apply_bytevector_primitive(
     }
     ByteVectorFill =>
       match args {
-        [vec_value, fill_value, .. rest] => {
+        [vec_value, fill_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
           let fill = value_as_byte(fill_value)
           let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
@@ -233,7 +174,7 @@ fn apply_bytevector_primitive(
       }
     ByteVectorToU8List =>
       match args {
-        [vec_value, .. rest] => {
+        [vec_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
           let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
           let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { items.length() }

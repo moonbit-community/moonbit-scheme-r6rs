@@ -235,51 +235,17 @@ fn apply_char_string_primitive(
       }
     StringCopy =>
       match args {
-        [string_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = 0
-              let end = s.length()
-              check_slice_range(start, end, s.length())
-              let view = try? s[start:end]
-              match view {
-                Ok(slice) =>
-                  @core.Value::Datum(String(Ref::new(slice.to_string())))
-                Err(_) => raise @core.EvalError("index out of range")
-              }
-            },
-          )
-        [string_value, start_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = value_as_int_index(start_value)
-              let end = s.length()
-              check_slice_range(start, end, s.length())
-              let view = try? s[start:end]
-              match view {
-                Ok(slice) =>
-                  @core.Value::Datum(String(Ref::new(slice.to_string())))
-                Err(_) => raise @core.EvalError("index out of range")
-              }
-            },
-          )
-        [string_value, start_value, end_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = value_as_int_index(start_value)
-              let end = value_as_int_index(end_value)
-              check_slice_range(start, end, s.length())
-              let view = try? s[start:end]
-              match view {
-                Ok(slice) =>
-                  @core.Value::Datum(String(Ref::new(slice.to_string())))
-                Err(_) => raise @core.EvalError("index out of range")
-              }
-            },
-          )
+        [string_value, .. rest] if rest.length() <= 2 => {
+          let s = value_as_string(string_value)
+          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
+          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { s.length() }
+          check_slice_range(start, end, s.length())
+          let view = try? s[start:end]
+          match view {
+            Ok(slice) => Some(@core.Value::Datum(String(Ref::new(slice.to_string()))))
+            Err(_) => raise @core.EvalError("index out of range")
+          }
+        }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
@@ -306,117 +272,34 @@ fn apply_char_string_primitive(
       }
     StringCopyBang =>
       match args {
-        [to_value, at_value, from_value] =>
-          Some(
-            {
-              let to_ref = value_as_string_ref(to_value)
-              let at = value_as_int_index(at_value)
-              let from_str = value_as_string(from_value)
-              let start = 0
-              let end = from_str.length()
-              let to_str = to_ref.val
-              let to_len = to_str.length()
-              let count = check_copy_range(
-                start,
-                end,
-                from_str.length(),
-                at,
-                to_len,
-              )
-              let buf = @buffer.new()
-              for i in 0..<to_len {
-                match to_str.get_char(i) {
-                  Some(ch) =>
-                    if i >= at && i < at + count {
-                      let from_idx = start + (i - at)
-                      match from_str.get_char(from_idx) {
-                        Some(fch) => buf.write_char(fch)
-                        None => raise @core.EvalError("index out of range")
-                      }
-                    } else {
-                      buf.write_char(ch)
-                    }
-                  None => raise @core.EvalError("index out of range")
+        [to_value, at_value, from_value, .. rest] if rest.length() <= 2 => {
+          let to_ref = value_as_string_ref(to_value)
+          let at = value_as_int_index(at_value)
+          let from_str = value_as_string(from_value)
+          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
+          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { from_str.length() }
+          let to_str = to_ref.val
+          let to_len = to_str.length()
+          let count = check_copy_range(start, end, from_str.length(), at, to_len)
+          let buf = @buffer.new()
+          for i in 0..<to_len {
+            match to_str.get_char(i) {
+              Some(ch) =>
+                if i >= at && i < at + count {
+                  let from_idx = start + (i - at)
+                  match from_str.get_char(from_idx) {
+                    Some(fch) => buf.write_char(fch)
+                    None => raise @core.EvalError("index out of range")
+                  }
+                } else {
+                  buf.write_char(ch)
                 }
-              }
-              to_ref.val = buf.to_string()
-              @core.Value::Void
-            },
-          )
-        [to_value, at_value, from_value, start_value] =>
-          Some(
-            {
-              let to_ref = value_as_string_ref(to_value)
-              let at = value_as_int_index(at_value)
-              let from_str = value_as_string(from_value)
-              let start = value_as_int_index(start_value)
-              let end = from_str.length()
-              let to_str = to_ref.val
-              let to_len = to_str.length()
-              let count = check_copy_range(
-                start,
-                end,
-                from_str.length(),
-                at,
-                to_len,
-              )
-              let buf = @buffer.new()
-              for i in 0..<to_len {
-                match to_str.get_char(i) {
-                  Some(ch) =>
-                    if i >= at && i < at + count {
-                      let from_idx = start + (i - at)
-                      match from_str.get_char(from_idx) {
-                        Some(fch) => buf.write_char(fch)
-                        None => raise @core.EvalError("index out of range")
-                      }
-                    } else {
-                      buf.write_char(ch)
-                    }
-                  None => raise @core.EvalError("index out of range")
-                }
-              }
-              to_ref.val = buf.to_string()
-              @core.Value::Void
-            },
-          )
-        [to_value, at_value, from_value, start_value, end_value] =>
-          Some(
-            {
-              let to_ref = value_as_string_ref(to_value)
-              let at = value_as_int_index(at_value)
-              let from_str = value_as_string(from_value)
-              let start = value_as_int_index(start_value)
-              let end = value_as_int_index(end_value)
-              let to_str = to_ref.val
-              let to_len = to_str.length()
-              let count = check_copy_range(
-                start,
-                end,
-                from_str.length(),
-                at,
-                to_len,
-              )
-              let buf = @buffer.new()
-              for i in 0..<to_len {
-                match to_str.get_char(i) {
-                  Some(ch) =>
-                    if i >= at && i < at + count {
-                      let from_idx = start + (i - at)
-                      match from_str.get_char(from_idx) {
-                        Some(fch) => buf.write_char(fch)
-                        None => raise @core.EvalError("index out of range")
-                      }
-                    } else {
-                      buf.write_char(ch)
-                    }
-                  None => raise @core.EvalError("index out of range")
-                }
-              }
-              to_ref.val = buf.to_string()
-              @core.Value::Void
-            },
-          )
+              None => raise @core.EvalError("index out of range")
+            }
+          }
+          to_ref.val = buf.to_string()
+          Some(@core.Value::Void)
+        }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
@@ -424,42 +307,15 @@ fn apply_char_string_primitive(
       }
     StringFill =>
       match args {
-        [string_value, fill_value] =>
-          Some(
-            {
-              let sref = value_as_string_ref(string_value)
-              let fill = value_as_char(fill_value)
-              let start = 0
-              let end = sref.val.length()
-              let updated = string_replace_range(sref.val, start, end, fill)
-              sref.val = updated
-              @core.Value::Void
-            },
-          )
-        [string_value, fill_value, start_value] =>
-          Some(
-            {
-              let sref = value_as_string_ref(string_value)
-              let fill = value_as_char(fill_value)
-              let start = value_as_int_index(start_value)
-              let end = sref.val.length()
-              let updated = string_replace_range(sref.val, start, end, fill)
-              sref.val = updated
-              @core.Value::Void
-            },
-          )
-        [string_value, fill_value, start_value, end_value] =>
-          Some(
-            {
-              let sref = value_as_string_ref(string_value)
-              let fill = value_as_char(fill_value)
-              let start = value_as_int_index(start_value)
-              let end = value_as_int_index(end_value)
-              let updated = string_replace_range(sref.val, start, end, fill)
-              sref.val = updated
-              @core.Value::Void
-            },
-          )
+        [string_value, fill_value, .. rest] if rest.length() <= 2 => {
+          let sref = value_as_string_ref(string_value)
+          let fill = value_as_char(fill_value)
+          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
+          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { sref.val.length() }
+          let updated = string_replace_range(sref.val, start, end, fill)
+          sref.val = updated
+          Some(@core.Value::Void)
+        }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 2 to 4 got \{args.length()}",
@@ -467,57 +323,20 @@ fn apply_char_string_primitive(
       }
     StringToList =>
       match args {
-        [string_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = 0
-              let end = s.length()
-              check_slice_range(start, end, s.length())
-              let items : Array[@core.Datum] = []
-              for i in start..<end {
-                match s.get_char(i) {
-                  Some(ch) => items.push(Char(ch))
-                  None => raise @core.EvalError("index out of range")
-                }
-              }
-              @core.Value::Datum(list_from_array(items))
-            },
-          )
-        [string_value, start_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = value_as_int_index(start_value)
-              let end = s.length()
-              check_slice_range(start, end, s.length())
-              let items : Array[@core.Datum] = []
-              for i in start..<end {
-                match s.get_char(i) {
-                  Some(ch) => items.push(Char(ch))
-                  None => raise @core.EvalError("index out of range")
-                }
-              }
-              @core.Value::Datum(list_from_array(items))
-            },
-          )
-        [string_value, start_value, end_value] =>
-          Some(
-            {
-              let s = value_as_string(string_value)
-              let start = value_as_int_index(start_value)
-              let end = value_as_int_index(end_value)
-              check_slice_range(start, end, s.length())
-              let items : Array[@core.Datum] = []
-              for i in start..<end {
-                match s.get_char(i) {
-                  Some(ch) => items.push(Char(ch))
-                  None => raise @core.EvalError("index out of range")
-                }
-              }
-              @core.Value::Datum(list_from_array(items))
-            },
-          )
+        [string_value, .. rest] if rest.length() <= 2 => {
+          let s = value_as_string(string_value)
+          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
+          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { s.length() }
+          check_slice_range(start, end, s.length())
+          let items : Array[@core.Datum] = []
+          for i in start..<end {
+            match s.get_char(i) {
+              Some(ch) => items.push(Char(ch))
+              None => raise @core.EvalError("index out of range")
+            }
+          }
+          Some(@core.Value::Datum(list_from_array(items)))
+        }
         _ =>
           raise @core.EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
