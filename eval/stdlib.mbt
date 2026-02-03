@@ -185,6 +185,5 @@ fn load_stdlib(env : @core.Env) -> Unit raise {
   let forms = @parser.parse_program(stdlib_source())
   for form in forms {
     let _ = eval_expr(form, env)
-
   }
 }

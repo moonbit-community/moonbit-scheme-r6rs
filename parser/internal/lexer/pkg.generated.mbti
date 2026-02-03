@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/scheme-r6rs/parser/internal/lexer"
 
-import(
-  "bobzhang/scheme-r6rs/core"
-)
+import {
+  "bobzhang/scheme-r6rs/core",
+}
 
 // Values
 

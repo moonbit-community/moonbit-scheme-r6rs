@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/scheme-r6rs/parser"
 
-import(
-  "bobzhang/scheme-r6rs/core"
-)
+import {
+  "bobzhang/scheme-r6rs/core",
+}
 
 // Values
 pub fn parse_number_token(String, radix? : Int) -> @core.Datum?

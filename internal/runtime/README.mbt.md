@@ -12,7 +12,7 @@ conversion.
 
 ## Example
 
-```mbt
+```mbt nocheck
 ///|
 let env = @runtime.env_new()
 

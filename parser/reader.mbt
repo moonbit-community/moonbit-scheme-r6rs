@@ -51,11 +51,9 @@ fn make_imag_unit(sign : Int, exactness : Char?) -> @core.Datum {
 fn parse_label_token(tok : String) -> (Bool, Int)? {
   let view = tok[:]
   match view {
-    ['#', ..digits, last] =>
+    ['#', .. digits, last] =>
       match last {
-        '=' | '#' => {          
-          parse_decimal_digits(digits).map(acc => (last == '=', acc))
-        }
+        '=' | '#' => parse_decimal_digits(digits).map(acc => (last == '=', acc))
         _ => None
       }
     _ => None
@@ -832,9 +830,13 @@ fn parse_complex_token(
   }
   match core_chars {
     [] | ['+'] =>
-      return Some(make_complex_datum(@core.Datum::Int(0), make_imag_unit(1, exactness)))
+      return Some(
+        make_complex_datum(@core.Datum::Int(0), make_imag_unit(1, exactness)),
+      )
     ['-'] =>
-      return Some(make_complex_datum(@core.Datum::Int(0), make_imag_unit(-1, exactness)))
+      return Some(
+        make_complex_datum(@core.Datum::Int(0), make_imag_unit(-1, exactness)),
+      )
     _ => ()
   }
   match find_complex_split(core_chars, radix) {

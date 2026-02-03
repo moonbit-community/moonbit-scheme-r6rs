@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/scheme-r6rs/internal/runtime"
 
-import(
-  "bobzhang/scheme-r6rs/core"
-)
+import {
+  "bobzhang/scheme-r6rs/core",
+}
 
 // Values
 pub fn datum_unlabel(@core.Datum) -> @core.Datum

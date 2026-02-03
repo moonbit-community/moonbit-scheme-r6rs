@@ -182,7 +182,6 @@ fn parse_syntax_case_transformer(
       match datum_list_to_array(params_expr) {
         [param_expr] => {
           let _ = parse_symbol_name(param_expr)
-
         }
         _ => raise @core.EvalError("invalid syntax-case")
       }

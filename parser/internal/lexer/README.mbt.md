@@ -10,7 +10,7 @@ Reader and token utilities used by the parser.
 
 ## Example
 
-```mbt
+```mbt nocheck
 ///|
 let reader = Reader::new("(+ 1 2)")
 

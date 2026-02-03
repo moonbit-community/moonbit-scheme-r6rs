@@ -26,24 +26,16 @@ const HANGUL_N_COUNT : Int = HANGUL_V_COUNT * HANGUL_T_COUNT
 const HANGUL_S_COUNT : Int = HANGUL_L_COUNT * HANGUL_N_COUNT
 
 ///|
-fn data_chars(data : String) -> ReadOnlyArray[Char] {
-  let out = data.to_array().filter(ch => ch != '\n' && ch != '\r')
-  ReadOnlyArray::from_array(out[:])
-}
+let canon_decomp_data : ReadOnlyArray[Char] = decomp_canon_data
 
 ///|
-let canon_decomp_data : ReadOnlyArray[Char] = data_chars(DECOMP_CANON_DATA)
+let compat_decomp_data : ReadOnlyArray[Char] = decomp_compat_data
 
 ///|
-let compat_decomp_data : ReadOnlyArray[Char] = data_chars(DECOMP_COMPAT_DATA)
+let combining_class_data : ReadOnlyArray[Char] = combining_class_data_raw
 
 ///|
-let combining_class_data : ReadOnlyArray[Char] = data_chars(
-  COMBINING_CLASS_DATA,
-)
-
-///|
-let composition_data : ReadOnlyArray[Char] = data_chars(COMPOSITION_DATA)
+let composition_data : ReadOnlyArray[Char] = composition_data_raw
 
 ///|
 fn build_decomp_map(

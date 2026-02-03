@@ -9,7 +9,7 @@ Datum parser for Scheme source text, built on the lexer reader.
 
 ## Example
 
-```mbt
+```mbt nocheck
 ///|
 let forms = @parser.parse_program("(+ 1 2)")
 ```

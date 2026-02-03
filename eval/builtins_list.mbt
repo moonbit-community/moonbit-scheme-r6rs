@@ -222,7 +222,7 @@ fn apply_pair_list_primitive(
           if idx < 0 || idx > items.length() {
             raise @core.EvalError("index out of range")
           }
-          @core.Value::Datum(list_from_array(items.sub(start=idx).to_array()))
+          @core.Value::Datum(list_from_array(items[idx:].to_array()))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -239,7 +239,11 @@ fn apply_pair_list_primitive(
       match args {
         [item, list_value] => {
           let list = value_as_datum(list_value)
-          let mode = if prim is Member || prim is Assoc { EqualMode } else { EqvMode }
+          let mode = if prim is Member || prim is Assoc {
+            EqualMode
+          } else {
+            EqvMode
+          }
           if prim is Member || prim is Memq || prim is Memv {
             list_member(mode, item, list)
           } else {

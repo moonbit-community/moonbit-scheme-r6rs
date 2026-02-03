@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/scheme-r6rs/eval"
 
-import(
-  "bobzhang/scheme-r6rs/core"
-)
+import {
+  "bobzhang/scheme-r6rs/core",
+}
 
 // Values
 pub fn eval_program(String) -> @core.Value raise

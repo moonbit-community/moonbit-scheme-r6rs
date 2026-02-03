@@ -1,18 +1,22 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "bobzhang/scheme-r6rs/core"
 
-import(
-  "moonbitlang/core/bigint"
-)
+import {
+  "moonbitlang/core/bigint",
+}
 
 // Values
 
 // Errors
-pub(all) suberror EvalError String
+pub(all) suberror EvalError {
+  EvalError(String)
+}
 pub impl Eq for EvalError
 pub impl Show for EvalError
 
-pub(all) suberror ParseError String
+pub(all) suberror ParseError {
+  ParseError(String)
+}
 pub impl Eq for ParseError
 pub impl Show for ParseError
 

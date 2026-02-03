@@ -112,10 +112,18 @@ fn apply_bytevector_primitive(
       match args {
         [vec_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { items.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            items.length()
+          }
           check_slice_range(start, end, items.length())
-          let slice = items.sub(start~, end~).to_array()
+          let slice = items[start:end].to_array()
           Some(@core.Value::Datum(ByteVector(slice)))
         }
         _ =>
@@ -129,9 +137,23 @@ fn apply_bytevector_primitive(
           let to_items = value_as_bytevector(to_value)
           let at = value_as_int_index(at_value)
           let from_items = value_as_bytevector(from_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { from_items.length() }
-          let count = check_copy_range(start, end, from_items.length(), at, to_items.length())
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            from_items.length()
+          }
+          let count = check_copy_range(
+            start,
+            end,
+            from_items.length(),
+            at,
+            to_items.length(),
+          )
           let temp : Array[Int] = []
           for i in 0..<count {
             temp.push(from_items[start + i])
@@ -159,8 +181,16 @@ fn apply_bytevector_primitive(
         [vec_value, fill_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
           let fill = value_as_byte(fill_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { items.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            items.length()
+          }
           check_slice_range(start, end, items.length())
           for i in start..<end {
             items[i] = fill
@@ -176,8 +206,16 @@ fn apply_bytevector_primitive(
       match args {
         [vec_value, .. rest] if rest.length() <= 2 => {
           let items = value_as_bytevector(vec_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { items.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            items.length()
+          }
           check_slice_range(start, end, items.length())
           let datums : Array[@core.Datum] = []
           for i in start..<end {

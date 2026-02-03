@@ -237,12 +237,21 @@ fn apply_char_string_primitive(
       match args {
         [string_value, .. rest] if rest.length() <= 2 => {
           let s = value_as_string(string_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { s.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            s.length()
+          }
           check_slice_range(start, end, s.length())
           let view = try? s[start:end]
           match view {
-            Ok(slice) => Some(@core.Value::Datum(String(Ref::new(slice.to_string()))))
+            Ok(slice) =>
+              Some(@core.Value::Datum(String(Ref::new(slice.to_string()))))
             Err(_) => raise @core.EvalError("index out of range")
           }
         }
@@ -276,11 +285,25 @@ fn apply_char_string_primitive(
           let to_ref = value_as_string_ref(to_value)
           let at = value_as_int_index(at_value)
           let from_str = value_as_string(from_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { from_str.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            from_str.length()
+          }
           let to_str = to_ref.val
           let to_len = to_str.length()
-          let count = check_copy_range(start, end, from_str.length(), at, to_len)
+          let count = check_copy_range(
+            start,
+            end,
+            from_str.length(),
+            at,
+            to_len,
+          )
           let buf = @buffer.new()
           for i in 0..<to_len {
             match to_str.get_char(i) {
@@ -310,8 +333,16 @@ fn apply_char_string_primitive(
         [string_value, fill_value, .. rest] if rest.length() <= 2 => {
           let sref = value_as_string_ref(string_value)
           let fill = value_as_char(fill_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { sref.val.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            sref.val.length()
+          }
           let updated = string_replace_range(sref.val, start, end, fill)
           sref.val = updated
           Some(@core.Value::Void)
@@ -325,8 +356,16 @@ fn apply_char_string_primitive(
       match args {
         [string_value, .. rest] if rest.length() <= 2 => {
           let s = value_as_string(string_value)
-          let start = if rest.length() >= 1 { value_as_int_index(rest[0]) } else { 0 }
-          let end = if rest.length() >= 2 { value_as_int_index(rest[1]) } else { s.length() }
+          let start = if rest.length() >= 1 {
+            value_as_int_index(rest[0])
+          } else {
+            0
+          }
+          let end = if rest.length() >= 2 {
+            value_as_int_index(rest[1])
+          } else {
+            s.length()
+          }
           check_slice_range(start, end, s.length())
           let items : Array[@core.Datum] = []
           for i in start..<end {

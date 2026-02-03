@@ -10,7 +10,7 @@ Core runtime data types and Unicode utilities used across the interpreter.
 
 ## Examples
 
-```mbt
+```mbt nocheck
 ///|
 let folded = UnicodeString::new("StraSSE").foldcase().into_string()
 

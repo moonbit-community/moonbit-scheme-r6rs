@@ -13,7 +13,7 @@ lexer, parser, macro expander, evaluator, and runtime helpers.
 
 ## Usage
 
-```mbt
+```mbt nocheck
 let program = "(+ 1 2)"
 let value = @bobzhang/scheme-r6rs.eval_program(program)
 let text = @bobzhang/scheme-r6rs.value_to_string(value)

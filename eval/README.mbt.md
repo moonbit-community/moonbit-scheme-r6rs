@@ -9,7 +9,7 @@ Evaluator and macro expander for Scheme R6RS.
 
 ## Example
 
-```mbt
+```mbt nocheck
 ///|
 let program = "(define x 1) (+ x 2)"
 

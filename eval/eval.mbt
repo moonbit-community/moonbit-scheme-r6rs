@@ -1817,7 +1817,7 @@ fn guard_start(
             handlers,
           )
         } else {
-          let rest = clauses.sub(start=i + 1).to_array()
+          let rest = clauses[i + 1:].to_array()
           return MachineState::Eval(
             head_expr,
             env,
@@ -2001,7 +2001,6 @@ fn eval_begin_for_syntax_state(
   let syntax_env = @runtime.env_clone(env)
   for form in args {
     let _ = eval_expr(form, syntax_env)
-
   }
   let frame = match syntax_env {
     [.., frame] => frame
@@ -4284,7 +4283,6 @@ fn eval_library_state(
       }
       for form in body {
         let _ = eval_expr(form, lib_env)
-
       }
       let export_map : Map[String, @core.Binding] = {}
       for export_spec in exports {
@@ -4443,7 +4441,7 @@ fn cond_start(
       [head_expr, .. body] if @runtime.symbol_name(head_expr) is Some("else") =>
         return eval_sequence_state(body.to_array(), env, kont, handlers)
       [head_expr, ..] => {
-        let rest = clauses.sub(start=i + 1).to_array()
+        let rest = clauses[i + 1:].to_array()
         return MachineState::Eval(
           head_expr,
           env,
