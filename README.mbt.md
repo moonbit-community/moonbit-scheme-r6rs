@@ -22,11 +22,13 @@ let text = @bobzhang/scheme-r6rs.value_to_string(value)
 ## CLI (native)
 
 The native CLI lives in `cmd/` (a separate MoonBit module using `moonbitlang/async`).
+`moonbitlang/async` currently supports native backends only (Linux/macOS).
 
 ```bash
 moon -C cmd run main -- --help
 moon -C cmd run main -- --eval "(+ 1 2)"
 moon -C cmd run main -- program.scm
+printf '(+ 10 32)\n' | moon -C cmd run main -- -
 ```
 
 ## Tests
