@@ -123,7 +123,7 @@ test "parse labels" {
   match forms {
     [Label(label1, cell1), Label(label2, cell2), ..] => {
       inspect(label1 == label2, content="true")
-      cell1.val = @core.Datum::Symbol("z")
+      cell1.val = Symbol("z")
       match cell2.val {
         Symbol("z") => ()
         _ => fail("expected shared label")
@@ -459,7 +459,7 @@ test "parse label edge cases" {
   match parse_program("#12=(a) #12#") {
     [Label(label1, cell1), Label(label2, cell2), ..] => {
       inspect(label1 == label2, content="true")
-      cell1.val = @core.Datum::Symbol("y")
+      cell1.val = Symbol("y")
       match cell2.val {
         Symbol("y") => ()
         _ => fail("expected shared label")

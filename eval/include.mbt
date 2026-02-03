@@ -20,7 +20,7 @@ pub fn register_include_source(path : String, content : String) -> Unit {
 fn include_path_from_arg(arg : @core.Datum) -> String raise @core.EvalError {
   match @runtime.datum_unlabel(arg) {
     String(path) => path.val
-    _ => raise @core.EvalError("type error: string expected")
+    _ => raise EvalError("type error: string expected")
   }
 }
 
@@ -28,7 +28,7 @@ fn include_path_from_arg(arg : @core.Datum) -> String raise @core.EvalError {
 fn include_read_text(path : String) -> String raise @core.EvalError {
   match include_registry.val.get(path) {
     Some(content) => content
-    None => raise @core.EvalError("include: unknown file: \{path}")
+    None => raise EvalError("include: unknown file: \{path}")
   }
 }
 
@@ -39,7 +39,7 @@ fn include_parse_file(
 ) -> Array[@core.Datum] raise @core.EvalError {
   let content = include_read_text(path)
   @parser.parse_program(content, fold_case~) catch {
-    _ => raise @core.EvalError("include: parse error: \{path}")
+    _ => raise EvalError("include: parse error: \{path}")
   }
 }
 

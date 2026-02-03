@@ -82,7 +82,7 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[@core.Datum]? {
 /// ```mbt check
 /// test "label set/get" {
 ///   let r = Reader::new("x")
-///   let cell = Ref::new(@core.Datum::Nil)
+///   let cell = Ref::new(Datum::Nil)
 ///   r.label_set(1, cell)
 ///   guard r.label_get(1) is Some(_) else { fail("expected label") }
 ///   guard r.label_get(2) is None else { fail("expected missing label") }
@@ -203,7 +203,7 @@ fn Reader::skip_block_comment(self : Reader) -> Unit raise @core.ParseError {
     // TODO(decreases) : depth can increase; possible bug
     // assert : depth > 0
     match (self.peek(), self.peek_offset(1)) {
-      (None, _) => raise @core.ParseError("unterminated block comment")
+      (None, _) => raise ParseError("unterminated block comment")
       (Some('#'), Some('|')) => {
         ignore(self.next())
         ignore(self.next())
@@ -320,10 +320,10 @@ pub fn Reader::read_token(self : Reader) -> String raise @core.ParseError {
     (false, false)
   }
   if in_bar {
-    raise @core.ParseError("unterminated identifier")
+    raise ParseError("unterminated identifier")
   }
   if !started {
-    raise @core.ParseError("expected token")
+    raise ParseError("expected token")
   }
   String::from_array(chars)
 }
@@ -334,7 +334,7 @@ fn Reader::read_identifier_escape(self : Reader) -> Char raise @core.ParseError 
   match self.next() {
     Some('x') | Some('X') => self.read_hex_escape()
     Some(ch) => ch
-    None => raise @core.ParseError("unterminated identifier")
+    None => raise ParseError("unterminated identifier")
   }
 }
 
@@ -367,7 +367,7 @@ pub fn Reader::read_string(self : Reader) -> String raise @core.ParseError {
     // decreases : self.chars.length() - self.pos
     // assert : self.pos <= self.chars.length()
     match cur {
-      None => raise @core.ParseError("unterminated string")
+      None => raise ParseError("unterminated string")
       Some('"') => break
       Some('\\') => {
         match self.next() {
@@ -389,7 +389,7 @@ pub fn Reader::read_string(self : Reader) -> String raise @core.ParseError {
           Some('"') => chars.push('"')
           Some('\\') => chars.push('\\')
           Some(ch) => chars.push(ch)
-          None => raise @core.ParseError("unterminated string")
+          None => raise ParseError("unterminated string")
         }
         continue self.next()
       }
@@ -431,23 +431,23 @@ fn Reader::read_hex_escape(self : Reader) -> Char raise @core.ParseError {
     // decreases : self.chars.length() - self.pos
     // assert : acc >= 0
     match self.next() {
-      None => raise @core.ParseError("unterminated string")
+      None => raise ParseError("unterminated string")
       Some(';') => {
         if !has_digit {
-          raise @core.ParseError("invalid hex escape")
+          raise ParseError("invalid hex escape")
         }
         match acc.to_char() {
           Some(ch) => break ch
-          None => raise @core.ParseError("invalid hex escape")
+          None => raise ParseError("invalid hex escape")
         }
       }
       Some(ch) =>
         match digit_value(ch) {
           Some(digit) if digit < 16 => continue acc * 16 + digit, true
-          _ => raise @core.ParseError("invalid hex escape")
+          _ => raise ParseError("invalid hex escape")
         }
     }
   } else {
-    raise @core.ParseError("invalid hex escape")
+    raise ParseError("invalid hex escape")
   }
 }

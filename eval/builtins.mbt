@@ -43,15 +43,15 @@ fn apply_primitive_core(
         [value] => {
           let port = @runtime.get_current_output_port()
           @runtime.port_write(port, display_string(value))
-          @core.Value::Void
+          Void
         }
         [value, port_value] => {
           let port = value_as_port(port_value)
           @runtime.port_write(port, display_string(value))
-          @core.Value::Void
+          Void
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
@@ -60,15 +60,15 @@ fn apply_primitive_core(
         [value] => {
           let port = @runtime.get_current_output_port()
           @runtime.port_write(port, @runtime.value_to_string(value))
-          @core.Value::Void
+          Void
         }
         [value, port_value] => {
           let port = value_as_port(port_value)
           @runtime.port_write(port, @runtime.value_to_string(value))
-          @core.Value::Void
+          Void
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
@@ -77,28 +77,28 @@ fn apply_primitive_core(
         [] => {
           let port = @runtime.get_current_output_port()
           @runtime.port_write(port, "\n")
-          @core.Value::Void
+          Void
         }
         [port_value] => {
           let port = value_as_port(port_value)
           @runtime.port_write(port, "\n")
-          @core.Value::Void
+          Void
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 0 or 1 got \{args.length()}",
           )
       }
     OpenOutputString =>
       match args {
-        [] => @core.Value::Port(@runtime.new_output_string_port())
+        [] => Port(@runtime.new_output_string_port())
         _ => raise arity_mismatch(0, args.length())
       }
     GetOutputString =>
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
-          @core.Value::Datum(
+          Datum(
             String(Ref::new(@runtime.port_get_output_string(port))),
           )
         }
@@ -106,39 +106,39 @@ fn apply_primitive_core(
       }
     CurrentOutputPort =>
       match args {
-        [] => @core.Value::Port(@runtime.get_current_output_port())
+        [] => Port(@runtime.get_current_output_port())
         _ => raise arity_mismatch(0, args.length())
       }
     WithExceptionHandler =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: with-exception-handler should be handled in apply_proc",
       )
     Raise =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: raise should be handled in apply_proc",
       )
     RaiseContinuable =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: raise-continuable should be handled in apply_proc",
       )
     Error =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: error should be handled in apply_proc",
       )
     AssertionViolation =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: assertion-violation should be handled in apply_proc",
       )
     ImplementationRestrictionViolation =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: implementation-restriction-violation should be handled in apply_proc",
       )
     UndefinedViolation =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: undefined-violation should be handled in apply_proc",
       )
     SyntaxViolation =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: syntax-violation should be handled in apply_proc",
       )
     Not =>
@@ -148,43 +148,43 @@ fn apply_primitive_core(
       }
     Apply =>
       // handled by apply_proc to allow proper argument flattening
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: apply should be handled in apply_proc",
       )
     CallCC =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: call/cc should be handled in apply_proc",
       )
     Map =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: map should be handled in apply_proc",
       )
     ForEach =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: for-each should be handled in apply_proc",
       )
     VectorMap =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: vector-map should be handled in apply_proc",
       )
     VectorForEach =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: vector-for-each should be handled in apply_proc",
       )
     StringMap =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: string-map should be handled in apply_proc",
       )
     StringForEach =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: string-for-each should be handled in apply_proc",
       )
-    Values => @core.Value::Values(args)
+    Values => Values(args)
     MakeVariableTransformer =>
       match args {
         [proc_value] => {
           if !@runtime.is_procedure_value(proc_value) {
-            raise @core.EvalError("type error: procedure expected")
+            raise EvalError("type error: procedure expected")
           }
           proc_value
         }
@@ -208,38 +208,38 @@ fn apply_primitive_core(
                   }
                   (name, copied, obj.binding_id)
                 } else {
-                  raise @core.EvalError("type error: identifier expected")
+                  raise EvalError("type error: identifier expected")
                 }
-              _ => raise @core.EvalError("type error: identifier expected")
+              _ => raise EvalError("type error: identifier expected")
             }
-            let datum = @core.Datum::Symbol(@runtime.gensym(name))
-            let temp = @core.Value::SyntaxObject(
+            let datum = Datum::Symbol(@runtime.gensym(name))
+            let temp = Value::SyntaxObject(
               @core.SyntaxObject::new(datum, scopes, binding_id),
             )
             results.push(value_to_datum_element(temp))
           }
-          @core.Value::Datum(list_from_array(results))
+          Datum(list_from_array(results))
         }
         _ => raise arity_mismatch(1, args.length())
       }
     CallWithValues =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: call-with-values should be handled in apply_proc",
       )
     MakeParameter =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: make-parameter should be handled in apply_proc",
       )
     DynamicWind =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: dynamic-wind should be handled in apply_proc",
       )
     Eval =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: eval should be handled in apply_proc",
       )
     Environment =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: environment should be handled in apply_proc",
       )
     PromiseP =>
@@ -252,15 +252,15 @@ fn apply_primitive_core(
         _ => raise arity_mismatch(1, args.length())
       }
     MakePromise =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: make-promise should be handled in apply_proc",
       )
     Force =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: force should be handled in apply_proc",
       )
     _ =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: primitive should be handled by specialized dispatcher",
       )
   }

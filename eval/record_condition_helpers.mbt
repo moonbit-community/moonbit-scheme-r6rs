@@ -52,7 +52,7 @@ fn record_type_matches(
 fn condition_base_type() -> @core.RecordType raise @core.EvalError {
   match @runtime.lookup_record_type_descriptor("&condition") {
     Some(desc) => desc.record_type
-    None => raise @core.EvalError("internal error: missing &condition")
+    None => raise EvalError("internal error: missing &condition")
   }
 }
 
@@ -93,6 +93,6 @@ fn condition_components(
 ) -> Array[@core.Record] raise @core.EvalError {
   match condition_components_opt(value, base) {
     Some(items) => items
-    None => raise @core.EvalError("type error: condition expected")
+    None => raise EvalError("type error: condition expected")
   }
 }

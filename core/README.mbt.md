@@ -118,10 +118,10 @@ test "unicode hangul normalization" {
 
 ///|
 test "binding helpers" {
-  let binding = Binding::new(1, Value::Void)
+  let binding = Binding::new(1, Void)
   inspect(binding.id(), content="1")
   match binding.value() {
-    Value::Void => ()
+    Void => ()
     _ => fail("expected void")
   }
 }
@@ -140,7 +140,7 @@ test "datum constructors" {
     Int(42) => ()
     _ => fail("expected int datum")
   }
-  let pair = Datum::Pair(Ref::new(Datum::Symbol("a")), Ref::new(Datum::Nil))
+  let pair = Datum::Pair(Ref::new(Symbol("a")), Ref::new(Nil))
   match pair {
     Pair(car, cdr) =>
       match (car.val, cdr.val) {

@@ -2,15 +2,15 @@
 fn register_builtin_libraries(env : @core.Env) -> Unit raise @core.EvalError {
   let exports = env_export_map(env)
   for name in base_syntax_keywords() {
-    exports[name] = @runtime.make_binding(@core.Value::SyntaxKeyword(name))
+    exports[name] = @runtime.make_binding(SyntaxKeyword(name))
   }
   register_library_entry("rnrs.base", Some([6]), exports)
   let eval_exports : Map[String, @core.Binding] = {}
   eval_exports["eval"] = @runtime.make_binding(
-    @core.Value::Primitive(@core.Primitive::Eval),
+    Primitive(Eval),
   )
   eval_exports["environment"] = @runtime.make_binding(
-    @core.Value::Primitive(@core.Primitive::Environment),
+    Primitive(Environment),
   )
   register_library_entry("rnrs.eval", Some([6]), eval_exports)
   let condition_exports : Map[String, @core.Binding] = {}
@@ -32,7 +32,7 @@ fn register_builtin_libraries(env : @core.Env) -> Unit raise @core.EvalError {
     condition_exports[name] = @runtime.env_lookup_binding(env, name)
   }
   condition_exports["define-condition-type"] = @runtime.make_binding(
-    @core.Value::SyntaxKeyword("define-condition-type"),
+    SyntaxKeyword("define-condition-type"),
   )
   register_library_entry("rnrs.conditions", Some([6]), condition_exports)
   let flonum_exports : Map[String, @core.Binding] = {}
@@ -106,7 +106,7 @@ fn value_as_parameter(
 ) -> @core.Parameter raise @core.EvalError {
   match value {
     Parameter(param) => param
-    _ => raise @core.EvalError("type error: parameter expected")
+    _ => raise EvalError("type error: parameter expected")
   }
 }
 
@@ -138,7 +138,7 @@ fn next_promise_id() -> Int {
 
 ///|
 fn make_promise(thunk : @core.Value) -> @core.Promise {
-  @core.Promise::new(next_promise_id(), @core.PromiseState::Thunk(thunk))
+  @core.Promise::new(next_promise_id(), Thunk(thunk))
 }
 
 ///|
@@ -160,7 +160,7 @@ fn value_as_eval_env(
 ) -> @core.EvalEnv raise @core.EvalError {
   match value {
     EvalEnv(env) => env
-    _ => raise @core.EvalError("type error: environment expected")
+    _ => raise EvalError("type error: environment expected")
   }
 }
 
@@ -264,7 +264,7 @@ fn next_do_name() -> String {
 pub fn eval_program(src : String) -> @core.Value raise {
   let results = eval_program_all(src)
   match results {
-    [] => @core.Value::Void
+    [] => Void
     [.., last] => last
   }
 }
@@ -331,23 +331,23 @@ fn eval_expr_impl(
   strip_literals : Bool,
 ) -> @core.Value raise @core.EvalError {
   let handlers : Array[@core.Value] = []
-  let mut state = MachineState::Eval(expr, env, @core.Kont::Halt, handlers)
+  let mut state = MachineState::Eval(expr, env, Halt, handlers)
   while true {
     match state {
-      MachineState::Eval(current_expr, current_env, kont, handlers) =>
+      Eval(current_expr, current_env, kont, handlers) =>
         match current_expr {
           Label(_, cell) =>
-            state = MachineState::Eval(cell.val, current_env, kont, handlers)
+            state = Eval(cell.val, current_env, kont, handlers)
           Value(SyntaxObject(obj)) =>
             if unwrap_syntax {
-              state = MachineState::Eval(obj.datum, current_env, kont, handlers)
+              state = Eval(obj.datum, current_env, kont, handlers)
             } else {
               let literal = if strip_literals {
                 @runtime.strip_syntax_datum(current_expr)
               } else {
                 current_expr
               }
-              state = MachineState::Apply(
+              state = Apply(
                 value_from_datum(literal),
                 kont,
                 handlers,
@@ -373,7 +373,7 @@ fn eval_expr_impl(
             } else {
               current_expr
             }
-            state = MachineState::Apply(
+            state = Apply(
               value_from_datum(literal),
               kont,
               handlers,
@@ -387,7 +387,7 @@ fn eval_expr_impl(
                 current_env,
               )
               let next_env = env_with_captures(current_env, expansion.captures)
-              state = MachineState::Eval(
+              state = Eval(
                 expansion.datum,
                 next_env,
                 kont,
@@ -395,52 +395,52 @@ fn eval_expr_impl(
               )
             } else {
               let value = @runtime.env_lookup(current_env, name)
-              state = MachineState::Apply(value, kont, handlers)
+              state = Apply(value, kont, handlers)
             }
           Pair(_, _) =>
             state = eval_pair(current_expr, current_env, kont, handlers)
         }
-      MachineState::Apply(value, kont, handlers) =>
+      Apply(value, kont, handlers) =>
         match kont {
-          @core.Kont::Halt => return value
-          @core.Kont::If(then_expr, else_expr, env, next) => {
+          Halt => return value
+          If(then_expr, else_expr, env, next) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
-              state = MachineState::Eval(else_expr, env, next, handlers)
+              state = Eval(else_expr, env, next, handlers)
             } else {
-              state = MachineState::Eval(then_expr, env, next, handlers)
+              state = Eval(then_expr, env, next, handlers)
             }
           }
-          @core.Kont::Begin(rest, env, next) =>
+          Begin(rest, env, next) =>
             match rest {
-              [] => state = MachineState::Apply(value, next, handlers)
+              [] => state = Apply(value, next, handlers)
               [head, .. tail] =>
-                state = MachineState::Eval(
+                state = Eval(
                   head,
                   env,
-                  @core.Kont::Begin(tail.to_array(), env, next),
+                  Begin(tail.to_array(), env, next),
                   handlers,
                 )
             }
-          @core.Kont::Set(name, env, next) => {
+          Set(name, env, next) => {
             let single = expect_single(value)
             @runtime.env_set(env, name, single)
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::Define(name, env, next) => {
+          Define(name, env, next) => {
             let single = expect_single(value)
             @runtime.env_define(env, name, single)
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::AppFun(args, env, next) => {
+          AppFun(args, env, next) => {
             let proc_value = expect_single(value)
             match args {
               [] => state = apply_proc(proc_value, [], next, handlers)
               [head, .. rest] =>
-                state = MachineState::Eval(
+                state = Eval(
                   head,
                   env,
-                  @core.Kont::AppArgs(
+                  AppArgs(
                     proc_value,
                     [],
                     rest.to_array(),
@@ -451,16 +451,16 @@ fn eval_expr_impl(
                 )
             }
           }
-          @core.Kont::AppArgs(proc, evaluated, remaining, env, next) => {
+          AppArgs(proc, evaluated, remaining, env, next) => {
             let arg_value = expect_single(value)
             let next_values = values_with_push(evaluated, arg_value)
             match remaining {
               [] => state = apply_proc(proc, next_values, next, handlers)
               [head, .. rest] =>
-                state = MachineState::Eval(
+                state = Eval(
                   head,
                   env,
-                  @core.Kont::AppArgs(
+                  AppArgs(
                     proc,
                     next_values,
                     rest.to_array(),
@@ -471,57 +471,57 @@ fn eval_expr_impl(
                 )
             }
           }
-          @core.Kont::And(rest, env, next) => {
+          And(rest, env, next) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
-              state = MachineState::Apply(test_value, next, handlers)
+              state = Apply(test_value, next, handlers)
             } else {
               match rest {
-                [] => state = MachineState::Apply(test_value, next, handlers)
+                [] => state = Apply(test_value, next, handlers)
                 [head, .. tail] =>
-                  state = MachineState::Eval(
+                  state = Eval(
                     head,
                     env,
-                    @core.Kont::And(tail.to_array(), env, next),
+                    And(tail.to_array(), env, next),
                     handlers,
                   )
               }
             }
           }
-          @core.Kont::Or(rest, env, next) => {
+          Or(rest, env, next) => {
             let test_value = expect_single(value)
             if !is_false(test_value) {
-              state = MachineState::Apply(test_value, next, handlers)
+              state = Apply(test_value, next, handlers)
             } else {
               match rest {
-                [] => state = MachineState::Apply(test_value, next, handlers)
+                [] => state = Apply(test_value, next, handlers)
                 [head, .. tail] =>
-                  state = MachineState::Eval(
+                  state = Eval(
                     head,
                     env,
-                    @core.Kont::Or(tail.to_array(), env, next),
+                    Or(tail.to_array(), env, next),
                     handlers,
                   )
               }
             }
           }
-          @core.Kont::Cond(parts, rest, env, next) => {
+          Cond(parts, rest, env, next) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = cond_start(rest, env, next, handlers)
             } else {
               match parts {
                 [] => panic()
-                [_] => state = MachineState::Apply(test_value, next, handlers)
+                [_] => state = Apply(test_value, next, handlers)
                 [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
-                  state = MachineState::Eval(
+                  state = Eval(
                     proc,
                     env,
-                    @core.Kont::CondArrow(test_value, next),
+                    CondArrow(test_value, next),
                     handlers,
                   )
                 [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
-                  raise @core.EvalError("invalid cond")
+                  raise EvalError("invalid cond")
                 [_, .. body] =>
                   state = eval_sequence_state(
                     body.to_array(),
@@ -532,20 +532,20 @@ fn eval_expr_impl(
               }
             }
           }
-          @core.Kont::CondArrow(test_value, next) => {
+          CondArrow(test_value, next) => {
             let proc_value = expect_single(value)
             state = apply_proc(proc_value, [test_value], next, handlers)
           }
-          @core.Kont::Let(bindings, index, values, env, body, next) => {
+          Let(bindings, index, values, env, body, next) => {
             let single = expect_single(value)
             let next_values = values_with_push(values, single)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 env,
-                @core.Kont::Let(
+                Let(
                   bindings, next_index, next_values, env, body, next,
                 ),
                 handlers,
@@ -563,7 +563,7 @@ fn eval_expr_impl(
               state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
-          @core.Kont::LetStar(bindings, index, env, body, next) => {
+          LetStar(bindings, index, env, body, next) => {
             let single = expect_single(value)
             let (name, _) = bindings[index]
             let new_env = @runtime.env_extend(env)
@@ -571,43 +571,43 @@ fn eval_expr_impl(
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 new_env,
-                @core.Kont::LetStar(bindings, next_index, new_env, body, next),
+                LetStar(bindings, next_index, new_env, body, next),
                 handlers,
               )
             } else {
               state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
-          @core.Kont::LetRec(bindings, index, env, body, next) => {
+          LetRec(bindings, index, env, body, next) => {
             let single = expect_single(value)
             let (name, _) = bindings[index]
             @runtime.env_set(env, name, single)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 env,
-                @core.Kont::LetRec(bindings, next_index, env, body, next),
+                LetRec(bindings, next_index, env, body, next),
                 handlers,
               )
             } else {
               state = eval_sequence_state(body, env, next, handlers)
             }
           }
-          @core.Kont::LetRecInit(bindings, index, collected, env, body, next) => {
+          LetRecInit(bindings, index, collected, env, body, next) => {
             let single = expect_single(value)
             let next_values = values_with_push(collected, single)
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 env,
-                @core.Kont::LetRecInit(
+                LetRecInit(
                   bindings, next_index, next_values, env, body, next,
                 ),
                 handlers,
@@ -624,7 +624,7 @@ fn eval_expr_impl(
               state = eval_sequence_state(body, env, next, handlers)
             }
           }
-          @core.Kont::LetValues(bindings, index, collected, env, body, next) => {
+          LetValues(bindings, index, collected, env, body, next) => {
             let values = value_to_values(value)
             let (formals, _) = bindings[index]
             let bound = formals_bindings(formals, values)
@@ -636,10 +636,10 @@ fn eval_expr_impl(
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 env,
-                @core.Kont::LetValues(
+                LetValues(
                   bindings, next_index, next_collected, env, body, next,
                 ),
                 handlers,
@@ -660,7 +660,7 @@ fn eval_expr_impl(
               state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
-          @core.Kont::LetStarValues(bindings, index, env, body, next) => {
+          LetStarValues(bindings, index, env, body, next) => {
             let values = value_to_values(value)
             let (formals, _) = bindings[index]
             let binding_values = formals_bindings(formals, values)
@@ -672,10 +672,10 @@ fn eval_expr_impl(
             let next_index = index + 1
             if next_index < bindings.length() {
               let (_, expr) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 expr,
                 new_env,
-                @core.Kont::LetStarValues(
+                LetStarValues(
                   bindings, next_index, new_env, body, next,
                 ),
                 handlers,
@@ -684,16 +684,16 @@ fn eval_expr_impl(
               state = eval_sequence_state(body, new_env, next, handlers)
             }
           }
-          @core.Kont::DefineValues(formals, env, next) => {
+          DefineValues(formals, env, next) => {
             let values = value_to_values(value)
             let binding_values = formals_bindings(formals, values)
             for binding in binding_values {
               let (name, bound_value) = binding
               @runtime.env_define(env, name, bound_value)
             }
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::SyntaxCase(rest, env, next) =>
+          SyntaxCase(rest, env, next) =>
             match rest {
               [literals_expr, .. clauses] if clauses.length() >= 1 => {
                 let input = expect_single(value)
@@ -704,19 +704,19 @@ fn eval_expr_impl(
                 )
                 let call = value_to_syntax_datum(input)
                 let expansion = expand_macro(
-                  @core.MacroTransformer::Rules(rules),
+                  Rules(rules),
                   call,
                   env,
                 )
                 let result = match expansion.datum {
-                  Value(SyntaxObject(obj)) => @core.Value::SyntaxObject(obj)
-                  _ => @core.Value::Datum(expansion.datum)
+                  Value(SyntaxObject(obj)) => Value::SyntaxObject(obj)
+                  _ => Datum(expansion.datum)
                 }
-                state = MachineState::Apply(result, next, handlers)
+                state = Apply(result, next, handlers)
               }
-              _ => raise @core.EvalError("invalid syntax-case")
+              _ => raise EvalError("invalid syntax-case")
             }
-          @core.Kont::ParameterizeParam(
+          ParameterizeParam(
             bindings,
             index,
             params,
@@ -733,16 +733,16 @@ fn eval_expr_impl(
             }
             next_params.push(param)
             let (_, expr) = bindings[index]
-            state = MachineState::Eval(
+            state = Eval(
               expr,
               env,
-              @core.Kont::ParameterizeValue(
+              ParameterizeValue(
                 bindings, index, next_params, values, env, body, next,
               ),
               handlers,
             )
           }
-          @core.Kont::ParameterizeValue(
+          ParameterizeValue(
             bindings,
             index,
             params,
@@ -758,7 +758,7 @@ fn eval_expr_impl(
                 state = apply_proc(
                   converter,
                   [new_value],
-                  @core.Kont::ParameterizeConvert(
+                  ParameterizeConvert(
                     bindings, index, params, values, env, body, next,
                   ),
                   handlers,
@@ -768,10 +768,10 @@ fn eval_expr_impl(
                 let next_index = index + 1
                 if next_index < bindings.length() {
                   let (param_expr, _) = bindings[next_index]
-                  state = MachineState::Eval(
+                  state = Eval(
                     param_expr,
                     env,
-                    @core.Kont::ParameterizeParam(
+                    ParameterizeParam(
                       bindings, next_index, params, next_values, env, body, next,
                     ),
                     handlers,
@@ -796,14 +796,14 @@ fn eval_expr_impl(
                   state = eval_sequence_state(
                     body,
                     env,
-                    @core.Kont::WindExit(winder, next),
+                    WindExit(winder, next),
                     handlers,
                   )
                 }
               }
             }
           }
-          @core.Kont::ParameterizeConvert(
+          ParameterizeConvert(
             bindings,
             index,
             params,
@@ -817,10 +817,10 @@ fn eval_expr_impl(
             let next_index = index + 1
             if next_index < bindings.length() {
               let (param_expr, _) = bindings[next_index]
-              state = MachineState::Eval(
+              state = Eval(
                 param_expr,
                 env,
-                @core.Kont::ParameterizeParam(
+                ParameterizeParam(
                   bindings, next_index, params, next_values, env, body, next,
                 ),
                 handlers,
@@ -845,26 +845,26 @@ fn eval_expr_impl(
               state = eval_sequence_state(
                 body,
                 env,
-                @core.Kont::WindExit(winder, next),
+                WindExit(winder, next),
                 handlers,
               )
             }
           }
-          @core.Kont::MakeParameter(converter, next) => {
+          MakeParameter(converter, next) => {
             let converted = expect_single(value)
             let param = parameter_with_converter(converted, converter)
-            state = MachineState::Apply(
-              @core.Value::Parameter(param),
+            state = Apply(
+              Parameter(param),
               next,
               handlers,
             )
           }
-          @core.Kont::SetParameter(param, next) => {
+          SetParameter(param, next) => {
             let converted = expect_single(value)
             parameter_set(param, converted)
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::GuardResult(info) => {
+          GuardResult(info) => {
             let guard_value = expect_single(value)
             state = apply_proc(
               info.resume_value,
@@ -873,7 +873,7 @@ fn eval_expr_impl(
               info.handlers,
             )
           }
-          @core.Kont::GuardCond(parts, rest, env, info) => {
+          GuardCond(parts, rest, env, info) => {
             let test_value = expect_single(value)
             if is_false(test_value) {
               state = guard_start(rest, env, info, handlers)
@@ -888,83 +888,83 @@ fn eval_expr_impl(
                     info.handlers,
                   )
                 [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
-                  state = MachineState::Eval(
+                  state = Eval(
                     proc,
                     env,
-                    @core.Kont::GuardCondArrow(test_value, info),
+                    GuardCondArrow(test_value, info),
                     handlers,
                   )
                 [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
-                  raise @core.EvalError("invalid guard")
+                  raise EvalError("invalid guard")
                 [_, .. body] =>
                   state = eval_sequence_state(
                     body.to_array(),
                     env,
-                    @core.Kont::GuardResult(info),
+                    GuardResult(info),
                     handlers,
                   )
               }
             }
           }
-          @core.Kont::GuardCondArrow(test_value, info) => {
+          GuardCondArrow(test_value, info) => {
             let proc_value = expect_single(value)
             state = apply_proc(
               proc_value,
               [test_value],
-              @core.Kont::GuardResult(info),
+              GuardResult(info),
               handlers,
             )
           }
-          @core.Kont::Case(clauses, env, next) => {
+          Case(clauses, env, next) => {
             let key_value = expect_single(value)
             state = case_dispatch(key_value, clauses, env, next, handlers)
           }
-          @core.Kont::CaseArrow(test_value, next) => {
+          CaseArrow(test_value, next) => {
             let proc_value = expect_single(value)
             state = apply_proc(proc_value, [test_value], next, handlers)
           }
-          @core.Kont::CallWithValues(consumer, next) => {
+          CallWithValues(consumer, next) => {
             let values = value_to_values(value)
             state = apply_proc(consumer, values, next, handlers)
           }
-          @core.Kont::RecordConstructorDone(next) => {
+          RecordConstructorDone(next) => {
             let ctor_value = expect_single(value)
             if !@runtime.is_procedure_value(ctor_value) {
-              raise @core.EvalError("type error: procedure expected")
+              raise EvalError("type error: procedure expected")
             }
-            state = MachineState::Apply(ctor_value, next, handlers)
+            state = Apply(ctor_value, next, handlers)
           }
-          @core.Kont::RecordProtocolNApply(record_type, parent_args, next) => {
+          RecordProtocolNApply(record_type, parent_args, next) => {
             let ctor_value = expect_single(value)
             state = apply_proc(
               ctor_value,
               parent_args,
-              @core.Kont::RecordProtocolNResult(record_type, next),
+              RecordProtocolNResult(record_type, next),
               handlers,
             )
           }
-          @core.Kont::RecordProtocolNResult(record_type, next) => {
+          RecordProtocolNResult(record_type, next) => {
             let record_value = expect_single(value)
             let record = value_as_record(record_value)
             let parent_type = match record_type.parent {
               Some(parent) => parent
               None =>
-                raise @core.EvalError("invalid record constructor descriptor")
+                raise EvalError("invalid record constructor descriptor")
             }
             if !@runtime.record_type_is_a(record.record_type, parent_type) {
-              raise @core.EvalError(
+              raise EvalError(
                 "type error: record type mismatch: expected \{parent_type.name}",
               )
             }
             let parent_values : Array[@core.Value] = record.fields.map(field => field.val)
-            let proc = @core.Value::RecordProc(
+            let proc = Value::RecordProc(
               @runtime.make_record_proc(
-                @core.RecordProcKind::ProtocolP(record_type, parent_values),
+                ProtocolP(record_type, parent_values),
               ),
             )
-            state = MachineState::Apply(proc, next, handlers)
+            state = Apply(proc, next, handlers)
           }
-          @core.Kont::DefineRecordType(
+          DefineRecordType(
             ctor_name,
             pred_name,
             record_type,
@@ -974,15 +974,15 @@ fn eval_expr_impl(
           ) => {
             let ctor_value = expect_single(value)
             if !@runtime.is_procedure_value(ctor_value) {
-              raise @core.EvalError("type error: procedure expected")
+              raise EvalError("type error: procedure expected")
             }
             @runtime.env_define(env, ctor_name, ctor_value)
             @runtime.env_define(
               env,
               pred_name,
-              @core.Value::RecordProc(
+              RecordProc(
                 @runtime.make_record_proc(
-                  @core.RecordProcKind::Predicate(record_type),
+                  Predicate(record_type),
                 ),
               ),
             )
@@ -990,9 +990,9 @@ fn eval_expr_impl(
               @runtime.env_define(
                 env,
                 binding.accessor(),
-                @core.Value::RecordProc(
+                RecordProc(
                   @runtime.make_record_proc(
-                    @core.RecordProcKind::Accessor(record_type, binding.index()),
+                    Accessor(record_type, binding.index()),
                   ),
                 ),
               )
@@ -1001,9 +1001,9 @@ fn eval_expr_impl(
                   @runtime.env_define(
                     env,
                     mut_name,
-                    @core.Value::RecordProc(
+                    RecordProc(
                       @runtime.make_record_proc(
-                        @core.RecordProcKind::Mutator(
+                        Mutator(
                           record_type,
                           binding.index(),
                         ),
@@ -1013,9 +1013,9 @@ fn eval_expr_impl(
                 None => ()
               }
             }
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::DefineConditionType(
+          DefineConditionType(
             ctor_name,
             pred_name,
             record_type,
@@ -1025,15 +1025,15 @@ fn eval_expr_impl(
           ) => {
             let ctor_value = expect_single(value)
             if !@runtime.is_procedure_value(ctor_value) {
-              raise @core.EvalError("type error: procedure expected")
+              raise EvalError("type error: procedure expected")
             }
             @runtime.env_define(env, ctor_name, ctor_value)
             @runtime.env_define(
               env,
               pred_name,
-              @core.Value::ConditionProc(
+              ConditionProc(
                 @runtime.make_condition_proc(
-                  @core.ConditionProcKind::Predicate(record_type),
+                  Predicate(record_type),
                 ),
               ),
             )
@@ -1041,9 +1041,9 @@ fn eval_expr_impl(
               @runtime.env_define(
                 env,
                 binding.accessor(),
-                @core.Value::ConditionProc(
+                ConditionProc(
                   @runtime.make_condition_proc(
-                    @core.ConditionProcKind::Accessor(
+                    Accessor(
                       record_type,
                       binding.index(),
                     ),
@@ -1051,9 +1051,9 @@ fn eval_expr_impl(
                 ),
               )
             }
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::HashtableFindResult(table, key, idx, op, next) => {
+          HashtableFindResult(table, key, idx, op, next) => {
             let result_value = expect_single(value)
             if is_false(result_value) {
               state = hashtable_find_state(
@@ -1068,10 +1068,10 @@ fn eval_expr_impl(
               state = hashtable_found_state(table, key, idx, op, next, handlers)
             }
           }
-          @core.Kont::HashtableUpdateApply(table, key, idx, found, next) => {
+          HashtableUpdateApply(table, key, idx, found, next) => {
             let next_value = expect_single(value)
             if !table.mutable {
-              raise @core.EvalError("hashtable is immutable")
+              raise EvalError("hashtable is immutable")
             }
             if found {
               let entries = table.entries.val
@@ -1081,9 +1081,9 @@ fn eval_expr_impl(
               let entries = table.entries.val
               entries.push(@core.HashtableEntry::new(key, next_value))
             }
-            state = MachineState::Apply(@core.Value::Void, next, handlers)
+            state = Apply(Void, next, handlers)
           }
-          @core.Kont::MapStep(proc, lists, results, for_each, next) => {
+          MapStep(proc, lists, results, for_each, next) => {
             let single = expect_single(value)
             let next_results = results
             if !for_each {
@@ -1093,38 +1093,38 @@ fn eval_expr_impl(
               proc, lists, next_results, for_each, next, handlers,
             )
           }
-          @core.Kont::VectorMapFinalize(next) => {
+          VectorMapFinalize(next) => {
             let single = expect_single(value)
             let result_datum = value_as_datum(single)
             let items = datum_list_to_array(result_datum)
-            state = MachineState::Apply(
-              @core.Value::Datum(Vector(items)),
+            state = Apply(
+              Datum(Vector(items)),
               next,
               handlers,
             )
           }
-          @core.Kont::StringMapFinalize(next) => {
+          StringMapFinalize(next) => {
             let single = expect_single(value)
             let result_datum = value_as_datum(single)
-            let string_value = apply_primitive(@core.Primitive::ListToString, [
-              @core.Value::Datum(result_datum),
+            let string_value = apply_primitive(ListToString, [
+              Datum(result_datum),
             ])
-            state = MachineState::Apply(string_value, next, handlers)
+            state = Apply(string_value, next, handlers)
           }
-          @core.Kont::WindEnter(thunk, winder, next) => {
+          WindEnter(thunk, winder, next) => {
             wind_push(winder)
             state = apply_proc(
               thunk,
               [],
-              @core.Kont::WindExit(winder, next),
+              WindExit(winder, next),
               handlers,
             )
           }
-          @core.Kont::WindExit(winder, next) => {
+          WindExit(winder, next) => {
             let actions = [@core.WindAction::After(winder)]
             state = run_wind_actions(actions, value, next, handlers, handlers)
           }
-          @core.Kont::WindActions(
+          WindActions(
             actions,
             resume_value,
             final_kont,
@@ -1135,7 +1135,7 @@ fn eval_expr_impl(
               actions, resume_value, final_kont, final_handlers, handlers,
             )
           }
-          @core.Kont::WindPush(
+          WindPush(
             winder,
             actions,
             resume_value,
@@ -1148,20 +1148,20 @@ fn eval_expr_impl(
               actions, resume_value, final_kont, final_handlers, handlers,
             )
           }
-          @core.Kont::ForcePromise(promise, next) => {
-            promise.state.val = @core.PromiseState::Value(value)
-            state = MachineState::Apply(value, next, handlers)
+          ForcePromise(promise, next) => {
+            promise.state.val = Value(value)
+            state = Apply(value, next, handlers)
           }
-          @core.Kont::RaiseNonCont =>
-            raise @core.EvalError("non-continuable exception")
-          @core.Kont::RaiseCont(next) =>
-            state = MachineState::Apply(value, next, handlers)
-          @core.Kont::RestoreHandlers(prev_handlers, next) =>
-            state = MachineState::Apply(value, next, prev_handlers)
+          RaiseNonCont =>
+            raise EvalError("non-continuable exception")
+          RaiseCont(next) =>
+            state = Apply(value, next, handlers)
+          RestoreHandlers(prev_handlers, next) =>
+            state = Apply(value, next, prev_handlers)
         }
     }
   }
-  @core.Value::Void
+  Void
 }
 
 ///|
@@ -1185,7 +1185,7 @@ fn eval_expr_transformer(
 ///|
 fn eval_quote(args : Array[@core.Datum]) -> @core.Value raise @core.EvalError {
   match args {
-    [arg] => @core.Value::Datum(@runtime.strip_syntax_datum(arg))
+    [arg] => Datum(@runtime.strip_syntax_datum(arg))
     _ => raise arity_mismatch(1, args.length())
   }
 }
@@ -1210,7 +1210,7 @@ fn eval_syntax(
         _ => None
       }
       let datum = @runtime.syntax_wrap_root(arg, scopes)
-      @core.Value::SyntaxObject(
+      SyntaxObject(
         @core.SyntaxObject::new(datum, scopes, binding_id),
       )
     }
@@ -1225,7 +1225,7 @@ fn eval_quasiquote(
 ) -> @core.Value raise @core.EvalError {
   match args {
     [arg] =>
-      @core.Value::Datum(
+      Datum(
         @runtime.strip_syntax_datum(quasiquote_expand(arg, env, 1)),
       )
     _ => raise arity_mismatch(1, args.length())
@@ -1241,7 +1241,7 @@ fn eval_quasisyntax(
     [arg] => {
       let expanded = quasisyntax_expand(arg, env, 1)
       match expanded {
-        Value(SyntaxObject(obj)) => @core.Value::SyntaxObject(obj)
+        Value(SyntaxObject(obj)) => SyntaxObject(obj)
         _ => {
           let scope = @runtime.next_syntax_context()
           let scopes = [scope]
@@ -1256,7 +1256,7 @@ fn eval_quasisyntax(
             _ => None
           }
           let datum = @runtime.syntax_wrap_root(expanded, scopes)
-          @core.Value::SyntaxObject(
+          SyntaxObject(
             @core.SyntaxObject::new(datum, scopes, binding_id),
           )
         }
@@ -1275,10 +1275,10 @@ fn eval_syntax_case_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [head, .. rest] if rest.length() >= 2 =>
-      MachineState::Eval(
+      Eval(
         head,
         env,
-        @core.Kont::SyntaxCase(rest.to_array(), env, kont),
+        SyntaxCase(rest.to_array(), env, kont),
         handlers,
       )
     _ => raise arity_mismatch(3, args.length())
@@ -1292,8 +1292,8 @@ fn eval_delay(
 ) -> @core.Value raise @core.EvalError {
   match args {
     [arg] => {
-      let thunk = @core.Value::Closure(make_closure([], None, [arg], env))
-      @core.Value::Promise(make_promise(thunk))
+      let thunk = Value::Closure(make_closure([], None, [arg], env))
+      Promise(make_promise(thunk))
     }
     _ => raise arity_mismatch(1, args.length())
   }
@@ -1345,7 +1345,7 @@ fn quasiquote_expand(
   match unwrap_form(expr, "unquote-splicing") {
     Some(arg) =>
       if depth == 1 {
-        raise @core.EvalError("unquote-splicing not in list context")
+        raise EvalError("unquote-splicing not in list context")
       } else {
         return list_from_array([
           Symbol("unquote-splicing"),
@@ -1429,7 +1429,7 @@ fn quasisyntax_expand(
   match unwrap_form(expr, "unsyntax-splicing") {
     Some(arg) =>
       if depth == 1 {
-        raise @core.EvalError("unsyntax-splicing not in list context")
+        raise EvalError("unsyntax-splicing not in list context")
       } else {
         return list_from_array([
           Symbol("unsyntax-splicing"),
@@ -1521,7 +1521,7 @@ fn parse_formals(expr : @core.Datum) -> @core.Formals raise @core.EvalError {
         names.push(name)
         continue cdr.val
       }
-      _ => raise @core.EvalError("type error: symbol expected")
+      _ => raise EvalError("type error: symbol expected")
     }
   } else {
     @core.Formals::new(names, None)
@@ -1530,7 +1530,7 @@ fn parse_formals(expr : @core.Datum) -> @core.Formals raise @core.EvalError {
 
 ///|
 fn arity_mismatch_at_least(expected : Int, got : Int) -> @core.EvalError {
-  @core.EvalError("arity mismatch: expected at least \{expected} got \{got}")
+  EvalError("arity mismatch: expected at least \{expected} got \{got}")
 }
 
 ///|
@@ -1538,7 +1538,7 @@ fn values_to_list_value(values : Array[@core.Value]) -> @core.Value {
   let items : Array[@core.Datum] = values.map(value => value_to_datum_element(
     value,
   ))
-  @core.Value::Datum(list_from_array(items))
+  Datum(list_from_array(items))
 }
 
 ///|
@@ -1607,7 +1607,7 @@ fn eval_lambda(
   match args {
     [formals_expr, .. body] if !body.is_empty() => {
       let formals = parse_formals(formals_expr)
-      @core.Value::Closure(
+      Closure(
         make_closure(formals.params, formals.rest, body.to_array(), env),
       )
     }
@@ -1632,12 +1632,12 @@ fn eval_case_lambda(
         }
         (formals_expr, body)
       }
-      _ => raise @core.EvalError("invalid case-lambda")
+      _ => raise EvalError::EvalError("invalid case-lambda")
     }
     let formals = parse_formals(formals_expr)
     @core.CaseClause::new(formals.params, formals.rest, body_exprs)
   })
-  @core.Value::CaseClosure(make_case_closure(clauses, env))
+  CaseClosure(make_case_closure(clauses, env))
 }
 
 ///|
@@ -1649,8 +1649,8 @@ fn eval_define_syntax(
     [name_expr, transformer_expr] => {
       let name = parse_symbol(name_expr)
       let transformer = parse_transformer(transformer_expr, name, env)
-      @runtime.env_define(env, name, @core.Value::Macro(transformer))
-      @core.Value::Void
+      @runtime.env_define(env, name, Macro(transformer))
+      Void
     }
     _ => raise arity_mismatch(2, args.length())
   }
@@ -1670,7 +1670,7 @@ fn parse_syntax_bindings(
         let transformer = parse_transformer(transformer_expr, name, env)
         parsed.push((name, transformer))
       }
-      _ => raise @core.EvalError("type error: syntax binding expected")
+      _ => raise EvalError("type error: syntax binding expected")
     }
   }
   parsed
@@ -1688,7 +1688,7 @@ fn parse_bindings(
         let name = parse_symbol(name_expr)
         parsed.push((name, value_expr))
       }
-      _ => raise @core.EvalError("type error: binding expected")
+      _ => raise EvalError("type error: binding expected")
     }
   }
   parsed
@@ -1706,7 +1706,7 @@ fn parse_value_bindings(
         let formals = parse_formals(formals_expr)
         parsed.push((formals, body_expr))
       }
-      _ => raise @core.EvalError("invalid let-values")
+      _ => raise EvalError("invalid let-values")
     }
   }
   parsed
@@ -1721,7 +1721,7 @@ fn parse_parameterize_bindings(
   for binding in bindings {
     match datum_list_to_array(binding) {
       [param_expr, value_expr] => parsed.push((param_expr, value_expr))
-      _ => raise @core.EvalError("invalid parameterize")
+      _ => raise EvalError("invalid parameterize")
     }
   }
   parsed
@@ -1734,7 +1734,7 @@ fn parse_symbol(expr : @core.Datum) -> String raise @core.EvalError {
   if @runtime.symbol_name(datum_unwrap_syntax(expr)) is Some(name) {
     name
   } else {
-    raise @core.EvalError("type error: symbol expected")
+    raise EvalError("type error: symbol expected")
   }
 }
 
@@ -1742,7 +1742,7 @@ fn parse_symbol(expr : @core.Datum) -> String raise @core.EvalError {
 fn parse_bool(expr : @core.Datum) -> Bool raise @core.EvalError {
   match expr {
     Bool(value) => value
-    _ => raise @core.EvalError("invalid define-record-type")
+    _ => raise EvalError("invalid define-record-type")
   }
 }
 
@@ -1762,7 +1762,7 @@ fn expect_single(value : @core.Value) -> @core.Value raise @core.EvalError {
   match value {
     Values([single]) => single
     Values(_) =>
-      raise @core.EvalError("multiple values in single-value context")
+      raise EvalError("multiple values in single-value context")
     _ => value
   }
 }
@@ -1783,12 +1783,12 @@ fn raise_to_handlers(
   continuable : Bool,
 ) -> MachineState raise @core.EvalError {
   match handlers {
-    [] => raise @core.EvalError("uncaught exception")
+    [] => raise EvalError("uncaught exception")
     [.., handler] =>
       if continuable {
-        apply_proc(handler, [condition], @core.Kont::RaiseCont(kont), handlers)
+        apply_proc(handler, [condition], RaiseCont(kont), handlers)
       } else {
-        apply_proc(handler, [condition], @core.Kont::RaiseNonCont, handlers)
+        apply_proc(handler, [condition], RaiseNonCont, handlers)
       }
   }
 }
@@ -1813,15 +1813,15 @@ fn guard_start(
           return eval_sequence_state(
             body.to_array(),
             env,
-            @core.Kont::GuardResult(info),
+            GuardResult(info),
             handlers,
           )
         } else {
           let rest = clauses[i + 1:].to_array()
-          return MachineState::Eval(
+          return Eval(
             head_expr,
             env,
-            @core.Kont::GuardCond(parts, rest, env, info),
+            GuardCond(parts, rest, env, info),
             handlers,
           )
         }
@@ -1889,7 +1889,7 @@ fn apply_winder_before(
       for binding in bindings {
         parameter_set(binding.param, binding.new_value)
       }
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
   }
 }
@@ -1906,7 +1906,7 @@ fn apply_winder_after(
       for binding in bindings {
         parameter_set(binding.param, binding.old_value)
       }
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
   }
 }
@@ -1941,7 +1941,7 @@ fn run_wind_actions(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   match actions {
-    [] => MachineState::Apply(resume_value, final_kont, final_handlers)
+    [] => Apply(resume_value, final_kont, final_handlers)
     [action, .. rest] => {
       let rest = rest.to_array()
       match action {
@@ -1949,7 +1949,7 @@ fn run_wind_actions(
           let _ = wind_pop()
           apply_winder_after(
             winder,
-            @core.Kont::WindActions(
+            WindActions(
               rest, resume_value, final_kont, final_handlers,
             ),
             handlers,
@@ -1958,7 +1958,7 @@ fn run_wind_actions(
         Before(winder) =>
           apply_winder_before(
             winder,
-            @core.Kont::WindPush(
+            WindPush(
               winder, rest, resume_value, final_kont, final_handlers,
             ),
             handlers,
@@ -1980,12 +1980,12 @@ fn eval_sequence_state(
   handlers : Array[@core.Value],
 ) -> MachineState {
   match exprs {
-    [] => MachineState::Apply(@core.Value::Void, kont, handlers)
+    [] => Apply(Void, kont, handlers)
     [head, .. rest] =>
-      MachineState::Eval(
+      Eval(
         head,
         env,
-        @core.Kont::Begin(rest.to_array(), env, kont),
+        Begin(rest.to_array(), env, kont),
         handlers,
       )
   }
@@ -2009,9 +2009,9 @@ fn eval_begin_for_syntax_state(
   frame
   .iter2()
   .each((key, binding) => if binding.value() is Macro(rules) {
-    @runtime.env_define(env, key, @core.Value::Macro(rules))
+    @runtime.env_define(env, key, Macro(rules))
   })
-  MachineState::Apply(@core.Value::Void, kont, handlers)
+  Apply(Void, kont, handlers)
 }
 
 ///|
@@ -2023,10 +2023,10 @@ fn eval_if_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [test_expr, then_expr, else_expr] =>
-      MachineState::Eval(
+      Eval(
         test_expr,
         env,
-        @core.Kont::If(then_expr, else_expr, env, kont),
+        If(then_expr, else_expr, env, kont),
         handlers,
       )
     _ => raise arity_mismatch(3, args.length())
@@ -2044,10 +2044,10 @@ fn eval_define_state(
     [first, .. rest] if !rest.is_empty() =>
       match (datum_unwrap_syntax(first), rest) {
         (Symbol(_), [value_expr]) =>
-          MachineState::Eval(
+          Eval(
             value_expr,
             env,
-            @core.Kont::Define(parse_symbol(first), env, kont),
+            Define(parse_symbol(first), env, kont),
             handlers,
           )
         (Symbol(_), _) => raise arity_mismatch(2, args.length())
@@ -2057,13 +2057,13 @@ fn eval_define_state(
           @runtime.env_define(
             env,
             name,
-            @core.Value::Closure(
+            Closure(
               make_closure(formals.params, formals.rest, rest.to_array(), env),
             ),
           )
-          MachineState::Apply(@core.Value::Void, kont, handlers)
+          Apply(Void, kont, handlers)
         }
-        _ => raise @core.EvalError("type error: symbol expected")
+        _ => raise EvalError("type error: symbol expected")
       }
     _ => raise arity_mismatch(2, args.length())
   }
@@ -2079,10 +2079,10 @@ fn eval_define_values_state(
   match args {
     [formals_expr, value_expr] => {
       let formals = parse_formals(formals_expr)
-      MachineState::Eval(
+      Eval(
         value_expr,
         env,
-        @core.Kont::DefineValues(formals, env, kont),
+        DefineValues(formals, env, kont),
         handlers,
       )
     }
@@ -2101,17 +2101,17 @@ fn eval_guard_state(
     [spec_expr, .. body] if !body.is_empty() => {
       let spec = datum_list_to_array(spec_expr)
       match spec {
-        [] => raise @core.EvalError("invalid guard")
+        [] => raise EvalError("invalid guard")
         [name_expr, .. clauses] => {
           let name = parse_symbol(name_expr)
-          let resume_value = @core.Value::Continuation(
+          let resume_value = Value::Continuation(
             capture_continuation(kont, handlers),
           )
           let guard_handlers : Array[@core.Value] = []
           for item in handlers {
             guard_handlers.push(item)
           }
-          let handler = @core.Value::GuardHandler(
+          let handler = Value::GuardHandler(
             make_guard_handler(
               name,
               clauses.to_array(),
@@ -2128,7 +2128,7 @@ fn eval_guard_state(
           eval_sequence_state(
             body.to_array(),
             env,
-            @core.Kont::RestoreHandlers(handlers, kont),
+            RestoreHandlers(handlers, kont),
             next_handlers,
           )
         }
@@ -2153,10 +2153,10 @@ fn eval_parameterize_state(
         eval_sequence_state(body, env, kont, handlers)
       } else {
         let (param_expr, _) = bindings[0]
-        MachineState::Eval(
+        Eval(
           param_expr,
           env,
-          @core.Kont::ParameterizeParam(bindings, 0, [], [], env, body, kont),
+          ParameterizeParam(bindings, 0, [], [], env, body, kont),
           handlers,
         )
       }
@@ -2183,13 +2183,13 @@ fn eval_set_state(
             env,
           )
           let next_env = env_with_captures(env, expansion.captures)
-          MachineState::Eval(expansion.datum, next_env, kont, handlers)
+          Eval(expansion.datum, next_env, kont, handlers)
         }
         None =>
-          MachineState::Eval(
+          Eval(
             value_expr,
             env,
-            @core.Kont::Set(name, env, kont),
+            Set(name, env, kont),
             handlers,
           )
       }
@@ -2213,7 +2213,7 @@ fn eval_let_state(
       }
       let bindings = parse_bindings(bindings_expr)
       let expanded = expand_named_let(name, bindings, body.to_array())
-      MachineState::Eval(expanded, env, kont, handlers)
+      Eval(expanded, env, kont, handlers)
     }
     [bindings_expr, .. body] => {
       let bindings = parse_bindings(bindings_expr)
@@ -2222,10 +2222,10 @@ fn eval_let_state(
         eval_sequence_state(body, env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           env,
-          @core.Kont::Let(bindings, 0, [], env, body, kont),
+          Let(bindings, 0, [], env, body, kont),
           handlers,
         )
       }
@@ -2250,10 +2250,10 @@ fn eval_let_values_state(
         eval_sequence_state(body, env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           env,
-          @core.Kont::LetValues(bindings, 0, [], env, body, kont),
+          LetValues(bindings, 0, [], env, body, kont),
           handlers,
         )
       }
@@ -2277,10 +2277,10 @@ fn eval_let_star_values_state(
         eval_sequence_state(body, env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           env,
-          @core.Kont::LetStarValues(bindings, 0, env, body, kont),
+          LetStarValues(bindings, 0, env, body, kont),
           handlers,
         )
       }
@@ -2304,10 +2304,10 @@ fn eval_let_star_state(
         eval_sequence_state(body, env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           env,
-          @core.Kont::LetStar(bindings, 0, env, body, kont),
+          LetStar(bindings, 0, env, body, kont),
           handlers,
         )
       }
@@ -2330,16 +2330,16 @@ fn eval_letrec_state(
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, _) = binding
-        @runtime.env_define(new_env, name, @core.Value::Void)
+        @runtime.env_define(new_env, name, Void)
       }
       if bindings.is_empty() {
         eval_sequence_state(body, new_env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           new_env,
-          @core.Kont::LetRecInit(bindings, 0, [], new_env, body, kont),
+          LetRecInit(bindings, 0, [], new_env, body, kont),
           handlers,
         )
       }
@@ -2362,16 +2362,16 @@ fn eval_letrec_star_state(
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, _) = binding
-        @runtime.env_define(new_env, name, @core.Value::Void)
+        @runtime.env_define(new_env, name, Void)
       }
       if bindings.is_empty() {
         eval_sequence_state(body, new_env, kont, handlers)
       } else {
         let (_, expr) = bindings[0]
-        MachineState::Eval(
+        Eval(
           expr,
           new_env,
-          @core.Kont::LetRec(bindings, 0, new_env, body, kont),
+          LetRec(bindings, 0, new_env, body, kont),
           handlers,
         )
       }
@@ -2425,7 +2425,7 @@ fn eval_let_syntax_state(
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, transformer) = binding
-        @runtime.env_define(new_env, name, @core.Value::Macro(transformer))
+        @runtime.env_define(new_env, name, Macro(transformer))
       }
       eval_sequence_state(body, new_env, kont, handlers)
     }
@@ -2450,24 +2450,24 @@ fn eval_letrec_syntax_state(
         // assert : i <= binding_specs.length()
         let name = match datum_list_to_array(binding_specs[i]) {
           [name_expr, _] => parse_symbol(name_expr)
-          _ => raise @core.EvalError("type error: syntax binding expected")
+          _ => raise EvalError("type error: syntax binding expected")
         }
-        let placeholder = @core.MacroTransformer::Rules(
+        let placeholder = MacroTransformer::Rules(
           @core.SyntaxRules::new(
             [],
             [],
             "...",
-            @core.SyntaxRulesKind::SyntaxRules,
+            SyntaxRules,
             new_env,
           ),
         )
-        @runtime.env_define(new_env, name, @core.Value::Macro(placeholder))
+        @runtime.env_define(new_env, name, Macro(placeholder))
         continue i + 1
       }
       let bindings = parse_syntax_bindings(bindings_expr, new_env)
       for binding in bindings {
         let (name, transformer) = binding
-        @runtime.env_define(new_env, name, @core.Value::Macro(transformer))
+        @runtime.env_define(new_env, name, Macro(transformer))
       }
       eval_sequence_state(body.to_array(), new_env, kont, handlers)
     }
@@ -2507,7 +2507,7 @@ fn parse_do_bindings(
         inits.push(init_expr)
         steps.push(step_expr)
       }
-      _ => raise @core.EvalError("invalid do")
+      _ => raise EvalError("invalid do")
     }
   }
   (names, inits, steps)
@@ -2531,7 +2531,7 @@ fn eval_do_state(
           }
           (test_expr, results)
         }
-        _ => raise @core.EvalError("invalid do")
+        _ => raise EvalError("invalid do")
       }
       let loop_name = next_do_name()
       let params : Array[@core.Datum] = []
@@ -2575,7 +2575,7 @@ fn eval_do_state(
         bindings_expr,
         init_call_expr,
       ])
-      MachineState::Eval(expanded, env, kont, handlers)
+      Eval(expanded, env, kont, handlers)
     }
     _ => raise arity_mismatch(2, args.length())
   }
@@ -2592,7 +2592,7 @@ fn eval_define_record_type_state(
     [record_name_expr, ctor_expr, pred_expr, .. raw_specs] => {
       let ctor_parts = datum_list_to_array(ctor_expr)
       match ctor_parts {
-        [] => raise @core.EvalError("invalid define-record-type")
+        [] => raise EvalError("invalid define-record-type")
         [ctor_head, .. ctor_tail] =>
           (
             parse_symbol(record_name_expr),
@@ -2603,7 +2603,7 @@ fn eval_define_record_type_state(
           )
       }
     }
-    _ => raise @core.EvalError("invalid define-record-type")
+    _ => raise EvalError("invalid define-record-type")
   }
   let field_specs : Array[@core.Datum] = []
   let (parent_name, protocol_expr, is_sealed, is_opaque, uid) = for i = 0, parent_name = None, protocol_expr = None, is_sealed = false, is_opaque = false, uid = None; i <
@@ -2628,21 +2628,21 @@ fn eval_define_record_type_state(
       }
       [_] if head_name is Some("nongenerative") => {
         if uid is Some(_) {
-          raise @core.EvalError("invalid define-record-type")
+          raise EvalError("invalid define-record-type")
         }
         let uid = Some(record_name)
         continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
       }
       [_, arg] if head_name is Some("parent") => {
         if parent_name is Some(_) {
-          raise @core.EvalError("invalid define-record-type")
+          raise EvalError("invalid define-record-type")
         }
         let parent_name = Some(parse_symbol(arg))
         continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
       }
       [_, arg] if head_name is Some("protocol") => {
         if protocol_expr is Some(_) {
-          raise @core.EvalError("invalid define-record-type")
+          raise EvalError("invalid define-record-type")
         }
         let protocol_expr = Some(arg)
         continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
@@ -2657,7 +2657,7 @@ fn eval_define_record_type_state(
       }
       [_, arg] if head_name is Some("nongenerative") => {
         if uid is Some(_) {
-          raise @core.EvalError("invalid define-record-type")
+          raise EvalError("invalid define-record-type")
         }
         let uid = Some(parse_symbol(arg))
         continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
@@ -2674,7 +2674,7 @@ fn eval_define_record_type_state(
       if @runtime.lookup_record_type_descriptor(name) is Some(desc) {
         Some(desc)
       } else {
-        raise @core.EvalError("invalid define-record-type")
+        raise EvalError("invalid define-record-type")
       }
     None => None
   }
@@ -2684,7 +2684,7 @@ fn eval_define_record_type_state(
   }
   if parent_type is Some(parent) {
     if parent.is_sealed {
-      raise @core.EvalError("invalid define-record-type")
+      raise EvalError("invalid define-record-type")
     }
   }
   let parent_fields = match parent_type {
@@ -2703,14 +2703,14 @@ fn eval_define_record_type_state(
       [field_name_expr, accessor_expr] => (field_name_expr, accessor_expr, None)
       [field_name_expr, accessor_expr, mutator_expr] =>
         (field_name_expr, accessor_expr, Some(mutator_expr))
-      _ => raise @core.EvalError("invalid define-record-type")
+      _ => raise EvalError("invalid define-record-type")
     }
     let field_name = parse_symbol(field_name_expr)
     if array_contains_name(parent_field_names, field_name) {
-      raise @core.EvalError("invalid define-record-type")
+      raise EvalError("invalid define-record-type")
     }
     if accessors.contains(field_name) {
-      raise @core.EvalError("invalid define-record-type")
+      raise EvalError("invalid define-record-type")
     }
     let accessor = parse_symbol(accessor_expr)
     accessors[field_name] = accessor
@@ -2726,10 +2726,10 @@ fn eval_define_record_type_state(
   }
   if parent_count == 0 {
     if ctor_fields.length() != new_field_names.length() {
-      raise @core.EvalError("invalid define-record-type")
+      raise EvalError("invalid define-record-type")
     }
   } else if ctor_fields.length() != parent_count + new_field_names.length() {
-    raise @core.EvalError("invalid define-record-type")
+    raise EvalError("invalid define-record-type")
   }
   let fields : Array[@core.RecordField] = []
   let field_index : Map[String, Int] = {}
@@ -2739,18 +2739,18 @@ fn eval_define_record_type_state(
     // assert : i <= ctor_fields.length()
     let field_name = ctor_fields[i]
     if field_index.contains(field_name) {
-      raise @core.EvalError("invalid define-record-type")
+      raise EvalError("invalid define-record-type")
     }
     if i < parent_count {
       let parent_field = parent_fields[i]
       if parent_field.name != field_name {
-        raise @core.EvalError("invalid define-record-type")
+        raise EvalError("invalid define-record-type")
       }
       fields.push(parent_field)
     } else {
       let is_mutable = match mutable.get(field_name) {
         Some(flag) => flag
-        None => raise @core.EvalError("invalid define-record-type")
+        None => raise EvalError("invalid define-record-type")
       }
       fields.push(@core.RecordField::new(field_name, is_mutable))
     }
@@ -2760,11 +2760,11 @@ fn eval_define_record_type_state(
   let bindings : Array[@core.RecordFieldBinding] = new_field_names.map(field_name => {
     let idx = match field_index.get(field_name) {
       Some(value) => value
-      None => raise @core.EvalError("invalid define-record-type")
+      None => raise EvalError::EvalError("invalid define-record-type")
     }
     let accessor_name = match accessors.get(field_name) {
       Some(name) => name
-      None => raise @core.EvalError("invalid define-record-type")
+      None => raise EvalError::EvalError("invalid define-record-type")
     }
     let mutator_name = mutators.get(field_name)
     @core.RecordFieldBinding::new(accessor_name, idx, mutator_name)
@@ -2782,10 +2782,10 @@ fn eval_define_record_type_state(
           is_opaque,
           fields,
         ) {
-        raise @core.EvalError("invalid define-record-type")
+        raise EvalError("invalid define-record-type")
       }
       if protocol_expr is Some(_) {
-        raise @core.EvalError("invalid define-record-type")
+        raise EvalError("invalid define-record-type")
       }
       @runtime.register_record_type_alias(record_name, desc)
       (desc.record_type, desc.constructor_desc)
@@ -2802,7 +2802,7 @@ fn eval_define_record_type_state(
         Some(expr) => {
           let proc = eval_expr(expr, env)
           if !@runtime.is_procedure_value(proc) {
-            raise @core.EvalError("type error: procedure expected")
+            raise EvalError("type error: procedure expected")
           }
           Some(proc)
         }
@@ -2820,7 +2820,7 @@ fn eval_define_record_type_state(
       (record_type, ctor_desc)
     }
   }
-  let next_kont = @core.Kont::DefineRecordType(
+  let next_kont = Kont::DefineRecordType(
     ctor_name, pred_name, record_type, bindings, env, kont,
   )
   record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
@@ -2849,23 +2849,23 @@ fn eval_define_condition_type_state(
         parse_symbol(pred_name_expr),
         field_specs.to_array(),
       )
-    _ => raise @core.EvalError("invalid define-condition-type")
+    _ => raise EvalError("invalid define-condition-type")
   }
   match @runtime.lookup_record_type_descriptor(record_name) {
-    Some(_) => raise @core.EvalError("invalid define-condition-type")
+    Some(_) => raise EvalError("invalid define-condition-type")
     None => ()
   }
   let parent_desc = match @runtime.lookup_record_type_descriptor(parent_name) {
     Some(desc) => desc
-    None => raise @core.EvalError("invalid define-condition-type")
+    None => raise EvalError("invalid define-condition-type")
   }
   let parent_type = parent_desc.record_type
   if parent_type.is_sealed || parent_type.is_opaque {
-    raise @core.EvalError("invalid define-condition-type")
+    raise EvalError("invalid define-condition-type")
   }
   let base_type = condition_base_type()
   if !@runtime.record_type_is_a(parent_type, base_type) {
-    raise @core.EvalError("invalid define-condition-type")
+    raise EvalError("invalid define-condition-type")
   }
   let parent_fields = parent_type.fields
   let parent_field_names : Array[String] = parent_fields.map(field => field.name)
@@ -2874,14 +2874,14 @@ fn eval_define_condition_type_state(
   for spec in field_specs {
     let (field_name_expr, accessor_expr) = match datum_list_to_array(spec) {
       [field_name_expr, accessor_expr] => (field_name_expr, accessor_expr)
-      _ => raise @core.EvalError("invalid define-condition-type")
+      _ => raise EvalError("invalid define-condition-type")
     }
     let field_name = parse_symbol(field_name_expr)
     if array_contains_name(parent_field_names, field_name) {
-      raise @core.EvalError("invalid define-condition-type")
+      raise EvalError("invalid define-condition-type")
     }
     if accessors.contains(field_name) {
-      raise @core.EvalError("invalid define-condition-type")
+      raise EvalError("invalid define-condition-type")
     }
     let accessor = parse_symbol(accessor_expr)
     accessors[field_name] = accessor
@@ -2902,7 +2902,7 @@ fn eval_define_condition_type_state(
     let field_name = new_field_names[i]
     let accessor_name = match accessors.get(field_name) {
       Some(name) => name
-      None => raise @core.EvalError("invalid define-condition-type")
+      None => raise EvalError("invalid define-condition-type")
     }
     bindings.push(
       @core.RecordFieldBinding::new(accessor_name, parent_count + i, None),
@@ -2924,8 +2924,8 @@ fn eval_define_condition_type_state(
   )
   let rtd = @runtime.make_record_type_descriptor(record_type, ctor_desc)
   let _ = @runtime.register_record_type(record_name, rtd)
-  @runtime.env_define(env, record_name, @core.Value::RecordTypeDescriptor(rtd))
-  let next_kont = @core.Kont::DefineConditionType(
+  @runtime.env_define(env, record_name, RecordTypeDescriptor(rtd))
+  let next_kont = Kont::DefineConditionType(
     ctor_name, pred_name, record_type, bindings, env, kont,
   )
   record_constructor_from_descriptor(ctor_desc, next_kont, handlers)
@@ -2945,26 +2945,26 @@ fn eval_define_enumeration_state(
         parse_symbol_list(datum_list_to_array(symbols_expr)),
         parse_symbol(ctor_name_expr),
       )
-    _ => raise @core.EvalError("invalid define-enumeration")
+    _ => raise EvalError("invalid define-enumeration")
   }
   let seen : Map[String, Bool] = {}
   for name in symbols {
     if seen.contains(name) {
-      raise @core.EvalError("invalid define-enumeration")
+      raise EvalError("invalid define-enumeration")
     }
     seen[name] = true
   }
   let members = enum_set_members_all_true(symbols)
   let universe = @runtime.make_enum_set(symbols, members)
-  @runtime.env_define(env, type_name, @core.Value::EnumSet(universe))
+  @runtime.env_define(env, type_name, EnumSet(universe))
   @runtime.env_define(
     env,
     ctor_name,
-    @core.Value::EnumSetProc(
-      @runtime.make_enum_set_proc(@core.EnumSetProcKind::Constructor(universe)),
+    EnumSetProc(
+      @runtime.make_enum_set_proc(Constructor(universe)),
     ),
   )
-  MachineState::Apply(@core.Value::Void, kont, handlers)
+  Apply(Void, kont, handlers)
 }
 
 ///|
@@ -2985,7 +2985,7 @@ fn array_contains_name(items : Array[String], name : String) -> Bool {
 fn value_as_record(value : @core.Value) -> @core.Record raise @core.EvalError {
   match value {
     Record(record) => record
-    _ => raise @core.EvalError("type error: record expected")
+    _ => raise EvalError("type error: record expected")
   }
 }
 
@@ -2997,22 +2997,22 @@ fn record_constructor_from_descriptor(
 ) -> MachineState raise @core.EvalError {
   match desc.protocol {
     None => {
-      let ctor = @core.Value::RecordProc(
+      let ctor = Value::RecordProc(
         @runtime.make_record_proc(
-          @core.RecordProcKind::Constructor(desc.record_type),
+          Constructor(desc.record_type),
         ),
       )
-      MachineState::Apply(ctor, kont, handlers)
+      Apply(ctor, kont, handlers)
     }
     Some(protocol) => {
       if !@runtime.is_procedure_value(protocol) {
-        raise @core.EvalError("type error: procedure expected")
+        raise EvalError("type error: procedure expected")
       }
       let arg = match desc.record_type.parent {
         None =>
-          @core.Value::RecordProc(
+          Value::RecordProc(
             @runtime.make_record_proc(
-              @core.RecordProcKind::Constructor(desc.record_type),
+              Constructor(desc.record_type),
             ),
           )
         Some(parent) => {
@@ -3020,9 +3020,9 @@ fn record_constructor_from_descriptor(
             Some(p) => p
             None => default_constructor_descriptor(parent)
           }
-          @core.Value::RecordProc(
+          RecordProc(
             @runtime.make_record_proc(
-              @core.RecordProcKind::ProtocolN(desc.record_type, parent_desc),
+              ProtocolN(desc.record_type, parent_desc),
             ),
           )
         }
@@ -3030,7 +3030,7 @@ fn record_constructor_from_descriptor(
       apply_proc(
         protocol,
         [arg],
-        @core.Kont::RecordConstructorDone(kont),
+        RecordConstructorDone(kont),
         handlers,
       )
     }
@@ -3051,7 +3051,7 @@ fn apply_record_proc(
         raise arity_mismatch(field_count, args.length())
       } else {
         let record = @runtime.make_record_instance(record_type, args)
-        MachineState::Apply(@core.Value::Record(record), kont, handlers)
+        Apply(Record(record), kont, handlers)
       }
     }
     Predicate(record_type) =>
@@ -3062,7 +3062,7 @@ fn apply_record_proc(
               @runtime.record_type_is_a(record.record_type, record_type)
             _ => false
           }
-          MachineState::Apply(bool_value(result), kont, handlers)
+          Apply(bool_value(result), kont, handlers)
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -3071,11 +3071,11 @@ fn apply_record_proc(
         [value] => {
           let record = value_as_record(value)
           if !@runtime.record_type_is_a(record.record_type, record_type) {
-            raise @core.EvalError(
+            raise EvalError(
               "type error: record type mismatch: expected \{record_type.name}",
             )
           }
-          MachineState::Apply(record.fields[idx].val, kont, handlers)
+          Apply(record.fields[idx].val, kont, handlers)
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -3084,23 +3084,23 @@ fn apply_record_proc(
         [value, new_value] => {
           let record = value_as_record(value)
           if !@runtime.record_type_is_a(record.record_type, record_type) {
-            raise @core.EvalError(
+            raise EvalError(
               "type error: record type mismatch: expected \{record_type.name}",
             )
           }
           let field = record.record_type.fields[idx]
           if !field.mutable {
-            raise @core.EvalError("record field is immutable: \{field.name}")
+            raise EvalError("record field is immutable: \{field.name}")
           }
           record.fields[idx].val = new_value
-          MachineState::Apply(@core.Value::Void, kont, handlers)
+          Apply(Void, kont, handlers)
         }
         _ => raise arity_mismatch(2, args.length())
       }
     ProtocolN(record_type, parent_desc) => {
       let parent_type = match record_type.parent {
         Some(parent) => parent
-        None => raise @core.EvalError("invalid record constructor descriptor")
+        None => raise EvalError("invalid record constructor descriptor")
       }
       match parent_desc.protocol {
         None => {
@@ -3108,18 +3108,18 @@ fn apply_record_proc(
             raise arity_mismatch(parent_type.fields.length(), args.length())
           }
           let parent_values = args.copy()
-          let proc = @core.Value::RecordProc(
+          let proc = Value::RecordProc(
             @runtime.make_record_proc(
-              @core.RecordProcKind::ProtocolP(record_type, parent_values),
+              ProtocolP(record_type, parent_values),
             ),
           )
-          MachineState::Apply(proc, kont, handlers)
+          Apply(proc, kont, handlers)
         }
         Some(_) => {
           let parent_args = args.copy()
           record_constructor_from_descriptor(
             parent_desc,
-            @core.Kont::RecordProtocolNApply(record_type, parent_args, kont),
+            RecordProtocolNApply(record_type, parent_args, kont),
             handlers,
           )
         }
@@ -3128,7 +3128,7 @@ fn apply_record_proc(
     ProtocolP(record_type, parent_values) => {
       let total_fields = record_type.fields.length()
       if parent_values.length() > total_fields {
-        raise @core.EvalError("invalid record constructor descriptor")
+        raise EvalError("invalid record constructor descriptor")
       }
       let child_count = total_fields - parent_values.length()
       if args.length() != child_count {
@@ -3137,7 +3137,7 @@ fn apply_record_proc(
       let values = parent_values.copy()
       values.push_iter(args.iter())
       let record = @runtime.make_record_instance(record_type, values)
-      MachineState::Apply(@core.Value::Record(record), kont, handlers)
+      Apply(Record(record), kont, handlers)
     }
   }
 }
@@ -3172,7 +3172,7 @@ fn apply_condition_proc(
               }
             None => false
           }
-          MachineState::Apply(bool_value(ok), kont, handlers)
+          Apply(bool_value(ok), kont, handlers)
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -3195,9 +3195,9 @@ fn apply_condition_proc(
           }
           match found {
             Some(record) =>
-              MachineState::Apply(record.fields[idx].val, kont, handlers)
+              Apply(record.fields[idx].val, kont, handlers)
             None =>
-              raise @core.EvalError(
+              raise EvalError(
                 "type error: condition type mismatch: expected \{record_type.name}",
               )
           }
@@ -3221,10 +3221,10 @@ fn apply_enum_set_proc(
           let name = parse_symbol(value_as_datum(value))
           match @runtime.enum_set_index_of(set.universe, name) {
             Some(idx) =>
-              MachineState::Apply(@core.Value::Datum(Int(idx)), kont, handlers)
+              Apply(Datum(Int(idx)), kont, handlers)
             None =>
-              MachineState::Apply(
-                @core.Value::Datum(Bool(false)),
+              Apply(
+                Datum(Bool(false)),
                 kont,
                 handlers,
               )
@@ -3239,7 +3239,7 @@ fn apply_enum_set_proc(
             datum_list_to_array(value_as_datum(value)),
           )
           let subset = @runtime.enum_set_from_names(set.universe, names)
-          MachineState::Apply(@core.Value::EnumSet(subset), kont, handlers)
+          Apply(EnumSet(subset), kont, handlers)
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -3249,9 +3249,9 @@ fn apply_enum_set_proc(
 ///|
 fn make_condition_value(components : Array[@core.Record]) -> @core.Value {
   if components.length() == 1 {
-    @core.Value::Record(components[0])
+    Record(components[0])
   } else {
-    @core.Value::Datum(Condition(@runtime.make_condition(components)))
+    Datum(Condition(@runtime.make_condition(components)))
   }
 }
 
@@ -3261,7 +3261,7 @@ fn lookup_condition_record_type(
 ) -> @core.RecordType raise @core.EvalError {
   match @runtime.lookup_record_type_descriptor(name) {
     Some(desc) => desc.record_type
-    None => raise @core.EvalError("type error: condition type expected")
+    None => raise EvalError("type error: condition type expected")
   }
 }
 
@@ -3272,7 +3272,7 @@ fn make_condition_record(
 ) -> @core.Record raise @core.EvalError {
   let record_type = lookup_condition_record_type(name)
   if record_type.fields.length() != values.length() {
-    raise @core.EvalError("type error: condition field count mismatch")
+    raise EvalError("type error: condition field count mismatch")
   }
   @runtime.make_record_instance(record_type, values)
 }
@@ -3290,7 +3290,7 @@ fn raise_condition(
 ) -> MachineState raise @core.EvalError {
   let cond_value = make_condition_value(components)
   apply_proc(
-    @core.Value::Primitive(@core.Primitive::Raise),
+    Primitive(Raise),
     [cond_value],
     kont,
     handlers,
@@ -3304,10 +3304,10 @@ fn hashtable_key_equal(
   right : @core.Value,
 ) -> Bool {
   match equiv {
-    @core.HashtableEquiv::Eq => value_eqv(left, right)
-    @core.HashtableEquiv::Eqv => value_eqv(left, right)
-    @core.HashtableEquiv::Equal => value_equal(left, right)
-    @core.HashtableEquiv::Proc(_) => false
+    Eq => value_eqv(left, right)
+    Eqv => value_eqv(left, right)
+    Equal => value_equal(left, right)
+    Proc(_) => false
   }
 }
 
@@ -3326,11 +3326,11 @@ fn hashtable_find_state(
   }
   let entry = entries[idx]
   match table.equiv {
-    @core.HashtableEquiv::Proc(proc) =>
+    Proc(proc) =>
       apply_proc(
         proc,
         [key, entry.key],
-        @core.Kont::HashtableFindResult(table, key, idx, op, kont),
+        HashtableFindResult(table, key, idx, op, kont),
         handlers,
       )
     _ =>
@@ -3354,20 +3354,20 @@ fn hashtable_found_state(
   let entries = table.entries.val
   let entry = entries[idx]
   match op {
-    @core.HashtableOp::Ref(_) =>
-      MachineState::Apply(entry.value.val, kont, handlers)
-    @core.HashtableOp::Contains =>
-      MachineState::Apply(bool_value(true), kont, handlers)
-    @core.HashtableOp::Set(value) => {
+    Ref(_) =>
+      Apply(entry.value.val, kont, handlers)
+    Contains =>
+      Apply(bool_value(true), kont, handlers)
+    Set(value) => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
       entry.value.val = value
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
-    @core.HashtableOp::Delete => {
+    Delete => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
       let next_entries : Array[@core.HashtableEntry] = []
       for i = 0; i < entries.length(); {
@@ -3380,16 +3380,16 @@ fn hashtable_found_state(
         continue i + 1
       }
       table.entries.val = next_entries
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
-    @core.HashtableOp::Update(proc, _) => {
+    Update(proc, _) => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
       apply_proc(
         proc,
         [entry.value.val],
-        @core.Kont::HashtableUpdateApply(table, key, idx, true, kont),
+        HashtableUpdateApply(table, key, idx, true, kont),
         handlers,
       )
     }
@@ -3405,32 +3405,32 @@ fn hashtable_not_found_state(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   match op {
-    @core.HashtableOp::Ref(default_value) =>
-      MachineState::Apply(default_value, kont, handlers)
-    @core.HashtableOp::Contains =>
-      MachineState::Apply(bool_value(false), kont, handlers)
-    @core.HashtableOp::Set(value) => {
+    Ref(default_value) =>
+      Apply(default_value, kont, handlers)
+    Contains =>
+      Apply(bool_value(false), kont, handlers)
+    Set(value) => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
       let entries = table.entries.val
       entries.push(@core.HashtableEntry::new(key, value))
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
-    @core.HashtableOp::Delete => {
+    Delete => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
-    @core.HashtableOp::Update(proc, default_value) => {
+    Update(proc, default_value) => {
       if !table.mutable {
-        raise @core.EvalError("hashtable is immutable")
+        raise EvalError("hashtable is immutable")
       }
       apply_proc(
         proc,
         [default_value],
-        @core.Kont::HashtableUpdateApply(table, key, -1, false, kont),
+        HashtableUpdateApply(table, key, -1, false, kont),
         handlers,
       )
     }
@@ -3450,7 +3450,7 @@ fn apply_hashtable_ref(
         table,
         key,
         0,
-        @core.HashtableOp::Ref(default_value),
+        Ref(default_value),
         kont,
         handlers,
       )
@@ -3472,7 +3472,7 @@ fn apply_hashtable_set(
         table,
         key,
         0,
-        @core.HashtableOp::Set(value),
+        Set(value),
         kont,
         handlers,
       )
@@ -3494,7 +3494,7 @@ fn apply_hashtable_delete(
         table,
         key,
         0,
-        @core.HashtableOp::Delete,
+        Delete,
         kont,
         handlers,
       )
@@ -3516,7 +3516,7 @@ fn apply_hashtable_contains(
         table,
         key,
         0,
-        @core.HashtableOp::Contains,
+        Contains,
         kont,
         handlers,
       )
@@ -3535,13 +3535,13 @@ fn apply_hashtable_update(
     [table_value, key, proc, default_value] => {
       let table = value_as_hashtable(table_value)
       if !@runtime.is_procedure_value(proc) {
-        raise @core.EvalError("type error: procedure expected")
+        raise EvalError("type error: procedure expected")
       }
       hashtable_find_state(
         table,
         key,
         0,
-        @core.HashtableOp::Update(proc, default_value),
+        Update(proc, default_value),
         kont,
         handlers,
       )
@@ -3639,18 +3639,18 @@ fn parse_version_items(
   items : ArrayView[@core.Datum],
 ) -> Array[Int] raise @core.EvalError {
   match items {
-    [] => raise @core.EvalError("invalid library name")
+    [] => raise EvalError("invalid library name")
     _ => {
       let versions : Array[Int] = []
       for part in items {
         match part {
           Int(n) =>
             if n < 0 {
-              raise @core.EvalError("invalid library name")
+              raise EvalError("invalid library name")
             } else {
               versions.push(n)
             }
-          _ => raise @core.EvalError("invalid library name")
+          _ => raise EvalError("invalid library name")
         }
       }
       versions
@@ -3668,7 +3668,7 @@ fn parse_version_ref_version(
   items : ArrayView[@core.Datum],
 ) -> Array[Int] raise @core.EvalError {
   match items {
-    [] => raise @core.EvalError("invalid library name")
+    [] => raise EvalError("invalid library name")
     [item] if item is Pair(_, _) || item is Nil => parse_version_list(item)
     [_] => parse_version_items(items)
     _ => parse_version_items(items)
@@ -3679,10 +3679,10 @@ fn parse_version_ref_version(
 fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
   let items = datum_list_to_array(expr)
   match items {
-    [] => raise @core.EvalError("invalid library name")
+    [] => raise EvalError("invalid library name")
     [Symbol("and"), .. refs] => {
       if refs.is_empty() {
-        raise @core.EvalError("invalid library name")
+        raise EvalError("invalid library name")
       }
       let parsed : Array[VersionRef] = []
       for item in refs {
@@ -3692,7 +3692,7 @@ fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
     }
     [Symbol("or"), .. refs] => {
       if refs.is_empty() {
-        raise @core.EvalError("invalid library name")
+        raise EvalError("invalid library name")
       }
       let parsed : Array[VersionRef] = []
       for item in refs {
@@ -3707,7 +3707,7 @@ fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
     [Symbol("<"), .. rest] => VersionLt(parse_version_ref_version(rest))
     [Symbol("<="), .. rest] => VersionLe(parse_version_ref_version(rest))
     [Int(_), ..] => VersionExact(parse_version_items(items))
-    _ => raise @core.EvalError("invalid library name")
+    _ => raise EvalError("invalid library name")
   }
 }
 
@@ -3716,13 +3716,13 @@ fn parse_library_name_spec(
   expr : @core.Datum,
 ) -> LibraryNameSpec raise @core.EvalError {
   match datum_list_to_array(expr) {
-    [] => raise @core.EvalError("invalid library name")
+    [] => raise EvalError("invalid library name")
     [.. prefix, last] => {
       let names : Array[String] = []
       for part in prefix {
         match part {
           Symbol(name) => names.push(name)
-          _ => raise @core.EvalError("invalid library name")
+          _ => raise EvalError("invalid library name")
         }
       }
       let version = match last {
@@ -3731,10 +3731,10 @@ fn parse_library_name_spec(
           None
         }
         Pair(_, _) | Nil => Some(parse_version_list(last))
-        _ => raise @core.EvalError("invalid library name")
+        _ => raise EvalError("invalid library name")
       }
       if names.is_empty() {
-        raise @core.EvalError("invalid library name")
+        raise EvalError("invalid library name")
       }
       { base: names.join("."), version }
     }
@@ -3744,13 +3744,13 @@ fn parse_library_name_spec(
 ///|
 fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
   match datum_list_to_array(expr) {
-    [] => raise @core.EvalError("invalid library name")
+    [] => raise EvalError("invalid library name")
     [.. prefix, last] => {
       let names : Array[String] = []
       for part in prefix {
         match part {
           Symbol(name) => names.push(name)
-          _ => raise @core.EvalError("invalid library name")
+          _ => raise EvalError("invalid library name")
         }
       }
       let version_ref = match last {
@@ -3759,10 +3759,10 @@ fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
           None
         }
         Pair(_, _) | Nil => Some(parse_version_ref(last))
-        _ => raise @core.EvalError("invalid library name")
+        _ => raise EvalError("invalid library name")
       }
       if names.is_empty() {
-        raise @core.EvalError("invalid library name")
+        raise EvalError("invalid library name")
       }
       { base: names.join("."), version_ref }
     }
@@ -3896,7 +3896,7 @@ fn library_exports_from_ref(
 ) -> Map[String, @core.Binding] raise @core.EvalError {
   match select_library_for_ref(reference) {
     Some(entry) => library_exports(entry.name)
-    None => raise @core.EvalError("unknown library: \{reference.base}")
+    None => raise EvalError("unknown library: \{reference.base}")
   }
 }
 
@@ -3920,17 +3920,17 @@ fn parse_export_clause(
                       let external = parse_symbol(external_expr)
                       exports.push((external, internal))
                     }
-                    _ => raise @core.EvalError("invalid library")
+                    _ => raise EvalError("invalid library")
                   }
                 }
-              _ => raise @core.EvalError("invalid library")
+              _ => raise EvalError("invalid library")
             }
-          _ => raise @core.EvalError("invalid library")
+          _ => raise EvalError("invalid library")
         }
       }
       exports
     }
-    _ => raise @core.EvalError("invalid library")
+    _ => raise EvalError("invalid library")
   }
 }
 
@@ -4008,7 +4008,7 @@ fn parse_import_clause(
 ) -> Array[@core.Datum] raise @core.EvalError {
   match datum_list_to_array(expr) {
     [Symbol("import"), .. rest] => rest.to_array()
-    _ => raise @core.EvalError("invalid library")
+    _ => raise EvalError("invalid library")
   }
 }
 
@@ -4022,7 +4022,7 @@ fn library_exports(
       exports_map.iter2().each((key, binding) => exports[key] = binding)
       exports
     }
-    None => raise @core.EvalError("unknown library: \{name}")
+    None => raise EvalError("unknown library: \{name}")
   }
 }
 
@@ -4035,7 +4035,7 @@ fn import_set_only(
   for name in names {
     match exports.get(name) {
       Some(binding) => result[name] = binding
-      None => raise @core.EvalError("unknown import: \{name}")
+      None => raise EvalError("unknown import: \{name}")
     }
   }
   result
@@ -4049,7 +4049,7 @@ fn import_set_except(
   let excluded : Map[String, Bool] = {}
   for name in names {
     if !exports.contains(name) {
-      raise @core.EvalError("unknown import: \{name}")
+      raise EvalError("unknown import: \{name}")
     }
     excluded[name] = true
   }
@@ -4069,10 +4069,10 @@ fn import_set_rename(
   for rename in renames {
     let (old_name, new_name) = rename
     if !exports.contains(old_name) {
-      raise @core.EvalError("unknown import: \{old_name}")
+      raise EvalError("unknown import: \{old_name}")
     }
     if rename_map.contains(old_name) {
-      raise @core.EvalError("invalid import set")
+      raise EvalError("invalid import set")
     }
     rename_map[old_name] = new_name
   }
@@ -4083,7 +4083,7 @@ fn import_set_rename(
       None => key
     }
     if result.contains(target) {
-      raise @core.EvalError("invalid import set")
+      raise EvalError("invalid import set")
     }
     match exports.get(key) {
       Some(binding) => result[target] = binding
@@ -4114,7 +4114,7 @@ fn parse_rename_specs(
         let new_name = parse_symbol(new_expr)
         (old_name, new_name)
       }
-      _ => raise @core.EvalError("invalid import set")
+      _ => raise EvalError("invalid import set")
     }
   })
 }
@@ -4130,7 +4130,7 @@ fn parse_for_phases(
   items : Array[@core.Datum],
 ) -> ImportPhases raise @core.EvalError {
   match items {
-    [] => raise @core.EvalError("invalid import set")
+    [] => raise EvalError("invalid import set")
     _ => {
       let (run, expand) = for i = 0, run = false, expand = false; i <
                              items.length(); {
@@ -4149,17 +4149,17 @@ fn parse_for_phases(
                 } else if n > 0 {
                   continue i + 1, run, true
                 } else {
-                  raise @core.EvalError("invalid import set")
+                  raise EvalError("invalid import set")
                 }
-              _ => raise @core.EvalError("invalid import set")
+              _ => raise EvalError("invalid import set")
             }
-          _ => raise @core.EvalError("invalid import set")
+          _ => raise EvalError("invalid import set")
         }
       } else {
         (run, expand)
       }
       if !run && !expand {
-        raise @core.EvalError("invalid import set")
+        raise EvalError("invalid import set")
       }
       { run, expand }
     }
@@ -4199,7 +4199,7 @@ fn import_set_exports(
       let names = parse_symbol_list(names)
       import_set_only(base, names)
     }
-    [Symbol("only"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("only"), ..] => raise EvalError("invalid import set")
     [Symbol("except"), base_expr, name_expr, .. rest] => {
       let names : Array[@core.Datum] = [name_expr]
       for item in rest {
@@ -4209,7 +4209,7 @@ fn import_set_exports(
       let names = parse_symbol_list(names)
       import_set_except(base, names)
     }
-    [Symbol("except"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("except"), ..] => raise EvalError("invalid import set")
     [Symbol("rename"), base_expr, spec_expr, .. rest] => {
       let specs : Array[@core.Datum] = [spec_expr]
       for item in rest {
@@ -4219,13 +4219,13 @@ fn import_set_exports(
       let renames = parse_rename_specs(specs)
       import_set_rename(base, renames)
     }
-    [Symbol("rename"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("rename"), ..] => raise EvalError("invalid import set")
     [Symbol("prefix"), base_expr, prefix_expr] => {
       let base = import_set_exports(base_expr)
       let prefix = parse_symbol(prefix_expr)
       import_set_prefix(base, prefix)
     }
-    [Symbol("prefix"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("prefix"), ..] => raise EvalError("invalid import set")
     [Symbol("for"), base_expr, phase_expr, .. rest] => {
       let phases : Array[@core.Datum] = [phase_expr]
       for item in rest {
@@ -4235,7 +4235,7 @@ fn import_set_exports(
       let phases = parse_for_phases(phases)
       filter_exports_by_phase(base, phases)
     }
-    [Symbol("for"), ..] => raise @core.EvalError("invalid import set")
+    [Symbol("for"), ..] => raise EvalError("invalid import set")
     _ => {
       let reference = parse_library_ref(expr)
       library_exports_from_ref(reference)
@@ -4289,16 +4289,16 @@ fn eval_library_state(
         let (external, internal) = export_spec
         if is_syntax_keyword(internal) {
           export_map[external] = @runtime.make_binding(
-            @core.Value::SyntaxKeyword(external),
+            SyntaxKeyword(external),
           )
         } else {
           export_map[external] = @runtime.env_lookup_binding(lib_env, internal)
         }
       }
       register_library_entry(name_spec.base, name_spec.version, export_map)
-      MachineState::Apply(@core.Value::Void, kont, handlers)
+      Apply(Void, kont, handlers)
     }
-    _ => raise @core.EvalError("invalid library")
+    _ => raise EvalError("invalid library")
   }
 }
 
@@ -4312,7 +4312,7 @@ fn eval_import_state(
   for spec in args {
     import_set_into_env(spec, env)
   }
-  MachineState::Apply(@core.Value::Void, kont, handlers)
+  Apply(Void, kont, handlers)
 }
 
 ///|
@@ -4323,10 +4323,10 @@ fn eval_and_state(
   handlers : Array[@core.Value],
 ) -> MachineState {
   match args {
-    [] => MachineState::Apply(bool_value(true), kont, handlers)
+    [] => Apply(bool_value(true), kont, handlers)
     [head, .. rest] => {
       let tail = rest.to_array()
-      MachineState::Eval(head, env, @core.Kont::And(tail, env, kont), handlers)
+      Eval(head, env, And(tail, env, kont), handlers)
     }
   }
 }
@@ -4339,10 +4339,10 @@ fn eval_or_state(
   handlers : Array[@core.Value],
 ) -> MachineState {
   match args {
-    [] => MachineState::Apply(bool_value(false), kont, handlers)
+    [] => Apply(bool_value(false), kont, handlers)
     [head, .. rest] => {
       let tail = rest.to_array()
-      MachineState::Eval(head, env, @core.Kont::Or(tail, env, kont), handlers)
+      Eval(head, env, Or(tail, env, kont), handlers)
     }
   }
 }
@@ -4356,10 +4356,10 @@ fn eval_case_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [key_expr, .. clauses] if !clauses.is_empty() =>
-      MachineState::Eval(
+      Eval(
         key_expr,
         env,
-        @core.Kont::Case(clauses.to_array(), env, kont),
+        Case(clauses.to_array(), env, kont),
         handlers,
       )
     _ => raise arity_mismatch(2, args.length())
@@ -4389,7 +4389,7 @@ fn case_dispatch(
           // invariant : j >= 0 && j <= datums.length()
           // decreases : datums.length() - j
           // assert : j <= datums.length()
-          if value_eqv(key, @core.Value::Datum(datums[j])) {
+          if value_eqv(key, Datum(datums[j])) {
             break true
           }
           continue j + 1
@@ -4399,14 +4399,14 @@ fn case_dispatch(
         if matched {
           match parts {
             [_, arrow, proc] if @runtime.symbol_name(arrow) is Some("=>") =>
-              return MachineState::Eval(
+              return Eval(
                 proc,
                 env,
-                @core.Kont::CaseArrow(key, kont),
+                CaseArrow(key, kont),
                 handlers,
               )
             [_, arrow, ..] if @runtime.symbol_name(arrow) is Some("=>") =>
-              raise @core.EvalError("invalid case")
+              raise EvalError("invalid case")
             [] => panic()
             [_, .. rest_body] =>
               return eval_sequence_state(
@@ -4421,7 +4421,7 @@ fn case_dispatch(
       }
     }
   }
-  MachineState::Apply(@core.Value::Void, kont, handlers)
+  Apply(Void, kont, handlers)
 }
 
 ///|
@@ -4442,16 +4442,16 @@ fn cond_start(
         return eval_sequence_state(body.to_array(), env, kont, handlers)
       [head_expr, ..] => {
         let rest = clauses[i + 1:].to_array()
-        return MachineState::Eval(
+        return Eval(
           head_expr,
           env,
-          @core.Kont::Cond(parts, rest, env, kont),
+          Cond(parts, rest, env, kont),
           handlers,
         )
       }
     }
   }
-  MachineState::Apply(@core.Value::Void, kont, handlers)
+  Apply(Void, kont, handlers)
 }
 
 ///|
@@ -4491,15 +4491,15 @@ fn cond_expand_feature(expr : @core.Datum) -> Bool raise @core.EvalError {
             false
           }
         [Symbol("not"), item] => !cond_expand_feature(item)
-        [Symbol("not"), ..] => raise @core.EvalError("invalid cond-expand")
+        [Symbol("not"), ..] => raise EvalError("invalid cond-expand")
         [Symbol("library"), item] => {
           let reference = parse_library_ref(item)
           select_library_for_ref(reference) is Some(_)
         }
-        [Symbol("library"), ..] => raise @core.EvalError("invalid cond-expand")
-        _ => raise @core.EvalError("invalid cond-expand")
+        [Symbol("library"), ..] => raise EvalError("invalid cond-expand")
+        _ => raise EvalError("invalid cond-expand")
       }
-    _ => raise @core.EvalError("invalid cond-expand")
+    _ => raise EvalError("invalid cond-expand")
   }
 }
 
@@ -4511,13 +4511,13 @@ fn eval_cond_expand_state(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   match clauses {
-    [] => MachineState::Apply(@core.Value::Void, kont, handlers)
+    [] => Apply(Void, kont, handlers)
     [.. prefix, last] => {
       for clause in prefix {
         let parts = datum_list_to_array(clause)
         match parts {
-          [] => raise @core.EvalError("invalid cond-expand")
-          [Symbol("else"), ..] => raise @core.EvalError("invalid cond-expand")
+          [] => raise EvalError("invalid cond-expand")
+          [Symbol("else"), ..] => raise EvalError("invalid cond-expand")
           [head, .. rest] =>
             if cond_expand_feature(head) {
               return eval_sequence_state(rest.to_array(), env, kont, handlers)
@@ -4526,14 +4526,14 @@ fn eval_cond_expand_state(
       }
       let parts = datum_list_to_array(last)
       match parts {
-        [] => raise @core.EvalError("invalid cond-expand")
+        [] => raise EvalError("invalid cond-expand")
         [Symbol("else"), .. rest] =>
           eval_sequence_state(rest.to_array(), env, kont, handlers)
         [head, .. rest] =>
           if cond_expand_feature(head) {
             eval_sequence_state(rest.to_array(), env, kont, handlers)
           } else {
-            MachineState::Apply(@core.Value::Void, kont, handlers)
+            Apply(Void, kont, handlers)
           }
       }
     }
@@ -4549,12 +4549,12 @@ fn eval_pair(
 ) -> MachineState raise @core.EvalError {
   let expr_unwrapped = datum_unwrap_syntax(expr)
   match datum_list_to_array(expr_unwrapped) {
-    [] => MachineState::Apply(@core.Value::Datum(Nil), kont, handlers)
+    [] => Apply(Datum(Nil), kont, handlers)
     [head, .. rest] => {
       let args = rest.to_array()
       match @runtime.symbol_name(datum_unwrap_syntax(head)) {
         Some("define-syntax") =>
-          MachineState::Apply(eval_define_syntax(args, env), kont, handlers)
+          Apply(eval_define_syntax(args, env), kont, handlers)
         Some("library") => eval_library_state(args, env, kont, handlers)
         Some("import") => eval_import_state(args, env, kont, handlers)
         Some("include") => eval_include_state(args, env, kont, handlers, false)
@@ -4568,24 +4568,24 @@ fn eval_pair(
           eval_define_condition_type_state(args, env, kont, handlers)
         Some("define-enumeration") =>
           eval_define_enumeration_state(args, env, kont, handlers)
-        Some("quote") => MachineState::Apply(eval_quote(args), kont, handlers)
+        Some("quote") => Apply(eval_quote(args), kont, handlers)
         Some("quasiquote") =>
-          MachineState::Apply(eval_quasiquote(args, env), kont, handlers)
+          Apply(eval_quasiquote(args, env), kont, handlers)
         Some("syntax") =>
-          MachineState::Apply(eval_syntax(args, env), kont, handlers)
+          Apply(eval_syntax(args, env), kont, handlers)
         Some("quasisyntax") =>
-          MachineState::Apply(eval_quasisyntax(args, env), kont, handlers)
+          Apply(eval_quasisyntax(args, env), kont, handlers)
         Some("syntax-case") => eval_syntax_case_state(args, env, kont, handlers)
         Some("delay") =>
-          MachineState::Apply(eval_delay(args, env), kont, handlers)
+          Apply(eval_delay(args, env), kont, handlers)
         Some("if") => eval_if_state(args, env, kont, handlers)
         Some("begin") => eval_sequence_state(args, env, kont, handlers)
         Some("begin-for-syntax") =>
           eval_begin_for_syntax_state(args, env, kont, handlers)
         Some("lambda") =>
-          MachineState::Apply(eval_lambda(args, env), kont, handlers)
+          Apply(eval_lambda(args, env), kont, handlers)
         Some("case-lambda") =>
-          MachineState::Apply(eval_case_lambda(args, env), kont, handlers)
+          Apply(eval_case_lambda(args, env), kont, handlers)
         Some("define") => eval_define_state(args, env, kont, handlers)
         Some("define-values") =>
           eval_define_values_state(args, env, kont, handlers)
@@ -4613,20 +4613,20 @@ fn eval_pair(
           if @runtime.env_get_macro(env, name) is Some(transformer) {
             let expansion = expand_macro(transformer, expr_unwrapped, env)
             let next_env = env_with_captures(env, expansion.captures)
-            MachineState::Eval(expansion.datum, next_env, kont, handlers)
+            Eval(expansion.datum, next_env, kont, handlers)
           } else {
-            MachineState::Eval(
+            Eval(
               head,
               env,
-              @core.Kont::AppFun(args, env, kont),
+              AppFun(args, env, kont),
               handlers,
             )
           }
         None =>
-          MachineState::Eval(
+          Eval(
             head,
             env,
-            @core.Kont::AppFun(args, env, kont),
+            AppFun(args, env, kont),
             handlers,
           )
       }
@@ -4644,7 +4644,7 @@ fn map_step(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   if lists.is_empty() {
-    raise @core.EvalError("arity mismatch: expected at least 1 list")
+    raise EvalError("arity mismatch: expected at least 1 list")
   }
   let args : Array[@core.Value] = []
   let next_lists : Array[@core.Datum] = []
@@ -4652,10 +4652,10 @@ fn map_step(
     match list {
       Nil => {
         if for_each {
-          return MachineState::Apply(@core.Value::Void, kont, handlers)
+          return Apply(Void, kont, handlers)
         }
-        return MachineState::Apply(
-          @core.Value::Datum(list_from_array(results)),
+        return Apply(
+          Datum(list_from_array(results)),
           kont,
           handlers,
         )
@@ -4664,13 +4664,13 @@ fn map_step(
         args.push(value_from_datum(car.val))
         next_lists.push(cdr.val)
       }
-      _ => raise @core.EvalError("type error: proper list expected")
+      _ => raise EvalError("type error: proper list expected")
     }
   }
   apply_proc(
     proc,
     args,
-    @core.Kont::MapStep(proc, next_lists, results, for_each, kont),
+    MapStep(proc, next_lists, results, for_each, kont),
     handlers,
   )
 }
@@ -4684,7 +4684,7 @@ fn string_to_char_list(s : String) -> @core.Datum raise @core.EvalError {
     // assert : i <= s.length()
     match s.get_char(i) {
       Some(ch) => items.push(Char(ch))
-      None => raise @core.EvalError("index out of range")
+      None => raise EvalError("index out of range")
     }
     continue i + 1
   }
@@ -4699,19 +4699,19 @@ fn apply_proc(
   handlers : Array[@core.Value],
 ) -> MachineState raise @core.EvalError {
   match proc {
-    Primitive(@core.Primitive::Apply) => apply_apply(args, kont, handlers)
-    Primitive(@core.Primitive::CallWithValues) =>
+    Primitive(Apply) => apply_apply(args, kont, handlers)
+    Primitive(CallWithValues) =>
       match args {
         [producer, consumer] =>
           apply_proc(
             producer,
             [],
-            @core.Kont::CallWithValues(consumer, kont),
+            CallWithValues(consumer, kont),
             handlers,
           )
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::RecordConstructor) =>
+    Primitive(RecordConstructor) =>
       match args {
         [desc_value] => {
           let desc = value_as_record_constructor_descriptor(desc_value)
@@ -4719,21 +4719,21 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::HashtableRef) =>
+    Primitive(HashtableRef) =>
       apply_hashtable_ref(args, kont, handlers)
-    Primitive(@core.Primitive::HashtableSet) =>
+    Primitive(HashtableSet) =>
       apply_hashtable_set(args, kont, handlers)
-    Primitive(@core.Primitive::HashtableDelete) =>
+    Primitive(HashtableDelete) =>
       apply_hashtable_delete(args, kont, handlers)
-    Primitive(@core.Primitive::HashtableContainsP) =>
+    Primitive(HashtableContainsP) =>
       apply_hashtable_contains(args, kont, handlers)
-    Primitive(@core.Primitive::HashtableUpdate) =>
+    Primitive(HashtableUpdate) =>
       apply_hashtable_update(args, kont, handlers)
-    Primitive(@core.Primitive::MakeParameter) =>
+    Primitive(MakeParameter) =>
       match args {
         [value] =>
-          MachineState::Apply(
-            @core.Value::Parameter(make_parameter(value)),
+          Apply(
+            Parameter(make_parameter(value)),
             kont,
             handlers,
           )
@@ -4741,36 +4741,36 @@ fn apply_proc(
           apply_proc(
             converter,
             [value],
-            @core.Kont::MakeParameter(converter, kont),
+            MakeParameter(converter, kont),
             handlers,
           )
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
-    Primitive(@core.Primitive::DynamicWind) =>
+    Primitive(DynamicWind) =>
       match args {
         [before, thunk, after] => {
           let winder = make_proc_winder(before, after)
           apply_winder_before(
             winder,
-            @core.Kont::WindEnter(thunk, winder, kont),
+            WindEnter(thunk, winder, kont),
             handlers,
           )
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive(@core.Primitive::Eval) =>
+    Primitive(Eval) =>
       match args {
         [expr_value, env_value] => {
           let expr = value_as_datum(expr_value)
           let eval_env = value_as_eval_env(env_value)
-          MachineState::Eval(expr, eval_env.env, kont, handlers)
+          Eval(expr, eval_env.env, kont, handlers)
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::Environment) =>
+    Primitive(Environment) =>
       match args {
         [] => raise arity_mismatch(1, 0)
         _ => {
@@ -4779,48 +4779,48 @@ fn apply_proc(
             let spec = value_as_datum(arg)
             import_set_into_env(spec, env)
           }
-          MachineState::Apply(
-            @core.Value::EvalEnv(make_eval_env(env)),
+          Apply(
+            EvalEnv(make_eval_env(env)),
             kont,
             handlers,
           )
         }
       }
-    Primitive(@core.Primitive::MakePromise) =>
+    Primitive(MakePromise) =>
       match args {
         [thunk] => {
           if !@runtime.is_procedure_value(thunk) {
-            raise @core.EvalError("type error: procedure expected")
+            raise EvalError("type error: procedure expected")
           }
-          MachineState::Apply(
-            @core.Value::Promise(make_promise(thunk)),
+          Apply(
+            Promise(make_promise(thunk)),
             kont,
             handlers,
           )
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::Force) =>
+    Primitive(Force) =>
       match args {
         [promise_value] =>
           match promise_value {
             Promise(promise) =>
               match promise.state.val {
-                @core.PromiseState::Value(result) =>
-                  MachineState::Apply(result, kont, handlers)
-                @core.PromiseState::Thunk(thunk) =>
+                Value(result) =>
+                  Apply(result, kont, handlers)
+                Thunk(thunk) =>
                   apply_proc(
                     thunk,
                     [],
-                    @core.Kont::ForcePromise(promise, kont),
+                    ForcePromise(promise, kont),
                     handlers,
                   )
               }
-            _ => raise @core.EvalError("type error: promise expected")
+            _ => raise EvalError("type error: promise expected")
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::WithExceptionHandler) =>
+    Primitive(WithExceptionHandler) =>
       match args {
         [handler, thunk] => {
           let next_handlers : Array[@core.Value] = []
@@ -4828,12 +4828,12 @@ fn apply_proc(
             next_handlers.push(item)
           }
           next_handlers.push(handler)
-          let restore = @core.Kont::RestoreHandlers(handlers, kont)
+          let restore = Kont::RestoreHandlers(handlers, kont)
           apply_proc(thunk, [], restore, next_handlers)
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::Error) =>
+    Primitive(Error) =>
       match args {
         [who, message, .. irritants] => {
           let irritants = irritants.to_array()
@@ -4850,7 +4850,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::AssertionViolation) =>
+    Primitive(AssertionViolation) =>
       match args {
         [who, message, .. irritants] => {
           let irritants = irritants.to_array()
@@ -4867,7 +4867,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::ImplementationRestrictionViolation) =>
+    Primitive(ImplementationRestrictionViolation) =>
       match args {
         [who, message, .. irritants] => {
           let irritants = irritants.to_array()
@@ -4886,7 +4886,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::UndefinedViolation) =>
+    Primitive(UndefinedViolation) =>
       match args {
         [who, message, .. irritants] => {
           let irritants = irritants.to_array()
@@ -4903,10 +4903,10 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::SyntaxViolation) =>
+    Primitive(SyntaxViolation) =>
       match args {
         [who, message, form] => {
-          let subform = @core.Value::Datum(Bool(false))
+          let subform = Value::Datum(Bool(false))
           let irritants : Array[@core.Value] = []
           let components : Array[@core.Record] = []
           components.push(make_condition_record("&syntax", [form, subform]))
@@ -4934,11 +4934,11 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(3, args.length())
       }
-    Primitive(@core.Primitive::Raise) =>
+    Primitive(Raise) =>
       match args {
         [condition] =>
           match handlers {
-            [] => raise @core.EvalError("uncaught exception")
+            [] => raise EvalError("uncaught exception")
             [.., handler] =>
               match handler {
                 GuardHandler(guard_handler) =>
@@ -4947,18 +4947,18 @@ fn apply_proc(
                   apply_proc(
                     handler,
                     [condition],
-                    @core.Kont::RaiseNonCont,
+                    RaiseNonCont,
                     handlers,
                   )
               }
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::RaiseContinuable) =>
+    Primitive(RaiseContinuable) =>
       match args {
         [condition] =>
           match handlers {
-            [] => raise @core.EvalError("uncaught exception")
+            [] => raise EvalError("uncaught exception")
             [.., handler] =>
               match handler {
                 GuardHandler(guard_handler) =>
@@ -4967,27 +4967,27 @@ fn apply_proc(
                   apply_proc(
                     handler,
                     [condition],
-                    @core.Kont::RaiseCont(kont),
+                    RaiseCont(kont),
                     handlers,
                   )
               }
           }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::CallCC) =>
+    Primitive(CallCC) =>
       match args {
         [proc_value] => {
           let cont = capture_continuation(kont, handlers)
           apply_proc(
             proc_value,
-            [@core.Value::Continuation(cont)],
+            [Continuation(cont)],
             kont,
             handlers,
           )
         }
         _ => raise arity_mismatch(1, args.length())
       }
-    Primitive(@core.Primitive::Map) =>
+    Primitive(Map) =>
       match args {
         [proc_value, first_list, .. rest] => {
           let lists : Array[@core.Datum] = []
@@ -4999,7 +4999,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::ForEach) =>
+    Primitive(ForEach) =>
       match args {
         [proc_value, first_list, .. rest] => {
           let lists : Array[@core.Datum] = []
@@ -5011,7 +5011,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::VectorMap) =>
+    Primitive(VectorMap) =>
       match args {
         [proc_value, first_vector, .. rest] => {
           let vectors : Array[Array[@core.Datum]] = []
@@ -5025,7 +5025,7 @@ fn apply_proc(
             // decreases : vectors.length() - j
             // assert : j <= vectors.length()
             if vectors[j].length() != len {
-              raise @core.EvalError("vector length mismatch")
+              raise EvalError("vector length mismatch")
             }
             continue j + 1
           }
@@ -5042,13 +5042,13 @@ fn apply_proc(
             lists,
             [],
             false,
-            @core.Kont::VectorMapFinalize(kont),
+            VectorMapFinalize(kont),
             handlers,
           )
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::VectorForEach) =>
+    Primitive(VectorForEach) =>
       match args {
         [proc_value, first_vector, .. rest] => {
           let vectors : Array[Array[@core.Datum]] = []
@@ -5062,7 +5062,7 @@ fn apply_proc(
             // decreases : vectors.length() - j
             // assert : j <= vectors.length()
             if vectors[j].length() != len {
-              raise @core.EvalError("vector length mismatch")
+              raise EvalError("vector length mismatch")
             }
             continue j + 1
           }
@@ -5078,7 +5078,7 @@ fn apply_proc(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::StringMap) =>
+    Primitive(StringMap) =>
       match args {
         [proc_value, first_value, .. rest] => {
           let first = value_as_string(first_value)
@@ -5088,7 +5088,7 @@ fn apply_proc(
           for item in rest {
             let s = value_as_string(item)
             if s.length() != len {
-              raise @core.EvalError("string length mismatch")
+              raise EvalError("string length mismatch")
             }
             lists.push(string_to_char_list(s))
           }
@@ -5097,13 +5097,13 @@ fn apply_proc(
             lists,
             [],
             false,
-            @core.Kont::StringMapFinalize(kont),
+            StringMapFinalize(kont),
             handlers,
           )
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    Primitive(@core.Primitive::StringForEach) =>
+    Primitive(StringForEach) =>
       match args {
         [proc_value, first_value, .. rest] => {
           let first = value_as_string(first_value)
@@ -5113,7 +5113,7 @@ fn apply_proc(
           for item in rest {
             let s = value_as_string(item)
             if s.length() != len {
-              raise @core.EvalError("string length mismatch")
+              raise EvalError("string length mismatch")
             }
             lists.push(string_to_char_list(s))
           }
@@ -5122,7 +5122,7 @@ fn apply_proc(
         _ => raise arity_mismatch(2, args.length())
       }
     Primitive(prim) =>
-      MachineState::Apply(apply_primitive(prim, args), kont, handlers)
+      Apply(apply_primitive(prim, args), kont, handlers)
     Closure(cl) => {
       let formals = @core.Formals::new(cl.params, cl.rest)
       let bindings = formals_bindings(formals, args)
@@ -5167,7 +5167,7 @@ fn apply_proc(
             expected_parts.push(formals_expected_desc(clause_formals))
           }
           let expected = expected_parts.join(", ")
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected one of \{expected} got \{args.length()}",
           )
         }
@@ -5184,30 +5184,30 @@ fn apply_proc(
     }
     Parameter(param) =>
       match args {
-        [] => MachineState::Apply(parameter_get(param), kont, handlers)
+        [] => Apply(parameter_get(param), kont, handlers)
         [value] =>
           match param.converter {
             Some(converter) =>
               apply_proc(
                 converter,
                 [value],
-                @core.Kont::SetParameter(param, kont),
+                SetParameter(param, kont),
                 handlers,
               )
             None => {
               parameter_set(param, value)
-              MachineState::Apply(@core.Value::Void, kont, handlers)
+              Apply(Void, kont, handlers)
             }
           }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 0 or 1 got \{args.length()}",
           )
       }
     Continuation(cont) => {
       let resume_value = match args {
         [single] => single
-        _ => @core.Value::Values(args)
+        _ => Values(args)
       }
       let current_winds = wind_stack.val
       let target_winds = cont.winds
@@ -5240,7 +5240,7 @@ fn apply_proc(
     RecordProc(proc) => apply_record_proc(proc, args, kont, handlers)
     ConditionProc(proc) => apply_condition_proc(proc, args, kont, handlers)
     EnumSetProc(proc) => apply_enum_set_proc(proc, args, kont, handlers)
-    _ => raise @core.EvalError("type error: procedure expected")
+    _ => raise EvalError("type error: procedure expected")
   }
 }
 

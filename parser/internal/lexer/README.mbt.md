@@ -26,7 +26,7 @@ test "reader helpers" {
   ignore(peek.next())
   guard peek.peek() is Some('b') else { fail("expected b") }
   let labeled = Reader::new("x")
-  let cell = Ref::new(@core.Datum::Nil)
+  let cell = Ref::new(Datum::Nil)
   labeled.label_set(1, cell)
   guard labeled.label_get(1) is Some(_) else { fail("expected label") }
   guard labeled.label_get(2) is None else { fail("expected missing label") }

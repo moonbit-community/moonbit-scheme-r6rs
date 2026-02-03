@@ -93,21 +93,21 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     SymbolToString =>
       match args {
-        [Datum(Symbol(name))] => @core.Value::Datum(String(Ref::new(name)))
-        [_] => raise @core.EvalError("type error: symbol expected")
+        [Datum(Symbol(name))] => Datum(String(Ref::new(name)))
+        [_] => raise EvalError("type error: symbol expected")
         _ => raise arity_mismatch(1, args.length())
       }
     StringToSymbol =>
       match args {
-        [Datum(String(name))] => @core.Value::Datum(Symbol(name.val))
-        [_] => raise @core.EvalError("type error: string expected")
+        [Datum(String(name))] => Datum(Symbol(name.val))
+        [_] => raise EvalError("type error: string expected")
         _ => raise arity_mismatch(1, args.length())
       }
     StringHash =>
       match args {
         [value] => {
           let s = value_as_string(value)
-          @core.Value::Datum(Int(hash_string_value(s)))
+          Datum(Int(hash_string_value(s)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -116,7 +116,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [value] => {
           let s = value_as_string(value)
           let folded = @core.UnicodeString::new(s).foldcase().into_string()
-          @core.Value::Datum(Int(hash_string_value(folded)))
+          Datum(Int(hash_string_value(folded)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -124,7 +124,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let name = value_as_symbol(value)
-          @core.Value::Datum(Int(hash_string_value(name)))
+          Datum(Int(hash_string_value(name)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -132,16 +132,16 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let repr = @runtime.value_to_string(value)
-          @core.Value::Datum(Int(hash_string_value(repr)))
+          Datum(Int(hash_string_value(repr)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
     SyntaxToDatum =>
       match args {
         [SyntaxObject(obj)] =>
-          @core.Value::Datum(@runtime.strip_syntax_datum(obj.datum))
-        [Datum(d)] => @core.Value::Datum(@runtime.strip_syntax_datum(d))
-        [_] => raise @core.EvalError("type error: syntax expected")
+          Datum(@runtime.strip_syntax_datum(obj.datum))
+        [Datum(d)] => Datum(@runtime.strip_syntax_datum(d))
+        [_] => raise EvalError("type error: syntax expected")
         _ => raise arity_mismatch(1, args.length())
       }
     DatumToSyntax =>
@@ -158,7 +158,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
           let base = match base {
             SyntaxObject(obj) => obj.datum
             Datum(d) => d
-            _ => raise @core.EvalError("type error: datum expected")
+            _ => raise EvalError("type error: datum expected")
           }
           let template_name = match context {
             SyntaxObject(obj) =>
@@ -175,7 +175,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
                   if strip_gensym_suffix(immediate) is Some(_) {
                     let original = strip_all_gensym_suffixes(template)
                     if original == base_name {
-                      @core.Datum::Symbol(immediate)
+                      Datum::Symbol(immediate)
                     } else {
                       base
                     }
@@ -191,12 +191,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
             Symbol(_) => context_binding
             _ => None
           }
-          @core.Value::SyntaxObject(
+          SyntaxObject(
             @core.SyntaxObject::new(datum, scopes, binding_id),
           )
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 2 or 3 got \{args.length()}",
           )
       }
@@ -308,7 +308,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         [Datum(Float(n))] => bool_value(n == 0.0)
         [Datum(Complex(real, imag))] =>
           bool_value(datum_is_zero(real.val) && datum_is_zero(imag.val))
-        [_] => raise @core.EvalError("type error: number expected")
+        [_] => raise EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
     PositiveP =>
@@ -321,7 +321,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
             BigInt(n) => bool_value(n.compare_int(0) > 0)
             BigRat(n, _) => bool_value(n.compare_int(0) > 0)
             Float(n) => bool_value(n > 0.0)
-            _ => raise @core.EvalError("type error: number expected")
+            _ => raise EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -336,7 +336,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
             BigInt(n) => bool_value(n.compare_int(0) < 0)
             BigRat(n, _) => bool_value(n.compare_int(0) < 0)
             Float(n) => bool_value(n < 0.0)
-            _ => raise @core.EvalError("type error: number expected")
+            _ => raise EvalError("type error: number expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -345,25 +345,25 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let value = match value {
-            Datum(Int(n)) => @core.Datum::Int(n)
-            Datum(BigInt(n)) => @core.Datum::BigInt(n)
+            Datum(Int(n)) => Datum::Int(n)
+            Datum(BigInt(n)) => BigInt(n)
             Datum(Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
-                  Int(n) => @core.Datum::Int(n)
-                  BigInt(n) => @core.Datum::BigInt(n)
+                  Int(n) => Int(n)
+                  BigInt(n) => BigInt(n)
                   _ =>
-                    raise @core.EvalError("type error: exact integer expected")
+                    raise EvalError("type error: exact integer expected")
                 }
               } else {
-                raise @core.EvalError("type error: exact integer expected")
+                raise EvalError("type error: exact integer expected")
               }
-            _ => raise @core.EvalError("type error: exact integer expected")
+            _ => raise EvalError("type error: exact integer expected")
           }
           match value {
             Int(n) => bool_value(n % 2 != 0)
             BigInt(n) => bool_value(!bigint_is_zero(n % bigint_from_int(2)))
-            _ => raise @core.EvalError("type error: exact integer expected")
+            _ => raise EvalError("type error: exact integer expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -372,25 +372,25 @@ fn apply_symbol_syntax_predicate_primitive_core(
       match args {
         [value] => {
           let value = match value {
-            Datum(Int(n)) => @core.Datum::Int(n)
-            Datum(BigInt(n)) => @core.Datum::BigInt(n)
+            Datum(Int(n)) => Datum::Int(n)
+            Datum(BigInt(n)) => BigInt(n)
             Datum(Complex(real, imag)) =>
               if datum_is_zero(imag.val) {
                 match real.val {
-                  Int(n) => @core.Datum::Int(n)
-                  BigInt(n) => @core.Datum::BigInt(n)
+                  Int(n) => Int(n)
+                  BigInt(n) => BigInt(n)
                   _ =>
-                    raise @core.EvalError("type error: exact integer expected")
+                    raise EvalError("type error: exact integer expected")
                 }
               } else {
-                raise @core.EvalError("type error: exact integer expected")
+                raise EvalError("type error: exact integer expected")
               }
-            _ => raise @core.EvalError("type error: exact integer expected")
+            _ => raise EvalError("type error: exact integer expected")
           }
           match value {
             Int(n) => bool_value(n % 2 == 0)
             BigInt(n) => bool_value(bigint_is_zero(n % bigint_from_int(2)))
-            _ => raise @core.EvalError("type error: exact integer expected")
+            _ => raise EvalError("type error: exact integer expected")
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -407,12 +407,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
             match real.val {
               Float(f) => bool_value(float_is_finite(f))
               Int(_) | BigInt(_) | Rat(_, _) | BigRat(_, _) => bool_value(true)
-              _ => raise @core.EvalError("type error: number expected")
+              _ => raise EvalError("type error: number expected")
             }
           } else {
-            raise @core.EvalError("type error: real expected")
+            raise EvalError("type error: real expected")
           }
-        [_] => raise @core.EvalError("type error: number expected")
+        [_] => raise EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
     InfiniteP =>
@@ -427,12 +427,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
             match real.val {
               Float(f) => bool_value(float_is_infinite(f))
               Int(_) | BigInt(_) | Rat(_, _) | BigRat(_, _) => bool_value(false)
-              _ => raise @core.EvalError("type error: number expected")
+              _ => raise EvalError("type error: number expected")
             }
           } else {
-            raise @core.EvalError("type error: real expected")
+            raise EvalError("type error: real expected")
           }
-        [_] => raise @core.EvalError("type error: number expected")
+        [_] => raise EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
     NanP =>
@@ -447,12 +447,12 @@ fn apply_symbol_syntax_predicate_primitive_core(
             match real.val {
               Float(f) => bool_value(float_is_nan(f))
               Int(_) | BigInt(_) | Rat(_, _) | BigRat(_, _) => bool_value(false)
-              _ => raise @core.EvalError("type error: number expected")
+              _ => raise EvalError("type error: number expected")
             }
           } else {
-            raise @core.EvalError("type error: real expected")
+            raise EvalError("type error: real expected")
           }
-        [_] => raise @core.EvalError("type error: number expected")
+        [_] => raise EvalError("type error: number expected")
         _ => raise arity_mismatch(1, args.length())
       }
     ProcedureP =>
@@ -470,7 +470,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
         _ => raise arity_mismatch(1, args.length())
       }
     _ =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: apply_symbol_syntax_predicate_primitive dispatch",
       )
   }

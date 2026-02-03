@@ -40,8 +40,8 @@ fn parse_int_token(tok : String) -> Int? {
 /// Create an imaginary unit (1 or -1) based on exactness.
 fn make_imag_unit(sign : Int, exactness : Char?) -> @core.Datum {
   match exactness {
-    Some('i') | Some('I') => @core.Datum::Float(Float::from_int(sign))
-    _ => @core.Datum::Int(sign)
+    Some('i') | Some('I') => Float(Float::from_int(sign))
+    _ => Int(sign)
   }
 }
 
@@ -86,16 +86,16 @@ fn normalize_rat(num : Int, den : Int) -> @core.Datum? {
   if den == 0 {
     None
   } else if num == 0 {
-    Some(@core.Datum::Int(0))
+    Some(Int(0))
   } else {
     let (n, d) = if den < 0 { (-num, -den) } else { (num, den) }
     let g = gcd(n, d)
     let nn = n / g
     let dd = d / g
     if dd == 1 {
-      Some(@core.Datum::Int(nn))
+      Some(Int(nn))
     } else {
-      Some(@core.Datum::Rat(nn, dd))
+      Some(Rat(nn, dd))
     }
   }
 }
@@ -150,7 +150,7 @@ fn normalize_big_rat(
   if bigint_is_zero(den) {
     None
   } else if bigint_is_zero(num) {
-    Some(@core.Datum::Int(0))
+    Some(Int(0))
   } else {
     let (n, d) = if den.compare_int(0) < 0 { (-num, -den) } else { (num, den) }
     let g = bigint_gcd(n, d)
@@ -159,14 +159,14 @@ fn normalize_big_rat(
     if dd.compare_int(1) == 0 {
       Some(
         match bigint_to_int_option(nn) {
-          Some(v) => @core.Datum::Int(v)
-          None => @core.Datum::BigInt(nn)
+          Some(v) => Int(v)
+          None => BigInt(nn)
         },
       )
     } else {
       match (bigint_to_int_option(nn), bigint_to_int_option(dd)) {
-        (Some(nv), Some(dv)) => Some(@core.Datum::Rat(nv, dv))
-        _ => Some(@core.Datum::BigRat(nn, dd))
+        (Some(nv), Some(dv)) => Some(Rat(nv, dv))
+        _ => Some(BigRat(nn, dd))
       }
     }
   }
@@ -174,7 +174,7 @@ fn normalize_big_rat(
 
 ///|
 fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
-  @core.Datum::Pair(Ref::new(car), Ref::new(cdr))
+  Pair(Ref::new(car), Ref::new(cdr))
 }
 
 ///|
@@ -222,8 +222,8 @@ fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
 ///|
 fn integer_datum_from_bigint(value : @bigint.BigInt) -> @core.Datum {
   match bigint_to_int_option(value) {
-    Some(v) => @core.Datum::Int(v)
-    None => @core.Datum::BigInt(value)
+    Some(v) => Int(v)
+    None => BigInt(value)
   }
 }
 
@@ -597,7 +597,7 @@ fn apply_inexact_exactness(
   match exactness {
     Some('i') | Some('I') =>
       match datum_to_float(datum) {
-        Some(f) => Some(@core.Datum::Float(f))
+        Some(f) => Some(Float(f))
         None => None
       }
     _ => Some(datum)
@@ -629,14 +629,14 @@ fn make_complex_datum(real : @core.Datum, imag : @core.Datum) -> @core.Datum {
   if reader_datum_is_zero(imag) {
     if reader_datum_is_inexact(imag) && !reader_datum_is_inexact(real) {
       match datum_to_float(real) {
-        Some(value) => @core.Datum::Float(value)
+        Some(value) => Float(value)
         None => real
       }
     } else {
       real
     }
   } else {
-    @core.Datum::Complex(Ref::new(real), Ref::new(imag))
+    Complex(Ref::new(real), Ref::new(imag))
   }
 }
 
@@ -655,11 +655,11 @@ fn parse_special_float_token(
   }
   let lower = tok.to_lower()
   if lower == "+inf.0" || lower == "inf.0" {
-    Some(@core.Datum::Float(Float::from_int(1) / 0.0))
+    Some(Float(Float::from_int(1) / 0.0))
   } else if lower == "-inf.0" {
-    Some(@core.Datum::Float(Float::from_int(-1) / 0.0))
+    Some(Float(Float::from_int(-1) / 0.0))
   } else if lower == "+nan.0" || lower == "-nan.0" || lower == "nan.0" {
-    Some(@core.Datum::Float(Float::from_int(0) / 0.0))
+    Some(Float(Float::from_int(0) / 0.0))
   } else {
     None
   }
@@ -724,7 +724,7 @@ fn parse_real_token_with_settings(
       Some('e') | Some('E') => parse_exact_decimal(tok)
       _ =>
         match parse_float_token_with_exp(tok) {
-          Some(f) => Some(@core.Datum::Float(f))
+          Some(f) => Some(Float(f))
           None => None
         }
     }
@@ -815,8 +815,8 @@ fn parse_complex_token(
         Some(value) => value
         None => return None
       }
-      let real = @core.Datum::Float(rf * @math.cosf(tf))
-      let imag = @core.Datum::Float(rf * @math.sinf(tf))
+      let real = Datum::Float(rf * @math.cosf(tf))
+      let imag = Datum::Float(rf * @math.sinf(tf))
       return Some(make_complex_datum(real, imag))
     }
     None => ()
@@ -831,11 +831,11 @@ fn parse_complex_token(
   match core_chars {
     [] | ['+'] =>
       return Some(
-        make_complex_datum(@core.Datum::Int(0), make_imag_unit(1, exactness)),
+        make_complex_datum(Int(0), make_imag_unit(1, exactness)),
       )
     ['-'] =>
       return Some(
-        make_complex_datum(@core.Datum::Int(0), make_imag_unit(-1, exactness)),
+        make_complex_datum(Int(0), make_imag_unit(-1, exactness)),
       )
     _ => ()
   }
@@ -880,7 +880,7 @@ fn parse_complex_token(
         Some(value) => value
         None => return None
       }
-      Some(make_complex_datum(@core.Datum::Int(0), imag))
+      Some(make_complex_datum(Int(0), imag))
     }
   }
 }
@@ -1055,7 +1055,7 @@ fn ascii_lower_string(value : String) -> String {
 
 ///|
 fn make_unary_form(name : String, expr : @core.Datum) -> @core.Datum {
-  pair_new(@core.Datum::Symbol(name), pair_new(expr, @core.Datum::Nil))
+  pair_new(Symbol(name), pair_new(expr, Nil))
 }
 
 ///|
@@ -1127,26 +1127,26 @@ fn read_list(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
     //     _ => true
     //   }
     match cur {
-      None => raise @core.ParseError("unexpected EOF while reading list")
+      None => raise ParseError("unexpected EOF while reading list")
       Some(')') => {
         ignore(r.next())
-        break list_from_items(items, @core.Datum::Nil)
+        break list_from_items(items, Nil)
       }
       Some('.') =>
         if r.is_ellipsis_start() {
           let tok = r.read_token()
-          items.push(@core.Datum::Symbol(tok))
+          items.push(Symbol(tok))
           continue r..skip_ws_and_comments().peek()
         } else {
           if items.is_empty() {
-            raise @core.ParseError("unexpected dot")
+            raise ParseError("unexpected dot")
           }
           ignore(r.next())
           r.skip_ws_and_comments()
           let tail = read_expr(r)
           match r..skip_ws_and_comments().peek() {
             Some(')') => ignore(r.next())
-            _ => raise @core.ParseError("expected ) after dotted tail")
+            _ => raise ParseError("expected ) after dotted tail")
           }
           break list_from_items(items, tail)
         }
@@ -1157,7 +1157,7 @@ fn read_list(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
       }
     }
   } else {
-    @core.Datum::Nil
+    Nil
   }
   list
 }
@@ -1181,7 +1181,7 @@ fn datum_list_to_array_parse(
         items.push(a.val)
         continue b.val
       }
-      _ => raise @core.ParseError("expected proper list")
+      _ => raise ParseError("expected proper list")
     }
   } else {
     ()
@@ -1193,7 +1193,7 @@ fn datum_list_to_array_parse(
 fn read_vector_literal(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
   let list = read_list(r)
   let items = datum_list_to_array_parse(list)
-  @core.Datum::Vector(items)
+  Vector(items)
 }
 
 ///|
@@ -1205,27 +1205,27 @@ fn read_bytevector_literal(
   let bytes = items.map(item => match item {
     Int(n) => {
       if n < 0 || n > 255 {
-        raise @core.ParseError("bytevector element out of range")
+        raise ParseError::ParseError("bytevector element out of range")
       }
       n
     }
-    _ => raise @core.ParseError("bytevector element must be integer")
+    _ => raise ParseError::ParseError("bytevector element must be integer")
   })
-  @core.Datum::ByteVector(bytes)
+  ByteVector(bytes)
 }
 
 ///|
 fn token_to_datum(tok : String) -> @core.Datum {
   if tok == "#t" {
-    @core.Datum::Bool(true)
+    Bool(true)
   } else if tok == "#f" {
-    @core.Datum::Bool(false)
+    Bool(false)
   } else if parse_char_token(tok) is Some(ch) {
-    @core.Datum::Char(ch)
+    Char(ch)
   } else if parse_number_token(tok) is Some(num) {
     num
   } else {
-    @core.Datum::Symbol(tok)
+    Symbol(tok)
   }
 }
 
@@ -1259,14 +1259,14 @@ fn read_comma_form(
 ///|
 fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
   match r..skip_ws_and_comments().peek() {
-    None => raise @core.ParseError("unexpected EOF")
+    None => raise ParseError("unexpected EOF")
     Some('(') => {
       ignore(r.next())
       read_list(r)
     }
     Some(')') => {
       ignore(r.next())
-      raise @core.ParseError("unexpected )")
+      raise ParseError("unexpected )")
     }
     Some('\'') => {
       ignore(r.next())
@@ -1299,19 +1299,19 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
           match parse_label_token(tok) {
             Some((true, label)) => {
               if r.label_get(label) is Some(_) {
-                raise @core.ParseError("duplicate label")
+                raise ParseError("duplicate label")
               }
-              let cell = Ref::new(@core.Datum::Nil)
+              let cell = Ref::new(Datum::Nil)
               r.label_set(label, cell)
               let datum = read_expr(r)
               cell.val = datum
-              @core.Datum::Label(label, cell)
+              Label(label, cell)
             }
             Some((false, label)) =>
               if r.label_get(label) is Some(cell) {
-                @core.Datum::Label(label, cell)
+                Label(label, cell)
               } else {
-                raise @core.ParseError("undefined label")
+                raise ParseError("undefined label")
               }
             None => token_to_datum(tok)
           }
@@ -1361,7 +1361,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
       }
     Some('"') => {
       ignore(r.next())
-      @core.Datum::String(Ref::new(r.read_string()))
+      String(Ref::new(r.read_string()))
     }
     Some(_) => {
       let tok = r.read_token()

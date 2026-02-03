@@ -73,10 +73,10 @@ fn parse_syntax_rules(
       (name, literals_expr, rule_exprs)
     [Symbol("syntax-rules"), literals_expr, .. rule_exprs] =>
       ("...", literals_expr, rule_exprs)
-    _ => raise @core.EvalError("invalid syntax-rules")
+    _ => raise EvalError("invalid syntax-rules")
   }
   if rule_exprs.is_empty() {
-    raise @core.EvalError("invalid syntax-rules")
+    raise EvalError("invalid syntax-rules")
   }
   let literals = parse_literal_list(literals_expr)
   let ellipsis_active = !is_literal(literals, ellipsis)
@@ -89,12 +89,12 @@ fn parse_syntax_rules(
         )
         rules.push(@core.SyntaxRule::new(pattern, template, None))
       }
-      _ => raise @core.EvalError("invalid syntax-rules")
+      _ => raise EvalError("invalid syntax-rules")
     }
   } else {
     ()
   }
-  @core.SyntaxRules::new(literals, rules, ellipsis, @core.SyntaxRules, env)
+  @core.SyntaxRules::new(literals, rules, ellipsis, SyntaxRules, env)
 }
 
 ///|
@@ -109,17 +109,17 @@ fn parse_identifier_syntax(
       rules.push(@core.SyntaxRule::new(Symbol(name), rule_expr, None))
     [Symbol("identifier-syntax"), .. rule_exprs] => {
       if rule_exprs.is_empty() {
-        raise @core.EvalError("invalid identifier-syntax")
+        raise EvalError("invalid identifier-syntax")
       }
       for rule_expr in rule_exprs {
         match datum_list_to_array(rule_expr) {
           [pattern, template] =>
             rules.push(@core.SyntaxRule::new(pattern, template, None))
-          _ => raise @core.EvalError("invalid identifier-syntax")
+          _ => raise EvalError("invalid identifier-syntax")
         }
       }
     }
-    _ => raise @core.EvalError("invalid identifier-syntax")
+    _ => raise EvalError("invalid identifier-syntax")
   }
   let pattern_vars : Map[String, Bool] = {}
   let pattern_literals = ["set!"]
@@ -134,7 +134,7 @@ fn parse_identifier_syntax(
     .keys()
     .filter(key => !pattern_vars.contains(key))
     .to_array()
-  @core.SyntaxRules::new(literals, rules, "...", @core.SyntaxRules, env)
+  @core.SyntaxRules::new(literals, rules, "...", SyntaxRules, env)
 }
 
 ///|
@@ -163,7 +163,7 @@ fn parse_syntax_case_rules(
         )
         rules.push(@core.SyntaxRule::new(pattern, template, Some(fender)))
       }
-      _ => raise @core.EvalError("invalid syntax-case clause")
+      _ => raise EvalError("invalid syntax-case clause")
     }
     continue i + 1
   } else {
@@ -183,19 +183,19 @@ fn parse_syntax_case_transformer(
         [param_expr] => {
           let _ = parse_symbol_name(param_expr)
         }
-        _ => raise @core.EvalError("invalid syntax-case")
+        _ => raise EvalError("invalid syntax-case")
       }
       match datum_list_to_array(body_expr) {
         [Symbol("syntax-case"), _, literals_expr, .. clauses] => {
           if clauses.is_empty() {
-            raise @core.EvalError("invalid syntax-case")
+            raise EvalError("invalid syntax-case")
           }
           parse_syntax_case_rules(literals_expr, clauses.to_array(), env)
         }
-        _ => raise @core.EvalError("invalid syntax-case")
+        _ => raise EvalError("invalid syntax-case")
       }
     }
-    _ => raise @core.EvalError("invalid syntax-case")
+    _ => raise EvalError("invalid syntax-case")
   }
 }
 
@@ -231,20 +231,20 @@ fn parse_transformer(
   env : @core.Env,
 ) -> @core.MacroTransformer raise @core.EvalError {
   match datum_list_to_array(expr) {
-    [] => raise @core.EvalError("invalid syntax transformer")
+    [] => raise EvalError("invalid syntax transformer")
     [Symbol("syntax-rules"), ..] => Rules(parse_syntax_rules(expr, env))
     [Symbol("identifier-syntax"), ..] =>
       Rules(parse_identifier_syntax(expr, name, env))
     [Symbol("make-variable-transformer"), transformer_expr] =>
       parse_transformer(transformer_expr, name, env)
     [Symbol("make-variable-transformer"), ..] =>
-      raise @core.EvalError("invalid syntax transformer")
+      raise EvalError("invalid syntax transformer")
     [Symbol("lambda"), ..] if is_syntax_case_transformer_expr(expr) =>
       Rules(parse_syntax_case_transformer(expr, env))
     _ => {
       let value = eval_transformer_expr(expr, env)
       if !@runtime.is_procedure_value(value) {
-        raise @core.EvalError("type error: procedure expected")
+        raise EvalError("type error: procedure expected")
       }
       Procedure(value, env)
     }
@@ -260,7 +260,7 @@ fn parse_literal_list(
   for item in items {
     match item {
       Symbol(name) => literals.push(name)
-      _ => raise @core.EvalError("invalid syntax-rules")
+      _ => raise EvalError("invalid syntax-rules")
     }
   }
   literals
@@ -270,7 +270,7 @@ fn parse_literal_list(
 fn parse_symbol_name(expr : @core.Datum) -> String raise @core.EvalError {
   match expr {
     Symbol(name) => name
-    _ => raise @core.EvalError("invalid syntax-case")
+    _ => raise EvalError("invalid syntax-case")
   }
 }
 
@@ -291,7 +291,7 @@ fn validate_pattern(
   match pat {
     Symbol(name) =>
       if ellipsis_active && name == ellipsis {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
     Pair(_, _) =>
       match datum_list_to_array_opt(pat) {
@@ -349,7 +349,7 @@ fn validate_pattern_list(
     // decreases : items.length() - i
     // assert : i <= items.length()
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError(error_message)
+      raise EvalError(error_message)
     }
     if ellipsis_active &&
       i + 1 < items.length() &&
@@ -577,7 +577,7 @@ fn value_to_syntax_datum(
   match value {
     SyntaxObject(_) | Record(_) => value_to_datum_element(value)
     Datum(d) => d
-    _ => raise @core.EvalError("type error: datum expected")
+    _ => raise EvalError("type error: datum expected")
   }
 }
 
@@ -674,7 +674,7 @@ fn rename_proc_datum(
           captures,
         )
         Value(
-          @core.Value::SyntaxObject(
+          SyntaxObject(
             @core.SyntaxObject::new(renamed_inner, obj.scopes, obj.binding_id),
           ),
         )
@@ -692,7 +692,7 @@ fn rename_proc_expansion(
   let renames : Map[String, String] = {}
   let captures : Map[String, @core.Value] = {}
   let renamed = rename_proc_datum(datum, def_env, call_ctx, renames, captures)
-  MacroExpansion::{ datum: renamed, captures }
+  { datum: renamed, captures }
 }
 
 ///|
@@ -702,7 +702,7 @@ fn expand_macro_rules(
   env : @core.Env,
 ) -> MacroExpansion raise @core.EvalError {
   let call_scope = match rules.kind {
-    @core.SyntaxRules => Some(@runtime.next_syntax_context())
+    SyntaxRules => Some(@runtime.next_syntax_context())
     SyntaxCase => None
   }
   let ellipsis_active = !is_literal(rules.literals, rules.ellipsis)
@@ -730,7 +730,7 @@ fn expand_macro_rules(
             Some(fender) => {
               let fender_env = match rules.kind {
                 SyntaxCase => rules.def_env
-                @core.SyntaxRules => env
+                SyntaxRules => env
               }
               if !fender_allows(fender, bindings, fender_env) {
                 continue i + 1
@@ -747,7 +747,7 @@ fn expand_macro_rules(
             env,
           )
           let expanded = match rules.kind {
-            @core.SyntaxRules =>
+            SyntaxRules =>
               expand_template(
                 rule.template,
                 bindings,
@@ -773,12 +773,12 @@ fn expand_macro_rules(
               value_to_syntax_datum(value)
             }
           }
-          return MacroExpansion::{ datum: expanded, captures }
+          return { datum: expanded, captures }
         }
     }
     continue i + 1
   }
-  raise @core.EvalError("no matching syntax-rules pattern")
+  raise EvalError("no matching syntax-rules pattern")
 }
 
 ///|
@@ -789,7 +789,7 @@ fn expand_macro_proc(
   env : @core.Env,
 ) -> MacroExpansion raise @core.EvalError {
   if !@runtime.is_procedure_value(proc) {
-    raise @core.EvalError("type error: procedure expected")
+    raise EvalError("type error: procedure expected")
   }
   let temp_name = @runtime.gensym("macro_proc")
   let fenv = @runtime.env_extend(env)
@@ -797,9 +797,9 @@ fn expand_macro_proc(
   let call_ctx = @runtime.next_syntax_context()
   let marked_call = @runtime.syntax_add_scope(call, call_ctx)
   let stx = match marked_call {
-    Value(SyntaxObject(obj)) => @core.Value::SyntaxObject(obj)
+    Value(SyntaxObject(obj)) => Value::SyntaxObject(obj)
     _ =>
-      @core.Value::SyntaxObject(
+      SyntaxObject(
         @core.SyntaxObject::new(marked_call, [call_ctx], None),
       )
   }
@@ -841,7 +841,7 @@ fn syntax_add_scope_with_env(
   match datum {
     Symbol(name) =>
       Value(
-        @core.Value::SyntaxObject(
+        SyntaxObject(
           @core.SyntaxObject::new(
             Symbol(name),
             [scope],
@@ -864,7 +864,7 @@ fn syntax_add_scope_with_env(
           }
       }
       Value(
-        @core.Value::SyntaxObject(
+        SyntaxObject(
           @core.SyntaxObject::new(inner, next_scopes, binding_id),
         ),
       )
@@ -898,7 +898,7 @@ fn wrap_pattern_datum(
         Value(SyntaxObject(_)) => marked
         _ =>
           Value(
-            @core.Value::SyntaxObject(
+            SyntaxObject(
               @core.SyntaxObject::new(marked, [call_scope], None),
             ),
           )
@@ -913,7 +913,7 @@ fn wrap_pattern_datum(
             _ => None
           }
           Value(
-            @core.Value::SyntaxObject(
+            SyntaxObject(
               @core.SyntaxObject::new(value, [], binding_id),
             ),
           )
@@ -949,13 +949,13 @@ fn rewrite_template_expr(
               )
               match expanded {
                 Value(SyntaxObject(obj)) =>
-                  return Value(@core.Value::SyntaxObject(obj))
+                  return Value(SyntaxObject(obj))
                 _ => {
                   let scope = @runtime.next_syntax_context()
                   let scopes = [scope]
                   let datum = @runtime.syntax_wrap_root(expanded, scopes)
                   let obj = @core.SyntaxObject::new(datum, scopes, None)
-                  return Value(@core.Value::SyntaxObject(obj))
+                  return Value(SyntaxObject(obj))
                 }
               }
             }
@@ -1660,7 +1660,7 @@ fn expand_with_syntax(
       }
       (binding_expr, bodies)
     }
-    _ => raise @core.EvalError("invalid with-syntax")
+    _ => raise EvalError("invalid with-syntax")
   }
   let binding_specs = datum_list_to_array(binding_expr)
   let expanded = bindings_clone(bindings)
@@ -1668,7 +1668,7 @@ fn expand_with_syntax(
   for spec in binding_specs {
     let (pattern, expr) = match datum_list_to_array(spec) {
       [pattern, expr] => (pattern, expr)
-      _ => raise @core.EvalError("invalid with-syntax")
+      _ => raise EvalError("invalid with-syntax")
     }
     let value = eval_expr(expr, fenv)
     let datum = value_to_syntax_datum(value)
@@ -1683,10 +1683,10 @@ fn expand_with_syntax(
         env,
         env,
       ) {
-      raise @core.EvalError("invalid with-syntax")
+      raise EvalError("invalid with-syntax")
     }
     if !merge_bindings(expanded, local_bindings) {
-      raise @core.EvalError("invalid with-syntax")
+      raise EvalError("invalid with-syntax")
     }
   }
   match body_exprs {
@@ -1762,7 +1762,7 @@ fn expand_template_indexed(
   match template {
     Symbol(name) => {
       if ellipsis_active && name == ellipsis {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       expand_symbol(name, bindings, renames, indices, error_message)
     }
@@ -1857,7 +1857,7 @@ fn expand_template_quasisyntax(
   match template {
     Symbol(name) => {
       if ellipsis_active && name == ellipsis {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       expand_symbol(name, bindings, renames, indices, error_message)
     }
@@ -1927,7 +1927,7 @@ fn expand_symbol(
     Some(value) =>
       match binding_select(value, indices, 0) {
         Some(datum) => datum
-        None => raise @core.EvalError(error_message)
+        None => raise EvalError(error_message)
       }
     None =>
       match renames.get(name) {
@@ -1955,7 +1955,7 @@ fn expand_template_list(
     // decreases : items.length() - i
     // assert : i <= items.length()
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError(error_message)
+      raise EvalError(error_message)
     }
     if ellipsis_active &&
       i + 1 < items.length() &&
@@ -1964,7 +1964,7 @@ fn expand_template_list(
       if !template_has_repeat_binding(
           repeat_template, bindings, ellipsis, indices,
         ) {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       for j = 0; j < count; {
@@ -2022,7 +2022,7 @@ fn expand_template_list_quasisyntax(
     // decreases : items.length() - i
     // assert : i <= items.length()
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError(error_message)
+      raise EvalError(error_message)
     }
     if ellipsis_active &&
       i + 1 < items.length() &&
@@ -2031,7 +2031,7 @@ fn expand_template_list_quasisyntax(
       if !template_has_repeat_binding(
           repeat_template, bindings, ellipsis, indices,
         ) {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       for j = 0; j < count; {
@@ -2089,7 +2089,7 @@ fn expand_template_vector(
     // decreases : items.length() - i
     // assert : i <= items.length()
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError(error_message)
+      raise EvalError(error_message)
     }
     if ellipsis_active &&
       i + 1 < items.length() &&
@@ -2098,7 +2098,7 @@ fn expand_template_vector(
       if !template_has_repeat_binding(
           repeat_template, bindings, ellipsis, indices,
         ) {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       for j = 0; j < count; {
@@ -2156,7 +2156,7 @@ fn expand_template_vector_quasisyntax(
     // decreases : items.length() - i
     // assert : i <= items.length()
     if ellipsis_active && datum_is_symbol(items[i], ellipsis) {
-      raise @core.EvalError(error_message)
+      raise EvalError(error_message)
     }
     if ellipsis_active &&
       i + 1 < items.length() &&
@@ -2165,7 +2165,7 @@ fn expand_template_vector_quasisyntax(
       if !template_has_repeat_binding(
           repeat_template, bindings, ellipsis, indices,
         ) {
-        raise @core.EvalError(error_message)
+        raise EvalError(error_message)
       }
       let count = max_binding_len(repeat_template, bindings, indices)
       for j = 0; j < count; {

@@ -52,7 +52,7 @@ fn hashtable_clone(table : @core.Hashtable, mutable : Bool) -> @core.Value {
   let entries = clone_hashtable_entries(table.entries.val)
   let cloned = @runtime.make_hashtable(table.equiv, table.hash, mutable)
   cloned.entries.val = entries
-  @core.Value::Hashtable(cloned)
+  Hashtable(cloned)
 }
 
 ///|
@@ -80,13 +80,13 @@ fn apply_hashtable_enumset_primitive_core(
     MakeEqHashtable =>
       match args {
         [] =>
-          @core.Value::Hashtable(
-            @runtime.make_hashtable(@core.HashtableEquiv::Eq, None, true),
+          Hashtable(
+            @runtime.make_hashtable(Eq, None, true),
           )
         [size_value] => {
           validate_hashtable_size_arg(size_value)
-          @core.Value::Hashtable(
-            @runtime.make_hashtable(@core.HashtableEquiv::Eq, None, true),
+          Hashtable(
+            @runtime.make_hashtable(Eq, None, true),
           )
         }
         _ => raise arity_mismatch(1, args.length())
@@ -94,13 +94,13 @@ fn apply_hashtable_enumset_primitive_core(
     MakeEqvHashtable =>
       match args {
         [] =>
-          @core.Value::Hashtable(
-            @runtime.make_hashtable(@core.HashtableEquiv::Eqv, None, true),
+          Hashtable(
+            @runtime.make_hashtable(Eqv, None, true),
           )
         [size_value] => {
           validate_hashtable_size_arg(size_value)
-          @core.Value::Hashtable(
-            @runtime.make_hashtable(@core.HashtableEquiv::Eqv, None, true),
+          Hashtable(
+            @runtime.make_hashtable(Eqv, None, true),
           )
         }
         _ => raise arity_mismatch(1, args.length())
@@ -109,20 +109,20 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [hash_value, equiv_value] => {
           if !@runtime.is_procedure_value(hash_value) {
-            raise @core.EvalError("type error: procedure expected")
+            raise EvalError("type error: procedure expected")
           }
           let equiv = hashtable_equiv_from_value(equiv_value)
-          @core.Value::Hashtable(
+          Hashtable(
             @runtime.make_hashtable(equiv, Some(hash_value), true),
           )
         }
         [hash_value, equiv_value, size_value] => {
           if !@runtime.is_procedure_value(hash_value) {
-            raise @core.EvalError("type error: procedure expected")
+            raise EvalError("type error: procedure expected")
           }
           let equiv = hashtable_equiv_from_value(equiv_value)
           validate_hashtable_size_arg(size_value)
-          @core.Value::Hashtable(
+          Hashtable(
             @runtime.make_hashtable(equiv, Some(hash_value), true),
           )
         }
@@ -138,28 +138,28 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
-          @core.Value::Datum(Int(table.entries.val.length()))
+          Datum(Int(table.entries.val.length()))
         }
         _ => raise arity_mismatch(1, args.length())
       }
     HashtableRef =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: hashtable-ref should be handled in apply_proc",
       )
     HashtableSet =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: hashtable-set! should be handled in apply_proc",
       )
     HashtableDelete =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: hashtable-delete! should be handled in apply_proc",
       )
     HashtableContainsP =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: hashtable-contains? should be handled in apply_proc",
       )
     HashtableUpdate =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: hashtable-update! should be handled in apply_proc",
       )
     HashtableCopy =>
@@ -180,19 +180,19 @@ fn apply_hashtable_enumset_primitive_core(
         [table_value] => {
           let table = value_as_hashtable(table_value)
           if !table.mutable {
-            raise @core.EvalError("hashtable is immutable")
+            raise EvalError("hashtable is immutable")
           }
           table.entries.val = []
-          @core.Value::Void
+          Void
         }
         [table_value, size_value] => {
           let table = value_as_hashtable(table_value)
           if !table.mutable {
-            raise @core.EvalError("hashtable is immutable")
+            raise EvalError("hashtable is immutable")
           }
           validate_hashtable_size_arg(size_value)
           table.entries.val = []
-          @core.Value::Void
+          Void
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -203,7 +203,7 @@ fn apply_hashtable_enumset_primitive_core(
           let items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
             entry.key,
           ))
-          @core.Value::Datum(Vector(items))
+          Datum(Vector(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -217,9 +217,9 @@ fn apply_hashtable_enumset_primitive_core(
           let value_items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
             entry.value.val,
           ))
-          @core.Value::Values([
-            @core.Value::Datum(Vector(key_items)),
-            @core.Value::Datum(Vector(value_items)),
+          Values([
+            Datum(Vector(key_items)),
+            Datum(Vector(value_items)),
           ])
         }
         _ => raise arity_mismatch(1, args.length())
@@ -238,7 +238,7 @@ fn apply_hashtable_enumset_primitive_core(
           let table = value_as_hashtable(table_value)
           match table.hash {
             Some(hash) => hash
-            None => @core.Value::Datum(Bool(false))
+            None => Datum(Bool(false))
           }
         }
         _ => raise arity_mismatch(1, args.length())
@@ -257,7 +257,7 @@ fn apply_hashtable_enumset_primitive_core(
           let names = enum_set_symbol_list(names_value)
           ensure_unique_symbols(names)
           let members = enum_set_members_all_true(names)
-          @core.Value::EnumSet(@runtime.make_enum_set(names, members))
+          EnumSet(@runtime.make_enum_set(names, members))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -266,7 +266,7 @@ fn apply_hashtable_enumset_primitive_core(
         [set_value] => {
           let set = value_as_enum_set(set_value)
           let members = enum_set_members_all_true(set.universe)
-          @core.Value::EnumSet(@runtime.make_enum_set(set.universe, members))
+          EnumSet(@runtime.make_enum_set(set.universe, members))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -274,7 +274,7 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
-          @core.Value::EnumSetProc(@runtime.make_enum_set_proc(Indexer(set)))
+          EnumSetProc(@runtime.make_enum_set_proc(Indexer(set)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -282,7 +282,7 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
-          @core.Value::EnumSetProc(
+          EnumSetProc(
             @runtime.make_enum_set_proc(Constructor(set)),
           )
         }
@@ -355,7 +355,7 @@ fn apply_hashtable_enumset_primitive_core(
           for i in 0..<members.length() {
             members[i] = left.members[i] || right.members[i]
           }
-          @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
+          EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -369,7 +369,7 @@ fn apply_hashtable_enumset_primitive_core(
           for i in 0..<members.length() {
             members[i] = left.members[i] && right.members[i]
           }
-          @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
+          EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -383,7 +383,7 @@ fn apply_hashtable_enumset_primitive_core(
           for i in 0..<members.length() {
             members[i] = left.members[i] && !right.members[i]
           }
-          @core.Value::EnumSet(@runtime.make_enum_set(left.universe, members))
+          EnumSet(@runtime.make_enum_set(left.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -395,7 +395,7 @@ fn apply_hashtable_enumset_primitive_core(
           for i in 0..<members.length() {
             members[i] = !set.members[i]
           }
-          @core.Value::EnumSet(@runtime.make_enum_set(set.universe, members))
+          EnumSet(@runtime.make_enum_set(set.universe, members))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -409,7 +409,7 @@ fn apply_hashtable_enumset_primitive_core(
             let name = target.universe[i]
             members[i] = @runtime.enum_set_member_by_name(source, name)
           }
-          @core.Value::EnumSet(@runtime.make_enum_set(target.universe, members))
+          EnumSet(@runtime.make_enum_set(target.universe, members))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -423,12 +423,12 @@ fn apply_hashtable_enumset_primitive_core(
               items.push(Symbol(set.universe[i]))
             }
           }
-          @core.Value::Datum(list_from_array(items))
+          Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())
       }
     _ =>
-      raise @core.EvalError(
+      raise EvalError(
         "internal error: apply_hashtable_enumset_primitive dispatch",
       )
   }

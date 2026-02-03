@@ -324,7 +324,7 @@ pub fn enum_set_from_names(
   for name in names {
     match enum_set_index_of(universe, name) {
       Some(idx) => members[idx] = true
-      None => raise @core.EvalError("enum-set: unknown symbol")
+      None => raise EvalError("enum-set: unknown symbol")
     }
   }
   make_enum_set(universe, members)
@@ -406,9 +406,9 @@ pub fn is_procedure_value(value : @core.Value) -> Bool {
     | CaseClosure(_)
     | Parameter(_)
     | Continuation(_)
-    | @core.RecordProc(_)
-    | @core.ConditionProc(_)
-    | @core.EnumSetProc(_) => true
+    | RecordProc(_)
+    | ConditionProc(_)
+    | EnumSetProc(_) => true
     _ => false
   }
 }
@@ -523,8 +523,8 @@ pub fn port_get_output_string(port : @core.Port) -> String {
 /// # Example
 /// ```mbt check
 /// test "datum_unlabel unwraps label" {
-///   let cell = Ref::new(@core.Datum::Int(1))
-///   let labeled = @core.Datum::Label(1, cell)
+///   let cell = Ref::new(Datum::Int(1))
+///   let labeled = Datum::Label(1, cell)
 ///   match datum_unlabel(labeled) {
 ///     Int(1) => ()
 ///     _ => fail("expected int datum")
@@ -564,8 +564,8 @@ fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
 /// # Example
 /// ```mbt check
 /// test "symbol_name" {
-///   inspect(symbol_name(@core.Datum::Symbol("x")), content="Some(\"x\")")
-///   inspect(symbol_name(@core.Datum::Int(1)), content="None")
+///   inspect(symbol_name(Symbol("x")), content="Some(\"x\")")
+///   inspect(symbol_name(Int(1)), content="None")
 /// }
 /// ```
 pub fn symbol_name(expr : @core.Datum) -> String? {
@@ -610,8 +610,8 @@ pub fn strip_syntax_datum(datum : @core.Datum) -> @core.Datum {
 fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      @core.Datum::Value(
-        @core.Value::SyntaxObject(
+      Value(
+        SyntaxObject(
           @core.SyntaxObject::new(Symbol(name), scopes, None),
         ),
       )
@@ -649,8 +649,8 @@ pub fn syntax_wrap_root(
 pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      @core.Datum::Value(
-        @core.Value::SyntaxObject(
+      Value(
+        SyntaxObject(
           @core.SyntaxObject::new(Symbol(name), [scope], None),
         ),
       )
@@ -660,8 +660,8 @@ pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
         Symbol(_) => obj.datum
         _ => syntax_add_scope(obj.datum, scope)
       }
-      @core.Datum::Value(
-        @core.Value::SyntaxObject(
+      Value(
+        SyntaxObject(
           @core.SyntaxObject::new(inner, next_scopes, obj.binding_id),
         ),
       )

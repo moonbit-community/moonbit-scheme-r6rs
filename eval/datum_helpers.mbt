@@ -2,9 +2,9 @@
 /// Convert a @core.Datum back to a @core.Value.
 fn value_from_datum(datum : @core.Datum) -> @core.Value {
   match datum {
-    Record(record) => @core.Value::Record(record)
+    Record(record) => Record(record)
     Value(value) => value
-    _ => @core.Value::Datum(datum)
+    _ => Datum(datum)
   }
 }
 
@@ -34,7 +34,7 @@ fn datum_list_to_array(
         items.push(a.val)
         continue b.val
       }
-      _ => raise @core.EvalError("type error: proper list expected")
+      _ => raise EvalError("type error: proper list expected")
     }
   } else {
     ()
@@ -45,7 +45,7 @@ fn datum_list_to_array(
 ///|
 /// Build a list datum from an array.
 fn list_from_array(items : Array[@core.Datum]) -> @core.Datum {
-  for i = items.length(), tail = @core.Datum::Nil; i > 0; {
+  for i = items.length(), tail = Datum::Nil; i > 0; {
     // invariant : i >= 0 && i <= items.length()
     // decreases : i
     // assert : i <= items.length()

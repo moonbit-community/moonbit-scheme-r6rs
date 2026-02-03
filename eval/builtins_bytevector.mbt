@@ -7,7 +7,7 @@ fn apply_bytevector_primitive(
   match prim {
     ByteVector => {
       let items : Array[Int] = args.map(arg => value_as_byte(arg))
-      Some(@core.Value::Datum(ByteVector(items)))
+      Some(Datum(ByteVector(items)))
     }
     MakeByteVector =>
       match args {
@@ -20,7 +20,7 @@ fn apply_bytevector_primitive(
               for i in 0..<len {
                 items.push(fill)
               }
-              @core.Value::Datum(ByteVector(items))
+              Datum(ByteVector(items))
             },
           )
         [len_value, fill_value] =>
@@ -32,11 +32,11 @@ fn apply_bytevector_primitive(
               for i in 0..<len {
                 items.push(fill)
               }
-              @core.Value::Datum(ByteVector(items))
+              Datum(ByteVector(items))
             },
           )
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
@@ -50,7 +50,7 @@ fn apply_bytevector_primitive(
       match args {
         [vec_value] => {
           let items = value_as_bytevector(vec_value)
-          Some(@core.Value::Datum(Int(items.length())))
+          Some(Datum(Int(items.length())))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -89,7 +89,7 @@ fn apply_bytevector_primitive(
               let items = value_as_bytevector(vec_value)
               let idx = value_as_int_index(idx_value)
               check_index(idx, items.length())
-              @core.Value::Datum(Int(items[idx]))
+              Datum(Int(items[idx]))
             },
           )
         _ => raise arity_mismatch(2, args.length())
@@ -103,7 +103,7 @@ fn apply_bytevector_primitive(
               let idx = value_as_int_index(idx_value)
               check_index(idx, items.length())
               items[idx] = value_as_byte(item_value)
-              @core.Value::Void
+              Void
             },
           )
         _ => raise arity_mismatch(3, args.length())
@@ -124,10 +124,10 @@ fn apply_bytevector_primitive(
           }
           check_slice_range(start, end, items.length())
           let slice = items[start:end].to_array()
-          Some(@core.Value::Datum(ByteVector(slice)))
+          Some(Datum(ByteVector(slice)))
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
@@ -161,10 +161,10 @@ fn apply_bytevector_primitive(
           for j in 0..<count {
             to_items[at + j] = temp[j]
           }
-          Some(@core.Value::Void)
+          Some(Void)
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 3 to 5 got \{args.length()}",
           )
       }
@@ -174,7 +174,7 @@ fn apply_bytevector_primitive(
         let vec = value_as_bytevector(arg)
         items.push_iter(vec.iter())
       }
-      Some(@core.Value::Datum(ByteVector(items)))
+      Some(Datum(ByteVector(items)))
     }
     ByteVectorFill =>
       match args {
@@ -195,10 +195,10 @@ fn apply_bytevector_primitive(
           for i in start..<end {
             items[i] = fill
           }
-          Some(@core.Value::Void)
+          Some(Void)
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 2 to 4 got \{args.length()}",
           )
       }
@@ -221,10 +221,10 @@ fn apply_bytevector_primitive(
           for i in start..<end {
             datums.push(Int(items[i]))
           }
-          Some(@core.Value::Datum(list_from_array(datums)))
+          Some(Datum(list_from_array(datums)))
         }
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
@@ -238,13 +238,13 @@ fn apply_bytevector_primitive(
               let bytes : Array[Int] = items.map(item => match item {
                 Int(n) => {
                   if n < 0 || n > 255 {
-                    raise @core.EvalError("type error: byte expected")
+                    raise EvalError::EvalError("type error: byte expected")
                   }
                   n
                 }
-                _ => raise @core.EvalError("type error: byte expected")
+                _ => raise EvalError::EvalError("type error: byte expected")
               })
-              @core.Value::Datum(ByteVector(bytes))
+              Datum(ByteVector(bytes))
             },
           )
         _ => raise arity_mismatch(1, args.length())
@@ -258,7 +258,7 @@ fn apply_bytevector_primitive(
               let start = 0
               let end = string_char_length(s)
               let bytes = string_to_utf8_bytes(s, start, end)
-              @core.Value::Datum(ByteVector(bytes))
+              Datum(ByteVector(bytes))
             },
           )
         [string_value, start_value] =>
@@ -268,7 +268,7 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = string_char_length(s)
               let bytes = string_to_utf8_bytes(s, start, end)
-              @core.Value::Datum(ByteVector(bytes))
+              Datum(ByteVector(bytes))
             },
           )
         [string_value, start_value, end_value] =>
@@ -278,11 +278,11 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = value_as_int_index(end_value)
               let bytes = string_to_utf8_bytes(s, start, end)
-              @core.Value::Datum(ByteVector(bytes))
+              Datum(ByteVector(bytes))
             },
           )
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
@@ -295,7 +295,7 @@ fn apply_bytevector_primitive(
               let start = 0
               let end = items.length()
               let text = utf8_decode_to_string(items, start, end)
-              @core.Value::Datum(String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             },
           )
         [vec_value, start_value] =>
@@ -305,7 +305,7 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = items.length()
               let text = utf8_decode_to_string(items, start, end)
-              @core.Value::Datum(String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             },
           )
         [vec_value, start_value, end_value] =>
@@ -315,11 +315,11 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = value_as_int_index(end_value)
               let text = utf8_decode_to_string(items, start, end)
-              @core.Value::Datum(String(Ref::new(text)))
+              Datum(String(Ref::new(text)))
             },
           )
         _ =>
-          raise @core.EvalError(
+          raise EvalError(
             "arity mismatch: expected 1 to 3 got \{args.length()}",
           )
       }
@@ -339,7 +339,7 @@ fn apply_bytevector_primitive(
               let size = bytevector_size_from_value(size_value)
               check_bytevector_range(start, size, items.length())
               let value = bytevector_uint_ref(items, start, size, endian)
-              @core.Value::Datum(bigint_to_integer_datum(value))
+              Datum(bigint_to_integer_datum(value))
             },
           )
         _ => raise arity_mismatch(4, args.length())
@@ -355,7 +355,7 @@ fn apply_bytevector_primitive(
               let size = bytevector_size_from_value(size_value)
               check_bytevector_range(start, size, items.length())
               let value = bytevector_sint_ref(items, start, size, endian)
-              @core.Value::Datum(bigint_to_integer_datum(value))
+              Datum(bigint_to_integer_datum(value))
             },
           )
         _ => raise arity_mismatch(4, args.length())
@@ -372,7 +372,7 @@ fn apply_bytevector_primitive(
               check_bytevector_range(start, size, items.length())
               let value = datum_to_bigint(value_as_exact_integer(value_value))
               bytevector_uint_set(items, start, size, endian, value)
-              @core.Value::Void
+              Void
             },
           )
         _ => raise arity_mismatch(5, args.length())
@@ -390,7 +390,7 @@ fn apply_bytevector_primitive(
               let value = datum_to_bigint(value_as_exact_integer(value_value))
               let unsigned = bytevector_sint_to_uint(value, size)
               bytevector_uint_set(items, start, size, endian, unsigned)
-              @core.Value::Void
+              Void
             },
           )
         _ => raise arity_mismatch(5, args.length())

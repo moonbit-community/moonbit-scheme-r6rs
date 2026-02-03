@@ -1,7 +1,7 @@
 ///|
 /// Build a standardized arity mismatch error.
 fn arity_mismatch(expected : Int, got : Int) -> @core.EvalError {
-  @core.EvalError("arity mismatch: expected \{expected} got \{got}")
+  EvalError("arity mismatch: expected \{expected} got \{got}")
 }
 
 ///|
@@ -165,15 +165,15 @@ fn identifier_info(
       if @runtime.datum_unlabel(d) is Symbol(name) {
         (name, [], None)
       } else {
-        raise @core.EvalError("type error: identifier expected")
+        raise EvalError("type error: identifier expected")
       }
     SyntaxObject(obj) =>
       if @runtime.datum_unlabel(obj.datum) is Symbol(name) {
         (name, obj.scopes, obj.binding_id)
       } else {
-        raise @core.EvalError("type error: identifier expected")
+        raise EvalError("type error: identifier expected")
       }
-    _ => raise @core.EvalError("type error: identifier expected")
+    _ => raise EvalError("type error: identifier expected")
   }
 }
 
@@ -188,7 +188,7 @@ fn is_identifier_value(value : @core.Value) -> Bool {
 
 ///|
 fn bool_value(value : Bool) -> @core.Value {
-  @core.Value::Datum(Bool(value))
+  Datum(Bool(value))
 }
 
 ///|
@@ -204,7 +204,7 @@ fn value_as_datum(value : @core.Value) -> @core.Datum raise @core.EvalError {
   match value {
     Datum(d) => d
     Record(record) => Record(record)
-    _ => raise @core.EvalError("type error: datum expected")
+    _ => raise EvalError("type error: datum expected")
   }
 }
 
@@ -226,9 +226,9 @@ fn value_as_pair(
       if @runtime.datum_unlabel(datum) is Pair(a, b) {
         (a.val, b.val)
       } else {
-        raise @core.EvalError("type error: pair expected")
+        raise EvalError("type error: pair expected")
       }
-    _ => raise @core.EvalError("type error: pair expected")
+    _ => raise EvalError("type error: pair expected")
   }
 }
 
@@ -241,9 +241,9 @@ fn value_as_pair_cells(
       if @runtime.datum_unlabel(datum) is Pair(a, b) {
         (a, b)
       } else {
-        raise @core.EvalError("type error: pair expected")
+        raise EvalError("type error: pair expected")
       }
-    _ => raise @core.EvalError("type error: pair expected")
+    _ => raise EvalError("type error: pair expected")
   }
 }
 
@@ -266,17 +266,17 @@ fn value_as_number(value : @core.Value) -> @core.Datum raise @core.EvalError {
         | BigRat(_, _)
         | Float(_)
         | Complex(_, _) => unlabel
-        _ => raise @core.EvalError("type error: number expected")
+        _ => raise EvalError("type error: number expected")
       }
     }
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
 ///|
 fn bigint_to_float(value : @bigint.BigInt) -> Float raise @core.EvalError {
   try @strconv.parse_double(value.to_string()) catch {
-    _ => raise @core.EvalError("number too large")
+    _ => raise EvalError("number too large")
   } noraise {
     v => Float::from_double(v)
   }
@@ -300,7 +300,7 @@ fn number_to_float(value : @core.Datum) -> Float raise @core.EvalError {
     Rat(n, d) => Float::from_int(n) / Float::from_int(d)
     BigRat(n, d) => bigint_to_float(n) / bigint_to_float(d)
     Float(f) => f
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -310,7 +310,7 @@ fn number_to_rat(value : @core.Datum) -> (Int, Int) raise @core.EvalError {
   match real_value {
     Int(n) => (n, 1)
     Rat(n, d) => (n, d)
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -324,7 +324,7 @@ fn number_to_bigrat(
     BigInt(n) => (n, bigint_from_int(1))
     Rat(n, d) => (bigint_from_int(n), bigint_from_int(d))
     BigRat(n, d) => (n, d)
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -470,7 +470,7 @@ fn normalize_big_rat(
 /// Convert a finite float into an exact rational@core.Datum.
 fn float_to_exact_datum(value : Float) -> @core.Datum raise @core.EvalError {
   if !float_is_finite(value) {
-    raise @core.EvalError("inexact->exact: non-finite")
+    raise EvalError("inexact->exact: non-finite")
   }
   // Decode IEEE-754 f32 into an exact rational.
   let bits = Float::reinterpret_as_uint(value)
@@ -502,7 +502,7 @@ fn float_to_exact_datum(value : Float) -> @core.Datum raise @core.EvalError {
   let num = if sign_bit != 0U { -num } else { num }
   match normalize_big_rat(num, den) {
     Some(datum) => datum
-    None => raise @core.EvalError("inexact->exact: unsupported")
+    None => raise EvalError("inexact->exact: unsupported")
   }
 }
 
@@ -513,7 +513,7 @@ fn inexact_component_to_exact(
   match value {
     Float(f) => float_to_exact_datum(f)
     Int(_) | BigInt(_) | Rat(_, _) | BigRat(_, _) => value
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -524,7 +524,7 @@ fn normalize_rat_or_error(
 ) -> @core.Datum raise @core.EvalError {
   match normalize_rat(num, den) {
     Some(result) => result
-    None => raise @core.EvalError("division by zero")
+    None => raise EvalError("division by zero")
   }
 }
 
@@ -535,7 +535,7 @@ fn normalize_big_rat_or_error(
 ) -> @core.Datum raise @core.EvalError {
   match normalize_big_rat(num, den) {
     Some(result) => result
-    None => raise @core.EvalError("division by zero")
+    None => raise EvalError("division by zero")
   }
 }
 
@@ -608,7 +608,7 @@ fn datum_to_real(value : @core.Datum) -> @core.Datum raise @core.EvalError {
       if datum_is_zero(imag.val) {
         real.val
       } else {
-        raise @core.EvalError("type error: real expected")
+        raise EvalError("type error: real expected")
       }
     _ => value
   }
@@ -766,7 +766,7 @@ fn complex_div_f(
 ) -> (Float, Float) raise @core.EvalError {
   let denom = br * br + bi * bi
   if denom == 0.0 {
-    raise @core.EvalError("division by zero")
+    raise EvalError("division by zero")
   }
   ((ar * br + ai * bi) / denom, (ai * br - ar * bi) / denom)
 }
@@ -959,21 +959,21 @@ fn num_div(
   if left is Float(_) || right is Float(_) {
     let denom = number_to_float(right)
     if denom == 0.0 {
-      raise @core.EvalError("division by zero")
+      raise EvalError("division by zero")
     }
     Float(number_to_float(left) / denom)
   } else if datum_is_big_exact(left) || datum_is_big_exact(right) {
     let (n1, d1) = number_to_bigrat(left)
     let (n2, d2) = number_to_bigrat(right)
     if bigint_is_zero(n2) {
-      raise @core.EvalError("division by zero")
+      raise EvalError("division by zero")
     }
     normalize_big_rat_or_error(n1 * d2, d1 * n2)
   } else {
     let (n1, d1) = number_to_rat(left)
     let (n2, d2) = number_to_rat(right)
     if n2 == 0 {
-      raise @core.EvalError("division by zero")
+      raise EvalError("division by zero")
     }
     normalize_rat_or_error(n1 * d2, d1 * n2)
   }
@@ -1285,9 +1285,9 @@ fn value_as_string(value : @core.Value) -> String raise @core.EvalError {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         String(s) => s.val
-        _ => raise @core.EvalError("type error: string expected")
+        _ => raise EvalError("type error: string expected")
       }
-    _ => raise @core.EvalError("type error: string expected")
+    _ => raise EvalError("type error: string expected")
   }
 }
 
@@ -1299,9 +1299,9 @@ fn value_as_string_ref(
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         String(s) => s
-        _ => raise @core.EvalError("type error: string expected")
+        _ => raise EvalError("type error: string expected")
       }
-    _ => raise @core.EvalError("type error: string expected")
+    _ => raise EvalError("type error: string expected")
   }
 }
 
@@ -1314,7 +1314,7 @@ fn string_replace_range(
 ) -> String raise @core.EvalError {
   let len = s.length()
   if start < 0 || end < start || end > len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let buf = @buffer.new()
   for i in 0..<len {
@@ -1325,7 +1325,7 @@ fn string_replace_range(
         } else {
           buf.write_char(ch)
         }
-      None => raise @core.EvalError("index out of range")
+      None => raise EvalError("index out of range")
     }
   }
   buf.to_string()
@@ -1337,9 +1337,9 @@ fn value_as_char(value : @core.Value) -> Char raise @core.EvalError {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Char(ch) => ch
-        _ => raise @core.EvalError("type error: char expected")
+        _ => raise EvalError("type error: char expected")
       }
-    _ => raise @core.EvalError("type error: char expected")
+    _ => raise EvalError("type error: char expected")
   }
 }
 
@@ -1348,7 +1348,7 @@ fn char_from_int_value(value : @core.Value) -> Char raise @core.EvalError {
   let n = value_as_int_index(value)
   match n.to_char() {
     Some(ch) => ch
-    None => raise @core.EvalError("type error: valid scalar value expected")
+    None => raise EvalError("type error: valid scalar value expected")
   }
 }
 
@@ -1458,7 +1458,7 @@ fn value_as_int_index(value : @core.Value) -> Int raise @core.EvalError {
         BigInt(n) =>
           match bigint_to_int_option(n) {
             Some(v) => v
-            None => raise @core.EvalError("index out of range")
+            None => raise EvalError("index out of range")
           }
         Complex(real, imag) =>
           if datum_is_zero(imag.val) {
@@ -1467,16 +1467,16 @@ fn value_as_int_index(value : @core.Value) -> Int raise @core.EvalError {
               BigInt(n) =>
                 match bigint_to_int_option(n) {
                   Some(v) => v
-                  None => raise @core.EvalError("index out of range")
+                  None => raise EvalError("index out of range")
                 }
-              _ => raise @core.EvalError("type error: exact integer expected")
+              _ => raise EvalError("type error: exact integer expected")
             }
           } else {
-            raise @core.EvalError("type error: exact integer expected")
+            raise EvalError("type error: exact integer expected")
           }
-        _ => raise @core.EvalError("type error: exact integer expected")
+        _ => raise EvalError("type error: exact integer expected")
       }
-    _ => raise @core.EvalError("type error: exact integer expected")
+    _ => raise EvalError("type error: exact integer expected")
   }
 }
 
@@ -1494,14 +1494,14 @@ fn value_as_exact_integer(
             match @runtime.datum_unlabel(real.val) {
               Int(n) => Int(n)
               BigInt(n) => BigInt(n)
-              _ => raise @core.EvalError("type error: integer expected")
+              _ => raise EvalError("type error: integer expected")
             }
           } else {
-            raise @core.EvalError("type error: integer expected")
+            raise EvalError("type error: integer expected")
           }
-        _ => raise @core.EvalError("type error: integer expected")
+        _ => raise EvalError("type error: integer expected")
       }
-    _ => raise @core.EvalError("type error: integer expected")
+    _ => raise EvalError("type error: integer expected")
   }
 }
 
@@ -1510,7 +1510,7 @@ fn datum_to_bigint(value : @core.Datum) -> @bigint.BigInt raise @core.EvalError 
   match @runtime.datum_unlabel(value) {
     Int(n) => bigint_from_int(n)
     BigInt(n) => n
-    _ => raise @core.EvalError("type error: integer expected")
+    _ => raise EvalError("type error: integer expected")
   }
 }
 
@@ -1587,7 +1587,7 @@ fn exact_sqrt_real(value : @core.Datum) -> @core.Datum? raise @core.EvalError {
 fn value_as_nonnegative_int(value : @core.Value) -> Int raise @core.EvalError {
   let n = value_as_int_index(value)
   if n < 0 {
-    raise @core.EvalError("type error: exact nonnegative integer expected")
+    raise EvalError("type error: exact nonnegative integer expected")
   }
   n
 }
@@ -1662,9 +1662,9 @@ fn value_as_fixnum_bigint(
     Datum(datum) =>
       match datum_fixnum_bigint(datum) {
         Some(n) => n
-        None => raise @core.EvalError("type error: fixnum expected")
+        None => raise EvalError("type error: fixnum expected")
       }
-    _ => raise @core.EvalError("type error: fixnum expected")
+    _ => raise EvalError("type error: fixnum expected")
   }
 }
 
@@ -1680,7 +1680,7 @@ fn value_as_fixnum_int(value : @core.Value) -> Int raise @core.EvalError {
   let big = value_as_fixnum_bigint(value)
   match bigint_to_int_option(big) {
     Some(v) => v
-    None => raise @core.EvalError("type error: fixnum expected")
+    None => raise EvalError("type error: fixnum expected")
   }
 }
 
@@ -1690,7 +1690,7 @@ fn value_as_nonnegative_fixnum_int(
 ) -> Int raise @core.EvalError {
   let n = value_as_fixnum_int(value)
   if n < 0 {
-    raise @core.EvalError("type error: exact nonnegative integer expected")
+    raise EvalError("type error: exact nonnegative integer expected")
   }
   n
 }
@@ -1701,7 +1701,7 @@ fn fixnum_from_bigint(
 ) -> @core.Datum raise @core.EvalError {
   match bigint_to_int_option(value) {
     Some(v) => Int(v)
-    None => raise @core.EvalError("fixnum overflow")
+    None => raise EvalError("fixnum overflow")
   }
 }
 
@@ -1730,9 +1730,9 @@ fn value_as_flonum(value : @core.Value) -> Float raise @core.EvalError {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Float(f) => f
-        _ => raise @core.EvalError("type error: flonum expected")
+        _ => raise EvalError("type error: flonum expected")
       }
-    _ => raise @core.EvalError("type error: flonum expected")
+    _ => raise EvalError("type error: flonum expected")
   }
 }
 
@@ -1740,11 +1740,11 @@ fn value_as_flonum(value : @core.Value) -> Float raise @core.EvalError {
 fn value_as_integer_flonum(value : @core.Value) -> Int raise @core.EvalError {
   let f = value_as_flonum(value)
   if !float_is_finite(f) {
-    raise @core.EvalError("type error: integer-valued flonum expected")
+    raise EvalError("type error: integer-valued flonum expected")
   }
   match float_to_int_exact(f) {
     Some(n) => n
-    None => raise @core.EvalError("type error: integer-valued flonum expected")
+    None => raise EvalError("type error: integer-valued flonum expected")
   }
 }
 
@@ -1786,7 +1786,7 @@ fn flonum_numerator(value : Float) -> Float raise @core.EvalError {
     BigInt(n) => bigint_to_float(n)
     Rat(n, _) => Float::from_int(n)
     BigRat(n, _) => bigint_to_float(n)
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -1803,7 +1803,7 @@ fn flonum_denominator(value : Float) -> Float raise @core.EvalError {
     Int(_) | BigInt(_) => Float::from_int(1)
     Rat(_, d) => Float::from_int(d)
     BigRat(_, d) => bigint_to_float(d)
-    _ => raise @core.EvalError("type error: number expected")
+    _ => raise EvalError("type error: number expected")
   }
 }
 
@@ -2010,7 +2010,7 @@ fn datum_bitwise_bit_field(
   end : Int,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let width = end - start
   if width == 0 {
@@ -2030,7 +2030,7 @@ fn datum_bitwise_copy_bit_field(
   from : @core.Datum,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let width = end - start
   if width == 0 {
@@ -2059,7 +2059,7 @@ fn datum_bitwise_rotate_bit_field(
   count : Int,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let width = end - start
   if width == 0 {
@@ -2089,7 +2089,7 @@ fn datum_bitwise_reverse_bit_field(
   end : Int,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let width = end - start
   if width == 0 {
@@ -2120,7 +2120,7 @@ fn datum_bitwise_reverse_bit_field(
 ///|
 fn check_index(idx : Int, len : Int) -> Unit raise @core.EvalError {
   if idx < 0 || idx >= len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
 }
 
@@ -2131,7 +2131,7 @@ fn check_slice_range(
   len : Int,
 ) -> Unit raise @core.EvalError {
   if start < 0 || end < start || end > len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
 }
 
@@ -2146,11 +2146,11 @@ fn check_copy_range(
 ) -> Int raise @core.EvalError {
   check_slice_range(start, end, from_len)
   if at < 0 {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let count = end - start
   if at + count > to_len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   count
 }
@@ -2330,11 +2330,11 @@ fn list_member(
       Nil => break bool_value(false)
       Pair(car, cdr) => {
         if equality_match(mode, item, value_from_datum(car.val)) {
-          break @core.Value::Datum(cur)
+          break Datum(cur)
         }
         continue cdr.val
       }
-      _ => raise @core.EvalError("type error: proper list expected")
+      _ => raise EvalError("type error: proper list expected")
     }
   } else {
     bool_value(false)
@@ -2362,13 +2362,13 @@ fn list_assoc(
         match entry_val {
           Pair(car, _) =>
             if equality_match(mode, key, value_from_datum(car.val)) {
-              break @core.Value::Datum(entry_val)
+              break Datum(entry_val)
             }
-          _ => raise @core.EvalError("type error: pair expected")
+          _ => raise EvalError("type error: pair expected")
         }
         continue rest.val
       }
-      _ => raise @core.EvalError("type error: proper list expected")
+      _ => raise EvalError("type error: proper list expected")
     }
   } else {
     bool_value(false)
@@ -2383,9 +2383,9 @@ fn value_as_vector(
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Vector(items) => items
-        _ => raise @core.EvalError("type error: vector expected")
+        _ => raise EvalError("type error: vector expected")
       }
-    _ => raise @core.EvalError("type error: vector expected")
+    _ => raise EvalError("type error: vector expected")
   }
 }
 
@@ -2393,7 +2393,7 @@ fn value_as_vector(
 fn value_as_bool(value : @core.Value) -> Bool raise @core.EvalError {
   match value {
     Datum(Bool(flag)) => flag
-    _ => raise @core.EvalError("type error: boolean expected")
+    _ => raise EvalError("type error: boolean expected")
   }
 }
 
@@ -2403,9 +2403,9 @@ fn value_as_symbol(value : @core.Value) -> String raise @core.EvalError {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         Symbol(name) => name
-        _ => raise @core.EvalError("type error: symbol expected")
+        _ => raise EvalError("type error: symbol expected")
       }
-    _ => raise @core.EvalError("type error: symbol expected")
+    _ => raise EvalError("type error: symbol expected")
   }
 }
 
@@ -2421,9 +2421,9 @@ fn parse_field_spec(
           @core.RecordField::new(field_name, true)
         (Some("immutable"), Some(field_name)) =>
           @core.RecordField::new(field_name, false)
-        _ => raise @core.EvalError("invalid record field spec")
+        _ => raise EvalError("invalid record field spec")
       }
-    _ => raise @core.EvalError("invalid record field spec")
+    _ => raise EvalError("invalid record field spec")
   }
 }
 
@@ -2440,9 +2440,9 @@ fn value_as_bytevector(value : @core.Value) -> Array[Int] raise @core.EvalError 
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
         ByteVector(items) => items
-        _ => raise @core.EvalError("type error: bytevector expected")
+        _ => raise EvalError("type error: bytevector expected")
       }
-    _ => raise @core.EvalError("type error: bytevector expected")
+    _ => raise EvalError("type error: bytevector expected")
   }
 }
 
@@ -2451,11 +2451,11 @@ fn value_as_byte(value : @core.Value) -> Int raise @core.EvalError {
   match value {
     Datum(Int(n)) => {
       if n < 0 || n > 255 {
-        raise @core.EvalError("type error: byte expected")
+        raise EvalError("type error: byte expected")
       }
       n
     }
-    _ => raise @core.EvalError("type error: byte expected")
+    _ => raise EvalError("type error: byte expected")
   }
 }
 
@@ -2472,7 +2472,7 @@ fn native_endianness_mode() -> Endian {
 
 ///|
 fn native_endianness_value() -> @core.Value {
-  @core.Value::Datum(Symbol("little"))
+  Datum(Symbol("little"))
 }
 
 ///|
@@ -2482,7 +2482,7 @@ fn endianness_from_value(value : @core.Value) -> Endian raise @core.EvalError {
     "big" => BigEndian
     "little" => LittleEndian
     "native" => native_endianness_mode()
-    _ => raise @core.EvalError("type error: endianness expected")
+    _ => raise EvalError("type error: endianness expected")
   }
 }
 
@@ -2490,7 +2490,7 @@ fn endianness_from_value(value : @core.Value) -> Endian raise @core.EvalError {
 fn bytevector_size_from_value(value : @core.Value) -> Int raise @core.EvalError {
   let size = value_as_nonnegative_int(value)
   if size <= 0 || size > 8 {
-    raise @core.EvalError("size out of range")
+    raise EvalError("size out of range")
   }
   size
 }
@@ -2502,13 +2502,13 @@ fn check_bytevector_range(
   len : Int,
 ) -> Unit raise @core.EvalError {
   if start < 0 || start + size > len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
 }
 
 ///|
 fn utf8_raise_invalid() -> Unit raise @core.EvalError {
-  raise @core.EvalError("invalid utf8 sequence")
+  raise EvalError("invalid utf8 sequence")
 }
 
 ///|
@@ -2552,7 +2552,7 @@ fn string_to_utf8_bytes(
 ) -> Array[Int] raise @core.EvalError {
   let len = s.char_length()
   if start < 0 || end < start || end > len {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let bytes : Array[Int] = []
   let mut idx = 0
@@ -2572,7 +2572,7 @@ fn utf8_decode_to_string(
   end : Int,
 ) -> String raise @core.EvalError {
   if start < 0 || end < start || end > items.length() {
-    raise @core.EvalError("index out of range")
+    raise EvalError("index out of range")
   }
   let buf = @buffer.new()
   let result = for i = start; i < end; {
@@ -2696,7 +2696,7 @@ fn bytevector_uint_set(
 ) -> Unit raise @core.EvalError {
   let limit = bigint_pow2(size * 8)
   if value.compare_int(0) < 0 || value >= limit {
-    raise @core.EvalError("integer out of range")
+    raise EvalError("integer out of range")
   }
   let base = bigint_from_int(256)
   let bytes : Array[Int] = []
@@ -2707,7 +2707,7 @@ fn bytevector_uint_set(
     let byte = v % base
     let byte_int = match bigint_to_int_option(byte) {
       Some(n) => n
-      None => raise @core.EvalError("integer out of range")
+      None => raise EvalError("integer out of range")
     }
     bytes.push(byte_int)
     continue i + 1, v / base
@@ -2757,7 +2757,7 @@ fn bytevector_sint_to_uint(
   let limit = bigint_pow2(size * 8)
   let min = -sign_bit
   if value < min || value >= sign_bit {
-    raise @core.EvalError("integer out of range")
+    raise EvalError("integer out of range")
   }
   if value.compare_int(0) < 0 {
     value + limit
@@ -2770,7 +2770,7 @@ fn bytevector_sint_to_uint(
 fn value_as_port(value : @core.Value) -> @core.Port raise @core.EvalError {
   match value {
     Port(port) => port
-    _ => raise @core.EvalError("type error: port expected")
+    _ => raise EvalError("type error: port expected")
   }
 }
 
@@ -2780,7 +2780,7 @@ fn value_as_record_type_descriptor(
 ) -> @core.RecordTypeDescriptor raise @core.EvalError {
   match value {
     RecordTypeDescriptor(desc) => desc
-    _ => raise @core.EvalError("type error: record type descriptor expected")
+    _ => raise EvalError("type error: record type descriptor expected")
   }
 }
 
@@ -2791,7 +2791,7 @@ fn value_as_record_constructor_descriptor(
   match value {
     RecordConstructorDescriptor(desc) => desc
     _ =>
-      raise @core.EvalError(
+      raise EvalError(
         "type error: record constructor descriptor expected",
       )
   }
@@ -2803,7 +2803,7 @@ fn value_as_hashtable(
 ) -> @core.Hashtable raise @core.EvalError {
   match value {
     Hashtable(table) => table
-    _ => raise @core.EvalError("type error: hashtable expected")
+    _ => raise EvalError("type error: hashtable expected")
   }
 }
 
@@ -2813,7 +2813,7 @@ fn value_as_enum_set(
 ) -> @core.EnumSet raise @core.EvalError {
   match value {
     EnumSet(set) => set
-    _ => raise @core.EvalError("type error: enum-set expected")
+    _ => raise EvalError("type error: enum-set expected")
   }
 }
 
@@ -2822,14 +2822,14 @@ fn hashtable_equiv_from_value(
   value : @core.Value,
 ) -> @core.HashtableEquiv raise @core.EvalError {
   match value {
-    Primitive(Eq) => @core.HashtableEquiv::Eq
-    Primitive(Eqv) => @core.HashtableEquiv::Eqv
-    Primitive(Equal) => @core.HashtableEquiv::Equal
+    Primitive(Eq) => Eq
+    Primitive(Eqv) => Eqv
+    Primitive(Equal) => Equal
     _ => {
       if !@runtime.is_procedure_value(value) {
-        raise @core.EvalError("type error: procedure expected")
+        raise EvalError("type error: procedure expected")
       }
-      @core.HashtableEquiv::Proc(value)
+      Proc(value)
     }
   }
 }
@@ -2837,10 +2837,10 @@ fn hashtable_equiv_from_value(
 ///|
 fn hashtable_equiv_to_value(equiv : @core.HashtableEquiv) -> @core.Value {
   match equiv {
-    @core.HashtableEquiv::Eq => @core.Value::Primitive(Eq)
-    @core.HashtableEquiv::Eqv => @core.Value::Primitive(Eqv)
-    @core.HashtableEquiv::Equal => @core.Value::Primitive(Equal)
-    @core.HashtableEquiv::Proc(proc) => proc
+    Eq => Primitive(Eq)
+    Eqv => Primitive(Eqv)
+    Equal => Primitive(Equal)
+    Proc(proc) => proc
   }
 }
 
@@ -2850,7 +2850,7 @@ fn validate_hashtable_size_arg(
 ) -> Unit raise @core.EvalError {
   let n = value_as_int_index(value)
   if n < 0 {
-    raise @core.EvalError("type error: non-negative integer expected")
+    raise EvalError("type error: non-negative integer expected")
   }
 }
 
@@ -2860,7 +2860,7 @@ fn enum_set_require_same_universe(
   b : @core.EnumSet,
 ) -> Unit raise @core.EvalError {
   if !@runtime.enum_set_universe_equal(a, b) {
-    raise @core.EvalError("type error: enum-set universe mismatch")
+    raise EvalError("type error: enum-set universe mismatch")
   }
 }
 
@@ -2878,7 +2878,7 @@ fn ensure_unique_symbols(names : Array[String]) -> Unit raise @core.EvalError {
   let seen : Map[String, Bool] = {}
   for name in names {
     if seen.contains(name) {
-      raise @core.EvalError("type error: duplicate symbol")
+      raise EvalError("type error: duplicate symbol")
     }
     seen[name] = true
   }
@@ -2891,7 +2891,7 @@ fn value_as_condition_type_descriptor(
   let desc = value_as_record_type_descriptor(value)
   let base = condition_base_type()
   if !@runtime.record_type_is_a(desc.record_type, base) {
-    raise @core.EvalError("type error: condition type expected")
+    raise EvalError("type error: condition type expected")
   }
   desc
 }
@@ -2904,9 +2904,9 @@ fn record_accessor_info(
     RecordProc(proc) =>
       match proc.kind {
         Accessor(record_type, idx) => (record_type, idx)
-        _ => raise @core.EvalError("type error: record accessor expected")
+        _ => raise EvalError("type error: record accessor expected")
       }
-    _ => raise @core.EvalError("type error: record accessor expected")
+    _ => raise EvalError("type error: record accessor expected")
   }
 }
 

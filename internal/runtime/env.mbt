@@ -5,7 +5,7 @@
 /// ```mbt check
 /// test "env define and lookup" {
 ///   let env = env_new()
-///   env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
+///   env_define(env, "x", Datum(Int(1)))
 ///   match env_lookup_optional(env, "x") {
 ///     Some(Datum(Int(1))) => ()
 ///     _ => fail("expected bound value")
@@ -33,9 +33,9 @@ pub fn env_extend(env : @core.Env) -> @core.Env {
 /// ```mbt check
 /// test "env clone isolates frames" {
 ///   let env = env_new()
-///   env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
+///   env_define(env, "x", Datum(Int(1)))
 ///   let cloned = env_clone(env)
-///   env_set(env, "x", @core.Value::Datum(@core.Datum::Int(2)))
+///   env_set(env, "x", Datum(Int(2)))
 ///   match env_lookup_optional(cloned, "x") {
 ///     Some(Datum(Int(1))) => ()
 ///     _ => fail("expected cloned value to stay 1")
@@ -103,7 +103,7 @@ pub fn env_define(env : @core.Env, name : String, value : @core.Value) -> Unit {
 /// # Example
 /// ```mbt check
 /// test "make binding" {
-///   let binding = make_binding(@core.Value::Datum(@core.Datum::Int(1)))
+///   let binding = make_binding(Datum(Int(1)))
 ///   match binding.value() {
 ///     Datum(Int(1)) => ()
 ///     _ => fail("expected datum binding")
@@ -122,7 +122,7 @@ pub fn env_lookup_binding(
 ) -> @core.Binding raise @core.EvalError {
   match env.get_binding(name) {
     Some(binding) => binding
-    None => raise @core.EvalError("unbound variable: \{name}")
+    None => raise EvalError("unbound variable: \{name}")
   }
 }
 
@@ -166,8 +166,8 @@ pub fn env_lookup_optional(env : @core.Env, name : String) -> @core.Value? {
 /// ```mbt check
 /// test "env set" {
 ///   let env = env_new()
-///   env_define(env, "x", @core.Value::Datum(@core.Datum::Int(1)))
-///   env_set(env, "x", @core.Value::Datum(@core.Datum::Int(2)))
+///   env_define(env, "x", Datum(Int(1)))
+///   env_set(env, "x", Datum(Int(2)))
 ///   match env_lookup_optional(env, "x") {
 ///     Some(Datum(Int(2))) => ()
 ///     _ => fail("expected updated value")
@@ -180,7 +180,7 @@ pub fn env_set(
   value : @core.Value,
 ) -> Unit raise @core.EvalError {
   if env.is_empty() {
-    raise @core.EvalError("unbound variable: \{name}")
+    raise EvalError("unbound variable: \{name}")
   }
   let updated = for i = env.length(); i > 0; i = i - 1 {
     // invariant : i >= 0 && i <= env.length()
@@ -196,6 +196,6 @@ pub fn env_set(
     false
   }
   if !updated {
-    raise @core.EvalError("unbound variable: \{name}")
+    raise EvalError("unbound variable: \{name}")
   }
 }
