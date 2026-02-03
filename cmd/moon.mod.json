@@ -1,0 +1,14 @@
+{
+  "name": "bobzhang/scheme-r6rs-cli",
+  "version": "0.1.0",
+  "source": ".",
+  "description": "Native CLI for bobzhang/scheme-r6rs",
+  "license": "MIT",
+  "deps": {
+    "bobzhang/scheme-r6rs": {
+      "path": ".."
+    },
+    "moonbitlang/async": "0.16.4"
+  },
+  "preferred-target": "native"
+}

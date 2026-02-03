@@ -19,6 +19,16 @@ let value = @bobzhang/scheme-r6rs.eval_program(program)
 let text = @bobzhang/scheme-r6rs.value_to_string(value)
 ```
 
+## CLI (native)
+
+The native CLI lives in `cmd/` (a separate MoonBit module using `moonbitlang/async`).
+
+```bash
+moon -C cmd run main -- --help
+moon -C cmd run main -- --eval "(+ 1 2)"
+moon -C cmd run main -- program.scm
+```
+
 ## Tests
 
 ```mbt check

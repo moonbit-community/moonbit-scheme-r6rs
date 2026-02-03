@@ -1,0 +1,13 @@
+{
+  "is-main": true,
+  "import": [
+    {
+      "path": "bobzhang/scheme-r6rs",
+      "alias": "scheme_r6rs"
+    },
+    "moonbitlang/core/env",
+    "moonbitlang/async",
+    "moonbitlang/async/fs",
+    "moonbitlang/async/stdio"
+  ]
+}
