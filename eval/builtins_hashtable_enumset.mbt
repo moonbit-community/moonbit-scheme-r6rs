@@ -79,29 +79,19 @@ fn apply_hashtable_enumset_primitive_core(
   match prim {
     MakeEqHashtable =>
       match args {
-        [] =>
-          Hashtable(
-            @runtime.make_hashtable(Eq, None, true),
-          )
+        [] => Hashtable(@runtime.make_hashtable(Eq, None, true))
         [size_value] => {
           validate_hashtable_size_arg(size_value)
-          Hashtable(
-            @runtime.make_hashtable(Eq, None, true),
-          )
+          Hashtable(@runtime.make_hashtable(Eq, None, true))
         }
         _ => raise arity_mismatch(1, args.length())
       }
     MakeEqvHashtable =>
       match args {
-        [] =>
-          Hashtable(
-            @runtime.make_hashtable(Eqv, None, true),
-          )
+        [] => Hashtable(@runtime.make_hashtable(Eqv, None, true))
         [size_value] => {
           validate_hashtable_size_arg(size_value)
-          Hashtable(
-            @runtime.make_hashtable(Eqv, None, true),
-          )
+          Hashtable(@runtime.make_hashtable(Eqv, None, true))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -112,9 +102,7 @@ fn apply_hashtable_enumset_primitive_core(
             raise EvalError("type error: procedure expected")
           }
           let equiv = hashtable_equiv_from_value(equiv_value)
-          Hashtable(
-            @runtime.make_hashtable(equiv, Some(hash_value), true),
-          )
+          Hashtable(@runtime.make_hashtable(equiv, Some(hash_value), true))
         }
         [hash_value, equiv_value, size_value] => {
           if !@runtime.is_procedure_value(hash_value) {
@@ -122,9 +110,7 @@ fn apply_hashtable_enumset_primitive_core(
           }
           let equiv = hashtable_equiv_from_value(equiv_value)
           validate_hashtable_size_arg(size_value)
-          Hashtable(
-            @runtime.make_hashtable(equiv, Some(hash_value), true),
-          )
+          Hashtable(@runtime.make_hashtable(equiv, Some(hash_value), true))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -217,10 +203,7 @@ fn apply_hashtable_enumset_primitive_core(
           let value_items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
             entry.value.val,
           ))
-          Values([
-            Datum(Vector(key_items)),
-            Datum(Vector(value_items)),
-          ])
+          Values([Datum(Vector(key_items)), Datum(Vector(value_items))])
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -282,9 +265,7 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [set_value] => {
           let set = value_as_enum_set(set_value)
-          EnumSetProc(
-            @runtime.make_enum_set_proc(Constructor(set)),
-          )
+          EnumSetProc(@runtime.make_enum_set_proc(Constructor(set)))
         }
         _ => raise arity_mismatch(1, args.length())
       }

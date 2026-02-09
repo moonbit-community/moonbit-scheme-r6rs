@@ -54,10 +54,7 @@ let primitive_bindings : Array[(String, @core.Primitive)] = [
   ("record?", RecordP),
   ("record-rtd", RecordRtd),
   ("record-type-descriptor?", RecordTypeDescriptorP),
-  (
-    "record-constructor-descriptor?",
-    RecordConstructorDescriptorP,
-  ),
+  ("record-constructor-descriptor?", RecordConstructorDescriptorP),
   ("record-type-name", RecordTypeName),
   ("record-type-parent", RecordTypeParent),
   ("record-type-uid", RecordTypeUid),
@@ -66,19 +63,13 @@ let primitive_bindings : Array[(String, @core.Primitive)] = [
   ("record-type-opaque?", RecordTypeOpaqueP),
   ("record-type-field-names", RecordTypeFieldNames),
   ("record-type-field-mutable?", RecordTypeFieldMutableP),
-  (
-    "record-constructor-descriptor",
-    RecordConstructorDescriptor,
-  ),
+  ("record-constructor-descriptor", RecordConstructorDescriptor),
   ("record-constructor", RecordConstructor),
   ("record-predicate", RecordPredicate),
   ("record-accessor", RecordAccessor),
   ("record-mutator", RecordMutator),
   ("make-record-type-descriptor", MakeRecordTypeDescriptor),
-  (
-    "make-record-constructor-descriptor",
-    MakeRecordConstructorDescriptor,
-  ),
+  ("make-record-constructor-descriptor", MakeRecordConstructorDescriptor),
   ("condition", Condition),
   ("condition?", ConditionP),
   ("simple-conditions", SimpleConditions),
@@ -98,10 +89,7 @@ let primitive_bindings : Array[(String, @core.Primitive)] = [
   ("hashtable-clear!", HashtableClear),
   ("hashtable-keys", HashtableKeys),
   ("hashtable-entries", HashtableEntries),
-  (
-    "hashtable-equivalence-function",
-    HashtableEquivalenceFunction,
-  ),
+  ("hashtable-equivalence-function", HashtableEquivalenceFunction),
   ("hashtable-hash-function", HashtableHashFunction),
   ("hashtable-mutable?", HashtableMutableP),
   ("make-enumeration", MakeEnumeration),
@@ -386,10 +374,7 @@ let primitive_bindings : Array[(String, @core.Primitive)] = [
   ("raise-continuable", RaiseContinuable),
   ("error", Error),
   ("assertion-violation", AssertionViolation),
-  (
-    "implementation-restriction-violation",
-    ImplementationRestrictionViolation,
-  ),
+  ("implementation-restriction-violation", ImplementationRestrictionViolation),
   ("undefined-violation", UndefinedViolation),
   ("syntax-violation", SyntaxViolation),
   ("call/cc", CallCC),
@@ -425,11 +410,7 @@ fn define_primitives(
 ///|
 fn define_cxr_primitives(env : @core.Env) -> Unit {
   for chain in cxr_chains {
-    @runtime.env_define(
-      env,
-      "c\{chain}r",
-      Primitive(Cxr(chain)),
-    )
+    @runtime.env_define(env, "c\{chain}r", Primitive(Cxr(chain)))
   }
 }
 
@@ -460,11 +441,7 @@ fn init_env() -> @core.Env {
       condition_rtd
     }
   }
-  @runtime.env_define(
-    env,
-    "&condition",
-    RecordTypeDescriptor(condition_rtd),
-  )
+  @runtime.env_define(env, "&condition", RecordTypeDescriptor(condition_rtd))
   define_primitives(env, primitive_bindings)
   define_cxr_primitives(env)
   env

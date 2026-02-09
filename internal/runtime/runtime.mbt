@@ -610,11 +610,7 @@ pub fn strip_syntax_datum(datum : @core.Datum) -> @core.Datum {
 fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      Value(
-        SyntaxObject(
-          @core.SyntaxObject::new(Symbol(name), scopes, None),
-        ),
-      )
+      Value(SyntaxObject(@core.SyntaxObject::new(Symbol(name), scopes, None)))
     Pair(a, b) =>
       pair_new(
         syntax_wrap_datum(a.val, scopes),
@@ -649,11 +645,7 @@ pub fn syntax_wrap_root(
 pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
   match datum {
     Symbol(name) =>
-      Value(
-        SyntaxObject(
-          @core.SyntaxObject::new(Symbol(name), [scope], None),
-        ),
-      )
+      Value(SyntaxObject(@core.SyntaxObject::new(Symbol(name), [scope], None)))
     Value(SyntaxObject(obj)) => {
       let next_scopes = scopes_with_added(obj.scopes, scope)
       let inner = match obj.datum {

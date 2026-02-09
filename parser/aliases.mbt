@@ -1,4 +1,5 @@
 ///|
 pub type Datum = @core.Datum
-pub type ParseError = @core.ParseError
 
+///|
+pub type ParseError = @core.ParseError

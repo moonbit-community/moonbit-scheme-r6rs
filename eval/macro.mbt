@@ -798,10 +798,7 @@ fn expand_macro_proc(
   let marked_call = @runtime.syntax_add_scope(call, call_ctx)
   let stx = match marked_call {
     Value(SyntaxObject(obj)) => Value::SyntaxObject(obj)
-    _ =>
-      SyntaxObject(
-        @core.SyntaxObject::new(marked_call, [call_ctx], None),
-      )
+    _ => SyntaxObject(@core.SyntaxObject::new(marked_call, [call_ctx], None))
   }
   let call_expr = list_from_array([Symbol(temp_name), Value(stx)])
   let value = eval_expr_transformer(call_expr, fenv)
@@ -864,9 +861,7 @@ fn syntax_add_scope_with_env(
           }
       }
       Value(
-        SyntaxObject(
-          @core.SyntaxObject::new(inner, next_scopes, binding_id),
-        ),
+        SyntaxObject(@core.SyntaxObject::new(inner, next_scopes, binding_id)),
       )
     }
     Pair(a, b) =>
@@ -898,9 +893,7 @@ fn wrap_pattern_datum(
         Value(SyntaxObject(_)) => marked
         _ =>
           Value(
-            SyntaxObject(
-              @core.SyntaxObject::new(marked, [call_scope], None),
-            ),
+            SyntaxObject(@core.SyntaxObject::new(marked, [call_scope], None)),
           )
       }
     }
@@ -912,11 +905,7 @@ fn wrap_pattern_datum(
             Symbol(name) => @runtime.env_binding_id_optional(env, name)
             _ => None
           }
-          Value(
-            SyntaxObject(
-              @core.SyntaxObject::new(value, [], binding_id),
-            ),
-          )
+          Value(SyntaxObject(@core.SyntaxObject::new(value, [], binding_id)))
         }
       }
   }
@@ -948,8 +937,7 @@ fn rewrite_template_expr(
                 indices, env, true,
               )
               match expanded {
-                Value(SyntaxObject(obj)) =>
-                  return Value(SyntaxObject(obj))
+                Value(SyntaxObject(obj)) => return Value(SyntaxObject(obj))
                 _ => {
                   let scope = @runtime.next_syntax_context()
                   let scopes = [scope]

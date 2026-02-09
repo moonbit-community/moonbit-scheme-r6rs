@@ -35,25 +35,17 @@ test "apply primitive core internal errors" {
 
 ///|
 test "apply primitive core type errors" {
-  let bad_transformer = try? apply_primitive_core(
-    MakeVariableTransformer,
-    [Void],
-  )
+  let bad_transformer = try? apply_primitive_core(MakeVariableTransformer, [
+    Void,
+  ])
   inspect(bad_transformer is Err(_), content="true")
-  let transformer_arity = try? apply_primitive_core(
-    MakeVariableTransformer,
-    [],
-  )
+  let transformer_arity = try? apply_primitive_core(MakeVariableTransformer, [])
   inspect(transformer_arity is Err(_), content="true")
-  let bad_temporaries = try? apply_primitive_core(
-    GenerateTemporaries,
-    [Datum(Int(1))],
-  )
+  let bad_temporaries = try? apply_primitive_core(GenerateTemporaries, [
+    Datum(Int(1)),
+  ])
   inspect(bad_temporaries is Err(_), content="true")
-  let temporaries_arity = try? apply_primitive_core(
-    GenerateTemporaries,
-    [],
-  )
+  let temporaries_arity = try? apply_primitive_core(GenerateTemporaries, [])
   inspect(temporaries_arity is Err(_), content="true")
   let promise_arity = try? apply_primitive_core(PromiseP, [])
   inspect(promise_arity is Err(_), content="true")

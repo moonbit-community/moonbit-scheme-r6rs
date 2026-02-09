@@ -15,6 +15,9 @@ pub fn parse_program(String, fold_case? : Bool) -> Array[@core.Datum] raise @cor
 // Types and methods
 
 // Type aliases
+pub using @core {type Datum}
+
+pub using @core {type ParseError}
 
 // Traits
 

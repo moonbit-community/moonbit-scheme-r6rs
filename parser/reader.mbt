@@ -830,13 +830,9 @@ fn parse_complex_token(
   }
   match core_chars {
     [] | ['+'] =>
-      return Some(
-        make_complex_datum(Int(0), make_imag_unit(1, exactness)),
-      )
+      return Some(make_complex_datum(Int(0), make_imag_unit(1, exactness)))
     ['-'] =>
-      return Some(
-        make_complex_datum(Int(0), make_imag_unit(-1, exactness)),
-      )
+      return Some(make_complex_datum(Int(0), make_imag_unit(-1, exactness)))
     _ => ()
   }
   match find_complex_split(core_chars, radix) {

@@ -2790,10 +2790,7 @@ fn value_as_record_constructor_descriptor(
 ) -> @core.RecordConstructorDescriptor raise @core.EvalError {
   match value {
     RecordConstructorDescriptor(desc) => desc
-    _ =>
-      raise EvalError(
-        "type error: record constructor descriptor expected",
-      )
+    _ => raise EvalError("type error: record constructor descriptor expected")
   }
 }
 
