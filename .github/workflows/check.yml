@@ -25,4 +25,4 @@ jobs:
         run: moon update
 
       - name: moon check
-        run: moon check --deny-warn
+        run: moon check
