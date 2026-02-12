@@ -12,12 +12,12 @@ conversion.
 
 ## Example
 
-```mbt nocheck
+```mbt check
 ///|
-let env = @runtime.env_new()
-
-///|
-let port = @runtime.new_output_string_port()
+test "runtime entry points compile" {
+  let _env = env_new()
+  let _port = new_output_string_port()
+}
 ```
 
 ```mbt check

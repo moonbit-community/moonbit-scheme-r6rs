@@ -1,0 +1,32 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        version: [stable, pre-release]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Moon
+        uses: illusory0x0/setup-moonbit@v0.1.0
+        with:
+          version: ${{ matrix.version }}
+
+      - name: moon version
+        run: moon version --all
+
+      - name: moon update
+        run: moon update
+
+      - name: moon check
+        run: moon check --deny-warn
