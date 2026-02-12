@@ -9,18 +9,14 @@ on:
 
 jobs:
   check:
-    strategy:
-      matrix:
-        version: [stable, pre-release]
-      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Moon
-        uses: illusory0x0/setup-moonbit@v0.1.0
+        uses: moonbit-community/setup-moonbit@main
         with:
-          version: ${{ matrix.version }}
+          version: stable
 
       - name: moon version
         run: moon version --all
