@@ -57,12 +57,12 @@ fn build_decomp_map(
       // assert : start + j < data.length()
       seq.push(data[start + j])
       continue j + 1
-    } else {
+    } nobreak {
       ()
     }
     map[ch] = seq
     continue start + len
-  } else {
+  } nobreak {
     map
   }
 }
@@ -81,7 +81,7 @@ fn build_combining_class_map(
     let cls = data[i + 1].to_int()
     map[ch] = cls
     continue i + 2
-  } else {
+  } nobreak {
     map
   }
 }
@@ -101,7 +101,7 @@ fn build_composition_map(
     let composed = data[i + 2]
     map[compose_key(starter, combining)] = composed
     continue i + 3
-  } else {
+  } nobreak {
     map
   }
 }
@@ -214,7 +214,7 @@ fn insert_sorted_by_ccc(segment : Array[Char], ch : Char, ccc : Int) -> Unit {
     }
     segment[i] = prev
     continue i - 1
-  } else {
+  } nobreak {
     0
   }
   segment[insert_at] = ch
@@ -247,7 +247,7 @@ fn canonical_order(chars : Array[Char]) -> Array[Char] {
       insert_sorted_by_ccc(segment, ch, ccc)
       continue i + 1, segment
     }
-  } else {
+  } nobreak {
     segment
   }
   for item in segment {
@@ -340,7 +340,7 @@ fn compose(chars : Array[Char]) -> Array[Char] {
     let next_ccc = if ccc == 0 { 0 } else { ccc }
     out.push(ch)
     continue i + 1, next_starter, next_ccc
-  } else {
+  } nobreak {
     out
   }
 }

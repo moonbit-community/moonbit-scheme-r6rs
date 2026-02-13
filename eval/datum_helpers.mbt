@@ -36,7 +36,7 @@ fn datum_list_to_array(
       }
       _ => raise EvalError("type error: proper list expected")
     }
-  } else {
+  } nobreak {
     ()
   }
   items
@@ -51,7 +51,7 @@ fn list_from_array(items : Array[@core.Datum]) -> @core.Datum {
     // assert : i <= items.length()
     let idx = i - 1
     continue i - 1, pair_new(items[idx], tail)
-  } else {
+  } nobreak {
     tail
   }
 }

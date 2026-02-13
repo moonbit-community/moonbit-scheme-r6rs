@@ -6,9 +6,9 @@ fn apply_vector_primitive(
 ) -> @core.Value? raise @core.EvalError {
   match prim {
     Vector => {
-      let items : Array[@core.Datum] = args.map(arg => value_to_datum_element(
-        arg,
-      ))
+      let items : Array[@core.Datum] = args.map(arg => {
+        value_to_datum_element(arg)
+      })
       Some(Datum(Vector(items)))
     }
     MakeVector =>

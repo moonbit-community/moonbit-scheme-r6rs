@@ -138,8 +138,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     SyntaxToDatum =>
       match args {
-        [SyntaxObject(obj)] =>
-          Datum(@runtime.strip_syntax_datum(obj.datum))
+        [SyntaxObject(obj)] => Datum(@runtime.strip_syntax_datum(obj.datum))
         [Datum(d)] => Datum(@runtime.strip_syntax_datum(d))
         [_] => raise EvalError("type error: syntax expected")
         _ => raise arity_mismatch(1, args.length())
@@ -191,9 +190,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
             Symbol(_) => context_binding
             _ => None
           }
-          SyntaxObject(
-            @core.SyntaxObject::new(datum, scopes, binding_id),
-          )
+          SyntaxObject(@core.SyntaxObject::new(datum, scopes, binding_id))
         }
         _ =>
           raise EvalError(
@@ -352,8 +349,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
                 match real.val {
                   Int(n) => Int(n)
                   BigInt(n) => BigInt(n)
-                  _ =>
-                    raise EvalError("type error: exact integer expected")
+                  _ => raise EvalError("type error: exact integer expected")
                 }
               } else {
                 raise EvalError("type error: exact integer expected")
@@ -379,8 +375,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
                 match real.val {
                   Int(n) => Int(n)
                   BigInt(n) => BigInt(n)
-                  _ =>
-                    raise EvalError("type error: exact integer expected")
+                  _ => raise EvalError("type error: exact integer expected")
                 }
               } else {
                 raise EvalError("type error: exact integer expected")

@@ -91,7 +91,7 @@ fn parse_syntax_rules(
       }
       _ => raise EvalError("invalid syntax-rules")
     }
-  } else {
+  } nobreak {
     ()
   }
   @core.SyntaxRules::new(literals, rules, ellipsis, SyntaxRules, env)
@@ -166,7 +166,7 @@ fn parse_syntax_case_rules(
       _ => raise EvalError("invalid syntax-case clause")
     }
     continue i + 1
-  } else {
+  } nobreak {
     ()
   }
   @core.SyntaxRules::new(literals, rules, "...", SyntaxCase, env)
@@ -372,7 +372,7 @@ fn validate_pattern_list(
       )
       continue i + 1
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -399,7 +399,7 @@ fn binding_equal(left : BindingVal, right : BindingVal) -> Bool {
             break false
           }
           continue i + 1
-        } else {
+        } nobreak {
           true
         }
       }
@@ -545,11 +545,9 @@ fn fender_allows(
   let fenv = @runtime.env_extend(env)
   bindings
   .iter2()
-  .each((name, value) => @runtime.env_define(
-    fenv,
-    name,
-    value_from_datum(binding_to_datum(value)),
-  ))
+  .each((name, value) => {
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
+  })
   let result = eval_expr(expr, fenv)
   !is_false(result)
 }
@@ -562,11 +560,9 @@ fn template_env_with_bindings(
   let fenv = @runtime.env_extend(env)
   bindings
   .iter2()
-  .each((name, value) => @runtime.env_define(
-    fenv,
-    name,
-    value_from_datum(binding_to_datum(value)),
-  ))
+  .each((name, value) => {
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
+  })
   fenv
 }
 
@@ -642,9 +638,9 @@ fn rename_proc_datum(
       )
     Vector(items) =>
       Vector(
-        items.map(item => rename_proc_datum(
-          item, def_env, call_ctx, renames, captures,
-        )),
+        items.map(item => {
+          rename_proc_datum(item, def_env, call_ctx, renames, captures)
+        }),
       )
     Label(tag, value) =>
       Label(
@@ -798,10 +794,7 @@ fn expand_macro_proc(
   let marked_call = @runtime.syntax_add_scope(call, call_ctx)
   let stx = match marked_call {
     Value(SyntaxObject(obj)) => Value::SyntaxObject(obj)
-    _ =>
-      SyntaxObject(
-        @core.SyntaxObject::new(marked_call, [call_ctx], None),
-      )
+    _ => SyntaxObject(@core.SyntaxObject::new(marked_call, [call_ctx], None))
   }
   let call_expr = list_from_array([Symbol(temp_name), Value(stx)])
   let value = eval_expr_transformer(call_expr, fenv)
@@ -864,9 +857,7 @@ fn syntax_add_scope_with_env(
           }
       }
       Value(
-        SyntaxObject(
-          @core.SyntaxObject::new(inner, next_scopes, binding_id),
-        ),
+        SyntaxObject(@core.SyntaxObject::new(inner, next_scopes, binding_id)),
       )
     }
     Pair(a, b) =>
@@ -898,9 +889,7 @@ fn wrap_pattern_datum(
         Value(SyntaxObject(_)) => marked
         _ =>
           Value(
-            SyntaxObject(
-              @core.SyntaxObject::new(marked, [call_scope], None),
-            ),
+            SyntaxObject(@core.SyntaxObject::new(marked, [call_scope], None)),
           )
       }
     }
@@ -912,11 +901,7 @@ fn wrap_pattern_datum(
             Symbol(name) => @runtime.env_binding_id_optional(env, name)
             _ => None
           }
-          Value(
-            SyntaxObject(
-              @core.SyntaxObject::new(value, [], binding_id),
-            ),
-          )
+          Value(SyntaxObject(@core.SyntaxObject::new(value, [], binding_id)))
         }
       }
   }
@@ -948,8 +933,7 @@ fn rewrite_template_expr(
                 indices, env, true,
               )
               match expanded {
-                Value(SyntaxObject(obj)) =>
-                  return Value(SyntaxObject(obj))
+                Value(SyntaxObject(obj)) => return Value(SyntaxObject(obj))
                 _ => {
                   let scope = @runtime.next_syntax_context()
                   let scopes = [scope]
@@ -999,9 +983,11 @@ fn rewrite_template_expr(
       }
     Vector(items) =>
       Vector(
-        items.map(item => rewrite_template_expr(
-          item, bindings, renames, ellipsis, ellipsis_active, error_message, env,
-        )),
+        items.map(item => {
+          rewrite_template_expr(
+            item, bindings, renames, ellipsis, ellipsis_active, error_message, env,
+          )
+        }),
       )
     _ => expr
   }
@@ -1163,12 +1149,14 @@ fn collect_repeat_bindings(
     }
     iter_bindings
     .iter2()
-    .each((name, value) => match repeated.get(name) {
-      Some(values) => values.push(value)
-      None => {
-        let values : Array[BindingVal] = []
-        values.push(value)
-        repeated[name] = values
+    .each((name, value) => {
+      match repeated.get(name) {
+        Some(values) => values.push(value)
+        None => {
+          let values : Array[BindingVal] = []
+          values.push(value)
+          repeated[name] = values
+        }
       }
     })
     continue i + 1
@@ -1341,7 +1329,7 @@ fn datum_list_to_array_opt(list : @core.Datum) -> Array[@core.Datum]? {
       }
       _ => break false
     }
-  } else {
+  } nobreak {
     false
   }
   if ok {
@@ -1426,7 +1414,7 @@ fn array_datum_equal(
         break false
       }
       continue i + 1
-    } else {
+    } nobreak {
       true
     }
   }
@@ -1445,7 +1433,7 @@ fn array_int_equal(left : Array[Int], right : Array[Int]) -> Bool {
         break false
       }
       continue i + 1
-    } else {
+    } nobreak {
       true
     }
   }
@@ -2230,7 +2218,7 @@ fn max_binding_len(
               let len = max_binding_len(items[i], bindings, indices)
               let next = if len > max_len { len } else { max_len }
               continue i + 1, next
-            } else {
+            } nobreak {
               max_len
             }
             max_len
@@ -2257,7 +2245,7 @@ fn max_binding_len(
         let len = max_binding_len(items[i], bindings, indices)
         let next = if len > max_len { len } else { max_len }
         continue i + 1, next
-      } else {
+      } nobreak {
         max_len
       }
       max_len
@@ -2302,7 +2290,7 @@ fn template_has_repeat_binding(
                 break true
               }
               continue i + 1
-            } else {
+            } nobreak {
               false
             }
             found
@@ -2324,7 +2312,7 @@ fn template_has_repeat_binding(
           break true
         }
         continue i + 1
-      } else {
+      } nobreak {
         false
       }
       found

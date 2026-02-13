@@ -23,8 +23,7 @@ fn apply_char_string_primitive(
       }
     CharToInteger =>
       match args {
-        [char_value] =>
-          Some(Datum(Int(value_as_char(char_value).to_int())))
+        [char_value] => Some(Datum(Int(value_as_char(char_value).to_int())))
         _ => raise arity_mismatch(1, args.length())
       }
     IntegerToChar =>
@@ -160,8 +159,7 @@ fn apply_char_string_primitive(
               let zero = 0
               let fill = match zero.to_char() {
                 Some(ch) => ch
-                None =>
-                  raise EvalError("internal error: invalid default char")
+                None => raise EvalError("internal error: invalid default char")
               }
               let repeated = String::from_array([fill]).repeat(len)
               Datum(String(Ref::new(repeated)))
@@ -250,8 +248,7 @@ fn apply_char_string_primitive(
           check_slice_range(start, end, s.length())
           let view = try? s[start:end]
           match view {
-            Ok(slice) =>
-              Some(Datum(String(Ref::new(slice.to_string()))))
+            Ok(slice) => Some(Datum(String(Ref::new(slice.to_string()))))
             Err(_) => raise EvalError("index out of range")
           }
         }
@@ -271,8 +268,7 @@ fn apply_char_string_primitive(
               check_slice_range(start, end, s.length())
               let view = try? s[start:end]
               match view {
-                Ok(slice) =>
-                  Datum(String(Ref::new(slice.to_string())))
+                Ok(slice) => Datum(String(Ref::new(slice.to_string())))
                 Err(_) => raise EvalError("index out of range")
               }
             },

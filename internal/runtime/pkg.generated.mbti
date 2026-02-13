@@ -109,6 +109,29 @@ pub fn value_to_string(@core.Value) -> String
 // Types and methods
 
 // Type aliases
+pub using @core {type ConditionProcKind}
+
+pub using @core {type Datum}
+
+pub using @core {type EnumSetProcKind}
+
+pub using @core {type EvalError}
+
+pub using @core {type HashtableEquiv}
+
+pub using @core {type HashtableOp}
+
+pub using @core {type MacroTransformer}
+
+pub using @core {type Primitive}
+
+pub using @core {type PromiseState}
+
+pub using @core {type RecordProcKind}
+
+pub using @core {type SyntaxRulesKind}
+
+pub using @core {type Value}
 
 // Traits
 

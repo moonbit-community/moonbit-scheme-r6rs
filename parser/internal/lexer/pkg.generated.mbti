@@ -29,6 +29,9 @@ pub fn Reader::set_fold_case(Self, Bool) -> Unit
 pub fn Reader::skip_ws_and_comments(Self) -> Unit raise @core.ParseError
 
 // Type aliases
+pub using @core {type Datum}
+
+pub using @core {type ParseError}
 
 // Traits
 

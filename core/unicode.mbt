@@ -14,7 +14,7 @@ fn char_in_ranges(ch : Char, ranges : ReadOnlyArray[Char]) -> Bool {
     } else {
       return true
     }
-  } else {
+  } nobreak {
     false
   }
 }
@@ -173,7 +173,7 @@ fn unicode_case_equivalents(ch : Char) -> Array[Char] {
       }
       None => break
     }
-  } else {
+  } nobreak {
     ()
   }
   out
@@ -212,7 +212,7 @@ fn unicode_min_equivalent(chars : Array[Char], fallback : Char) -> Char {
       continue i + 1, ch
     }
     continue i + 1, min
-  } else {
+  } nobreak {
     min
   }
 }

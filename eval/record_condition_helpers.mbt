@@ -3,9 +3,9 @@
 fn default_constructor_descriptor(
   record_type : @core.RecordType,
 ) -> @core.RecordConstructorDescriptor {
-  let parent_desc = record_type.parent.map(parent => default_constructor_descriptor(
-    parent,
-  ))
+  let parent_desc = record_type.parent.map(parent => {
+    default_constructor_descriptor(parent)
+  })
   @runtime.make_record_constructor_descriptor(record_type, parent_desc, None)
 }
 

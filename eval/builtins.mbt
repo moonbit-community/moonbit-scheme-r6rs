@@ -98,9 +98,7 @@ fn apply_primitive_core(
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
-          Datum(
-            String(Ref::new(@runtime.port_get_output_string(port))),
-          )
+          Datum(String(Ref::new(@runtime.port_get_output_string(port))))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -114,17 +112,13 @@ fn apply_primitive_core(
         "internal error: with-exception-handler should be handled in apply_proc",
       )
     Raise =>
-      raise EvalError(
-        "internal error: raise should be handled in apply_proc",
-      )
+      raise EvalError("internal error: raise should be handled in apply_proc")
     RaiseContinuable =>
       raise EvalError(
         "internal error: raise-continuable should be handled in apply_proc",
       )
     Error =>
-      raise EvalError(
-        "internal error: error should be handled in apply_proc",
-      )
+      raise EvalError("internal error: error should be handled in apply_proc")
     AssertionViolation =>
       raise EvalError(
         "internal error: assertion-violation should be handled in apply_proc",
@@ -148,17 +142,11 @@ fn apply_primitive_core(
       }
     Apply =>
       // handled by apply_proc to allow proper argument flattening
-      raise EvalError(
-        "internal error: apply should be handled in apply_proc",
-      )
+      raise EvalError("internal error: apply should be handled in apply_proc")
     CallCC =>
-      raise EvalError(
-        "internal error: call/cc should be handled in apply_proc",
-      )
+      raise EvalError("internal error: call/cc should be handled in apply_proc")
     Map =>
-      raise EvalError(
-        "internal error: map should be handled in apply_proc",
-      )
+      raise EvalError("internal error: map should be handled in apply_proc")
     ForEach =>
       raise EvalError(
         "internal error: for-each should be handled in apply_proc",
@@ -235,9 +223,7 @@ fn apply_primitive_core(
         "internal error: dynamic-wind should be handled in apply_proc",
       )
     Eval =>
-      raise EvalError(
-        "internal error: eval should be handled in apply_proc",
-      )
+      raise EvalError("internal error: eval should be handled in apply_proc")
     Environment =>
       raise EvalError(
         "internal error: environment should be handled in apply_proc",
@@ -256,9 +242,7 @@ fn apply_primitive_core(
         "internal error: make-promise should be handled in apply_proc",
       )
     Force =>
-      raise EvalError(
-        "internal error: force should be handled in apply_proc",
-      )
+      raise EvalError("internal error: force should be handled in apply_proc")
     _ =>
       raise EvalError(
         "internal error: primitive should be handled by specialized dispatcher",

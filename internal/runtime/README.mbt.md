@@ -12,12 +12,12 @@ conversion.
 
 ## Example
 
-```mbt nocheck
+```mbt check
 ///|
-let env = @runtime.env_new()
-
-///|
-let port = @runtime.new_output_string_port()
+test "runtime entry points compile" {
+  let _env = env_new()
+  let _port = new_output_string_port()
+}
 ```
 
 ```mbt check
@@ -115,64 +115,32 @@ test "printer datum rendering" {
   label_cell.val = label
   let proper_list = Datum::Pair(
     Ref::new(Int(1)),
-    Ref::new(
-      Pair(
-        Ref::new(Int(2)),
-        Ref::new(Nil),
-      ),
-    ),
+    Ref::new(Pair(Ref::new(Int(2)), Ref::new(Nil))),
   )
-  let dotted_list = Datum::Pair(
-    Ref::new(Int(1)),
-    Ref::new(Int(2)),
-  )
+  let dotted_list = Datum::Pair(Ref::new(Int(1)), Ref::new(Int(2)))
   let entries : Array[(@core.Datum, String)] = [
     (Nil, "()"),
     (Bool(true), "#t"),
     (Int(3), "3"),
     (BigInt(@bigint.BigInt::from_int(-12)), "-12"),
     (Rat(1, 2), "1/2"),
-    (
-      BigRat(
-        @bigint.BigInt::from_int(-1),
-        @bigint.BigInt::from_int(3),
-      ),
-      "-1/3",
-    ),
+    (BigRat(@bigint.BigInt::from_int(-1), @bigint.BigInt::from_int(3)), "-1/3"),
     (Float(1.5), "1.5"),
     (
-      Complex(
-        Ref::new(Int(1)),
-        Ref::new(BigInt(@bigint.BigInt::from_int(-2))),
-      ),
+      Complex(Ref::new(Int(1)), Ref::new(BigInt(@bigint.BigInt::from_int(-2)))),
       "1-2i",
     ),
-    (
-      Complex(
-        Ref::new(Int(1)),
-        Ref::new(Rat(-1, 2)),
-      ),
-      "1-1/2i",
-    ),
+    (Complex(Ref::new(Int(1)), Ref::new(Rat(-1, 2))), "1-1/2i"),
     (
       Complex(
         Ref::new(Int(1)),
         Ref::new(
-          BigRat(
-            @bigint.BigInt::from_int(-1),
-            @bigint.BigInt::from_int(3),
-          ),
+          BigRat(@bigint.BigInt::from_int(-1), @bigint.BigInt::from_int(3)),
         ),
       ),
       "1-1/3i",
     ),
-    (
-      Complex(
-        Ref::new(Int(1)),
-        Ref::new(Float(-1.5)),
-      ),
-      "1-1.5i",
-    ),
+    (Complex(Ref::new(Int(1)), Ref::new(Float(-1.5))), "1-1.5i"),
     (Char(' '), "#\\space"),
     (Char('\n'), "#\\newline"),
     (Char('\t'), "#\\tab"),
@@ -181,10 +149,7 @@ test "printer datum rendering" {
     (Symbol("foo"), "foo"),
     (proper_list, "(1 2)"),
     (dotted_list, "(1 . 2)"),
-    (
-      Vector([Int(1), Bool(true)]),
-      "#(1 #t)",
-    ),
+    (Vector([Int(1), Bool(true)]), "#(1 #t)"),
     (ByteVector([1, 2]), "#vu8(1 2)"),
     (Record(record), "#<record>"),
     (Condition(condition), "#<condition>"),
@@ -220,10 +185,7 @@ test "value to string variants" {
   let enum_set = @core.EnumSet::new(1, ["a"], [true])
   let table = @core.Hashtable::new(1, true, Eq, None, [])
   let port = new_output_string_port()
-  let promise = @core.Promise::new(
-    1,
-    Value(Void),
-  )
+  let promise = @core.Promise::new(1, Value(Void))
   let eval_env = @core.EvalEnv::new(1, env)
   let syntax_obj = @core.SyntaxObject::new(Symbol("x"), [], None)
   let values : Array[(@core.Value, String)] = [
@@ -235,14 +197,8 @@ test "value to string variants" {
     (Record(record), "#<record>"),
     (Hashtable(table), "#<hashtable>"),
     (EnumSet(enum_set), "#<enum-set>"),
-    (
-      RecordTypeDescriptor(record_type_desc),
-      "#<record-type-descriptor>",
-    ),
-    (
-      RecordConstructorDescriptor(ctor_desc),
-      "#<record-constructor-descriptor>",
-    ),
+    (RecordTypeDescriptor(record_type_desc), "#<record-type-descriptor>"),
+    (RecordConstructorDescriptor(ctor_desc), "#<record-constructor-descriptor>"),
     (SyntaxObject(syntax_obj), "#<syntax>"),
     (SyntaxKeyword("syntax"), "#<syntax-keyword>"),
   ]
@@ -263,9 +219,7 @@ test "datum unlabel" {
 ///|
 test "strip syntax datum" {
   let wrapped = Datum::Value(
-    SyntaxObject(
-      @core.SyntaxObject::new(Symbol("x"), [], None),
-    ),
+    SyntaxObject(@core.SyntaxObject::new(Symbol("x"), [], None)),
   )
   match strip_syntax_datum(wrapped) {
     Symbol("x") => ()
@@ -298,18 +252,13 @@ test "enum set error paths" {
 ///|
 test "syntax helpers extra" {
   let syntax = Datum::Value(
-    SyntaxObject(
-      @core.SyntaxObject::new(Symbol("x"), [1], None),
-    ),
+    SyntaxObject(@core.SyntaxObject::new(Symbol("x"), [1], None)),
   )
   match symbol_name(syntax) {
     Some("x") => ()
     _ => fail("expected symbol name")
   }
-  let complex = Datum::Complex(
-    Ref::new(Int(1)),
-    Ref::new(Int(2)),
-  )
+  let complex = Datum::Complex(Ref::new(Int(1)), Ref::new(Int(2)))
   match syntax_wrap_root(complex, [1]) {
     Complex(_, _) => ()
     _ => fail("expected complex")
@@ -335,10 +284,7 @@ test "syntax helpers extra" {
       }
     _ => fail("expected vector")
   }
-  let pair = Datum::Pair(
-    Ref::new(Symbol("p")),
-    Ref::new(Nil),
-  )
+  let pair = Datum::Pair(Ref::new(Symbol("p")), Ref::new(Nil))
   let wrapped_pair = Datum::Value(
     SyntaxObject(@core.SyntaxObject::new(pair, [3], None)),
   )

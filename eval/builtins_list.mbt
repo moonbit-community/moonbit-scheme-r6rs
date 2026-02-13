@@ -102,7 +102,7 @@ fn apply_pair_list_primitive(
               _ => raise EvalError("type error: pair expected")
             }
             continue i - 1, next
-          } else {
+          } nobreak {
             cur
           }
           value_from_datum(cur)
@@ -110,9 +110,9 @@ fn apply_pair_list_primitive(
         _ => raise arity_mismatch(1, args.length())
       }
     List => {
-      let items : Array[@core.Datum] = args.map(arg => value_to_datum_element(
-        arg,
-      ))
+      let items : Array[@core.Datum] = args.map(arg => {
+        value_to_datum_element(arg)
+      })
       Datum(list_from_array(items))
     }
     MakeList =>
@@ -194,7 +194,7 @@ fn apply_pair_list_primitive(
             // decreases : items.length() - i
             // assert : i <= items.length()
             continue i + 1, pair_new(items[i], result)
-          } else {
+          } nobreak {
             result
           }
           Datum(result)

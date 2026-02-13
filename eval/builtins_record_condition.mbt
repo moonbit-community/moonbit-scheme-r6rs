@@ -91,8 +91,7 @@ fn apply_record_condition_primitive_core(
           match desc.record_type.parent {
             Some(parent) =>
               match @runtime.lookup_record_type_descriptor(parent.name) {
-                Some(parent_desc) =>
-                  RecordTypeDescriptor(parent_desc)
+                Some(parent_desc) => RecordTypeDescriptor(parent_desc)
                 None => Datum(Bool(false))
               }
             None => Datum(Bool(false))
@@ -172,9 +171,7 @@ fn apply_record_condition_primitive_core(
       match args {
         [desc_value] => {
           let desc = value_as_record_type_descriptor(desc_value)
-          RecordProc(
-            @runtime.make_record_proc(Predicate(desc.record_type)),
-          )
+          RecordProc(@runtime.make_record_proc(Predicate(desc.record_type)))
         }
         _ => raise arity_mismatch(1, args.length())
       }
@@ -184,9 +181,7 @@ fn apply_record_condition_primitive_core(
           let desc = value_as_record_type_descriptor(desc_value)
           let idx = value_as_int_index(idx_value)
           check_index(idx, desc.record_type.fields.length())
-          RecordProc(
-            @runtime.make_record_proc(Accessor(desc.record_type, idx)),
-          )
+          RecordProc(@runtime.make_record_proc(Accessor(desc.record_type, idx)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -200,9 +195,7 @@ fn apply_record_condition_primitive_core(
           if !field.mutable {
             raise EvalError("record field is immutable: \{field.name}")
           }
-          RecordProc(
-            @runtime.make_record_proc(Mutator(desc.record_type, idx)),
-          )
+          RecordProc(@runtime.make_record_proc(Mutator(desc.record_type, idx)))
         }
         _ => raise arity_mismatch(2, args.length())
       }
@@ -220,10 +213,7 @@ fn apply_record_condition_primitive_core(
           let parent_desc = match parent_value {
             Datum(Bool(false)) => None
             RecordTypeDescriptor(desc) => Some(desc)
-            _ =>
-              raise EvalError(
-                "type error: record type descriptor expected",
-              )
+            _ => raise EvalError("type error: record type descriptor expected")
           }
           let parent_type = match parent_desc {
             Some(desc) => Some(desc.record_type)
@@ -320,12 +310,9 @@ fn apply_record_condition_primitive_core(
               match parent_desc {
                 Some(desc) =>
                   if desc.record_type.id != parent.id {
-                    raise EvalError(
-                      "invalid record constructor descriptor",
-                    )
+                    raise EvalError("invalid record constructor descriptor")
                   }
-                None =>
-                  raise EvalError("invalid record constructor descriptor")
+                None => raise EvalError("invalid record constructor descriptor")
               }
             None =>
               match parent_desc {
@@ -391,9 +378,9 @@ fn apply_record_condition_primitive_core(
         [condition_value] => {
           let base = condition_base_type()
           let components = condition_components(condition_value, base)
-          let items : Array[@core.Datum] = components.map(record => Record(
-            record,
-          ))
+          let items : Array[@core.Datum] = components.map(record => {
+            Record(record)
+          })
           Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())
