@@ -547,7 +547,7 @@ pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
       }
       _ => break cur
     }
-  } else {
+  } nobreak {
     value
   }
 }

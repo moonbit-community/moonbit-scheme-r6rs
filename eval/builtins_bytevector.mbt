@@ -72,7 +72,7 @@ fn apply_bytevector_primitive(
                     break false
                   }
                   continue i + 1
-                } else {
+                } nobreak {
                   true
                 }
                 bool_value(ok)
@@ -235,14 +235,16 @@ fn apply_bytevector_primitive(
             {
               let datum = value_as_datum(datum_value)
               let items = datum_list_to_array(datum)
-              let bytes : Array[Int] = items.map(item => match item {
-                Int(n) => {
-                  if n < 0 || n > 255 {
-                    raise EvalError::EvalError("type error: byte expected")
+              let bytes : Array[Int] = items.map(item => {
+                match item {
+                  Int(n) => {
+                    if n < 0 || n > 255 {
+                      raise EvalError::EvalError("type error: byte expected")
+                    }
+                    n
                   }
-                  n
+                  _ => raise EvalError::EvalError("type error: byte expected")
                 }
-                _ => raise EvalError::EvalError("type error: byte expected")
               })
               Datum(ByteVector(bytes))
             },

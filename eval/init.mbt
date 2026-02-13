@@ -402,7 +402,7 @@ fn define_primitives(
     let (name, prim) = defs[i]
     @runtime.env_define(env, name, Primitive(prim))
     continue i + 1
-  } else {
+  } nobreak {
     ()
   }
 }

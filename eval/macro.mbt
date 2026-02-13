@@ -91,7 +91,7 @@ fn parse_syntax_rules(
       }
       _ => raise EvalError("invalid syntax-rules")
     }
-  } else {
+  } nobreak {
     ()
   }
   @core.SyntaxRules::new(literals, rules, ellipsis, SyntaxRules, env)
@@ -166,7 +166,7 @@ fn parse_syntax_case_rules(
       _ => raise EvalError("invalid syntax-case clause")
     }
     continue i + 1
-  } else {
+  } nobreak {
     ()
   }
   @core.SyntaxRules::new(literals, rules, "...", SyntaxCase, env)
@@ -372,7 +372,7 @@ fn validate_pattern_list(
       )
       continue i + 1
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -399,7 +399,7 @@ fn binding_equal(left : BindingVal, right : BindingVal) -> Bool {
             break false
           }
           continue i + 1
-        } else {
+        } nobreak {
           true
         }
       }
@@ -545,11 +545,9 @@ fn fender_allows(
   let fenv = @runtime.env_extend(env)
   bindings
   .iter2()
-  .each((name, value) => @runtime.env_define(
-    fenv,
-    name,
-    value_from_datum(binding_to_datum(value)),
-  ))
+  .each((name, value) => {
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
+  })
   let result = eval_expr(expr, fenv)
   !is_false(result)
 }
@@ -562,11 +560,9 @@ fn template_env_with_bindings(
   let fenv = @runtime.env_extend(env)
   bindings
   .iter2()
-  .each((name, value) => @runtime.env_define(
-    fenv,
-    name,
-    value_from_datum(binding_to_datum(value)),
-  ))
+  .each((name, value) => {
+    @runtime.env_define(fenv, name, value_from_datum(binding_to_datum(value)))
+  })
   fenv
 }
 
@@ -642,9 +638,9 @@ fn rename_proc_datum(
       )
     Vector(items) =>
       Vector(
-        items.map(item => rename_proc_datum(
-          item, def_env, call_ctx, renames, captures,
-        )),
+        items.map(item => {
+          rename_proc_datum(item, def_env, call_ctx, renames, captures)
+        }),
       )
     Label(tag, value) =>
       Label(
@@ -987,9 +983,11 @@ fn rewrite_template_expr(
       }
     Vector(items) =>
       Vector(
-        items.map(item => rewrite_template_expr(
-          item, bindings, renames, ellipsis, ellipsis_active, error_message, env,
-        )),
+        items.map(item => {
+          rewrite_template_expr(
+            item, bindings, renames, ellipsis, ellipsis_active, error_message, env,
+          )
+        }),
       )
     _ => expr
   }
@@ -1151,12 +1149,14 @@ fn collect_repeat_bindings(
     }
     iter_bindings
     .iter2()
-    .each((name, value) => match repeated.get(name) {
-      Some(values) => values.push(value)
-      None => {
-        let values : Array[BindingVal] = []
-        values.push(value)
-        repeated[name] = values
+    .each((name, value) => {
+      match repeated.get(name) {
+        Some(values) => values.push(value)
+        None => {
+          let values : Array[BindingVal] = []
+          values.push(value)
+          repeated[name] = values
+        }
       }
     })
     continue i + 1
@@ -1329,7 +1329,7 @@ fn datum_list_to_array_opt(list : @core.Datum) -> Array[@core.Datum]? {
       }
       _ => break false
     }
-  } else {
+  } nobreak {
     false
   }
   if ok {
@@ -1414,7 +1414,7 @@ fn array_datum_equal(
         break false
       }
       continue i + 1
-    } else {
+    } nobreak {
       true
     }
   }
@@ -1433,7 +1433,7 @@ fn array_int_equal(left : Array[Int], right : Array[Int]) -> Bool {
         break false
       }
       continue i + 1
-    } else {
+    } nobreak {
       true
     }
   }
@@ -2218,7 +2218,7 @@ fn max_binding_len(
               let len = max_binding_len(items[i], bindings, indices)
               let next = if len > max_len { len } else { max_len }
               continue i + 1, next
-            } else {
+            } nobreak {
               max_len
             }
             max_len
@@ -2245,7 +2245,7 @@ fn max_binding_len(
         let len = max_binding_len(items[i], bindings, indices)
         let next = if len > max_len { len } else { max_len }
         continue i + 1, next
-      } else {
+      } nobreak {
         max_len
       }
       max_len
@@ -2290,7 +2290,7 @@ fn template_has_repeat_binding(
                 break true
               }
               continue i + 1
-            } else {
+            } nobreak {
               false
             }
             found
@@ -2312,7 +2312,7 @@ fn template_has_repeat_binding(
           break true
         }
         continue i + 1
-      } else {
+      } nobreak {
         false
       }
       found

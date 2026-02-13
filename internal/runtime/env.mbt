@@ -14,7 +14,7 @@
 /// ```
 pub fn env_new() -> @core.Env {
   let env : @core.Env = []
-  env..push({})
+  env.push({})
   env
 }
 
@@ -22,7 +22,7 @@ pub fn env_new() -> @core.Env {
 /// Extend an environment by pushing a new empty frame.
 pub fn env_extend(env : @core.Env) -> @core.Env {
   let new_env = env.copy()
-  new_env..push({})
+  new_env.push({})
   new_env
 }
 
@@ -43,10 +43,9 @@ pub fn env_extend(env : @core.Env) -> @core.Env {
 /// }
 /// ```
 pub fn env_clone(env : @core.Env) -> @core.Env {
-  env.map(frame => frame.map((_, binding) => @core.Binding::new(
-    binding.id(),
-    binding.value(),
-  )))
+  env.map(frame => {
+    frame.map((_, binding) => @core.Binding::new(binding.id(), binding.value()))
+  })
 }
 
 ///|
@@ -71,7 +70,7 @@ fn @core.Env::get_binding(self : @core.Env, name : String) -> @core.Binding? {
       Some(binding) => break Some(binding)
       None => ()
     }
-  } else {
+  } nobreak {
     None
   }
   result
@@ -192,7 +191,7 @@ pub fn env_set(
       frame[name] = @core.Binding::new(binding.id(), value)
       break true
     }
-  } else {
+  } nobreak {
     false
   }
   if !updated {

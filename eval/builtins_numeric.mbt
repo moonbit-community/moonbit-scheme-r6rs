@@ -171,7 +171,7 @@ fn apply_numeric_primitive_core(
         // decreases : args.length() - i
         // assert : i <= args.length()
         continue i + 1, num_add(acc, value_as_number(args[i]))
-      } else {
+      } nobreak {
         acc
       }
       Datum(acc)
@@ -190,7 +190,7 @@ fn apply_numeric_primitive_core(
             // decreases : rest.length() - i
             // assert : i <= rest.length()
             continue i + 1, num_sub(result, value_as_number(rest[i]))
-          } else {
+          } nobreak {
             result
           }
           Datum(result)
@@ -202,7 +202,7 @@ fn apply_numeric_primitive_core(
         // decreases : args.length() - i
         // assert : i <= args.length()
         continue i + 1, num_mul(product, value_as_number(args[i]))
-      } else {
+      } nobreak {
         product
       }
       Datum(product)
@@ -221,7 +221,7 @@ fn apply_numeric_primitive_core(
             // decreases : rest.length() - i
             // assert : i <= rest.length()
             continue i + 1, num_div(result, value_as_number(rest[i]))
-          } else {
+          } nobreak {
             result
           }
           Datum(result)
@@ -240,7 +240,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1031,7 +1031,7 @@ fn apply_numeric_primitive_core(
           }
           _ => raise EvalError("type error: integer expected")
         }
-      } else {
+      } nobreak {
         (use_big, acc_int, acc_big)
       }
       if use_big {
@@ -1087,7 +1087,7 @@ fn apply_numeric_primitive_core(
           }
           _ => raise EvalError("type error: integer expected")
         }
-      } else {
+      } nobreak {
         (use_big, acc_int, acc_big)
       }
       if use_big {
@@ -1116,7 +1116,7 @@ fn apply_numeric_primitive_core(
             let next_best = if num_less(best, cur) { cur } else { best }
             let next_has_inexact = has_inexact || cur is Float(_)
             continue i + 1, next_best, next_has_inexact
-          } else {
+          } nobreak {
             (best, has_inexact)
           }
           if has_inexact {
@@ -1141,7 +1141,7 @@ fn apply_numeric_primitive_core(
             let next_best = if num_greater(best, cur) { cur } else { best }
             let next_has_inexact = has_inexact || cur is Float(_)
             continue i + 1, next_best, next_has_inexact
-          } else {
+          } nobreak {
             (best, has_inexact)
           }
           if has_inexact {
@@ -1246,7 +1246,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_exact_integer(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitAnd)
-          } else {
+          } nobreak {
             acc
           }
           Datum(acc)
@@ -1263,7 +1263,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_exact_integer(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitOr)
-          } else {
+          } nobreak {
             acc
           }
           Datum(acc)
@@ -1280,7 +1280,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_exact_integer(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitXor)
-          } else {
+          } nobreak {
             acc
           }
           Datum(acc)
@@ -1472,7 +1472,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1492,7 +1492,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1512,7 +1512,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1532,7 +1532,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1552,7 +1552,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -1595,7 +1595,7 @@ fn apply_numeric_primitive_core(
             let cur = value_as_fixnum_int(rest[i])
             let next = if cur < current { cur } else { current }
             continue i + 1, next
-          } else {
+          } nobreak {
             current
           }
           Datum(Int(current))
@@ -1613,7 +1613,7 @@ fn apply_numeric_primitive_core(
             let cur = value_as_fixnum_int(rest[i])
             let next = if cur > current { cur } else { current }
             continue i + 1, next
-          } else {
+          } nobreak {
             current
           }
           Datum(Int(current))
@@ -1626,7 +1626,7 @@ fn apply_numeric_primitive_core(
         // assert : i <= args.length()
         let next = acc + value_as_fixnum_bigint(args[i])
         continue i + 1, next
-      } else {
+      } nobreak {
         acc
       }
       Datum(fixnum_from_bigint(acc))
@@ -1645,7 +1645,7 @@ fn apply_numeric_primitive_core(
             // decreases : rest.length() - i
             // assert : i <= rest.length()
             continue i + 1, result - value_as_fixnum_bigint(rest[i])
-          } else {
+          } nobreak {
             result
           }
           Datum(fixnum_from_bigint(result))
@@ -1658,7 +1658,7 @@ fn apply_numeric_primitive_core(
         // assert : i <= args.length()
         let next = acc * value_as_fixnum_bigint(args[i])
         continue i + 1, next
-      } else {
+      } nobreak {
         acc
       }
       Datum(fixnum_from_bigint(acc))
@@ -1810,7 +1810,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_fixnum_datum(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitAnd)
-          } else {
+          } nobreak {
             acc
           }
           Datum(fixnum_from_datum(acc))
@@ -1827,7 +1827,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_fixnum_datum(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitOr)
-          } else {
+          } nobreak {
             acc
           }
           Datum(fixnum_from_datum(acc))
@@ -1844,7 +1844,7 @@ fn apply_numeric_primitive_core(
             // assert : i <= rest.length()
             let next = value_as_fixnum_datum(rest[i])
             continue i + 1, datum_bitwise_binop(acc, next, BitXor)
-          } else {
+          } nobreak {
             acc
           }
           Datum(fixnum_from_datum(acc))
@@ -2053,7 +2053,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -2073,7 +2073,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -2093,7 +2093,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -2113,7 +2113,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -2133,7 +2133,7 @@ fn apply_numeric_primitive_core(
               break false
             }
             continue i + 1, cur
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -2206,7 +2206,7 @@ fn apply_numeric_primitive_core(
             }
             let next = if cur > current { cur } else { current }
             continue i + 1, next
-          } else {
+          } nobreak {
             current
           }
           Datum(Float(current))
@@ -2230,7 +2230,7 @@ fn apply_numeric_primitive_core(
             }
             let next = if cur < current { cur } else { current }
             continue i + 1, next
-          } else {
+          } nobreak {
             current
           }
           Datum(Float(current))
@@ -2242,7 +2242,7 @@ fn apply_numeric_primitive_core(
         // decreases : args.length() - i
         // assert : i <= args.length()
         continue i + 1, acc + value_as_flonum(args[i])
-      } else {
+      } nobreak {
         acc
       }
       Datum(Float(acc))
@@ -2253,7 +2253,7 @@ fn apply_numeric_primitive_core(
         // decreases : args.length() - i
         // assert : i <= args.length()
         continue i + 1, acc * value_as_flonum(args[i])
-      } else {
+      } nobreak {
         acc
       }
       Datum(Float(acc))
@@ -2269,7 +2269,7 @@ fn apply_numeric_primitive_core(
             // decreases : rest.length() - i
             // assert : i <= rest.length()
             continue i + 1, result - value_as_flonum(rest[i])
-          } else {
+          } nobreak {
             result
           }
           Datum(Float(result))
@@ -2289,7 +2289,7 @@ fn apply_numeric_primitive_core(
             // decreases : rest.length() - i
             // assert : i <= rest.length()
             continue i + 1, result / value_as_flonum(rest[i])
-          } else {
+          } nobreak {
             result
           }
           Datum(Float(result))
@@ -2509,7 +2509,7 @@ fn compare_chain(
           break false
         }
         continue i + 1, cur
-      } else {
+      } nobreak {
         true
       }
       bool_value(ok)

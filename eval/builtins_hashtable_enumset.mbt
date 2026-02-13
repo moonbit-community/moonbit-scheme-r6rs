@@ -186,9 +186,9 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
-          let items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
-            entry.key,
-          ))
+          let items : Array[@core.Datum] = table.entries.val.map(entry => {
+            value_to_datum_element(entry.key)
+          })
           Datum(Vector(items))
         }
         _ => raise arity_mismatch(1, args.length())
@@ -197,12 +197,12 @@ fn apply_hashtable_enumset_primitive_core(
       match args {
         [table_value] => {
           let table = value_as_hashtable(table_value)
-          let key_items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
-            entry.key,
-          ))
-          let value_items : Array[@core.Datum] = table.entries.val.map(entry => value_to_datum_element(
-            entry.value.val,
-          ))
+          let key_items : Array[@core.Datum] = table.entries.val.map(entry => {
+            value_to_datum_element(entry.key)
+          })
+          let value_items : Array[@core.Datum] = table.entries.val.map(entry => {
+            value_to_datum_element(entry.value.val)
+          })
           Values([Datum(Vector(key_items)), Datum(Vector(value_items))])
         }
         _ => raise arity_mismatch(1, args.length())
@@ -298,7 +298,7 @@ fn apply_hashtable_enumset_primitive_core(
               break false
             }
             continue i + 1
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)
@@ -319,7 +319,7 @@ fn apply_hashtable_enumset_primitive_core(
               break false
             }
             continue i + 1
-          } else {
+          } nobreak {
             true
           }
           bool_value(ok)

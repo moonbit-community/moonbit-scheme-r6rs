@@ -378,9 +378,9 @@ fn apply_record_condition_primitive_core(
         [condition_value] => {
           let base = condition_base_type()
           let components = condition_components(condition_value, base)
-          let items : Array[@core.Datum] = components.map(record => Record(
-            record,
-          ))
+          let items : Array[@core.Datum] = components.map(record => {
+            Record(record)
+          })
           Datum(list_from_array(items))
         }
         _ => raise arity_mismatch(1, args.length())

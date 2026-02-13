@@ -880,7 +880,9 @@ fn eval_expr_impl(
                 "type error: record type mismatch: expected \{parent_type.name}",
               )
             }
-            let parent_values : Array[@core.Value] = record.fields.map(field => field.val)
+            let parent_values : Array[@core.Value] = record.fields.map(field => {
+              field.val
+            })
             let proc = Value::RecordProc(
               @runtime.make_record_proc(ProtocolP(record_type, parent_values)),
             )
@@ -1377,7 +1379,7 @@ fn list_with_tail(
     // assert : i <= items.length()
     let idx = i - 1
     continue i - 1, pair_new(items[idx], result)
-  } else {
+  } nobreak {
     result
   }
 }
@@ -1399,7 +1401,7 @@ fn parse_formals(expr : @core.Datum) -> @core.Formals raise @core.EvalError {
       }
       _ => raise EvalError("type error: symbol expected")
     }
-  } else {
+  } nobreak {
     @core.Formals::new(names, None)
   }
 }
@@ -1411,9 +1413,9 @@ fn arity_mismatch_at_least(expected : Int, got : Int) -> @core.EvalError {
 
 ///|
 fn values_to_list_value(values : Array[@core.Value]) -> @core.Value {
-  let items : Array[@core.Datum] = values.map(value => value_to_datum_element(
-    value,
-  ))
+  let items : Array[@core.Datum] = values.map(value => {
+    value_to_datum_element(value)
+  })
   Datum(list_from_array(items))
 }
 
@@ -1798,7 +1800,7 @@ fn common_wind_prefix(
       break i
     }
     continue i + 1
-  } else {
+  } nobreak {
     i
   }
 }
@@ -1872,8 +1874,10 @@ fn eval_begin_for_syntax_state(
   }
   frame
   .iter2()
-  .each((key, binding) => if binding.value() is Macro(rules) {
-    @runtime.env_define(env, key, Macro(rules))
+  .each((key, binding) => {
+    if binding.value() is Macro(rules) {
+      @runtime.env_define(env, key, Macro(rules))
+    }
   })
   Apply(Void, kont, handlers)
 }
@@ -2483,7 +2487,7 @@ fn eval_define_record_type_state(
     }
     field_specs.push(spec)
     continue i + 1, parent_name, protocol_expr, is_sealed, is_opaque, uid
-  } else {
+  } nobreak {
     (parent_name, protocol_expr, is_sealed, is_opaque, uid)
   }
   let parent_desc = match parent_name {
@@ -2969,7 +2973,7 @@ fn apply_condition_proc(
                   break true
                 }
                 continue i + 1
-              } else {
+              } nobreak {
                 false
               }
             None => false
@@ -2992,7 +2996,7 @@ fn apply_condition_proc(
               break Some(record)
             }
             continue i + 1
-          } else {
+          } nobreak {
             None
           }
           match found {
@@ -3545,7 +3549,7 @@ fn compare_versions(left : Array[Int], right : Array[Int]) -> Int {
       break 1
     }
     continue i + 1
-  } else {
+  } nobreak {
     0
   }
   if prefix_cmp != 0 {
@@ -3576,7 +3580,7 @@ fn version_ref_matches(version : Array[Int], reference : VersionRef) -> Bool {
           break false
         }
         continue i + 1
-      } else {
+      } nobreak {
         true
       }
     VersionOr(items) =>
@@ -3588,7 +3592,7 @@ fn version_ref_matches(version : Array[Int], reference : VersionRef) -> Bool {
           break true
         }
         continue i + 1
-      } else {
+      } nobreak {
         false
       }
     VersionNot(item) => !version_ref_matches(version, item.val)
@@ -3640,7 +3644,7 @@ fn select_library_for_ref(reference : LibraryRef) -> LibraryVersionInfo? {
             }
         }
         continue i + 1, next_best
-      } else {
+      } nobreak {
         best
       }
       best
@@ -3913,7 +3917,7 @@ fn parse_for_phases(
             }
           _ => raise EvalError("invalid import set")
         }
-      } else {
+      } nobreak {
         (run, expand)
       }
       if !run && !expand {
@@ -3935,10 +3939,12 @@ fn filter_exports_by_phase(
   let result : Map[String, @core.Binding] = {}
   exports
   .iter2()
-  .each((key, binding) => match binding.value() {
-    Macro(_) => if phases.expand { result[key] = binding }
-    SyntaxKeyword(_) => if phases.expand { result[key] = binding }
-    _ => if phases.run { result[key] = binding }
+  .each((key, binding) => {
+    match binding.value() {
+      Macro(_) => if phases.expand { result[key] = binding }
+      SyntaxKeyword(_) => if phases.expand { result[key] = binding }
+      _ => if phases.run { result[key] = binding }
+    }
   })
   result
 }
@@ -4144,7 +4150,7 @@ fn case_dispatch(
             break true
           }
           continue j + 1
-        } else {
+        } nobreak {
           false
         }
         if matched {
@@ -4220,7 +4226,7 @@ fn cond_expand_feature(expr : @core.Datum) -> Bool raise @core.EvalError {
             if !cond_expand_feature(item) {
               break false
             }
-          } else {
+          } nobreak {
             true
           }
         [Symbol("or"), .. rest] =>
@@ -4228,7 +4234,7 @@ fn cond_expand_feature(expr : @core.Datum) -> Bool raise @core.EvalError {
             if cond_expand_feature(item) {
               break true
             }
-          } else {
+          } nobreak {
             false
           }
         [Symbol("not"), item] => !cond_expand_feature(item)
@@ -4816,7 +4822,7 @@ fn apply_proc(
           break Some((clause_formals, clause.body))
         }
         continue i + 1
-      } else {
+      } nobreak {
         None
       }
       match matched {

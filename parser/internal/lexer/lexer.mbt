@@ -171,7 +171,7 @@ pub fn Reader::skip_ws_and_comments(
         }
       _ => break
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -188,7 +188,7 @@ fn Reader::skip_line_comment(self : Reader) -> Unit {
       Some(_) => continue self.next()
       None => break
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -219,7 +219,7 @@ fn Reader::skip_block_comment(self : Reader) -> Unit raise @core.ParseError {
         continue depth
       }
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -316,7 +316,7 @@ pub fn Reader::read_token(self : Reader) -> String raise @core.ParseError {
       }
       _ => break (in_bar, started)
     }
-  } else {
+  } nobreak {
     (false, false)
   }
   if in_bar {
@@ -398,7 +398,7 @@ pub fn Reader::read_string(self : Reader) -> String raise @core.ParseError {
         continue self.next()
       }
     }
-  } else {
+  } nobreak {
     ()
   }
   String::from_array(chars)
@@ -418,7 +418,7 @@ fn Reader::skip_string_line_continuation(self : Reader) -> Unit {
       }
       _ => break
     }
-  } else {
+  } nobreak {
     ()
   }
 }
@@ -447,7 +447,7 @@ fn Reader::read_hex_escape(self : Reader) -> Char raise @core.ParseError {
           _ => raise ParseError("invalid hex escape")
         }
     }
-  } else {
+  } nobreak {
     raise ParseError("invalid hex escape")
   }
 }

@@ -20,7 +20,7 @@ fn is_proper_list(value : @core.Datum) -> Bool {
       Pair(_, cdr) => continue cdr.val
       _ => break false
     }
-  } else {
+  } nobreak {
     false
   }
 }
@@ -80,7 +80,7 @@ fn strip_gensym_suffix(name : String) -> String? {
       continue idx - 1
     }
     break idx
-  } else {
+  } nobreak {
     0
   }
   if i == len || i < 4 {
@@ -114,7 +114,7 @@ fn strip_all_gensym_suffixes(name : String) -> String {
       Some(next) => continue next
       None => break cur
     }
-  } else {
+  } nobreak {
     name
   }
 }
@@ -353,7 +353,7 @@ fn gcd(a : Int, b : Int) -> Int {
     // decreases : y
     // assert : y >= 0
     continue y, x % y
-  } else {
+  } nobreak {
     x
   }
 }
@@ -400,7 +400,7 @@ fn bigint_gcd(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
     // TODO(decreases) : BigInt measure not explicit; possible bug
     // assert : y.compare_int(0) >= 0
     continue y, x % y
-  } else {
+  } nobreak {
     x
   }
 }
@@ -677,7 +677,7 @@ fn pow_int(base : Int, exp : Int) -> Int {
     // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
-  } else {
+  } nobreak {
     result
   }
 }
@@ -691,7 +691,7 @@ fn pow_bigint_int(base : @bigint.BigInt, exp : Int) -> @bigint.BigInt {
     // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
-  } else {
+  } nobreak {
     result
   }
 }
@@ -709,7 +709,7 @@ fn pow_bigint_bigint(
     // assert : e.compare_int(0) >= 0
     let next_result = if !bigint_is_zero(e % two) { result * b } else { result }
     continue next_result, b * b, e / two
-  } else {
+  } nobreak {
     result
   }
 }
@@ -722,7 +722,7 @@ fn pow_float_int(base : Float, exp : Int) -> Float {
     // assert : e >= 0
     let next_result = if e % 2 != 0 { result * b } else { result }
     continue next_result, b * b, e / 2
-  } else {
+  } nobreak {
     result
   }
 }
@@ -1376,7 +1376,7 @@ fn exact_integer_sqrt(n : Int) -> (Int, Int) {
         continue low, mid - 1, ans
       }
     }
-  } else {
+  } nobreak {
     let rem = n - ans * ans
     (ans, rem)
   }
@@ -1409,7 +1409,7 @@ fn exact_integer_sqrt_bigint(
         continue low, mid - one, ans
       }
     }
-  } else {
+  } nobreak {
     let rem = n - ans * ans
     (ans, rem)
   }
@@ -1443,7 +1443,7 @@ fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
     }
     let frac_next = frac_inv - Float::from_int(a)
     continue iter + 1, p1, q1, p2, q2, frac_next
-  } else {
+  } nobreak {
     (p1, q1)
   }
   (sign * p1, q1)
@@ -1609,7 +1609,7 @@ fn fixnum_width_value() -> Int {
     // TODO(decreases) : value grows; bound to Int range not explicit
     // assert : exp >= 0
     continue exp + 1, value * two
-  } else {
+  } nobreak {
     exp
   }
   let width = exp + 1
@@ -1835,7 +1835,7 @@ fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int {
     // TODO(decreases) : BigInt measure not explicit; possible bug
     // assert : n.compare_int(0) >= 0
     continue n / two, count + 1
-  } else {
+  } nobreak {
     count
   }
 }
@@ -1850,7 +1850,7 @@ fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int {
     let bit = n % two
     let next = if bigint_is_zero(bit) { count } else { count + 1 }
     continue n / two, next
-  } else {
+  } nobreak {
     count
   }
 }
@@ -1911,7 +1911,7 @@ fn bigint_bitwise_nonneg(
     }
     let next_result = if out_one { result + bit } else { result }
     continue a / two, b / two, bit * two, next_result
-  } else {
+  } nobreak {
     result
   }
 }
@@ -2106,7 +2106,7 @@ fn datum_bitwise_reverse_bit_field(
       reversed
     }
     continue i + 1, next
-  } else {
+  } nobreak {
     reversed
   }
   datum_bitwise_copy_bit_field(
@@ -2193,7 +2193,7 @@ fn compare_chain_char(
           return false
         }
         continue i + 1, cur
-      } else {
+      } nobreak {
         true
       }
     }
@@ -2220,7 +2220,7 @@ fn compare_chain_string(
           return false
         }
         continue i + 1, cur
-      } else {
+      } nobreak {
         true
       }
     }
@@ -2242,7 +2242,7 @@ fn compare_chain_bool(args : Array[@core.Value]) -> Bool raise @core.EvalError {
           return false
         }
         continue i + 1, cur
-      } else {
+      } nobreak {
         true
       }
     }
@@ -2266,7 +2266,7 @@ fn compare_chain_symbol(
           return false
         }
         continue i + 1, cur
-      } else {
+      } nobreak {
         true
       }
     }
@@ -2289,7 +2289,7 @@ fn hash_string_value(s : String) -> Int {
       }
       None => return hash
     }
-  } else {
+  } nobreak {
     hash
   }
 }
@@ -2336,7 +2336,7 @@ fn list_member(
       }
       _ => raise EvalError("type error: proper list expected")
     }
-  } else {
+  } nobreak {
     bool_value(false)
   }
 }
@@ -2370,7 +2370,7 @@ fn list_assoc(
       }
       _ => raise EvalError("type error: proper list expected")
     }
-  } else {
+  } nobreak {
     bool_value(false)
   }
 }
@@ -2647,7 +2647,7 @@ fn utf8_decode_to_string(
       None => utf8_raise_invalid()
     }
     continue i + size
-  } else {
+  } nobreak {
     buf.to_string()
   }
   result
@@ -2669,7 +2669,7 @@ fn bytevector_uint_ref(
         // assert : i < size
         let next = result * base + bigint_from_int(items[start + i])
         continue i + 1, next
-      } else {
+      } nobreak {
         result
       }
     LittleEndian =>
@@ -2680,7 +2680,7 @@ fn bytevector_uint_ref(
         // assert : i < size
         let next = result + bigint_from_int(items[start + i]) * factor
         continue i + 1, next, factor * base
-      } else {
+      } nobreak {
         result
       }
   }

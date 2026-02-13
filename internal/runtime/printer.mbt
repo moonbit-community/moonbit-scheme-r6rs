@@ -49,7 +49,7 @@ fn char_to_string(ch : Char) -> String {
     '\t' => "#\\tab"
     _ => {
       let buf = @buffer.new()
-      buf..write_string("#\\")..write_char(ch)
+      buf..write_string("#\\").write_char(ch)
       buf.to_string()
     }
   }
@@ -180,7 +180,7 @@ fn datum_list_to_string_state(
         break "(\{prefix} . \{tail})"
       }
     }
-  } else {
+  } nobreak {
     ""
   }
 }

@@ -76,7 +76,7 @@ fn gcd(a : Int, b : Int) -> Int {
     // decreases : y
     // assert : y >= 0
     continue y, x % y
-  } else {
+  } nobreak {
     x
   }
 }
@@ -137,7 +137,7 @@ fn bigint_gcd(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
     // TODO(decreases) : BigInt measure not explicit; possible bug
     // assert : y.compare_int(0) >= 0
     continue y, x % y
-  } else {
+  } nobreak {
     x
   }
 }
@@ -209,7 +209,7 @@ fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
       }
       None => break (sign, acc, has_digit)
     }
-  } else {
+  } nobreak {
     (sign, acc, has_digit)
   }
   if has_digit {
@@ -229,16 +229,16 @@ fn integer_datum_from_bigint(value : @bigint.BigInt) -> @core.Datum {
 
 ///|
 fn parse_integer_token(tok : String) -> @core.Datum? {
-  parse_bigint_token_radix(tok, 10).map(value => integer_datum_from_bigint(
-    value,
-  ))
+  parse_bigint_token_radix(tok, 10).map(value => {
+    integer_datum_from_bigint(value)
+  })
 }
 
 ///|
 fn parse_integer_token_radix(tok : String, radix : Int) -> @core.Datum? {
-  parse_bigint_token_radix(tok, radix).map(value => integer_datum_from_bigint(
-    value,
-  ))
+  parse_bigint_token_radix(tok, radix).map(value => {
+    integer_datum_from_bigint(value)
+  })
 }
 
 ///|
@@ -266,7 +266,7 @@ fn find_unique_char(chars : StringView, target : Char) -> Int? {
       }
     }
     continue i + 1, found
-  } else {
+  } nobreak {
     found
   }
   found
@@ -367,7 +367,7 @@ fn parse_float_token(tok : String) -> Float? {
       }
       None => break (sign, int_part, frac_part, frac_div, seen_dot, seen_digit)
     }
-  } else {
+  } nobreak {
     (sign, int_part, frac_part, frac_div, seen_dot, seen_digit)
   }
   if !seen_dot || !seen_digit {
@@ -391,7 +391,7 @@ fn pow10_bigint(exp : Int) -> @bigint.BigInt {
     // decreases : exp - i
     // assert : i <= exp
     continue i + 1, acc * ten
-  } else {
+  } nobreak {
     acc
   }
 }
@@ -405,7 +405,7 @@ fn pow10_float(exp : Int) -> Float {
     // decreases : limit - i
     // assert : i <= limit
     continue i + 1, acc * ten
-  } else {
+  } nobreak {
     acc
   }
   if exp < 0 {
@@ -429,7 +429,7 @@ fn split_exp_token(tok : String) -> (String, Int)? {
       break i
     }
     continue i + 1
-  } else {
+  } nobreak {
     -1
   }
   if idx == -1 {
@@ -692,7 +692,7 @@ fn parse_real_token_with_settings(
           has_slash || ch == '/'
       None => break (has_dot, has_exp, has_slash)
     }
-  } else {
+  } nobreak {
     (has_dot, has_exp, has_slash)
   }
   if radix != 10 {
@@ -761,7 +761,7 @@ fn find_complex_split(core_chars : StringView, radix : Int) -> Int? {
           return Some(idx)
         }
         continue i - 1
-      } else {
+      } nobreak {
         None
       }
     }
@@ -1105,7 +1105,7 @@ fn list_from_items(
     // assert : i <= items.length()
     let idx = i - 1
     continue i - 1, pair_new(items[idx], tail)
-  } else {
+  } nobreak {
     tail
   }
 }
@@ -1152,7 +1152,7 @@ fn read_list(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
         continue r..skip_ws_and_comments().peek()
       }
     }
-  } else {
+  } nobreak {
     Nil
   }
   list
@@ -1179,7 +1179,7 @@ fn datum_list_to_array_parse(
       }
       _ => raise ParseError("expected proper list")
     }
-  } else {
+  } nobreak {
     ()
   }
   items
@@ -1198,14 +1198,16 @@ fn read_bytevector_literal(
 ) -> @core.Datum raise @core.ParseError {
   let list = read_list(r)
   let items = datum_list_to_array_parse(list)
-  let bytes = items.map(item => match item {
-    Int(n) => {
-      if n < 0 || n > 255 {
-        raise ParseError::ParseError("bytevector element out of range")
+  let bytes = items.map(item => {
+    match item {
+      Int(n) => {
+        if n < 0 || n > 255 {
+          raise ParseError::ParseError("bytevector element out of range")
+        }
+        n
       }
-      n
+      _ => raise ParseError::ParseError("bytevector element must be integer")
     }
-    _ => raise ParseError::ParseError("bytevector element must be integer")
   })
   ByteVector(bytes)
 }
@@ -1396,7 +1398,7 @@ pub fn parse_program(
 ) -> Array[@core.Datum] raise @core.ParseError {
   let r = {
     let r = @lexer.Reader::new(src)
-    r..set_fold_case(fold_case)
+    r.set_fold_case(fold_case)
     r
   }
   let exprs : Array[@core.Datum] = []
@@ -1407,7 +1409,7 @@ pub fn parse_program(
     let expr = read_expr(r)
     exprs.push(expr)
     continue r..skip_ws_and_comments().peek()
-  } else {
+  } nobreak {
     ()
   }
   exprs
