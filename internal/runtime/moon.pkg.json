@@ -1,7 +1,0 @@
-{
-  "import": [
-    "bobzhang/scheme-r6rs/core",
-    "moonbitlang/core/bigint",
-    "moonbitlang/core/buffer"
-  ]
-}
