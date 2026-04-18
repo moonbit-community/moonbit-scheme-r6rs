@@ -3,6 +3,7 @@ package "bobzhang/scheme-r6rs/parser/internal/lexer"
 
 import {
   "bobzhang/scheme-r6rs/core",
+  "moonbitlang/core/ref",
 }
 
 // Values
@@ -14,11 +15,11 @@ pub struct Reader {
   chars : Array[Char]
   mut pos : Int
   mut fold_case : Bool
-  labels : Map[Int, Ref[@core.Datum]]
+  labels : Map[Int, @ref.Ref[@core.Datum]]
 }
 pub fn Reader::is_ellipsis_start(Self) -> Bool
-pub fn Reader::label_get(Self, Int) -> Ref[@core.Datum]?
-pub fn Reader::label_set(Self, Int, Ref[@core.Datum]) -> Unit
+pub fn Reader::label_get(Self, Int) -> @ref.Ref[@core.Datum]?
+pub fn Reader::label_set(Self, Int, @ref.Ref[@core.Datum]) -> Unit
 pub fn Reader::new(String) -> Self
 pub fn Reader::next(Self) -> Char?
 pub fn Reader::peek(Self) -> Char?

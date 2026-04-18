@@ -163,9 +163,10 @@ const Zl : String = "\u{2028}\u{2028}"
 const Zp : String = "\u{2029}\u{2029}"
 
 ///|
-let cs : ReadOnlyArray[Char] = ReadOnlyArray::from_array(
-  [(0xd800).unsafe_to_char(), (0xdfff).unsafe_to_char()][:],
-)
+let cs : ReadOnlyArray[Char] = ReadOnlyArray::from_array([
+  (0xd800).unsafe_to_char(),
+  (0xdfff).unsafe_to_char(),
+])
 
 ///|
 const Co : String = "\u{e000}\u{f8ff}\u{f0000}\u{ffffd}\u{100000}\u{10fffd}"
