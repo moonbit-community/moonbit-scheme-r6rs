@@ -3,6 +3,8 @@ package "bobzhang/scheme-r6rs/core"
 
 import {
   "moonbitlang/core/bigint",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/ref",
 }
 
 // Values
@@ -10,14 +12,12 @@ import {
 // Errors
 pub(all) suberror EvalError {
   EvalError(String)
-}
-pub impl Eq for EvalError
+} derive(Eq, @debug.Debug)
 pub impl Show for EvalError
 
 pub(all) suberror ParseError {
   ParseError(String)
-}
-pub impl Eq for ParseError
+} derive(Eq, @debug.Debug)
 pub impl Show for ParseError
 
 // Types and methods
@@ -85,12 +85,12 @@ pub(all) enum Datum {
   Rat(Int, Int)
   BigRat(@bigint.BigInt, @bigint.BigInt)
   Float(Float)
-  Complex(Ref[Datum], Ref[Datum])
-  Label(Int, Ref[Datum])
+  Complex(@ref.Ref[Datum], @ref.Ref[Datum])
+  Label(Int, @ref.Ref[Datum])
   Char(Char)
-  String(Ref[String])
+  String(@ref.Ref[String])
   Symbol(String)
-  Pair(Ref[Datum], Ref[Datum])
+  Pair(@ref.Ref[Datum], @ref.Ref[Datum])
   Vector(Array[Datum])
   ByteVector(Array[Int])
   Record(Record)
@@ -152,13 +152,13 @@ pub struct Hashtable {
   mutable : Bool
   equiv : HashtableEquiv
   hash : Value?
-  entries : Ref[Array[HashtableEntry]]
+  entries : @ref.Ref[Array[HashtableEntry]]
 }
 pub fn Hashtable::new(Int, Bool, HashtableEquiv, Value?, Array[HashtableEntry]) -> Self
 
 pub struct HashtableEntry {
   key : Value
-  value : Ref[Value]
+  value : @ref.Ref[Value]
 }
 pub fn HashtableEntry::new(Value, Value) -> Self
 
@@ -242,7 +242,7 @@ pub fn ParamBinding::new(Parameter, Value, Value) -> Self
 
 pub struct Parameter {
   id : Int
-  value : Ref[Value]
+  value : @ref.Ref[Value]
   converter : Value?
 }
 pub fn Parameter::new(Int, Value, Value?) -> Self
@@ -254,7 +254,7 @@ pub struct Port {
 pub fn Port::new_output_string(Int, String) -> Self
 
 pub enum PortKind {
-  OutputString(Ref[String])
+  OutputString(@ref.Ref[String])
 }
 
 pub(all) enum Primitive {
@@ -639,12 +639,11 @@ pub(all) enum Primitive {
   ImplementationRestrictionViolation
   UndefinedViolation
   SyntaxViolation
-}
-pub impl Eq for Primitive
+} derive(Eq)
 
 pub struct Promise {
   id : Int
-  state : Ref[PromiseState]
+  state : @ref.Ref[PromiseState]
 }
 pub fn Promise::new(Int, PromiseState) -> Self
 
@@ -656,7 +655,7 @@ pub(all) enum PromiseState {
 pub struct Record {
   id : Int
   record_type : RecordType
-  fields : Array[Ref[Value]]
+  fields : Array[@ref.Ref[Value]]
 }
 pub fn Record::new(Int, RecordType, Array[Value]) -> Self
 

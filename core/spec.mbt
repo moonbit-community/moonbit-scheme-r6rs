@@ -74,12 +74,12 @@
 ///|
 pub(all) suberror ParseError {
   ParseError(String)
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 pub(all) suberror EvalError {
   EvalError(String)
-} derive(Show, Eq)
+} derive(Debug, Eq)
 
 ///|
 /// Datum is the reader-level data representation used by quote.
@@ -638,4 +638,14 @@ pub(all) enum Value {
   SyntaxObject(SyntaxObject)
   SyntaxKeyword(String)
   Macro(MacroTransformer)
+}
+
+///|
+pub impl Show for ParseError with output(self, logger) {
+  logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
+}
+
+///|
+pub impl Show for EvalError with output(self, logger) {
+  logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }

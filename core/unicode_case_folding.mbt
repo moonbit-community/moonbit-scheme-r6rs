@@ -18,16 +18,18 @@ const DATA : String = "\u{61}\u{41}\u{41}\u{61}\u{62}\u{42}\u{42}\u{62}\u{63}\u{
 ///|
 fn build_case_folding(data : StringView) -> Map[Char, Char] {
   let map = Map::new(capacity=3000)
-  loop data {
-    [ch1, ch2, .. rest] => {
-      map[ch1] = ch2
-      continue rest
+  for view = data {
+    match view {
+      [ch1, ch2, .. rest] => {
+        map[ch1] = ch2
+        continue rest
+      }
+      [_] => panic()
+      [] => break
     }
-    [_] => panic()
-    [] => ()
   }
   map
 }
 
 ///|
-let case_folding : Map[Char, Char] = build_case_folding(DATA[:])
+let case_folding : Map[Char, Char] = build_case_folding(DATA)

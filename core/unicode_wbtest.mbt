@@ -23,7 +23,7 @@ test "unicode internals" {
 
 ///|
 test "panic unicode case folding odd data" {
-  ignore(build_case_folding("a"[:]))
+  ignore(build_case_folding("a"))
 }
 
 ///|
