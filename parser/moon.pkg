@@ -2,6 +2,6 @@ import {
   "bobzhang/scheme-r6rs/core",
   "bobzhang/scheme-r6rs/parser/internal/lexer",
   "moonbitlang/core/bigint",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
   "moonbitlang/core/math",
 }

@@ -277,16 +277,8 @@ fn parse_rat_token(tok : String) -> @core.Datum? {
   let view = tok[:]
   match find_unique_char(view, '/') {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
-      let num_view = try view.sub(end=slash) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
-      let den_view = try view.sub(start=slash + 1) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
+      let num_view = view.sub(end=slash)
+      let den_view = view.sub(start=slash + 1)
       let num_str = num_view.to_string()
       let den_str = den_view.to_string()
       match (parse_integer_token(num_str), parse_integer_token(den_str)) {
@@ -437,16 +429,8 @@ fn split_exp_token(tok : String) -> (String, Int)? {
   } else if idx == 0 || idx + 1 == view.length() {
     None
   } else {
-    let base_view = try view.sub(end=idx) catch {
-      _ => return None
-    } noraise {
-      view => view
-    }
-    let exp_view = try view.sub(start=idx + 1) catch {
-      _ => return None
-    } noraise {
-      view => view
-    }
+    let base_view = view.sub(end=idx)
+    let exp_view = view.sub(start=idx + 1)
     let base = base_view.to_string()
     let exp_str = exp_view.to_string()
     parse_int_token(exp_str).map(exp => (base, exp))
@@ -485,7 +469,7 @@ fn parse_exact_decimal(tok : String) -> @core.Datum? {
     [] => return None
     ['+', .. rest] => (1, rest)
     ['-', .. rest] => (-1, rest)
-    _ => (1, base[:])
+    _ => (1, base)
   }
   let ten = bigint_from_int(10)
   let mut acc = bigint_from_int(0)
@@ -528,16 +512,8 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> @core.Datum? {
   let view = tok[:]
   match find_unique_char(view, '/') {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
-      let num_view = try view.sub(end=slash) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
-      let den_view = try view.sub(start=slash + 1) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
+      let num_view = view.sub(end=slash)
+      let den_view = view.sub(start=slash + 1)
       let num_str = num_view.to_string()
       let den_str = den_view.to_string()
       match
@@ -569,7 +545,7 @@ fn datum_to_float(value : @core.Datum) -> Float? {
   match value {
     Int(n) => Some(Float::from_int(n))
     BigInt(n) =>
-      try @strconv.parse_double(n.to_string()) catch {
+      try @string.parse_double(n.to_string()) catch {
         _ => None
       } noraise {
         v => Some(Float::from_double(v))
@@ -578,8 +554,8 @@ fn datum_to_float(value : @core.Datum) -> Float? {
     BigRat(n, d) =>
       match
         (
-          try? @strconv.parse_double(n.to_string()),
-          try? @strconv.parse_double(d.to_string()),
+          try? @string.parse_double(n.to_string()),
+          try? @string.parse_double(d.to_string()),
         ) {
         (Ok(nn), Ok(dd)) => Some(Float::from_double(nn / dd))
         _ => None
@@ -785,16 +761,8 @@ fn parse_complex_token(
       if at == 0 || at + 1 == view.length() {
         return None
       }
-      let left_view = try view.sub(end=at) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
-      let right_view = try view.sub(start=at + 1) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
+      let left_view = view.sub(end=at)
+      let right_view = view.sub(start=at + 1)
       let left = left_view.to_string()
       let right = right_view.to_string()
       let r = match
@@ -837,16 +805,8 @@ fn parse_complex_token(
   }
   match find_complex_split(core_chars, radix) {
     Some(split) => {
-      let real_view = try core_chars.sub(end=split) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
-      let imag_view = try core_chars.sub(start=split) catch {
-        _ => return None
-      } noraise {
-        view => view
-      }
+      let real_view = core_chars.sub(end=split)
+      let imag_view = core_chars.sub(start=split)
       let real_str = real_view.to_string()
       let real = match
         parse_real_token_with_settings(real_str, radix, exactness, allow_rat) {
@@ -1012,11 +972,7 @@ fn parse_char_token(tok : String) -> Char? {
           if lower.length() >= 2 {
             match lower.get_char(0) {
               Some('x') => {
-                let hex_view = try rest.sub(start=1) catch {
-                  _ => return None
-                } noraise {
-                  view => view
-                }
+                let hex_view = rest.sub(start=1)
                 return match parse_hex_digits(hex_view) {
                   Some(value) => value.to_char()
                   None => None
