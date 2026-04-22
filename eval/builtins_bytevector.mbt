@@ -17,7 +17,7 @@ fn apply_bytevector_primitive(
               let len = value_as_nonnegative_int(len_value)
               let fill = 0
               let items : Array[Int] = []
-              for i in 0..<len {
+              for _ in 0..<len {
                 items.push(fill)
               }
               Datum(ByteVector(items))
@@ -29,7 +29,7 @@ fn apply_bytevector_primitive(
               let len = value_as_nonnegative_int(len_value)
               let fill = value_as_byte(fill_value)
               let items : Array[Int] = []
-              for i in 0..<len {
+              for _ in 0..<len {
                 items.push(fill)
               }
               Datum(ByteVector(items))

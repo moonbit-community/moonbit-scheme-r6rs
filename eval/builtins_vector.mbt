@@ -19,7 +19,7 @@ fn apply_vector_primitive(
               let len = value_as_nonnegative_int(len_value)
               let fill = Datum::Nil
               let items : Array[@core.Datum] = []
-              for i in 0..<len {
+              for _ in 0..<len {
                 items.push(fill)
               }
               Datum(Vector(items))
@@ -31,7 +31,7 @@ fn apply_vector_primitive(
               let len = value_as_nonnegative_int(len_value)
               let fill = value_to_datum_element(fill_value)
               let items : Array[@core.Datum] = []
-              for i in 0..<len {
+              for _ in 0..<len {
                 items.push(fill)
               }
               Datum(Vector(items))
