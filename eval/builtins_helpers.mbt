@@ -270,7 +270,7 @@ fn value_as_number(value : @core.Value) -> @core.Datum raise @core.EvalError {
 
 ///|
 fn bigint_to_float(value : @bigint.BigInt) -> Float raise @core.EvalError {
-  try @strconv.parse_double(value.to_string()) catch {
+  try @string.parse_double(value.to_string()) catch {
     _ => raise EvalError("number too large")
   } noraise {
     v => Float::from_double(v)
@@ -279,7 +279,7 @@ fn bigint_to_float(value : @bigint.BigInt) -> Float raise @core.EvalError {
 
 ///|
 fn bigint_to_float_unchecked(value : @bigint.BigInt) -> Float {
-  try @strconv.parse_double(value.to_string()) catch {
+  try @string.parse_double(value.to_string()) catch {
     _ => Float::from_int(0)
   } noraise {
     v => Float::from_double(v)
