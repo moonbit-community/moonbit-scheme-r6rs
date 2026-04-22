@@ -246,8 +246,10 @@ fn apply_char_string_primitive(
             s.length()
           }
           check_slice_range(start, end, s.length())
-          let slice = s[start:end]
-          Some(Datum(String(Ref::new(slice.to_string()))))
+          match s.get_view(start~, end~) {
+            Some(slice) => Some(Datum(String(Ref::new(slice.to_string()))))
+            None => raise EvalError("index out of range")
+          }
         }
         _ =>
           raise EvalError(
@@ -263,8 +265,10 @@ fn apply_char_string_primitive(
               let start = value_as_int_index(start_value)
               let end = value_as_int_index(end_value)
               check_slice_range(start, end, s.length())
-              let slice = s[start:end]
-              Datum(String(Ref::new(slice.to_string())))
+              match s.get_view(start~, end~) {
+                Some(slice) => Datum(String(Ref::new(slice.to_string())))
+                None => raise EvalError("index out of range")
+              }
             },
           )
         _ => raise arity_mismatch(3, args.length())
