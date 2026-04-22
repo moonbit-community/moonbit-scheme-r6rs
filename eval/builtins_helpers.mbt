@@ -96,12 +96,7 @@ fn strip_gensym_suffix(name : String) -> String? {
   if base_len == 0 {
     return None
   }
-  let prefix = try name[:base_len] catch {
-    _ => return None
-  } noraise {
-    view => view
-  }
-  Some(prefix.to_string())
+  Some(name[:base_len].to_string())
 }
 
 ///|
