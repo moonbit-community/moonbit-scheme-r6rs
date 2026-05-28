@@ -148,7 +148,7 @@ fn apply_char_string_primitive(
       Some(bool_value(compare_chain_string(args, CmpGe, true)))
     String => {
       let chars : Array[Char] = args.map(arg => value_as_char(arg))
-      Some(Datum(String(Ref::new(String::from_array(chars)))))
+      Some(Datum(String(Ref(String::from_array(chars)))))
     }
     MakeString =>
       match args {
@@ -162,7 +162,7 @@ fn apply_char_string_primitive(
                 None => raise EvalError("internal error: invalid default char")
               }
               let repeated = String::from_array([fill]).repeat(len)
-              Datum(String(Ref::new(repeated)))
+              Datum(String(Ref(repeated)))
             },
           )
         [len_value, fill_value] =>
@@ -171,7 +171,7 @@ fn apply_char_string_primitive(
               let len = value_as_nonnegative_int(len_value)
               let fill = value_as_char(fill_value)
               let repeated = String::from_array([fill]).repeat(len)
-              Datum(String(Ref::new(repeated)))
+              Datum(String(Ref(repeated)))
             },
           )
         _ =>
@@ -198,7 +198,7 @@ fn apply_char_string_primitive(
       }
     StringAppend => {
       let items : Array[String] = args.map(arg => value_as_string(arg))
-      Some(Datum(String(Ref::new(items.join("")))))
+      Some(Datum(String(Ref(items.join("")))))
     }
     StringRef =>
       match args {
@@ -247,7 +247,7 @@ fn apply_char_string_primitive(
           }
           check_slice_range(start, end, s.length())
           match s.get_view(start~, end~) {
-            Some(slice) => Some(Datum(String(Ref::new(slice.to_string()))))
+            Some(slice) => Some(Datum(String(Ref(slice.to_owned()))))
             None => raise EvalError("index out of range")
           }
         }
@@ -266,7 +266,7 @@ fn apply_char_string_primitive(
               let end = value_as_int_index(end_value)
               check_slice_range(start, end, s.length())
               match s.get_view(start~, end~) {
-                Some(slice) => Datum(String(Ref::new(slice.to_string())))
+                Some(slice) => Datum(String(Ref(slice.to_owned())))
                 None => raise EvalError("index out of range")
               }
             },
@@ -298,7 +298,7 @@ fn apply_char_string_primitive(
             at,
             to_len,
           )
-          let buf = @buffer.new()
+          let buf = StringBuilder()
           for i in 0..<to_len {
             match to_str.get_char(i) {
               Some(ch) =>
@@ -382,14 +382,14 @@ fn apply_char_string_primitive(
             {
               let datum = value_as_datum(datum_value)
               let items = datum_list_to_array(datum)
-              let buf = @buffer.new()
+              let buf = StringBuilder()
               for item in items {
                 match item {
                   Char(ch) => buf.write_char(ch)
                   _ => raise EvalError("type error: char expected")
                 }
               }
-              Datum(String(Ref::new(buf.to_string())))
+              Datum(String(Ref(buf.to_string())))
             },
           )
         _ => raise arity_mismatch(1, args.length())
@@ -401,9 +401,7 @@ fn apply_char_string_primitive(
             {
               let s = value_as_string(string_value)
               Datum(
-                String(
-                  Ref::new(@core.UnicodeString::new(s).upcase().into_string()),
-                ),
+                String(Ref(@core.UnicodeString::new(s).upcase().into_string())),
               )
             },
           )
@@ -417,7 +415,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(@core.UnicodeString::new(s).downcase().into_string()),
+                  Ref(@core.UnicodeString::new(s).downcase().into_string()),
                 ),
               )
             },
@@ -432,7 +430,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(@core.UnicodeString::new(s).foldcase().into_string()),
+                  Ref(@core.UnicodeString::new(s).foldcase().into_string()),
                 ),
               )
             },
@@ -447,9 +445,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(
-                    @core.UnicodeString::new(s).normalize_nfc().into_string(),
-                  ),
+                  Ref(@core.UnicodeString::new(s).normalize_nfc().into_string()),
                 ),
               )
             },
@@ -464,9 +460,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(
-                    @core.UnicodeString::new(s).normalize_nfd().into_string(),
-                  ),
+                  Ref(@core.UnicodeString::new(s).normalize_nfd().into_string()),
                 ),
               )
             },
@@ -481,7 +475,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(
+                  Ref(
                     @core.UnicodeString::new(s).normalize_nfkc().into_string(),
                   ),
                 ),
@@ -498,7 +492,7 @@ fn apply_char_string_primitive(
               let s = value_as_string(string_value)
               Datum(
                 String(
-                  Ref::new(
+                  Ref(
                     @core.UnicodeString::new(s).normalize_nfkd().into_string(),
                   ),
                 ),

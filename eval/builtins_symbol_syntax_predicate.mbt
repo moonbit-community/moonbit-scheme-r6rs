@@ -93,7 +93,7 @@ fn apply_symbol_syntax_predicate_primitive_core(
       }
     SymbolToString =>
       match args {
-        [Datum(Symbol(name))] => Datum(String(Ref::new(name)))
+        [Datum(Symbol(name))] => Datum(String(Ref(name)))
         [_] => raise EvalError("type error: symbol expected")
         _ => raise arity_mismatch(1, args.length())
       }

@@ -163,7 +163,7 @@ pub struct RecordFieldBinding {
 ///   let binding = RecordFieldBinding::new("get", 0, None)
 ///   inspect(binding.accessor(), content="get")
 ///   inspect(binding.index(), content="0")
-///   inspect(binding.mutator(), content="None")
+///   debug_inspect(binding.mutator(), content="None")
 /// }
 /// ```
 pub fn RecordFieldBinding::new(

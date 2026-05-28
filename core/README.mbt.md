@@ -131,7 +131,7 @@ test "record field binding helpers" {
   let binding = RecordFieldBinding::new("get", 0, None)
   inspect(binding.accessor(), content="get")
   inspect(binding.index(), content="0")
-  inspect(binding.mutator(), content="None")
+  debug_inspect(binding.mutator(), content="None")
 }
 
 ///|
@@ -140,7 +140,7 @@ test "datum constructors" {
     Int(42) => ()
     _ => fail("expected int datum")
   }
-  let pair = Datum::Pair(Ref::new(Symbol("a")), Ref::new(Nil))
+  let pair = Datum::Pair(Ref(Symbol("a")), Ref(Nil))
   match pair {
     Pair(car, cdr) =>
       match (car.val, cdr.val) {

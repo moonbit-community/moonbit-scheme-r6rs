@@ -1,5 +1,5 @@
 ///|
-let include_registry : Ref[Map[String, String]] = Ref::new({})
+let include_registry : Ref[Map[String, String]] = Ref({})
 
 ///|
 /// Register an in-memory source for (include ...) by path.

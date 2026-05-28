@@ -86,7 +86,7 @@ test "enum set from names" {
 
 ///|
 test "enum set index" {
-  inspect(enum_set_index_of(["a", "b"], "b"), content="Some(1)")
+  debug_inspect(enum_set_index_of(["a", "b"], "b"), content="Some(1)")
 }
 
 ///|
@@ -110,14 +110,11 @@ test "printer datum rendering" {
   let record = @core.Record::new(1, record_type, [])
   let record_for_condition = @core.Record::new(2, record_type, [])
   let condition = @core.Condition::new(1, [record_for_condition])
-  let label_cell = Ref::new(Datum::Nil)
+  let label_cell = Ref(Datum::Nil)
   let label = Datum::Label(1, label_cell)
   label_cell.val = label
-  let proper_list = Datum::Pair(
-    Ref::new(Int(1)),
-    Ref::new(Pair(Ref::new(Int(2)), Ref::new(Nil))),
-  )
-  let dotted_list = Datum::Pair(Ref::new(Int(1)), Ref::new(Int(2)))
+  let proper_list = Datum::Pair(Ref(Int(1)), Ref(Pair(Ref(Int(2)), Ref(Nil))))
+  let dotted_list = Datum::Pair(Ref(Int(1)), Ref(Int(2)))
   let entries : Array[(@core.Datum, String)] = [
     (Nil, "()"),
     (Bool(true), "#t"),
@@ -126,26 +123,21 @@ test "printer datum rendering" {
     (Rat(1, 2), "1/2"),
     (BigRat(@bigint.BigInt::from_int(-1), @bigint.BigInt::from_int(3)), "-1/3"),
     (Float(1.5), "1.5"),
-    (
-      Complex(Ref::new(Int(1)), Ref::new(BigInt(@bigint.BigInt::from_int(-2)))),
-      "1-2i",
-    ),
-    (Complex(Ref::new(Int(1)), Ref::new(Rat(-1, 2))), "1-1/2i"),
+    (Complex(Ref(Int(1)), Ref(BigInt(@bigint.BigInt::from_int(-2)))), "1-2i"),
+    (Complex(Ref(Int(1)), Ref(Rat(-1, 2))), "1-1/2i"),
     (
       Complex(
-        Ref::new(Int(1)),
-        Ref::new(
-          BigRat(@bigint.BigInt::from_int(-1), @bigint.BigInt::from_int(3)),
-        ),
+        Ref(Int(1)),
+        Ref(BigRat(@bigint.BigInt::from_int(-1), @bigint.BigInt::from_int(3))),
       ),
       "1-1/3i",
     ),
-    (Complex(Ref::new(Int(1)), Ref::new(Float(-1.5))), "1-1.5i"),
+    (Complex(Ref(Int(1)), Ref(Float(-1.5))), "1-1.5i"),
     (Char(' '), "#\\space"),
     (Char('\n'), "#\\newline"),
     (Char('\t'), "#\\tab"),
     (Char('a'), "#\\a"),
-    (String(Ref::new("a\n\t\r\"\\b")), "\"a\\n\\t\\r\\\"\\\\b\""),
+    (String(Ref("a\n\t\r\"\\b")), "\"a\\n\\t\\r\\\"\\\\b\""),
     (Symbol("foo"), "foo"),
     (proper_list, "(1 2)"),
     (dotted_list, "(1 . 2)"),
@@ -258,7 +250,7 @@ test "syntax helpers extra" {
     Some("x") => ()
     _ => fail("expected symbol name")
   }
-  let complex = Datum::Complex(Ref::new(Int(1)), Ref::new(Int(2)))
+  let complex = Datum::Complex(Ref(Int(1)), Ref(Int(2)))
   match syntax_wrap_root(complex, [1]) {
     Complex(_, _) => ()
     _ => fail("expected complex")
@@ -284,7 +276,7 @@ test "syntax helpers extra" {
       }
     _ => fail("expected vector")
   }
-  let pair = Datum::Pair(Ref::new(Symbol("p")), Ref::new(Nil))
+  let pair = Datum::Pair(Ref(Symbol("p")), Ref(Nil))
   let wrapped_pair = Datum::Value(
     SyntaxObject(@core.SyntaxObject::new(pair, [3], None)),
   )
@@ -296,7 +288,7 @@ test "syntax helpers extra" {
       }
     _ => fail("expected syntax object")
   }
-  let cell = Ref::new(Datum::Nil)
+  let cell = Ref(Datum::Nil)
   let label = Datum::Label(1, cell)
   cell.val = label
   match datum_unlabel(label) {

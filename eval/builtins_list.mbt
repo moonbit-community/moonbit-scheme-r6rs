@@ -222,7 +222,7 @@ fn apply_pair_list_primitive(
           if idx < 0 || idx > items.length() {
             raise EvalError("index out of range")
           }
-          Datum(list_from_array(items[idx:].to_array()))
+          Datum(list_from_array(items[idx:].to_owned()))
         }
         _ => raise arity_mismatch(2, args.length())
       }

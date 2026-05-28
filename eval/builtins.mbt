@@ -98,7 +98,7 @@ fn apply_primitive_core(
       match args {
         [port_value] => {
           let port = value_as_port(port_value)
-          Datum(String(Ref::new(@runtime.port_get_output_string(port))))
+          Datum(String(Ref(@runtime.port_get_output_string(port))))
         }
         _ => raise arity_mismatch(1, args.length())
       }

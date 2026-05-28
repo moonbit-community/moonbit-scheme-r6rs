@@ -18,7 +18,7 @@ pub struct Reader {
 /// ```
 pub fn Reader::new(src : String) -> Reader {
   let chars = src.to_array()
-  { chars, pos: 0, fold_case: false, labels: Map::new() }
+  { chars, pos: 0, fold_case: false, labels: Map::from_array([]) }
 }
 
 ///|
@@ -82,7 +82,7 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[@core.Datum]? {
 /// ```mbt check
 /// test "label set/get" {
 ///   let r = Reader::new("x")
-///   let cell = Ref::new(Datum::Nil)
+///   let cell = Ref(Datum::Nil)
 ///   r.label_set(1, cell)
 ///   guard r.label_get(1) is Some(_) else { fail("expected label") }
 ///   guard r.label_get(2) is None else { fail("expected missing label") }

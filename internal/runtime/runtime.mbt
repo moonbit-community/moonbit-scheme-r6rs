@@ -5,7 +5,7 @@ priv struct Counter {
 
 ///|
 fn Counter::new() -> Counter {
-  { cell: Ref::new(0) }
+  { cell: Ref(0) }
 }
 
 ///|
@@ -58,19 +58,17 @@ let enum_set_counter : Counter = Counter::new()
 let enum_set_proc_counter : Counter = Counter::new()
 
 ///|
-let library_registry : Ref[Map[String, Map[String, @core.Binding]]] = Ref::new({})
+let library_registry : Ref[Map[String, Map[String, @core.Binding]]] = Ref({})
 
 ///|
-let record_type_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref::new({},
+let record_type_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref({})
+
+///|
+let record_type_uid_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref({},
 )
 
 ///|
-let record_type_uid_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Ref::new({},
-)
-
-///|
-let record_type_id_registry : Ref[Map[Int, @core.RecordTypeDescriptor]] = Ref::new({},
-)
+let record_type_id_registry : Ref[Map[Int, @core.RecordTypeDescriptor]] = Ref({})
 
 ///|
 /// Generate a fresh symbol name with a gensym suffix.
@@ -470,7 +468,7 @@ pub fn new_output_string_port() -> @core.Port {
 }
 
 ///|
-let current_output_port : Ref[@core.Port] = Ref::new(new_output_string_port())
+let current_output_port : Ref[@core.Port] = Ref(new_output_string_port())
 
 ///|
 /// Fetch the current output port.
@@ -523,7 +521,7 @@ pub fn port_get_output_string(port : @core.Port) -> String {
 /// # Example
 /// ```mbt check
 /// test "datum_unlabel unwraps label" {
-///   let cell = Ref::new(Datum::Int(1))
+///   let cell = Ref(Datum::Int(1))
 ///   let labeled = Datum::Label(1, cell)
 ///   match datum_unlabel(labeled) {
 ///     Int(1) => ()
@@ -555,7 +553,7 @@ pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
 ///|
 /// Allocate a new pair datum.
 fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
-  Pair(Ref::new(car), Ref::new(cdr))
+  Pair(Ref(car), Ref(cdr))
 }
 
 ///|
@@ -564,13 +562,13 @@ fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
 /// # Example
 /// ```mbt check
 /// test "symbol_name" {
-///   inspect(
+///   debug_inspect(
 ///     symbol_name(Symbol("x")),
 ///     content=(
-///       #|Some(x)
+///       #|Some("x")
 ///     ),
 ///   )
-///   inspect(symbol_name(Int(1)), content="None")
+///   debug_inspect(symbol_name(Int(1)), content="None")
 /// }
 /// ```
 pub fn symbol_name(expr : @core.Datum) -> String? {
@@ -603,8 +601,8 @@ pub fn strip_syntax_datum(datum : @core.Datum) -> @core.Datum {
     Vector(items) => Vector(items.map(item => strip_syntax_datum(item)))
     Complex(real, imag) =>
       Complex(
-        Ref::new(strip_syntax_datum(real.val)),
-        Ref::new(strip_syntax_datum(imag.val)),
+        Ref(strip_syntax_datum(real.val)),
+        Ref(strip_syntax_datum(imag.val)),
       )
     _ => datum
   }
@@ -624,8 +622,8 @@ fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
     Vector(items) => Vector(items.map(item => syntax_wrap_datum(item, scopes)))
     Complex(real, imag) =>
       Complex(
-        Ref::new(syntax_wrap_datum(real.val, scopes)),
-        Ref::new(syntax_wrap_datum(imag.val, scopes)),
+        Ref(syntax_wrap_datum(real.val, scopes)),
+        Ref(syntax_wrap_datum(imag.val, scopes)),
       )
     Value(SyntaxObject(_)) => datum
     _ => datum
@@ -668,8 +666,8 @@ pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
     Vector(items) => Vector(items.map(item => syntax_add_scope(item, scope)))
     Complex(real, imag) =>
       Complex(
-        Ref::new(syntax_add_scope(real.val, scope)),
-        Ref::new(syntax_add_scope(imag.val, scope)),
+        Ref(syntax_add_scope(real.val, scope)),
+        Ref(syntax_add_scope(imag.val, scope)),
       )
     _ => datum
   }

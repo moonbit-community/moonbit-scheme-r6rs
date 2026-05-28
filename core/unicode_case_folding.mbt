@@ -17,7 +17,7 @@ const DATA : String = "\u{61}\u{41}\u{41}\u{61}\u{62}\u{42}\u{42}\u{62}\u{63}\u{
 
 ///|
 fn build_case_folding(data : StringView) -> Map[Char, Char] {
-  let map = Map::new(capacity=3000)
+  let map = Map::from_array([], capacity=3000)
   for view = data {
     match view {
       [ch1, ch2, .. rest] => {

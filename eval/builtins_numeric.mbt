@@ -338,18 +338,18 @@ fn apply_numeric_primitive_core(
           match num {
             Int(n) => {
               let text = int_to_string_radix(n, radix)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             BigInt(n) => {
               let text = bigint_to_string_radix(n, radix)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             Rat(_, _) | BigRat(_, _) | Float(_) | Complex(_, _) => {
               if radix != 10 {
                 raise EvalError("type error: exact integer expected")
               }
               let text = @runtime.value_to_string(Datum(num))
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             _ => raise EvalError("type error: number expected")
           }
@@ -363,18 +363,18 @@ fn apply_numeric_primitive_core(
           match num {
             Int(n) => {
               let text = int_to_string_radix(n, radix)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             BigInt(n) => {
               let text = bigint_to_string_radix(n, radix)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             Rat(_, _) | BigRat(_, _) | Float(_) | Complex(_, _) => {
               if radix != 10 {
                 raise EvalError("type error: exact integer expected")
               }
               let text = @runtime.value_to_string(Datum(num))
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             }
             _ => raise EvalError("type error: number expected")
           }

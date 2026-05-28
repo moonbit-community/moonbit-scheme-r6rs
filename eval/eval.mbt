@@ -55,7 +55,7 @@ priv struct Counter {
 
 ///|
 fn Counter::new() -> Counter {
-  { cell: Ref::new(0) }
+  { cell: Ref(0) }
 }
 
 ///|
@@ -220,7 +220,7 @@ fn make_param_winder(bindings : Array[@core.ParamBinding]) -> @core.Winder {
 }
 
 ///|
-let wind_stack : Ref[Array[@core.Winder]] = Ref::new([])
+let wind_stack : Ref[Array[@core.Winder]] = Ref([])
 
 ///|
 let continuation_counter : Counter = Counter::new()
@@ -400,7 +400,7 @@ fn eval_expr_impl(
                 state = Eval(
                   head,
                   env,
-                  Begin(tail.to_array(), env, next),
+                  Begin(tail.to_owned(), env, next),
                   handlers,
                 )
             }
@@ -422,7 +422,7 @@ fn eval_expr_impl(
                 state = Eval(
                   head,
                   env,
-                  AppArgs(proc_value, [], rest.to_array(), env, next),
+                  AppArgs(proc_value, [], rest.to_owned(), env, next),
                   handlers,
                 )
             }
@@ -436,7 +436,7 @@ fn eval_expr_impl(
                 state = Eval(
                   head,
                   env,
-                  AppArgs(proc, next_values, rest.to_array(), env, next),
+                  AppArgs(proc, next_values, rest.to_owned(), env, next),
                   handlers,
                 )
             }
@@ -452,7 +452,7 @@ fn eval_expr_impl(
                   state = Eval(
                     head,
                     env,
-                    And(tail.to_array(), env, next),
+                    And(tail.to_owned(), env, next),
                     handlers,
                   )
               }
@@ -469,7 +469,7 @@ fn eval_expr_impl(
                   state = Eval(
                     head,
                     env,
-                    Or(tail.to_array(), env, next),
+                    Or(tail.to_owned(), env, next),
                     handlers,
                   )
               }
@@ -489,7 +489,7 @@ fn eval_expr_impl(
                   raise EvalError("invalid cond")
                 [_, .. body] =>
                   state = eval_sequence_state(
-                    body.to_array(),
+                    body.to_owned(),
                     env,
                     next,
                     handlers,
@@ -656,7 +656,7 @@ fn eval_expr_impl(
                 let input = expect_single(value)
                 let rules = parse_syntax_case_rules(
                   literals_expr,
-                  clauses.to_array(),
+                  clauses.to_owned(),
                   env,
                 )
                 let call = value_to_syntax_datum(input)
@@ -823,7 +823,7 @@ fn eval_expr_impl(
                   raise EvalError("invalid guard")
                 [_, .. body] =>
                   state = eval_sequence_state(
-                    body.to_array(),
+                    body.to_owned(),
                     env,
                     GuardResult(info),
                     handlers,
@@ -1158,7 +1158,7 @@ fn eval_syntax_case_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [head, .. rest] if rest.length() >= 2 =>
-      Eval(head, env, SyntaxCase(rest.to_array(), env, kont), handlers)
+      Eval(head, env, SyntaxCase(rest.to_owned(), env, kont), handlers)
     _ => raise arity_mismatch(3, args.length())
   }
 }
@@ -1485,7 +1485,7 @@ fn eval_lambda(
   match args {
     [formals_expr, .. body] if !body.is_empty() => {
       let formals = parse_formals(formals_expr)
-      Closure(make_closure(formals.params, formals.rest, body.to_array(), env))
+      Closure(make_closure(formals.params, formals.rest, body.to_owned(), env))
     }
     _ => raise arity_mismatch(2, args.length())
   }
@@ -1686,13 +1686,13 @@ fn guard_start(
         let head = @runtime.symbol_name(head_expr)
         if head is Some("else") {
           return eval_sequence_state(
-            body.to_array(),
+            body.to_owned(),
             env,
             GuardResult(info),
             handlers,
           )
         } else {
-          let rest = clauses[i + 1:].to_array()
+          let rest = clauses[i + 1:].to_owned()
           return Eval(
             head_expr,
             env,
@@ -1746,7 +1746,7 @@ fn wind_pop() -> @core.Winder {
   match current {
     [] => panic()
     [.. prefix, last] => {
-      wind_stack.val = prefix.to_array()
+      wind_stack.val = prefix.to_owned()
       last
     }
   }
@@ -1818,7 +1818,7 @@ fn run_wind_actions(
   match actions {
     [] => Apply(resume_value, final_kont, final_handlers)
     [action, .. rest] => {
-      let rest = rest.to_array()
+      let rest = rest.to_owned()
       match action {
         After(winder) => {
           let _ = wind_pop()
@@ -1853,7 +1853,7 @@ fn eval_sequence_state(
   match exprs {
     [] => Apply(Void, kont, handlers)
     [head, .. rest] =>
-      Eval(head, env, Begin(rest.to_array(), env, kont), handlers)
+      Eval(head, env, Begin(rest.to_owned(), env, kont), handlers)
   }
 }
 
@@ -1921,7 +1921,7 @@ fn eval_define_state(
             env,
             name,
             Closure(
-              make_closure(formals.params, formals.rest, rest.to_array(), env),
+              make_closure(formals.params, formals.rest, rest.to_owned(), env),
             ),
           )
           Apply(Void, kont, handlers)
@@ -1972,7 +1972,7 @@ fn eval_guard_state(
           let handler = Value::GuardHandler(
             make_guard_handler(
               name,
-              clauses.to_array(),
+              clauses.to_owned(),
               env,
               resume_value,
               guard_handlers,
@@ -1984,7 +1984,7 @@ fn eval_guard_state(
           }
           next_handlers.push(handler)
           eval_sequence_state(
-            body.to_array(),
+            body.to_owned(),
             env,
             RestoreHandlers(handlers, kont),
             next_handlers,
@@ -2006,7 +2006,7 @@ fn eval_parameterize_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_parameterize_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       if bindings.is_empty() {
         eval_sequence_state(body, env, kont, handlers)
       } else {
@@ -2064,12 +2064,12 @@ fn eval_let_state(
         raise arity_mismatch(3, args.length())
       }
       let bindings = parse_bindings(bindings_expr)
-      let expanded = expand_named_let(name, bindings, body.to_array())
+      let expanded = expand_named_let(name, bindings, body.to_owned())
       Eval(expanded, env, kont, handlers)
     }
     [bindings_expr, .. body] => {
       let bindings = parse_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       if bindings.is_empty() {
         eval_sequence_state(body, env, kont, handlers)
       } else {
@@ -2092,7 +2092,7 @@ fn eval_let_values_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_value_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       if bindings.is_empty() {
         eval_sequence_state(body, env, kont, handlers)
       } else {
@@ -2114,7 +2114,7 @@ fn eval_let_star_values_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_value_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       if bindings.is_empty() {
         eval_sequence_state(body, env, kont, handlers)
       } else {
@@ -2136,7 +2136,7 @@ fn eval_let_star_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       if bindings.is_empty() {
         eval_sequence_state(body, env, kont, handlers)
       } else {
@@ -2158,7 +2158,7 @@ fn eval_letrec_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, _) = binding
@@ -2190,7 +2190,7 @@ fn eval_letrec_star_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_bindings(bindings_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, _) = binding
@@ -2248,7 +2248,7 @@ fn eval_let_syntax_state(
   match args {
     [bindings_expr, .. body] if !body.is_empty() => {
       let bindings = parse_syntax_bindings(bindings_expr, env)
-      let body = body.to_array()
+      let body = body.to_owned()
       let new_env = @runtime.env_extend(env)
       for binding in bindings {
         let (name, transformer) = binding
@@ -2290,7 +2290,7 @@ fn eval_letrec_syntax_state(
         let (name, transformer) = binding
         @runtime.env_define(new_env, name, Macro(transformer))
       }
-      eval_sequence_state(body.to_array(), new_env, kont, handlers)
+      eval_sequence_state(body.to_owned(), new_env, kont, handlers)
     }
     _ => raise arity_mismatch(2, args.length())
   }
@@ -2420,7 +2420,7 @@ fn eval_define_record_type_state(
             parse_symbol(ctor_head),
             parse_symbol_list(ctor_tail),
             parse_symbol(pred_expr),
-            raw_specs.to_array(),
+            raw_specs.to_owned(),
           )
       }
     }
@@ -2668,7 +2668,7 @@ fn eval_define_condition_type_state(
         parse_symbol(parent_name_expr),
         parse_symbol(ctor_name_expr),
         parse_symbol(pred_name_expr),
-        field_specs.to_array(),
+        field_specs.to_owned(),
       )
     _ => raise EvalError("invalid define-condition-type")
   }
@@ -3344,7 +3344,7 @@ priv struct LibraryVersionInfo {
 }
 
 ///|
-let library_versions_registry : Ref[Map[String, Array[LibraryVersionInfo]]] = Ref::new({},
+let library_versions_registry : Ref[Map[String, Array[LibraryVersionInfo]]] = Ref({},
 )
 
 ///|
@@ -3462,8 +3462,7 @@ fn parse_version_ref(expr : @core.Datum) -> VersionRef raise @core.EvalError {
       }
       VersionOr(parsed)
     }
-    [Symbol("not"), ref_expr] =>
-      VersionNot(Ref::new(parse_version_ref(ref_expr)))
+    [Symbol("not"), ref_expr] => VersionNot(Ref(parse_version_ref(ref_expr)))
     [Symbol(">"), .. rest] => VersionGt(parse_version_ref_version(rest))
     [Symbol(">="), .. rest] => VersionGe(parse_version_ref_version(rest))
     [Symbol("<"), .. rest] => VersionLt(parse_version_ref_version(rest))
@@ -3769,7 +3768,7 @@ fn parse_import_clause(
   expr : @core.Datum,
 ) -> Array[@core.Datum] raise @core.EvalError {
   match datum_list_to_array(expr) {
-    [Symbol("import"), .. rest] => rest.to_array()
+    [Symbol("import"), .. rest] => rest.to_owned()
     _ => raise EvalError("invalid library")
   }
 }
@@ -4040,7 +4039,7 @@ fn eval_library_state(
       let name_spec = parse_library_name_spec(name_expr)
       let exports = parse_export_clause(exports_expr)
       let imports = parse_import_clause(imports_expr)
-      let body = body.to_array()
+      let body = body.to_owned()
       let lib_env = init_env()
       for import_set in imports {
         import_set_into_env(import_set, lib_env)
@@ -4087,7 +4086,7 @@ fn eval_and_state(
   match args {
     [] => Apply(bool_value(true), kont, handlers)
     [head, .. rest] => {
-      let tail = rest.to_array()
+      let tail = rest.to_owned()
       Eval(head, env, And(tail, env, kont), handlers)
     }
   }
@@ -4103,7 +4102,7 @@ fn eval_or_state(
   match args {
     [] => Apply(bool_value(false), kont, handlers)
     [head, .. rest] => {
-      let tail = rest.to_array()
+      let tail = rest.to_owned()
       Eval(head, env, Or(tail, env, kont), handlers)
     }
   }
@@ -4118,7 +4117,7 @@ fn eval_case_state(
 ) -> MachineState raise @core.EvalError {
   match args {
     [key_expr, .. clauses] if !clauses.is_empty() =>
-      Eval(key_expr, env, Case(clauses.to_array(), env, kont), handlers)
+      Eval(key_expr, env, Case(clauses.to_owned(), env, kont), handlers)
     _ => raise arity_mismatch(2, args.length())
   }
 }
@@ -4139,7 +4138,7 @@ fn case_dispatch(
     match parts {
       [] => continue i + 1
       [head_expr, .. body] if @runtime.symbol_name(head_expr) is Some("else") =>
-        return eval_sequence_state(body.to_array(), env, kont, handlers)
+        return eval_sequence_state(body.to_owned(), env, kont, handlers)
       [head_expr, ..] => {
         let datums = datum_list_to_array(head_expr)
         let matched = for j = 0; j < datums.length(); {
@@ -4162,7 +4161,7 @@ fn case_dispatch(
             [] => panic()
             [_, .. rest_body] =>
               return eval_sequence_state(
-                rest_body.to_array(),
+                rest_body.to_owned(),
                 env,
                 kont,
                 handlers,
@@ -4191,9 +4190,9 @@ fn cond_start(
     match parts {
       [] => continue i + 1
       [head_expr, .. body] if @runtime.symbol_name(head_expr) is Some("else") =>
-        return eval_sequence_state(body.to_array(), env, kont, handlers)
+        return eval_sequence_state(body.to_owned(), env, kont, handlers)
       [head_expr, ..] => {
-        let rest = clauses[i + 1:].to_array()
+        let rest = clauses[i + 1:].to_owned()
         return Eval(head_expr, env, Cond(parts, rest, env, kont), handlers)
       }
     }
@@ -4267,7 +4266,7 @@ fn eval_cond_expand_state(
           [Symbol("else"), ..] => raise EvalError("invalid cond-expand")
           [head, .. rest] =>
             if cond_expand_feature(head) {
-              return eval_sequence_state(rest.to_array(), env, kont, handlers)
+              return eval_sequence_state(rest.to_owned(), env, kont, handlers)
             }
         }
       }
@@ -4275,10 +4274,10 @@ fn eval_cond_expand_state(
       match parts {
         [] => raise EvalError("invalid cond-expand")
         [Symbol("else"), .. rest] =>
-          eval_sequence_state(rest.to_array(), env, kont, handlers)
+          eval_sequence_state(rest.to_owned(), env, kont, handlers)
         [head, .. rest] =>
           if cond_expand_feature(head) {
-            eval_sequence_state(rest.to_array(), env, kont, handlers)
+            eval_sequence_state(rest.to_owned(), env, kont, handlers)
           } else {
             Apply(Void, kont, handlers)
           }
@@ -4298,7 +4297,7 @@ fn eval_pair(
   match datum_list_to_array(expr_unwrapped) {
     [] => Apply(Datum(Nil), kont, handlers)
     [head, .. rest] => {
-      let args = rest.to_array()
+      let args = rest.to_owned()
       match @runtime.symbol_name(datum_unwrap_syntax(head)) {
         Some("define-syntax") =>
           Apply(eval_define_syntax(args, env), kont, handlers)
@@ -4532,7 +4531,7 @@ fn apply_proc(
     Primitive(Error) =>
       match args {
         [who, message, .. irritants] => {
-          let irritants = irritants.to_array()
+          let irritants = irritants.to_owned()
           let components : Array[@core.Record] = []
           components.push(make_condition_record("&error", []))
           components.push(make_condition_record("&message", [message]))
@@ -4549,7 +4548,7 @@ fn apply_proc(
     Primitive(AssertionViolation) =>
       match args {
         [who, message, .. irritants] => {
-          let irritants = irritants.to_array()
+          let irritants = irritants.to_owned()
           let components : Array[@core.Record] = []
           components.push(make_condition_record("&assertion", []))
           components.push(make_condition_record("&message", [message]))
@@ -4566,7 +4565,7 @@ fn apply_proc(
     Primitive(ImplementationRestrictionViolation) =>
       match args {
         [who, message, .. irritants] => {
-          let irritants = irritants.to_array()
+          let irritants = irritants.to_owned()
           let components : Array[@core.Record] = []
           components.push(
             make_condition_record("&implementation-restriction", []),
@@ -4585,7 +4584,7 @@ fn apply_proc(
     Primitive(UndefinedViolation) =>
       match args {
         [who, message, .. irritants] => {
-          let irritants = irritants.to_array()
+          let irritants = irritants.to_owned()
           let components : Array[@core.Record] = []
           components.push(make_condition_record("&undefined", []))
           components.push(make_condition_record("&message", [message]))
@@ -4616,7 +4615,7 @@ fn apply_proc(
           raise_condition(components, kont, handlers)
         }
         [who, message, form, subform, .. irritants] => {
-          let irritants = irritants.to_array()
+          let irritants = irritants.to_owned()
           let components : Array[@core.Record] = []
           components.push(make_condition_record("&syntax", [form, subform]))
           components.push(make_condition_record("&message", [message]))
