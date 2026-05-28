@@ -564,7 +564,12 @@ fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
 /// # Example
 /// ```mbt check
 /// test "symbol_name" {
-///   inspect(symbol_name(Symbol("x")), content="Some(\"x\")")
+///   inspect(
+///     symbol_name(Symbol("x")),
+///     content=(
+///       #|Some(x)
+///     ),
+///   )
 ///   inspect(symbol_name(Int(1)), content="None")
 /// }
 /// ```

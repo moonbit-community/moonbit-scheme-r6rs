@@ -641,11 +641,11 @@ pub(all) enum Value {
 }
 
 ///|
-pub impl Show for ParseError with output(self, logger) {
+pub impl Show for ParseError with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }
 
 ///|
-pub impl Show for EvalError with output(self, logger) {
+pub impl Show for EvalError with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }
