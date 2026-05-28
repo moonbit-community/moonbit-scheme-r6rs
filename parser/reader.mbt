@@ -174,7 +174,7 @@ fn normalize_big_rat(
 
 ///|
 fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
-  Pair(Ref::new(car), Ref::new(cdr))
+  Pair(Ref(car), Ref(cdr))
 }
 
 ///|
@@ -279,8 +279,8 @@ fn parse_rat_token(tok : String) -> @core.Datum? {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
       let num_view = view.sub(end=slash)
       let den_view = view.sub(start=slash + 1)
-      let num_str = num_view.to_string()
-      let den_str = den_view.to_string()
+      let num_str = num_view.to_owned()
+      let den_str = den_view.to_owned()
       match (parse_integer_token(num_str), parse_integer_token(den_str)) {
         (Some(num), Some(den)) => normalize_rat_datum(num, den)
         _ => None
@@ -431,8 +431,8 @@ fn split_exp_token(tok : String) -> (String, Int)? {
   } else {
     let base_view = view.sub(end=idx)
     let exp_view = view.sub(start=idx + 1)
-    let base = base_view.to_string()
-    let exp_str = exp_view.to_string()
+    let base = base_view.to_owned()
+    let exp_str = exp_view.to_owned()
     parse_int_token(exp_str).map(exp => (base, exp))
   }
 }
@@ -514,8 +514,8 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> @core.Datum? {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
       let num_view = view.sub(end=slash)
       let den_view = view.sub(start=slash + 1)
-      let num_str = num_view.to_string()
-      let den_str = den_view.to_string()
+      let num_str = num_view.to_owned()
+      let den_str = den_view.to_owned()
       match
         (
           parse_integer_token_radix(num_str, radix),
@@ -612,7 +612,7 @@ fn make_complex_datum(real : @core.Datum, imag : @core.Datum) -> @core.Datum {
       real
     }
   } else {
-    Complex(Ref::new(real), Ref::new(imag))
+    Complex(Ref(real), Ref(imag))
   }
 }
 
@@ -763,8 +763,8 @@ fn parse_complex_token(
       }
       let left_view = view.sub(end=at)
       let right_view = view.sub(start=at + 1)
-      let left = left_view.to_string()
-      let right = right_view.to_string()
+      let left = left_view.to_owned()
+      let right = right_view.to_owned()
       let r = match
         parse_real_token_with_settings(left, radix, exactness, allow_rat) {
         Some(value) => value
@@ -807,7 +807,7 @@ fn parse_complex_token(
     Some(split) => {
       let real_view = core_chars.sub(end=split)
       let imag_view = core_chars.sub(start=split)
-      let real_str = real_view.to_string()
+      let real_str = real_view.to_owned()
       let real = match
         parse_real_token_with_settings(real_str, radix, exactness, allow_rat) {
         Some(value) => value
@@ -817,7 +817,7 @@ fn parse_complex_token(
         ['+'] => make_imag_unit(1, exactness)
         ['-'] => make_imag_unit(-1, exactness)
         _ => {
-          let imag_str = imag_view.to_string()
+          let imag_str = imag_view.to_owned()
           match
             parse_real_token_with_settings(
               imag_str, radix, exactness, allow_rat,
@@ -830,7 +830,7 @@ fn parse_complex_token(
       Some(make_complex_datum(real, imag))
     }
     None => {
-      let core_str = core_chars.to_string()
+      let core_str = core_chars.to_owned()
       let imag = match
         parse_real_token_with_settings(core_str, radix, exactness, allow_rat) {
         Some(value) => value
@@ -856,7 +856,7 @@ fn parse_number_token_internal(
     [] => return None
     _ => ()
   }
-  let rest = rest_view.to_string()
+  let rest = rest_view.to_owned()
   let allow_rat = radix_override is None
   match parse_complex_token(rest, radix, exactness, allow_rat) {
     Some(datum) => Some(datum)
@@ -967,7 +967,7 @@ fn parse_char_token(tok : String) -> Char? {
         [] => None
         [ch] => Some(ch)
         _ => {
-          let name = rest.to_string()
+          let name = rest.to_owned()
           let lower = ascii_lower_string(name)
           if lower.length() >= 2 {
             match lower.get_char(0) {
@@ -1255,7 +1255,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
               if r.label_get(label) is Some(_) {
                 raise ParseError("duplicate label")
               }
-              let cell = Ref::new(Datum::Nil)
+              let cell = Ref(Datum::Nil)
               r.label_set(label, cell)
               let datum = read_expr(r)
               cell.val = datum
@@ -1315,7 +1315,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
       }
     Some('"') => {
       ignore(r.next())
-      String(Ref::new(r.read_string()))
+      String(Ref(r.read_string()))
     }
     Some(_) => {
       let tok = r.read_token()

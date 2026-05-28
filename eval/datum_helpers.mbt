@@ -11,7 +11,7 @@ fn value_from_datum(datum : @core.Datum) -> @core.Value {
 ///|
 /// Allocate a new pair datum.
 fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
-  Pair(Ref::new(car), Ref::new(cdr))
+  Pair(Ref(car), Ref(cdr))
 }
 
 ///|

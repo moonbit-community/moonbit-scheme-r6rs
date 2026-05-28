@@ -96,7 +96,7 @@ fn strip_gensym_suffix(name : String) -> String? {
   if base_len == 0 {
     return None
   }
-  Some(name[:base_len].to_string())
+  Some(name[:base_len].to_owned())
 }
 
 ///|
@@ -645,7 +645,7 @@ fn make_complex(real : @core.Datum, imag : @core.Datum) -> @core.Datum {
       real
     }
   } else {
-    Complex(Ref::new(real), Ref::new(imag))
+    Complex(Ref(real), Ref(imag))
   }
 }
 
@@ -1311,7 +1311,7 @@ fn string_replace_range(
   if start < 0 || end < start || end > len {
     raise EvalError("index out of range")
   }
-  let buf = @buffer.new()
+  let buf = StringBuilder()
   for i in 0..<len {
     match s.get_char(i) {
       Some(ch) =>
@@ -1588,7 +1588,7 @@ fn value_as_nonnegative_int(value : @core.Value) -> Int raise @core.EvalError {
 }
 
 ///|
-let fixnum_width_cache : Ref[Int] = Ref::new(0)
+let fixnum_width_cache : Ref[Int] = Ref(0)
 
 ///|
 fn fixnum_width_value() -> Int {
@@ -2569,7 +2569,7 @@ fn utf8_decode_to_string(
   if start < 0 || end < start || end > items.length() {
     raise EvalError("index out of range")
   }
-  let buf = @buffer.new()
+  let buf = StringBuilder()
   let result = for i = start; i < end; {
     // invariant : i >= start && i <= end
     // decreases : end - i
@@ -2904,7 +2904,7 @@ fn record_accessor_info(
 
 ///|
 fn char_to_raw_string(ch : Char) -> String {
-  let buf = @buffer.new()
+  let buf = StringBuilder()
   buf.write_char(ch)
   buf.to_string()
 }

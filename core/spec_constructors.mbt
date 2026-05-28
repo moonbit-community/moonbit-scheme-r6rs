@@ -25,12 +25,12 @@ pub fn EvalEnv::new(id : Int, env : Env) -> EvalEnv {
 
 ///|
 pub fn Parameter::new(id : Int, value : Value, converter : Value?) -> Parameter {
-  { id, value: Ref::new(value), converter }
+  { id, value: Ref(value), converter }
 }
 
 ///|
 pub fn Promise::new(id : Int, state : PromiseState) -> Promise {
-  { id, state: Ref::new(state) }
+  { id, state: Ref(state) }
 }
 
 ///|

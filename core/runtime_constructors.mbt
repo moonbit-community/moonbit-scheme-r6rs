@@ -1,6 +1,6 @@
 ///|
 pub fn Port::new_output_string(id : Int, initial : String) -> Port {
-  let buffer = Ref::new(initial)
+  let buffer = Ref::Ref(initial)
   { id, kind: OutputString(buffer) }
 }
 
@@ -38,7 +38,7 @@ pub fn Record::new(
   record_type : RecordType,
   values : Array[Value],
 ) -> Record {
-  let fields = values.map(value => Ref::new(value))
+  let fields = values.map(value => Ref::Ref(value))
   { id, record_type, fields }
 }
 
@@ -49,7 +49,7 @@ pub fn Condition::new(id : Int, components : Array[Record]) -> Condition {
 
 ///|
 pub fn HashtableEntry::new(key : Value, value : Value) -> HashtableEntry {
-  { key, value: Ref::new(value) }
+  { key, value: Ref(value) }
 }
 
 ///|
@@ -60,7 +60,7 @@ pub fn Hashtable::new(
   hash : Value?,
   entries : Array[HashtableEntry],
 ) -> Hashtable {
-  { id, mutable, equiv, hash, entries: Ref::new(entries) }
+  { id, mutable, equiv, hash, entries: Ref(entries) }
 }
 
 ///|

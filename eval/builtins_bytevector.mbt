@@ -123,7 +123,7 @@ fn apply_bytevector_primitive(
             items.length()
           }
           check_slice_range(start, end, items.length())
-          let slice = items[start:end].to_array()
+          let slice = items[start:end].to_owned()
           Some(Datum(ByteVector(slice)))
         }
         _ =>
@@ -297,7 +297,7 @@ fn apply_bytevector_primitive(
               let start = 0
               let end = items.length()
               let text = utf8_decode_to_string(items, start, end)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             },
           )
         [vec_value, start_value] =>
@@ -307,7 +307,7 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = items.length()
               let text = utf8_decode_to_string(items, start, end)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             },
           )
         [vec_value, start_value, end_value] =>
@@ -317,7 +317,7 @@ fn apply_bytevector_primitive(
               let start = value_as_int_index(start_value)
               let end = value_as_int_index(end_value)
               let text = utf8_decode_to_string(items, start, end)
-              Datum(String(Ref::new(text)))
+              Datum(String(Ref(text)))
             },
           )
         _ =>

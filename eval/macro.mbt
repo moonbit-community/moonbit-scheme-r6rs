@@ -190,7 +190,7 @@ fn parse_syntax_case_transformer(
           if clauses.is_empty() {
             raise EvalError("invalid syntax-case")
           }
-          parse_syntax_case_rules(literals_expr, clauses.to_array(), env)
+          parse_syntax_case_rules(literals_expr, clauses.to_owned(), env)
         }
         _ => raise EvalError("invalid syntax-case")
       }
@@ -645,18 +645,12 @@ fn rename_proc_datum(
     Label(tag, value) =>
       Label(
         tag,
-        Ref::new(
-          rename_proc_datum(value.val, def_env, call_ctx, renames, captures),
-        ),
+        Ref(rename_proc_datum(value.val, def_env, call_ctx, renames, captures)),
       )
     Complex(real, imag) =>
       Complex(
-        Ref::new(
-          rename_proc_datum(real.val, def_env, call_ctx, renames, captures),
-        ),
-        Ref::new(
-          rename_proc_datum(imag.val, def_env, call_ctx, renames, captures),
-        ),
+        Ref(rename_proc_datum(real.val, def_env, call_ctx, renames, captures)),
+        Ref(rename_proc_datum(imag.val, def_env, call_ctx, renames, captures)),
       )
     Value(SyntaxObject(obj)) =>
       if obj.scopes.contains(call_ctx) {
@@ -869,8 +863,8 @@ fn syntax_add_scope_with_env(
       Vector(items.map(item => syntax_add_scope_with_env(item, scope, env)))
     Complex(real, imag) =>
       Complex(
-        Ref::new(syntax_add_scope_with_env(real.val, scope, env)),
-        Ref::new(syntax_add_scope_with_env(imag.val, scope, env)),
+        Ref(syntax_add_scope_with_env(real.val, scope, env)),
+        Ref(syntax_add_scope_with_env(imag.val, scope, env)),
       )
     _ => datum
   }
@@ -1712,7 +1706,7 @@ fn rename_datum(
     Pair(a, b) =>
       pair_new(rename_datum(a.val, renames), rename_datum(b.val, renames))
     Vector(items) => Vector(items.map(item => rename_datum(item, renames)))
-    Label(tag, value) => Label(tag, Ref::new(rename_datum(value.val, renames)))
+    Label(tag, value) => Label(tag, Ref(rename_datum(value.val, renames)))
     _ => datum
   }
 }

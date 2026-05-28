@@ -42,7 +42,7 @@ fn build_decomp_map(
   data : ReadOnlyArray[Char],
   count : Int,
 ) -> Map[Char, Array[Char]] {
-  let map = Map::new(capacity=count)
+  let map = Map::from_array([], capacity=count)
   for i = 0; i < data.length(); {
     // invariant : i >= 0 && i < data.length()
     // decreases : data.length() - i
@@ -72,7 +72,7 @@ fn build_combining_class_map(
   data : ReadOnlyArray[Char],
   count : Int,
 ) -> Map[Char, Int] {
-  let map = Map::new(capacity=count)
+  let map = Map::from_array([], capacity=count)
   for i = 0; i < data.length(); {
     // invariant : i >= 0 && i < data.length()
     // decreases : data.length() - i
@@ -91,7 +91,7 @@ fn build_composition_map(
   data : ReadOnlyArray[Char],
   count : Int,
 ) -> Map[UInt, Char] {
-  let map = Map::new(capacity=count)
+  let map = Map::from_array([], capacity=count)
   for i = 0; i + 2 < data.length(); {
     // invariant : i >= 0 && i + 2 < data.length()
     // decreases : data.length() - i
@@ -350,7 +350,7 @@ fn normalize_string(s : String, compat : Bool, compose_output : Bool) -> String 
   let decomposed = decompose_string(s, compat)
   let ordered = canonical_order(decomposed)
   let result = if compose_output { compose(ordered) } else { ordered }
-  let buf = @buffer.new()
+  let buf = StringBuilder()
   for ch in result {
     buf.write_char(ch)
   }

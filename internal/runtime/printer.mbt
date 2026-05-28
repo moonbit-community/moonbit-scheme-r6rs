@@ -1,6 +1,6 @@
 ///|
 fn escape_string(s : String) -> String {
-  let buf = @buffer.new()
+  let buf = StringBuilder()
   for ch in s {
     match ch {
       '"' => buf.write_string("\\\"")
@@ -48,7 +48,7 @@ fn char_to_string(ch : Char) -> String {
     '\n' => "#\\newline"
     '\t' => "#\\tab"
     _ => {
-      let buf = @buffer.new()
+      let buf = StringBuilder()
       buf..write_string("#\\").write_char(ch)
       buf.to_string()
     }

@@ -118,7 +118,7 @@ fn apply_vector_primitive(
             items.length()
           }
           check_slice_range(start, end, items.length())
-          let slice = items[start:end].to_array()
+          let slice = items[start:end].to_owned()
           Some(Datum(Vector(slice)))
         }
         _ =>
@@ -186,7 +186,7 @@ fn apply_vector_primitive(
             items.length()
           }
           check_slice_range(start, end, items.length())
-          Some(Datum(list_from_array(items[start:end].to_array())))
+          Some(Datum(list_from_array(items[start:end].to_owned())))
         }
         _ =>
           raise EvalError(
