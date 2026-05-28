@@ -1,0 +1,19 @@
+name = "bobzhang/scheme-r6rs"
+
+version = "0.1.0"
+
+import {
+  "moonbitlang/async@0.16.4",
+}
+
+readme = "README.mbt.md"
+
+repository = "https://github.com/bobzhang/moonbit-scheme-r6rs"
+
+license = "MIT"
+
+description = "R6RS Scheme interpreter in MoonBit"
+
+options(
+  source: ".",
+)
