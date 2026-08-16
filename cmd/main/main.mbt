@@ -46,14 +46,14 @@ async fn read_program_source(path : String?) -> String {
 
 ///|
 async fn eval_and_print(src : String) -> Unit {
-  let result = try? @scheme_r6rs.eval_program(src)
-  match result {
-    Ok(value) =>
-      @stdio.stdout..write(@scheme_r6rs.value_to_string(value))..write("\n")
-    Err(err) => {
+  try @scheme_r6rs.eval_program(src) catch {
+    err => {
       @stdio.stderr.write("error: \{err}\n")
       exit(1)
     }
+  } noraise {
+    value =>
+      @stdio.stdout..write(@scheme_r6rs.value_to_string(value))..write("\n")
   }
 }
 

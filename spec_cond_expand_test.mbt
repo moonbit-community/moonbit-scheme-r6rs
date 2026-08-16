@@ -102,16 +102,18 @@ test "r6rs cond-expand: feature and error branches" {
     ),
     content="2",
   )
-  let bad_lib = try? eval_program(
-    (
-      #|(cond-expand ((library)) (else 1))
-    ),
-  )
-  inspect(bad_lib is Err(_), content="true")
-  let bad_not = try? eval_program(
-    (
-      #|(cond-expand ((not a b) 1) (else 2))
-    ),
-  )
-  inspect(bad_not is Err(_), content="true")
+  expect_error(() => {
+    eval_program(
+      (
+        #|(cond-expand ((library)) (else 1))
+      ),
+    )
+  })
+  expect_error(() => {
+    eval_program(
+      (
+        #|(cond-expand ((not a b) 1) (else 2))
+      ),
+    )
+  })
 }

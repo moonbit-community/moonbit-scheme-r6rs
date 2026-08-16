@@ -368,18 +368,10 @@ test "r6rs bitwise: edge cases" {
     value_to_string(eval_program("(bitwise-reverse-bit-field 7 2 2)")),
     content="7",
   )
-  let err_field = try? eval_program("(bitwise-bit-field 1 3 2)")
-  inspect(err_field is Err(_), content="true")
-  let err_neg = try? eval_program("(bitwise-bit-field 1 -1 2)")
-  inspect(err_neg is Err(_), content="true")
-  let err_copy_field = try? eval_program("(bitwise-copy-bit-field 1 3 2 0)")
-  inspect(err_copy_field is Err(_), content="true")
-  let err_rotate = try? eval_program("(bitwise-rotate-bit-field 1 3 2 1)")
-  inspect(err_rotate is Err(_), content="true")
-  let err_reverse = try? eval_program("(bitwise-reverse-bit-field 1 3 2)")
-  inspect(err_reverse is Err(_), content="true")
-  let err_copy = try? eval_program(
-    "(bitwise-copy-bit 0 1 12345678901234567890)",
-  )
-  inspect(err_copy is Err(_), content="true")
+  expect_error(() => eval_program("(bitwise-bit-field 1 3 2)"))
+  expect_error(() => eval_program("(bitwise-bit-field 1 -1 2)"))
+  expect_error(() => eval_program("(bitwise-copy-bit-field 1 3 2 0)"))
+  expect_error(() => eval_program("(bitwise-rotate-bit-field 1 3 2 1)"))
+  expect_error(() => eval_program("(bitwise-reverse-bit-field 1 3 2)"))
+  expect_error(() => eval_program("(bitwise-copy-bit 0 1 12345678901234567890)"))
 }

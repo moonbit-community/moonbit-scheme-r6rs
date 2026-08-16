@@ -552,12 +552,11 @@ fn datum_to_float(value : @core.Datum) -> Float? {
       }
     Rat(n, d) => Some(Float::from_int(n) / Float::from_int(d))
     BigRat(n, d) =>
-      match
-        (
-          try? @string.parse_double(n.to_string()),
-          try? @string.parse_double(d.to_string()),
-        ) {
-        (Ok(nn), Ok(dd)) => Some(Float::from_double(nn / dd))
+      try {
+        let nn = @string.parse_double(n.to_string())
+        let dd = @string.parse_double(d.to_string())
+        Some(Float::from_double(nn / dd))
+      } catch {
         _ => None
       }
     Float(f) => Some(f)

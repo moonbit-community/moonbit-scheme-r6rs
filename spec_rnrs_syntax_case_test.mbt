@@ -92,15 +92,16 @@ test "r6rs libraries: syntax-case syntactic keyword exports" {
 
 ///|
 test "r6rs libraries: syntax-case excludes syntax-rules" {
-  let bad = try? eval_program(
-    (
-      #|(import (only (rnrs syntax-case) syntax-rules))
-      #|#t
-    ),
-  )
-  match bad {
-    Err(err) =>
-      inspect(err, content="EvalError(\"unknown import: syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(import (only (rnrs syntax-case) syntax-rules))
+        #|#t
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unknown import: syntax-rules\")")
+  } noraise {
     _ => fail("expected import error for syntax-rules")
   }
 }

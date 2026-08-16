@@ -155,32 +155,38 @@ test "r6rs large: sieve" {
 
 ///|
 test "r6rs hard: errors" {
-  let unbound = try? eval_program(
-    (
-      #|x
-    ),
-  )
-  match unbound {
-    Err(err) => inspect(err, content="EvalError(\"unbound variable: x\")")
+  try
+    eval_program(
+      (
+        #|x
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unbound variable: x\")")
+  } noraise {
     _ => fail("expected EvalError for unbound variable")
   }
-  let arity = try? eval_program(
-    (
-      #|((lambda (x) x) 1 2)
-    ),
-  )
-  match arity {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|((lambda (x) x) 1 2)
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"arity mismatch: expected 1 got 2\")")
+  } noraise {
     _ => fail("expected EvalError for arity mismatch")
   }
-  let type_err = try? eval_program(
-    (
-      #|(car 1)
-    ),
-  )
-  match type_err {
-    Err(err) => inspect(err, content="EvalError(\"type error: pair expected\")")
+  try
+    eval_program(
+      (
+        #|(car 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: pair expected\")")
+  } noraise {
     _ => fail("expected EvalError for type error")
   }
 }

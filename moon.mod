@@ -14,6 +14,4 @@ license = "MIT"
 
 description = "R6RS Scheme interpreter in MoonBit"
 
-options(
-  source: ".",
-)
+source = "."

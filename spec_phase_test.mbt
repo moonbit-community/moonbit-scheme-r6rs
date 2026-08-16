@@ -9,14 +9,16 @@ test "begin-for-syntax defines macros" {
 
 ///|
 test "begin-for-syntax does not export values" {
-  let bad = try? eval_program(
-    (
-      #|(begin-for-syntax (define x 1))
-      #|x
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"unbound variable: x\")")
+  try
+    eval_program(
+      (
+        #|(begin-for-syntax (define x 1))
+        #|x
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unbound variable: x\")")
+  } noraise {
     _ => fail("expected EvalError for begin-for-syntax value")
   }
 }
@@ -32,19 +34,21 @@ test "import for run filters macros" {
     #|(import (for (phase-lib) run))
     #|val
   inspect(value_to_string(eval_program(program)), content="5")
-  let bad = try? eval_program(
-    (
-      #|(library (phase-lib)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib) run))
-      #|(m)
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"unbound variable: m\")")
+  try
+    eval_program(
+      (
+        #|(library (phase-lib)
+        #|  (export val m)
+        #|  (import)
+        #|  (define val 5)
+        #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+        #|(import (for (phase-lib) run))
+        #|(m)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unbound variable: m\")")
+  } noraise {
     _ => fail("expected EvalError for run-only macro")
   }
 }
@@ -60,19 +64,21 @@ test "import for expand filters values" {
     #|(import (for (phase-lib) expand))
     #|(m)
   inspect(value_to_string(eval_program(program)), content="42")
-  let bad = try? eval_program(
-    (
-      #|(library (phase-lib)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib) expand))
-      #|val
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"unbound variable: val\")")
+  try
+    eval_program(
+      (
+        #|(library (phase-lib)
+        #|  (export val m)
+        #|  (import)
+        #|  (define val 5)
+        #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+        #|(import (for (phase-lib) expand))
+        #|val
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unbound variable: val\")")
+  } noraise {
     _ => fail("expected EvalError for expand-only value")
   }
 }
@@ -88,19 +94,21 @@ test "import for meta 2 behaves like expand" {
     #|(import (for (phase-lib2) (meta 2)))
     #|(m)
   inspect(value_to_string(eval_program(program)), content="42")
-  let bad = try? eval_program(
-    (
-      #|(library (phase-lib2)
-      #|  (export val m)
-      #|  (import)
-      #|  (define val 5)
-      #|  (define-syntax m (syntax-rules () ((_ ) 42))))
-      #|(import (for (phase-lib2) (meta 2)))
-      #|val
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"unbound variable: val\")")
+  try
+    eval_program(
+      (
+        #|(library (phase-lib2)
+        #|  (export val m)
+        #|  (import)
+        #|  (define val 5)
+        #|  (define-syntax m (syntax-rules () ((_ ) 42))))
+        #|(import (for (phase-lib2) (meta 2)))
+        #|val
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"unbound variable: val\")")
+  } noraise {
     _ => fail("expected EvalError for meta-only value")
   }
 }

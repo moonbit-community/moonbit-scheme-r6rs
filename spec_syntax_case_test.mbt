@@ -174,162 +174,180 @@ test "r6rs syntax-case: wildcard with ellipsis" {
 
 ///|
 test "r6rs syntax-case: invalid ellipsis in pattern" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ x ... ...) #'ok))))
-      #|  (bad 1 2))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ x ... ...) #'ok))))
+        #|  (bad 1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for invalid ellipsis")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid ellipsis in template" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ x) #'(list ...)))))
-      #|  (bad 1))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ x) #'(list ...)))))
+        #|  (bad 1))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for invalid template ellipsis")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid ellipsis depth" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ (x ...)) #'x))))
-      #|  (bad (1 2)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ (x ...)) #'x))))
+        #|  (bad (1 2)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for mismatched ellipsis depth")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (fewer in template)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ ((x ...) ...)) #'(list x ...)))))
-      #|  (bad ((1 2) (3 4))))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ ((x ...) ...)) #'(list x ...)))))
+        #|  (bad ((1 2) (3 4))))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for nested ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (more in template)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ (x ...)) #'(list (list x ...) ...)))))
-      #|  (bad (1 2)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ (x ...)) #'(list (list x ...) ...)))))
+        #|  (bad (1 2)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for nested ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (vector fewer in template)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ #((x ...) ...)) #'#(x ...)))))
-      #|  (bad #((1 2) (3 4))))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ #((x ...) ...)) #'#(x ...)))))
+        #|  (bad #((1 2) (3 4))))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (vector more in template)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ #(x ...)) #'#((x ...) ...)))))
-      #|  (bad #(1 2)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ #(x ...)) #'#((x ...) ...)))))
+        #|  (bad #(1 2)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ #((x ...) ...)) (quasisyntax #(x ...))))))
-      #|  (bad #((1 2) (3 4))))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ #((x ...) ...)) (quasisyntax #(x ...))))))
+        #|  (bad #((1 2) (3 4))))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs syntax-case: invalid nested ellipsis depth (vector more in quasisyntax)" {
-  let bad = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_ #(x ...)) (quasisyntax #((x ...) ...))))))
-      #|  (bad #(1 2)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  try
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_ #(x ...)) (quasisyntax #((x ...) ...))))))
+        #|  (bad #(1 2)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-case\")")
+  } noraise {
     _ => fail("expected syntax-case error for vector ellipsis mismatch")
   }
 }

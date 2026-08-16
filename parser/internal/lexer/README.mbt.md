@@ -111,12 +111,21 @@ test "reader comment at eof" {
 
 ///|
 test "reader token errors" {
-  let empty = try? Reader::new("").read_token()
-  inspect(empty is Err(_), content="true")
-  let unterminated = try? Reader::new("|abc").read_token()
-  inspect(unterminated is Err(_), content="true")
-  let escape_eof = try? Reader::new("\\").read_token()
-  inspect(escape_eof is Err(_), content="true")
+  try Reader::new("").read_token() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an empty token to raise")
+  }
+  try Reader::new("|abc").read_token() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an unterminated identifier to raise")
+  }
+  try Reader::new("\\").read_token() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an incomplete escape to raise")
+  }
 }
 
 ///|
@@ -138,23 +147,38 @@ test "string escape variants" {
   inspect(crlf.read_string(), content="ab")
   let empty_hex_reader = Reader::new("\"\\x;\"")
   ignore(empty_hex_reader.next())
-  let empty_hex = try? empty_hex_reader.read_string()
-  inspect(empty_hex is Err(_), content="true")
+  try empty_hex_reader.read_string() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an empty hex escape to raise")
+  }
   let eof_hex_reader = Reader::new("\"\\x")
   ignore(eof_hex_reader.next())
-  let eof_hex = try? eof_hex_reader.read_string()
-  inspect(eof_hex is Err(_), content="true")
+  try eof_hex_reader.read_string() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an unterminated hex escape to raise")
+  }
   let escape_eof_reader = Reader::new(String::from_array(['"', '\\']))
   ignore(escape_eof_reader.next())
-  let escape_eof = try? escape_eof_reader.read_string()
-  inspect(escape_eof is Err(_), content="true")
+  try escape_eof_reader.read_string() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an incomplete string escape to raise")
+  }
   let bad_hex_reader = Reader::new("\"\\xZZ;\"")
   ignore(bad_hex_reader.next())
-  let bad_hex = try? bad_hex_reader.read_string()
-  inspect(bad_hex is Err(_), content="true")
+  try bad_hex_reader.read_string() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an invalid hex escape to raise")
+  }
   let unterminated_reader = Reader::new("\"abc")
   ignore(unterminated_reader.next())
-  let unterminated = try? unterminated_reader.read_string()
-  inspect(unterminated is Err(_), content="true")
+  try unterminated_reader.read_string() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an unterminated string to raise")
+  }
 }
 ```

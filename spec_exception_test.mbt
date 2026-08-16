@@ -25,9 +25,9 @@ test "r6rs exceptions: raise non-continuable" {
     #|(with-exception-handler
     #|  (lambda (e) 'handled)
     #|  (lambda () (raise 'boom)))
-  let result = try? eval_program(program)
-  match result {
-    Err(err) => inspect(err, content="EvalError(\"non-continuable exception\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"non-continuable exception\")")
+  } noraise {
     _ => fail("expected EvalError for non-continuable raise")
   }
 }
@@ -36,9 +36,9 @@ test "r6rs exceptions: raise non-continuable" {
 test "r6rs exceptions: uncaught raise" {
   let program =
     #|(raise 'boom)
-  let result = try? eval_program(program)
-  match result {
-    Err(err) => inspect(err, content="EvalError(\"uncaught exception\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"uncaught exception\")")
+  } noraise {
     _ => fail("expected EvalError for uncaught raise")
   }
 }

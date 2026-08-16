@@ -700,125 +700,148 @@ test "r6rs char and string primitives" {
 
 ///|
 test "r6rs string-ref: errors" {
-  let out_of_range = try? eval_program(
-    (
-      #|(string-ref "a" 1)
-    ),
-  )
-  match out_of_range {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(string-ref "a" 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for out of range")
   }
-  let bad_char_list = try? eval_program(
-    (
-      #|(list->string '(#\a 1))
-    ),
-  )
-  match bad_char_list {
-    Err(err) => inspect(err, content="EvalError(\"type error: char expected\")")
+  try
+    eval_program(
+      (
+        #|(list->string '(#\a 1))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: char expected\")")
+  } noraise {
     _ => fail("expected EvalError for non-char list->string")
   }
-  let bad_copy = try? eval_program(
-    (
-      #|(string-copy "a" 1 0)
-    ),
-  )
-  match bad_copy {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(string-copy "a" 1 0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid string-copy range")
   }
-  let bad_substring = try? eval_program(
-    (
-      #|(substring "hi" 1 3)
-    ),
-  )
-  match bad_substring {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(substring "hi" 1 3)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid substring range")
   }
-  let bad_map = try? eval_program(
-    (
-      #|(string-map char-upcase "a" "bb")
-    ),
-  )
-  match bad_map {
-    Err(err) => inspect(err, content="EvalError(\"string length mismatch\")")
+  try
+    eval_program(
+      (
+        #|(string-map char-upcase "a" "bb")
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"string length mismatch\")")
+  } noraise {
     _ => fail("expected EvalError for string length mismatch")
   }
-  let bad_make = try? eval_program(
-    (
-      #|(make-string -1)
-    ),
-  )
-  match bad_make {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(make-string -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: exact nonnegative integer expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for invalid make-string length")
   }
-  let bad_set = try? eval_program(
-    (
-      #|(string-set! "a" 1 #\b)
-    ),
-  )
-  match bad_set {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(string-set! "a" 1 #\b)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for out of range string-set!")
   }
-  let bad_fill = try? eval_program(
-    (
-      #|(string-fill! "a" #\b 1 0)
-    ),
-  )
-  match bad_fill {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(string-fill! "a" #\b 1 0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid string-fill! range")
   }
-  let bad_copy_bang = try? eval_program(
-    (
-      #|(string-copy! "a" 0 "bc")
-    ),
-  )
-  match bad_copy_bang {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(string-copy! "a" 0 "bc")
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for out of range string-copy!")
   }
 }
 
 ///|
 test "r6rs char/string compare: errors" {
-  let bad_char = try? eval_program(
-    (
-      #|(char=? #\a "a")
-    ),
-  )
-  match bad_char {
-    Err(err) => inspect(err, content="EvalError(\"type error: char expected\")")
+  try
+    eval_program(
+      (
+        #|(char=? #\a "a")
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: char expected\")")
+  } noraise {
     _ => fail("expected EvalError for non-char")
   }
-  let bad_string = try? eval_program(
-    (
-      #|(string<? "a" #\b)
-    ),
-  )
-  match bad_string {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: string expected\")")
+  try
+    eval_program(
+      (
+        #|(string<? "a" #\b)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: string expected\")")
+  } noraise {
     _ => fail("expected EvalError for non-string")
   }
-  let bad_code = try? eval_program(
-    (
-      #|(integer->char -1)
-    ),
-  )
-  match bad_code {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(integer->char -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: valid scalar value expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for invalid integer->char")
   }
 }
@@ -833,16 +856,13 @@ test "r6rs char/string compare: arity" {
 
 ///|
 test "r6rs symbol/string conversion: errors" {
-  let bad_sym = try? eval_program("(symbol->string 1)")
-  inspect(bad_sym is Err(_), content="true")
-  let bad_str = try? eval_program("(string->symbol 1)")
-  inspect(bad_str is Err(_), content="true")
+  expect_error(() => eval_program("(symbol->string 1)"))
+  expect_error(() => eval_program("(string->symbol 1)"))
 }
 
 ///|
 test "r6rs strings: large index errors" {
-  let big_idx = try? eval_program(
-    "(string-ref \"a\" 123456789012345678901234567890)",
-  )
-  inspect(big_idx is Err(_), content="true")
+  expect_error(() => {
+    eval_program("(string-ref \"a\" 123456789012345678901234567890)")
+  })
 }

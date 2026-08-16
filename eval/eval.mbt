@@ -5,11 +5,11 @@ fn register_builtin_libraries(env : @core.Env) -> Unit raise @core.EvalError {
     exports[name] = @runtime.make_binding(SyntaxKeyword(name))
   }
   register_library_entry("rnrs.base", Some([6]), exports)
-  let eval_exports : Map[String, @core.Binding] = {}
+  let eval_exports : Map[String, @core.Binding] = Map([])
   eval_exports["eval"] = @runtime.make_binding(Primitive(Eval))
   eval_exports["environment"] = @runtime.make_binding(Primitive(Environment))
   register_library_entry("rnrs.eval", Some([6]), eval_exports)
-  let condition_exports : Map[String, @core.Binding] = {}
+  let condition_exports : Map[String, @core.Binding] = Map([])
   let condition_names : Array[String] = [
     "condition", "condition?", "simple-conditions", "condition-predicate", "condition-accessor",
     "&condition", "&message", "make-message-condition", "message-condition?", "condition-message",
@@ -31,7 +31,7 @@ fn register_builtin_libraries(env : @core.Env) -> Unit raise @core.EvalError {
     SyntaxKeyword("define-condition-type"),
   )
   register_library_entry("rnrs.conditions", Some([6]), condition_exports)
-  let flonum_exports : Map[String, @core.Binding] = {}
+  let flonum_exports : Map[String, @core.Binding] = Map([])
   let flonum_names : Array[String] = [
     "flonum?", "real->flonum", "fixnum->flonum", "fl=?", "fl<?", "fl>?", "fl<=?",
     "fl>=?", "flinteger?", "flzero?", "flpositive?", "flnegative?", "flodd?", "fleven?",
@@ -2514,9 +2514,9 @@ fn eval_define_record_type_state(
   }
   let parent_count = parent_fields.length()
   let parent_field_names : Array[String] = parent_fields.map(field => field.name)
-  let accessors : Map[String, String] = {}
-  let mutators : Map[String, String] = {}
-  let mutable : Map[String, Bool] = {}
+  let accessors : Map[String, String] = Map([])
+  let mutators : Map[String, String] = Map([])
+  let mutable : Map[String, Bool] = Map([])
   let new_field_names : Array[String] = []
   for spec in field_specs {
     let (field_name_expr, accessor_expr, mutator_expr) = match
@@ -2553,7 +2553,7 @@ fn eval_define_record_type_state(
     raise EvalError("invalid define-record-type")
   }
   let fields : Array[@core.RecordField] = []
-  let field_index : Map[String, Int] = {}
+  let field_index : Map[String, Int] = Map([])
   for i = 0; i < ctor_fields.length(); {
     // invariant : i >= 0 && i <= ctor_fields.length()
     // decreases : ctor_fields.length() - i
@@ -2690,7 +2690,7 @@ fn eval_define_condition_type_state(
   }
   let parent_fields = parent_type.fields
   let parent_field_names : Array[String] = parent_fields.map(field => field.name)
-  let accessors : Map[String, String] = {}
+  let accessors : Map[String, String] = Map([])
   let new_field_names : Array[String] = []
   for spec in field_specs {
     let (field_name_expr, accessor_expr) = match datum_list_to_array(spec) {
@@ -2768,7 +2768,7 @@ fn eval_define_enumeration_state(
       )
     _ => raise EvalError("invalid define-enumeration")
   }
-  let seen : Map[String, Bool] = {}
+  let seen : Map[String, Bool] = Map([])
   for name in symbols {
     if seen.contains(name) {
       raise EvalError("invalid define-enumeration")
@@ -3779,7 +3779,7 @@ fn library_exports(
 ) -> Map[String, @core.Binding] raise @core.EvalError {
   match @runtime.lookup_library(name) {
     Some(exports_map) => {
-      let exports : Map[String, @core.Binding] = {}
+      let exports : Map[String, @core.Binding] = Map([])
       exports_map.iter2().each((key, binding) => exports[key] = binding)
       exports
     }
@@ -3792,7 +3792,7 @@ fn import_set_only(
   exports : Map[String, @core.Binding],
   names : Array[String],
 ) -> Map[String, @core.Binding] raise @core.EvalError {
-  let result : Map[String, @core.Binding] = {}
+  let result : Map[String, @core.Binding] = Map([])
   for name in names {
     match exports.get(name) {
       Some(binding) => result[name] = binding
@@ -3807,14 +3807,14 @@ fn import_set_except(
   exports : Map[String, @core.Binding],
   names : Array[String],
 ) -> Map[String, @core.Binding] raise @core.EvalError {
-  let excluded : Map[String, Bool] = {}
+  let excluded : Map[String, Bool] = Map([])
   for name in names {
     if !exports.contains(name) {
       raise EvalError("unknown import: \{name}")
     }
     excluded[name] = true
   }
-  let result : Map[String, @core.Binding] = {}
+  let result : Map[String, @core.Binding] = Map([])
   exports
   .iter2()
   .each((key, binding) => if !excluded.contains(key) { result[key] = binding })
@@ -3826,7 +3826,7 @@ fn import_set_rename(
   exports : Map[String, @core.Binding],
   renames : Array[(String, String)],
 ) -> Map[String, @core.Binding] raise @core.EvalError {
-  let rename_map : Map[String, String] = {}
+  let rename_map : Map[String, String] = Map([])
   for rename in renames {
     let (old_name, new_name) = rename
     if !exports.contains(old_name) {
@@ -3837,7 +3837,7 @@ fn import_set_rename(
     }
     rename_map[old_name] = new_name
   }
-  let result : Map[String, @core.Binding] = {}
+  let result : Map[String, @core.Binding] = Map([])
   for key in exports.keys() {
     let target = match rename_map.get(key) {
       Some(name) => name
@@ -3859,7 +3859,7 @@ fn import_set_prefix(
   exports : Map[String, @core.Binding],
   prefix : String,
 ) -> Map[String, @core.Binding] {
-  let result : Map[String, @core.Binding] = {}
+  let result : Map[String, @core.Binding] = Map([])
   exports.iter2().each((key, binding) => result["\{prefix}\{key}"] = binding)
   result
 }
@@ -3935,7 +3935,7 @@ fn filter_exports_by_phase(
   if phases.run && phases.expand {
     return exports
   }
-  let result : Map[String, @core.Binding] = {}
+  let result : Map[String, @core.Binding] = Map([])
   exports
   .iter2()
   .each((key, binding) => {
@@ -4047,7 +4047,7 @@ fn eval_library_state(
       for form in body {
         let _ = eval_expr(form, lib_env)
       }
-      let export_map : Map[String, @core.Binding] = {}
+      let export_map : Map[String, @core.Binding] = Map([])
       for export_spec in exports {
         let (external, internal) = export_spec
         if is_syntax_keyword(internal) {

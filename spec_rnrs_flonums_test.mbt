@@ -112,10 +112,7 @@ test "r6rs libraries: flonums condition types" {
 
 ///|
 test "r6rs libraries: flonum arity and type errors" {
-  let expect_err = (expr : String) => {
-    let err = try? eval_program(expr)
-    inspect(err is Err(_), content="true")
-  }
+  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
   expect_err("(begin (import (rnrs arithmetic flonums)) (flsqrt))")
   expect_err("(begin (import (rnrs arithmetic flonums)) (flatan))")
   expect_err("(begin (import (rnrs arithmetic flonums)) (flatan 1.0 2.0 3.0))")

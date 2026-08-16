@@ -121,12 +121,12 @@ fn parse_identifier_syntax(
     }
     _ => raise EvalError("invalid identifier-syntax")
   }
-  let pattern_vars : Map[String, Bool] = {}
+  let pattern_vars : Map[String, Bool] = Map([])
   let pattern_literals = ["set!"]
   for rule in rules {
     collect_pattern_vars(rule.pattern, pattern_literals, "...", pattern_vars)
   }
-  let literal_set : Map[String, Bool] = {}
+  let literal_set : Map[String, Bool] = Map([])
   for rule in rules {
     collect_template_symbols(rule.template, literal_set)
   }
@@ -679,8 +679,8 @@ fn rename_proc_expansion(
   def_env : @core.Env,
   call_ctx : Int,
 ) -> MacroExpansion {
-  let renames : Map[String, String] = {}
-  let captures : Map[String, @core.Value] = {}
+  let renames : Map[String, String] = Map([])
+  let captures : Map[String, @core.Value] = Map([])
   let renamed = rename_proc_datum(datum, def_env, call_ctx, renames, captures)
   { datum: renamed, captures }
 }
@@ -701,7 +701,7 @@ fn expand_macro_rules(
     // decreases : rules.rules.length() - i
     // assert : i <= rules.rules.length()
     let rule = rules.rules[i]
-    let bindings : Map[String, BindingVal] = {}
+    let bindings : Map[String, BindingVal] = Map([])
     match (rule.pattern, call) {
       (Symbol(_), Pair(_, _)) => ()
       (Pair(_, _), Symbol(_)) => ()
@@ -1116,19 +1116,19 @@ fn collect_repeat_bindings(
   def_env : @core.Env,
   use_env : @core.Env,
 ) -> Map[String, BindingVal]? {
-  let result : Map[String, BindingVal] = {}
+  let result : Map[String, BindingVal] = Map([])
   if count == 0 {
-    let names : Map[String, Bool] = {}
+    let names : Map[String, Bool] = Map([])
     collect_pattern_vars(repeat_pat, literals, ellipsis, names)
     names.keys().each(name => result[name] = Seq([]))
     return Some(result)
   }
-  let repeated : Map[String, Array[BindingVal]] = {}
+  let repeated : Map[String, Array[BindingVal]] = Map([])
   for i = 0; i < count; {
     // invariant : i >= 0 && i <= count
     // decreases : count - i
     // assert : i <= count
-    let iter_bindings : Map[String, BindingVal] = {}
+    let iter_bindings : Map[String, BindingVal] = Map([])
     if !match_pattern(
         repeat_pat,
         inputs[start + i],
@@ -1512,8 +1512,8 @@ fn build_rename_map(
   def_env : @core.Env,
   env : @core.Env,
 ) -> (Map[String, String], Map[String, @core.Value]) {
-  let renames : Map[String, String] = {}
-  let captures : Map[String, @core.Value] = {}
+  let renames : Map[String, String] = Map([])
+  let captures : Map[String, @core.Value] = Map([])
   collect_renames(
     template, bindings, literals, ellipsis, def_env, env, renames, captures,
   )
@@ -1654,7 +1654,7 @@ fn expand_with_syntax(
     }
     let value = eval_expr(expr, fenv)
     let datum = value_to_syntax_datum(value)
-    let local_bindings : Map[String, BindingVal] = {}
+    let local_bindings : Map[String, BindingVal] = Map([])
     if !match_pattern(
         pattern,
         datum,

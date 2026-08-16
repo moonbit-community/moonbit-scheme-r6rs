@@ -432,93 +432,111 @@ test "r6rs list utilities" {
 
 ///|
 test "r6rs list utilities: errors" {
-  let improper = try? eval_program(
-    (
-      #|(length '(1 . 2))
-    ),
-  )
-  match improper {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(length '(1 . 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: proper list expected\")")
+  } noraise {
     _ => fail("expected EvalError for improper list")
   }
-  let bad_ref = try? eval_program(
-    (
-      #|(list-ref '(1 2) 2)
-    ),
-  )
-  match bad_ref {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(list-ref '(1 2) 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for list-ref out of range")
   }
-  let bad_tail = try? eval_program(
-    (
-      #|(list-tail '(1 2) 3)
-    ),
-  )
-  match bad_tail {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(list-tail '(1 2) 3)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for list-tail out of range")
   }
-  let negative_len = try? eval_program(
-    (
-      #|(make-list -1)
-    ),
-  )
-  match negative_len {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(make-list -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: exact nonnegative integer expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for negative make-list length")
   }
-  let bad_member = try? eval_program(
-    (
-      #|(member 3 '(1 . 2))
-    ),
-  )
-  match bad_member {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(member 3 '(1 . 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: proper list expected\")")
+  } noraise {
     _ => fail("expected EvalError for improper list")
   }
-  let bad_assoc = try? eval_program(
-    (
-      #|(assoc 'a '(1 2))
-    ),
-  )
-  match bad_assoc {
-    Err(err) => inspect(err, content="EvalError(\"type error: pair expected\")")
+  try
+    eval_program(
+      (
+        #|(assoc 'a '(1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: pair expected\")")
+  } noraise {
     _ => fail("expected EvalError for non-pair alist entry")
   }
-  let bad_map = try? eval_program(
-    (
-      #|(map (lambda (x) x) '(1 . 2))
-    ),
-  )
-  match bad_map {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(map (lambda (x) x) '(1 . 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: proper list expected\")")
+  } noraise {
     _ => fail("expected EvalError for improper list in map")
   }
-  let bad_set = try? eval_program(
-    (
-      #|(set-car! '() 1)
-    ),
-  )
-  match bad_set {
-    Err(err) => inspect(err, content="EvalError(\"type error: pair expected\")")
+  try
+    eval_program(
+      (
+        #|(set-car! '() 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: pair expected\")")
+  } noraise {
     _ => fail("expected EvalError for set-car! on non-pair")
   }
-  let bad_copy = try? eval_program(
-    (
-      #|(list-copy '(1 . 2))
-    ),
-  )
-  match bad_copy {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(list-copy '(1 . 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: proper list expected\")")
+  } noraise {
     _ => fail("expected EvalError for improper list in list-copy")
   }
 }
@@ -533,8 +551,6 @@ test "r6rs equality predicates: arity" {
 
 ///|
 test "r6rs equality predicates: type errors" {
-  let bad_bool = try? eval_program("(boolean=? #t 1)")
-  inspect(bad_bool is Err(_), content="true")
-  let bad_symbol = try? eval_program("(symbol=? 'a 1)")
-  inspect(bad_symbol is Err(_), content="true")
+  expect_error(() => eval_program("(boolean=? #t 1)"))
+  expect_error(() => eval_program("(symbol=? 'a 1)"))
 }
