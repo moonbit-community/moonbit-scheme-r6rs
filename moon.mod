@@ -3,7 +3,7 @@ name = "bobzhang/scheme-r6rs"
 version = "0.1.0"
 
 import {
-  "moonbitlang/async@0.16.4",
+  "moonbitlang/async@0.21.0",
 }
 
 readme = "README.mbt.md"
