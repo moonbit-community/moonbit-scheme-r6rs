@@ -1,0 +1,9 @@
+import {
+  "bobzhang/scheme-r6rs" @scheme_r6rs,
+  "moonbit-community/miniio",
+  "moonbit-community/miniio/io",
+}
+
+supported_targets = "wasm"
+
+pkgtype(kind: "executable")
