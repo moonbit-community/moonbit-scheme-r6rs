@@ -269,22 +269,16 @@ test "r6rs vectors: equal? comparisons" {
 
 ///|
 test "r6rs vectors: type errors" {
-  let err_len = try? eval_program("(vector-length 'a)")
-  inspect(err_len is Err(_), content="true")
-  let err_ref = try? eval_program("(vector-ref 'a 0)")
-  inspect(err_ref is Err(_), content="true")
-  let err_bv = try? eval_program("(bytevector-length 'a)")
-  inspect(err_bv is Err(_), content="true")
-  let err_bv_ref = try? eval_program("(bytevector-u8-ref 'a 0)")
-  inspect(err_bv_ref is Err(_), content="true")
-  let err_big = try? eval_program(
-    "(vector-ref #(1 2) 123456789012345678901234567890)",
-  )
-  inspect(err_big is Err(_), content="true")
-  let err_bv_big = try? eval_program(
-    "(bytevector-u8-ref #vu8(1 2) 123456789012345678901234567890)",
-  )
-  inspect(err_bv_big is Err(_), content="true")
+  expect_error(() => eval_program("(vector-length 'a)"))
+  expect_error(() => eval_program("(vector-ref 'a 0)"))
+  expect_error(() => eval_program("(bytevector-length 'a)"))
+  expect_error(() => eval_program("(bytevector-u8-ref 'a 0)"))
+  expect_error(() => {
+    eval_program("(vector-ref #(1 2) 123456789012345678901234567890)")
+  })
+  expect_error(() => {
+    eval_program("(bytevector-u8-ref #vu8(1 2) 123456789012345678901234567890)")
+  })
 }
 
 ///|
@@ -488,137 +482,164 @@ test "r6rs bytevectors" {
 
 ///|
 test "r6rs vectors/bytevectors: errors" {
-  let out_of_range = try? eval_program(
-    (
-      #|(vector-ref #(1 2) 2)
-    ),
-  )
-  match out_of_range {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(vector-ref #(1 2) 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for out of range")
   }
-  let bad_make = try? eval_program(
-    (
-      #|(make-vector -1)
-    ),
-  )
-  match bad_make {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(make-vector -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: exact nonnegative integer expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for negative length")
   }
-  let bad_copy = try? eval_program(
-    (
-      #|(vector-copy #(1 2 3) 2 1)
-    ),
-  )
-  match bad_copy {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(vector-copy #(1 2 3) 2 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid range")
   }
-  let bad_append = try? eval_program(
-    (
-      #|(vector-append #(1 2) 3)
-    ),
-  )
-  match bad_append {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: vector expected\")")
+  try
+    eval_program(
+      (
+        #|(vector-append #(1 2) 3)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: vector expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid vector-append argument")
   }
-  let bad_vector_map = try? eval_program(
-    (
-      #|(vector-map + #(1 2) #(3))
-    ),
-  )
-  match bad_vector_map {
-    Err(err) => inspect(err, content="EvalError(\"vector length mismatch\")")
+  try
+    eval_program(
+      (
+        #|(vector-map + #(1 2) #(3))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"vector length mismatch\")")
+  } noraise {
     _ => fail("expected EvalError for vector length mismatch")
   }
-  let bad_fill = try? eval_program(
-    (
-      #|(vector-fill! #(1 2 3) 0 3 2)
-    ),
-  )
-  match bad_fill {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(vector-fill! #(1 2 3) 0 3 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid fill range")
   }
-  let bad_copy_bang = try? eval_program(
-    (
-      #|(vector-copy! #(1 2) 1 #(3 4) 0 2)
-    ),
-  )
-  match bad_copy_bang {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(vector-copy! #(1 2) 1 #(3 4) 0 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid vector-copy! range")
   }
-  let bad_byte_copy = try? eval_program(
-    (
-      #|(bytevector-copy #vu8(1 2 3) 2 1)
-    ),
-  )
-  match bad_byte_copy {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(bytevector-copy #vu8(1 2 3) 2 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid bytevector-copy range")
   }
-  let bad_byte_append = try? eval_program(
-    (
-      #|(bytevector-append #vu8(1 2) 3)
-    ),
-  )
-  match bad_byte_append {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(bytevector-append #vu8(1 2) 3)
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: bytevector expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid bytevector-append argument")
   }
-  let bad_byte_fill = try? eval_program(
-    (
-      #|(bytevector-fill! #vu8(1 2 3) 0 3 2)
-    ),
-  )
-  match bad_byte_fill {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(bytevector-fill! #vu8(1 2 3) 0 3 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid bytevector-fill! range")
   }
-  let bad_byte_copy_bang = try? eval_program(
-    (
-      #|(bytevector-copy! #vu8(1 2) 1 #vu8(3 4) 0 2)
-    ),
-  )
-  match bad_byte_copy_bang {
-    Err(err) => inspect(err, content="EvalError(\"index out of range\")")
+  try
+    eval_program(
+      (
+        #|(bytevector-copy! #vu8(1 2) 1 #vu8(3 4) 0 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"index out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid bytevector-copy! range")
   }
-  let bad_list = try? eval_program(
-    (
-      #|(list->vector '(1 . 2))
-    ),
-  )
-  match bad_list {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(list->vector '(1 . 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: proper list expected\")")
+  } noraise {
     _ => fail("expected EvalError for improper list")
   }
-  let bad_byte = try? eval_program(
-    (
-      #|(bytevector 256)
-    ),
-  )
-  match bad_byte {
-    Err(err) => inspect(err, content="EvalError(\"type error: byte expected\")")
+  try
+    eval_program(
+      (
+        #|(bytevector 256)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: byte expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid byte")
   }
-  let bad_u8_list = try? eval_program(
-    (
-      #|(u8-list->bytevector '(1 256))
-    ),
-  )
-  match bad_u8_list {
-    Err(err) => inspect(err, content="EvalError(\"type error: byte expected\")")
+  try
+    eval_program(
+      (
+        #|(u8-list->bytevector '(1 256))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: byte expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid u8 list")
   }
 }

@@ -449,7 +449,7 @@ fn init_env() -> @core.Env {
 
 ///|
 fn env_export_map(env : @core.Env) -> Map[String, @core.Binding] {
-  let exports : Map[String, @core.Binding] = {}
+  let exports : Map[String, @core.Binding] = Map([])
   for frame in env {
     frame.iter2().each((key, binding) => exports[key] = binding)
   }

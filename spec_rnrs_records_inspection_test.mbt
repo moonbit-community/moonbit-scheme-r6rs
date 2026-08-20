@@ -20,10 +20,11 @@ test "r6rs libraries: records inspection details" {
     #|      (record-type-name (record-rtd p))
     #|      (record-type-field-names (record-rtd p)))
   inspect(value_to_string(eval_program(program)), content="(#t point (x y))")
-  let bad = try? eval_program(
-    (
-      #|(begin (import (rnrs records inspection)) (record-rtd 1))
-    ),
-  )
-  inspect(bad is Err(_), content="true")
+  expect_error(() => {
+    eval_program(
+      (
+        #|(begin (import (rnrs records inspection)) (record-rtd 1))
+      ),
+    )
+  })
 }

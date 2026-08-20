@@ -68,9 +68,9 @@ test "r6rs hashtable: immutable set fails" {
     #|(hashtable-set! ht 'a 1)
     #|(define ht2 (hashtable-copy ht #f))
     #|(hashtable-set! ht2 'b 2)
-  let result = try? eval_program(program)
-  match result {
-    Err(err) => inspect(err, content="EvalError(\"hashtable is immutable\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"hashtable is immutable\")")
+  } noraise {
     _ => fail("expected immutable hashtable error")
   }
 }
@@ -80,8 +80,7 @@ test "r6rs hashtable: invalid equivalence function" {
   let program =
     #|(define ht (make-hashtable (lambda (x) 0) 1))
     #|(hashtable-size ht)
-  let result = try? eval_program(program)
-  inspect(result is Err(_), content="true")
+  expect_error(() => eval_program(program))
 }
 
 ///|
@@ -91,6 +90,5 @@ test "r6rs hashtable: immutable update error" {
     #|(hashtable-set! ht 'a 1)
     #|(define imm (hashtable-copy ht #f))
     #|(hashtable-update! imm 'a (lambda (x) (+ x 1)) 0)
-  let result = try? eval_program(program)
-  inspect(result is Err(_), content="true")
+  expect_error(() => eval_program(program))
 }

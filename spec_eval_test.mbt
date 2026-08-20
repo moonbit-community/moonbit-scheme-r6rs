@@ -17,14 +17,16 @@ test "r6rs eval and environment" {
 
 ///|
 test "r6rs eval: invalid environment" {
-  let bad = try? eval_program(
-    (
-      #|(eval '(+ 1 2) 1)
-    ),
-  )
-  match bad {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(eval '(+ 1 2) 1)
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: environment expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid environment")
   }
 }

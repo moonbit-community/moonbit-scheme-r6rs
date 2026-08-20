@@ -1,12 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "bobzhang/scheme-r6rs-cli/main"
+package "bobzhang/scheme"
 
 // Values
 
 // Errors
 
 // Types and methods
-type Options
 
 // Type aliases
 

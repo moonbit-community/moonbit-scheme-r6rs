@@ -16,6 +16,15 @@ let forms = @parser.parse_program("(+ 1 2)")
 
 ```mbt check
 ///|
+fn[T] expect_error(f : () -> T raise @core.ParseError) -> Unit raise {
+  try f() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected expression to raise")
+  }
+}
+
+///|
 test "parse basics" {
   let forms = parse_program("(+ 1 2)")
   inspect(forms.length(), content="1")
@@ -143,8 +152,7 @@ test "parse block comment" {
 
 ///|
 test "parse errors" {
-  let result = try? parse_program("#| unterminated")
-  inspect(result is Err(_), content="true")
+  expect_error(() => parse_program("#| unterminated"))
 }
 
 ///|
@@ -495,25 +503,15 @@ test "parse char edge cases" {
 
 ///|
 test "parse structural errors" {
-  let unexpected_eof = try? parse_program("(")
-  inspect(unexpected_eof is Err(_), content="true")
-  let unexpected_dot = try? parse_program("(.)")
-  inspect(unexpected_dot is Err(_), content="true")
-  let dotted_tail = try? parse_program("(1 . 2 3)")
-  inspect(dotted_tail is Err(_), content="true")
-  let improper_vector = try? parse_program("#(1 . 2)")
-  inspect(improper_vector is Err(_), content="true")
-  let bad_byte = try? parse_program("#vu8(256)")
-  inspect(bad_byte is Err(_), content="true")
-  let bad_byte_type = try? parse_program("#vu8(a)")
-  inspect(bad_byte_type is Err(_), content="true")
-  let unexpected_close = try? parse_program(")")
-  inspect(unexpected_close is Err(_), content="true")
-  let duplicate_label = try? parse_program("#1= #1= 1")
-  inspect(duplicate_label is Err(_), content="true")
-  let undefined_label = try? parse_program("#1#")
-  inspect(undefined_label is Err(_), content="true")
-  let comment_eof = try? parse_program("#;")
-  inspect(comment_eof is Err(_), content="true")
+  expect_error(() => parse_program("("))
+  expect_error(() => parse_program("(.)"))
+  expect_error(() => parse_program("(1 . 2 3)"))
+  expect_error(() => parse_program("#(1 . 2)"))
+  expect_error(() => parse_program("#vu8(256)"))
+  expect_error(() => parse_program("#vu8(a)"))
+  expect_error(() => parse_program(")"))
+  expect_error(() => parse_program("#1= #1= 1"))
+  expect_error(() => parse_program("#1#"))
+  expect_error(() => parse_program("#;"))
 }
 ```

@@ -13,11 +13,21 @@ import {
 pub(all) suberror EvalError {
   EvalError(String)
 } derive(Eq, @debug.Debug)
+pub fn EvalError::equal(Self, Self) -> Bool
+pub fn EvalError::not_equal(Self, Self) -> Bool
+pub fn EvalError::output(Self, &Logger) -> Unit
+pub fn EvalError::to_repr(Self) -> @debug.Repr
+pub fn EvalError::to_string(Self) -> String
 pub impl Show for EvalError
 
 pub(all) suberror ParseError {
   ParseError(String)
 } derive(Eq, @debug.Debug)
+pub fn ParseError::equal(Self, Self) -> Bool
+pub fn ParseError::not_equal(Self, Self) -> Bool
+pub fn ParseError::output(Self, &Logger) -> Unit
+pub fn ParseError::to_repr(Self) -> @debug.Repr
+pub fn ParseError::to_string(Self) -> String
 pub impl Show for ParseError
 
 // Types and methods
@@ -640,6 +650,8 @@ pub(all) enum Primitive {
   UndefinedViolation
   SyntaxViolation
 } derive(Eq)
+pub fn Primitive::equal(Self, Self) -> Bool
+pub fn Primitive::not_equal(Self, Self) -> Bool
 
 pub struct Promise {
   id : Int
@@ -817,4 +829,3 @@ pub enum WinderKind {
 pub type Env = Array[Map[String, Binding]]
 
 // Traits
-

@@ -1,4 +1,13 @@
 ///|
+fn[T] expect_error(f : () -> T raise @core.EvalError) -> Unit raise {
+  try f() catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected expression to raise")
+  }
+}
+
+///|
 test "apply primitive core internal errors" {
   let internal : Array[@core.Primitive] = [
     WithExceptionHandler,
@@ -26,27 +35,16 @@ test "apply primitive core internal errors" {
     Force,
   ]
   for prim in internal {
-    let result = try? apply_primitive_core(prim, [])
-    inspect(result is Err(_), content="true")
+    expect_error(() => apply_primitive_core(prim, []))
   }
-  let dispatcher = try? apply_primitive_core(Add, [])
-  inspect(dispatcher is Err(_), content="true")
+  expect_error(() => apply_primitive_core(Add, []))
 }
 
 ///|
 test "apply primitive core type errors" {
-  let bad_transformer = try? apply_primitive_core(MakeVariableTransformer, [
-    Void,
-  ])
-  inspect(bad_transformer is Err(_), content="true")
-  let transformer_arity = try? apply_primitive_core(MakeVariableTransformer, [])
-  inspect(transformer_arity is Err(_), content="true")
-  let bad_temporaries = try? apply_primitive_core(GenerateTemporaries, [
-    Datum(Int(1)),
-  ])
-  inspect(bad_temporaries is Err(_), content="true")
-  let temporaries_arity = try? apply_primitive_core(GenerateTemporaries, [])
-  inspect(temporaries_arity is Err(_), content="true")
-  let promise_arity = try? apply_primitive_core(PromiseP, [])
-  inspect(promise_arity is Err(_), content="true")
+  expect_error(() => apply_primitive_core(MakeVariableTransformer, [Void]))
+  expect_error(() => apply_primitive_core(MakeVariableTransformer, []))
+  expect_error(() => apply_primitive_core(GenerateTemporaries, [Datum(Int(1))]))
+  expect_error(() => apply_primitive_core(GenerateTemporaries, []))
+  expect_error(() => apply_primitive_core(PromiseP, []))
 }

@@ -222,12 +222,18 @@ test "strip syntax datum" {
 ///|
 test "env error paths" {
   let empty : @core.Env = []
-  let set_empty = try? env_set(empty, "x", Void)
-  inspect(set_empty is Err(_), content="true")
+  try env_set(empty, "x", Void) catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected env_set on an empty environment to raise")
+  }
   inspect(env_lookup_optional(empty, "x") is None, content="true")
   let env = env_new()
-  let set_missing = try? env_set(env, "x", Void)
-  inspect(set_missing is Err(_), content="true")
+  try env_set(env, "x", Void) catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected env_set with a missing binding to raise")
+  }
   inspect(is_procedure_value(Void), content="false")
 }
 
@@ -237,8 +243,11 @@ test "enum set error paths" {
   let long = @core.EnumSet::new(2, ["a", "b"], [true, false])
   inspect(enum_set_universe_equal(short, long), content="false")
   inspect(enum_set_member_by_name(short, "missing"), content="false")
-  let bad = try? enum_set_from_names(["a"], ["b"])
-  inspect(bad is Err(_), content="true")
+  try enum_set_from_names(["a"], ["b"]) catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected an unknown enum name to raise")
+  }
 }
 
 ///|

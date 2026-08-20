@@ -28,9 +28,9 @@ test "r6rs guard: re-raise" {
   let program =
     #|(guard (ex ((eq? ex 'a) 1))
     #|  (raise 'b))
-  let result = try? eval_program(program)
-  match result {
-    Err(err) => inspect(err, content="EvalError(\"uncaught exception\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"uncaught exception\")")
+  } noraise {
     _ => fail("expected uncaught exception")
   }
 }

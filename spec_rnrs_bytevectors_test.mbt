@@ -108,15 +108,17 @@ test "r6rs libraries: bytevector=?" {
 
 ///|
 test "r6rs libraries: bytevector=? errors" {
-  let bad = try? eval_program(
-    (
-      #|(import (rnrs bytevectors))
-      #|(bytevector=? #vu8(1 2) '(1 2))
-    ),
-  )
-  match bad {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(import (rnrs bytevectors))
+        #|(bytevector=? #vu8(1 2) '(1 2))
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: bytevector expected\")")
+  } noraise {
     _ => fail("expected EvalError for invalid bytevector=? argument")
   }
 }
@@ -139,14 +141,16 @@ test "r6rs libraries: utf8 conversions" {
 
 ///|
 test "r6rs libraries: utf8->string invalid" {
-  let bad = try? eval_program(
-    (
-      #|(import (rnrs bytevectors))
-      #|(utf8->string (bytevector 128))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid utf8 sequence\")")
+  try
+    eval_program(
+      (
+        #|(import (rnrs bytevectors))
+        #|(utf8->string (bytevector 128))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid utf8 sequence\")")
+  } noraise {
     _ => fail("expected EvalError for invalid utf8 sequence")
   }
 }

@@ -100,144 +100,162 @@ test "r6rs macro: ellipsis enforces repeated bindings" {
 
 ///|
 test "r6rs macro: invalid ellipsis in pattern" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ x ... ...) 'ok)))
-      #|(bad 1 2)
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ x ... ...) 'ok)))
+        #|(bad 1 2)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for invalid ellipsis")
   }
 }
 
 ///|
 test "r6rs macro: invalid ellipsis in template" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ x) (list ...))))
-      #|(bad 1)
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ x) (list ...))))
+        #|(bad 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for invalid template ellipsis")
   }
 }
 
 ///|
 test "r6rs macro: invalid ellipsis depth" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ (x ...)) x)))
-      #|(bad (1 2))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ (x ...)) x)))
+        #|(bad (1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for mismatched ellipsis depth")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (fewer in template)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ ((x ...) ...)) (list x ...))))
-      #|(bad ((1 2) (3 4)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ ((x ...) ...)) (list x ...))))
+        #|(bad ((1 2) (3 4)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for nested ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (more in template)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ (x ...)) (list (list x ...) ...))))
-      #|(bad (1 2))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ (x ...)) (list (list x ...) ...))))
+        #|(bad (1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for nested ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector fewer in template)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ #((x ...) ...)) #(x ...))))
-      #|(bad #((1 2) (3 4)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ #((x ...) ...)) #(x ...))))
+        #|(bad #((1 2) (3 4)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector more in template)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ #(x ...)) #((x ...) ...))))
-      #|(bad #(1 2))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ #(x ...)) #((x ...) ...))))
+        #|(bad #(1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ #((x ...) ...)) (quasisyntax #(x ...)))))
-      #|(bad #((1 2) (3 4)))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ #((x ...) ...)) (quasisyntax #(x ...)))))
+        #|(bad #((1 2) (3 4)))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for vector ellipsis mismatch")
   }
 }
 
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector more in quasisyntax)" {
-  let bad = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (syntax-rules ()
-      #|    ((_ #(x ...)) (quasisyntax #((x ...) ...)))))
-      #|(bad #(1 2))
-    ),
-  )
-  match bad {
-    Err(err) => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  try
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (syntax-rules ()
+        #|    ((_ #(x ...)) (quasisyntax #((x ...) ...)))))
+        #|(bad #(1 2))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"invalid syntax-rules\")")
+  } noraise {
     _ => fail("expected syntax-rules error for vector ellipsis mismatch")
   }
 }

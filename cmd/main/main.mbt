@@ -46,14 +46,14 @@ async fn read_program_source(path : String?) -> String {
 
 ///|
 async fn eval_and_print(src : String) -> Unit {
-  let result = try? @scheme_r6rs.eval_program(src)
-  match result {
-    Ok(value) =>
-      @stdio.stdout..write(@scheme_r6rs.value_to_string(value))..write("\n")
-    Err(err) => {
+  try @scheme_r6rs.eval_program(src) catch {
+    err => {
       @stdio.stderr.write("error: \{err}\n")
       exit(1)
     }
+  } noraise {
+    value =>
+      @stdio.stdout..write(@scheme_r6rs.value_to_string(value)).write("\n")
   }
 }
 
@@ -66,37 +66,39 @@ async fn main {
     show_version: false,
   }
 
-  loop @env.args()[1:] {
-    [] => ()
-    ["-h" | "--help", ..] => {
-      options.show_help = true
-      break
-    }
-    ["--version", ..] => {
-      options.show_version = true
-      break
-    }
-    ["-e" | "--eval" as opt, .. rest] => {
-      guard rest is [expr, .. rest] else {
-        @stdio.stderr.write("error: expected EXPR after \{opt}\n")
+  for args = @env.args()[1:] {
+    match args {
+      [] => break
+      ["-h" | "--help", ..] => {
+        options.show_help = true
+        break
+      }
+      ["--version", ..] => {
+        options.show_version = true
+        break
+      }
+      ["-e" | "--eval" as opt, .. rest] => {
+        guard rest is [expr, .. rest] else {
+          @stdio.stderr.write("error: expected EXPR after \{opt}\n")
+          print_usage()
+          exit(2)
+        }
+        options.eval = Some(expr)
+        continue rest
+      }
+      ["-", .. rest] => {
+        options.path = Some("-")
+        continue rest
+      }
+      [arg, ..] if arg.has_prefix("-") => {
+        @stdio.stderr.write("error: unknown option `\{arg}`\n")
         print_usage()
         exit(2)
       }
-      options.eval = Some(expr)
-      continue rest
-    }
-    ["-", .. rest] => {
-      options.path = Some("-")
-      continue rest
-    }
-    [arg, ..] if arg.has_prefix("-") => {
-      @stdio.stderr.write("error: unknown option `\{arg}`\n")
-      print_usage()
-      exit(2)
-    }
-    [path, .. rest] => {
-      options.path = Some(path)
-      continue rest
+      [path, .. rest] => {
+        options.path = Some(path)
+        continue rest
+      }
     }
   }
 

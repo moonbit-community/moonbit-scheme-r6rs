@@ -203,9 +203,9 @@ test "r6rs records: opaque record-rtd error" {
     #|  (x secret-x))
     #|(let ((s (make-secret 1)))
     #|  (record-rtd s))
-  let result = try? eval_program(program)
-  match result {
-    Err(err) => inspect(err, content="EvalError(\"record type is opaque\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"record type is opaque\")")
+  } noraise {
     _ => fail("expected record type is opaque")
   }
 }
@@ -223,10 +223,9 @@ test "r6rs records: sealed parent error" {
     #|  child?
     #|  (parent base)
     #|  (y child-y))
-  let result = try? eval_program(program)
-  match result {
-    Err(err) =>
-      inspect(err, content="EvalError(\"invalid define-record-type\")")
+  try eval_program(program) catch {
+    err => inspect(err, content="EvalError(\"invalid define-record-type\")")
+  } noraise {
     _ => fail("expected invalid define-record-type")
   }
 }

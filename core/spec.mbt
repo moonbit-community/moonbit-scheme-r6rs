@@ -77,9 +77,21 @@ pub(all) suberror ParseError {
 } derive(Debug, Eq)
 
 ///|
+pub extend ParseError with @debug.Debug::{to_repr}
+
+///|
+pub extend ParseError with Eq::{not_equal, equal}
+
+///|
 pub(all) suberror EvalError {
   EvalError(String)
 } derive(Debug, Eq)
+
+///|
+pub extend EvalError with @debug.Debug::{to_repr}
+
+///|
+pub extend EvalError with Eq::{not_equal, equal}
 
 ///|
 /// Datum is the reader-level data representation used by quote.
@@ -495,6 +507,9 @@ pub(all) enum Primitive {
 } derive(Eq)
 
 ///|
+pub extend Primitive with Eq::{not_equal, equal}
+
+///|
 /// Lexical environment (stack of frames) captured by closures.
 /// The implementation treats this as an internal detail.
 
@@ -646,6 +661,12 @@ pub impl Show for ParseError with fn output(self, logger) {
 }
 
 ///|
+pub extend ParseError with Show::{to_string, output}
+
+///|
 pub impl Show for EvalError with fn output(self, logger) {
   logger.write_string(@debug.render(self.to_repr(), max_depth=2147483647))
 }
+
+///|
+pub extend EvalError with Show::{to_string, output}

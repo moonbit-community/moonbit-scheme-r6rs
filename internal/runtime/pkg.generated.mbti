@@ -134,4 +134,3 @@ pub using @core {type SyntaxRulesKind}
 pub using @core {type Value}
 
 // Traits
-

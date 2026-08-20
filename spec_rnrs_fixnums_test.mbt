@@ -119,25 +119,28 @@ test "r6rs libraries: fixnum bit fields and shifts" {
 
 ///|
 test "r6rs libraries: fixnum errors" {
-  let overflow = try? eval_program(
-    (
-      #|(import (rnrs arithmetic fixnums))
-      #|(fx+ (greatest-fixnum) 1)
-    ),
-  )
-  match overflow {
-    Err(err) => inspect(err, content="EvalError(\"fixnum overflow\")")
+  try
+    eval_program(
+      (
+        #|(import (rnrs arithmetic fixnums))
+        #|(fx+ (greatest-fixnum) 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"fixnum overflow\")")
+  } noraise {
     _ => fail("expected fixnum overflow")
   }
-  let bad_type = try? eval_program(
-    (
-      #|(import (rnrs arithmetic fixnums))
-      #|(fx+ 1/2 1)
-    ),
-  )
-  match bad_type {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: fixnum expected\")")
+  try
+    eval_program(
+      (
+        #|(import (rnrs arithmetic fixnums))
+        #|(fx+ 1/2 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: fixnum expected\")")
+  } noraise {
     _ => fail("expected fixnum type error")
   }
 }
@@ -158,10 +161,7 @@ test "r6rs libraries: fixnum arity and edge cases" {
     value_to_string(eval_program(program)),
     content="(#t #t #t #t #t #t 2 0)",
   )
-  let expect_err = (expr : String) => {
-    let err = try? eval_program(expr)
-    inspect(err is Err(_), content="true")
-  }
+  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
   expect_err("(begin (import (rnrs arithmetic fixnums)) (fixnum? 1 2))")
   expect_err("(begin (import (rnrs arithmetic fixnums)) (fixnum-width 1))")
   expect_err("(begin (import (rnrs arithmetic fixnums)) (least-fixnum 1))")

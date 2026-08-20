@@ -936,24 +936,26 @@ test "r6rs numeric: conversions and fractions" {
     ),
     content="13421773/134217728",
   )
-  let bad_inf = try? eval_program(
-    (
-      #|(inexact->exact +inf.0)
-    ),
-  )
-  match bad_inf {
-    Err(err) =>
-      inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  try
+    eval_program(
+      (
+        #|(inexact->exact +inf.0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  } noraise {
     _ => fail("expected inexact->exact error for +inf.0")
   }
-  let bad_nan = try? eval_program(
-    (
-      #|(inexact->exact +nan.0)
-    ),
-  )
-  match bad_nan {
-    Err(err) =>
-      inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  try
+    eval_program(
+      (
+        #|(inexact->exact +nan.0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  } noraise {
     _ => fail("expected inexact->exact error for +nan.0")
   }
   inspect(
@@ -1340,24 +1342,26 @@ test "r6rs numeric: complex conversions" {
     ),
     content="#t",
   )
-  let bad_inf = try? eval_program(
-    (
-      #|(inexact->exact (make-rectangular +inf.0 1.0))
-    ),
-  )
-  match bad_inf {
-    Err(err) =>
-      inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  try
+    eval_program(
+      (
+        #|(inexact->exact (make-rectangular +inf.0 1.0))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  } noraise {
     _ => fail("expected inexact->exact error for complex +inf.0")
   }
-  let bad_nan = try? eval_program(
-    (
-      #|(inexact->exact (make-rectangular 1.0 +nan.0))
-    ),
-  )
-  match bad_nan {
-    Err(err) =>
-      inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  try
+    eval_program(
+      (
+        #|(inexact->exact (make-rectangular 1.0 +nan.0))
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"inexact->exact: non-finite\")")
+  } noraise {
     _ => fail("expected inexact->exact error for complex +nan.0")
   }
 }
@@ -1842,133 +1846,150 @@ test "r6rs numeric: rationalize" {
 
 ///|
 test "r6rs numeric: predicate errors" {
-  let bad_odd = try? eval_program(
-    (
-      #|(odd? 1/2)
-    ),
-  )
-  match bad_odd {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(odd? 1/2)
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: exact integer expected\")")
+  } noraise {
     _ => fail("expected EvalError for odd? on non-integer")
   }
-  let bad_zero = try? eval_program(
-    (
-      #|(zero? "a")
-    ),
-  )
-  match bad_zero {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: number expected\")")
+  try
+    eval_program(
+      (
+        #|(zero? "a")
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: number expected\")")
+  } noraise {
     _ => fail("expected EvalError for zero? on non-number")
   }
-  let bad_exact_sqrt = try? eval_program(
-    (
-      #|(exact-integer-sqrt -1)
-    ),
-  )
-  match bad_exact_sqrt {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(exact-integer-sqrt -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: exact nonnegative integer expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for exact-integer-sqrt on negative")
   }
-  let bad_rationalize = try? eval_program(
-    (
-      #|(rationalize 1 -1)
-    ),
-  )
-  match bad_rationalize {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(rationalize 1 -1)
+      ),
+    )
+  catch {
+    err =>
       inspect(
         err,
         content="EvalError(\"type error: nonnegative real expected\")",
       )
+  } noraise {
     _ => fail("expected EvalError for rationalize on negative tolerance")
   }
-  let bad_finite = try? eval_program(
-    (
-      #|(finite? "a")
-    ),
-  )
-  match bad_finite {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: number expected\")")
+  try
+    eval_program(
+      (
+        #|(finite? "a")
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: number expected\")")
+  } noraise {
     _ => fail("expected EvalError for finite? on non-number")
   }
 }
 
 ///|
 test "r6rs numeric: radix errors" {
-  let bad_radix = try? eval_program(
-    (
-      #|(string->number "10" 1)
-    ),
-  )
-  match bad_radix {
-    Err(err) => inspect(err, content="EvalError(\"radix out of range\")")
+  try
+    eval_program(
+      (
+        #|(string->number "10" 1)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"radix out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid radix")
   }
-  let bad_number_radix = try? eval_program(
-    (
-      #|(number->string 10 37)
-    ),
-  )
-  match bad_number_radix {
-    Err(err) => inspect(err, content="EvalError(\"radix out of range\")")
+  try
+    eval_program(
+      (
+        #|(number->string 10 37)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"radix out of range\")")
+  } noraise {
     _ => fail("expected EvalError for invalid radix")
   }
-  let bad_nonint_radix = try? eval_program(
-    (
-      #|(number->string 1/2 16)
-    ),
-  )
-  match bad_nonint_radix {
-    Err(err) =>
+  try
+    eval_program(
+      (
+        #|(number->string 1/2 16)
+      ),
+    )
+  catch {
+    err =>
       inspect(err, content="EvalError(\"type error: exact integer expected\")")
+  } noraise {
     _ => fail("expected EvalError for non-integer radix conversion")
   }
 }
 
 ///|
 test "r6rs numeric: quotient errors" {
-  let bad_div = try? eval_program(
-    (
-      #|(quotient 1 0)
-    ),
-  )
-  match bad_div {
-    Err(err) => inspect(err, content="EvalError(\"division by zero\")")
+  try
+    eval_program(
+      (
+        #|(quotient 1 0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"division by zero\")")
+  } noraise {
     _ => fail("expected EvalError for quotient by zero")
   }
-  let bad_rem = try? eval_program(
-    (
-      #|(remainder 1 0)
-    ),
-  )
-  match bad_rem {
-    Err(err) => inspect(err, content="EvalError(\"division by zero\")")
+  try
+    eval_program(
+      (
+        #|(remainder 1 0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"division by zero\")")
+  } noraise {
     _ => fail("expected EvalError for remainder by zero")
   }
-  let bad_mod = try? eval_program(
-    (
-      #|(modulo 1 0)
-    ),
-  )
-  match bad_mod {
-    Err(err) => inspect(err, content="EvalError(\"division by zero\")")
+  try
+    eval_program(
+      (
+        #|(modulo 1 0)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"division by zero\")")
+  } noraise {
     _ => fail("expected EvalError for modulo by zero")
   }
 }
 
 ///|
 test "r6rs numeric: conversion and arity errors" {
-  let expect_err = (expr : String) => {
-    let err = try? eval_program(expr)
-    inspect(err is Err(_), content="true")
-  }
+  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
   expect_err("(number->string 1 1)")
   expect_err("(number->string 1 37)")
   expect_err("(number->string 1+2i 16)")
@@ -1987,10 +2008,7 @@ test "r6rs numeric: conversion and arity errors" {
 
 ///|
 test "r6rs numeric: trig and gcd/lcm edges" {
-  let expect_err = (expr : String) => {
-    let err = try? eval_program(expr)
-    inspect(err is Err(_), content="true")
-  }
+  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
   expect_err("(sin)")
   expect_err("(cos)")
   expect_err("(tan)")
@@ -2013,10 +2031,7 @@ test "r6rs numeric: trig and gcd/lcm edges" {
     value_to_string(eval_program(big_program)),
     content="(3 1 10 300000000000000000000)",
   )
-  let big_div = try? eval_program("(quotient 12345678901234567890 0)")
-  inspect(big_div is Err(_), content="true")
-  let big_rem = try? eval_program("(remainder 12345678901234567890 0)")
-  inspect(big_rem is Err(_), content="true")
-  let big_mod = try? eval_program("(modulo 12345678901234567890 0)")
-  inspect(big_mod is Err(_), content="true")
+  expect_error(() => eval_program("(quotient 12345678901234567890 0)"))
+  expect_error(() => eval_program("(remainder 12345678901234567890 0)"))
+  expect_error(() => eval_program("(modulo 12345678901234567890 0)"))
 }

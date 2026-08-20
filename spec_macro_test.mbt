@@ -263,25 +263,27 @@ test "r6rs macro: syntax-case with-syntax" {
 
 ///|
 test "r6rs macro: syntax-case transformer errors" {
-  let bad_params = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (a b)
-      #|    (syntax-case a ()
-      #|      ((_ x) #'x))))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_params is Err(_), content="true")
-  let bad_clauses = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (stx)
-      #|    (syntax-case stx ())))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_clauses is Err(_), content="true")
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (a b)
+        #|    (syntax-case a ()
+        #|      ((_ x) #'x))))
+        #|(bad 1)
+      ),
+    )
+  })
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (stx)
+        #|    (syntax-case stx ())))
+        #|(bad 1)
+      ),
+    )
+  })
 }
 
 ///|
@@ -326,46 +328,50 @@ test "r6rs macro: syntax-case with-syntax bodies" {
 
 ///|
 test "r6rs macro: with-syntax errors" {
-  let bad_arity = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (stx)
-      #|    (syntax-case stx ()
-      #|      ((_ x) (with-syntax)))))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_arity is Err(_), content="true")
-  let bad_spec = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (stx)
-      #|    (syntax-case stx ()
-      #|      ((_ x) (with-syntax ((y)) #'x)))))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_spec is Err(_), content="true")
-  let bad_match = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (stx)
-      #|    (syntax-case stx ()
-      #|      ((_ x) (with-syntax (((y) 1)) #'x)))))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_match is Err(_), content="true")
-  let bad_merge = try? eval_program(
-    (
-      #|(define-syntax bad
-      #|  (lambda (stx)
-      #|    (syntax-case stx ()
-      #|      ((_ x) (with-syntax ((y 1) (y 2)) #'y)))))
-      #|(bad 1)
-    ),
-  )
-  inspect(bad_merge is Err(_), content="true")
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (stx)
+        #|    (syntax-case stx ()
+        #|      ((_ x) (with-syntax)))))
+        #|(bad 1)
+      ),
+    )
+  })
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (stx)
+        #|    (syntax-case stx ()
+        #|      ((_ x) (with-syntax ((y)) #'x)))))
+        #|(bad 1)
+      ),
+    )
+  })
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (stx)
+        #|    (syntax-case stx ()
+        #|      ((_ x) (with-syntax (((y) 1)) #'x)))))
+        #|(bad 1)
+      ),
+    )
+  })
+  expect_error(() => {
+    eval_program(
+      (
+        #|(define-syntax bad
+        #|  (lambda (stx)
+        #|    (syntax-case stx ()
+        #|      ((_ x) (with-syntax ((y 1) (y 2)) #'y)))))
+        #|(bad 1)
+      ),
+    )
+  })
 }
 
 ///|
@@ -442,15 +448,16 @@ test "r6rs macro: quasisyntax vector ellipsis" {
 
 ///|
 test "r6rs macro: syntax-case clause error" {
-  let err = try? eval_program(
-    (
-      #|(begin
-      #|  (define-syntax bad
-      #|    (lambda (stx)
-      #|      (syntax-case stx ()
-      #|        ((_) ))))
-      #|  (bad 1))
-    ),
-  )
-  inspect(err is Err(_), content="true")
+  expect_error(() => {
+    eval_program(
+      (
+        #|(begin
+        #|  (define-syntax bad
+        #|    (lambda (stx)
+        #|      (syntax-case stx ()
+        #|        ((_) ))))
+        #|  (bad 1))
+      ),
+    )
+  })
 }

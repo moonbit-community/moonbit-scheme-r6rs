@@ -57,12 +57,10 @@ test "r6rs enum-sets: universe mismatch error" {
     #|(define sa ((enum-set-constructor a) '(a)))
     #|(define sb ((enum-set-constructor b) '(c)))
     #|(enum-set-union sa sb)
-  let result = try? eval_program(program)
-  inspect(result is Err(_), content="true")
+  expect_error(() => eval_program(program))
 }
 
 ///|
 test "r6rs enum-sets: duplicate symbol error" {
-  let result = try? eval_program("(make-enumeration '(a a))")
-  inspect(result is Err(_), content="true")
+  expect_error(() => eval_program("(make-enumeration '(a a))"))
 }

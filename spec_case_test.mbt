@@ -55,14 +55,15 @@ test "r6rs letrec: mutual recursion" {
 
 ///|
 test "r6rs letrec: uninitialized use" {
-  let bad = try? eval_program(
-    (
-      #|(letrec ((x 1) (y (+ x 2))) y)
-    ),
-  )
-  match bad {
-    Err(err) =>
-      inspect(err, content="EvalError(\"type error: number expected\")")
+  try
+    eval_program(
+      (
+        #|(letrec ((x 1) (y (+ x 2))) y)
+      ),
+    )
+  catch {
+    err => inspect(err, content="EvalError(\"type error: number expected\")")
+  } noraise {
     _ => fail("expected EvalError for letrec uninitialized access")
   }
 }

@@ -1,9 +1,12 @@
 import {
   "bobzhang/scheme-r6rs" @scheme_r6rs,
-  "moonbitlang/core/env",
+  "moonbitlang/core/argparse",
   "moonbitlang/async",
   "moonbitlang/async/fs",
+  "moonbitlang/async/io",
   "moonbitlang/async/stdio",
 }
+
+supported_targets = "wasm"
 
 pkgtype(kind: "executable")

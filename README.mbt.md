@@ -14,8 +14,13 @@ lexer, parser, macro expander, evaluator, and runtime helpers.
 ## Usage
 
 ```mbt nocheck
+///|
 let program = "(+ 1 2)"
+
+///|
 let value = @bobzhang/scheme-r6rs.eval_program(program)
+
+///|
 let text = @bobzhang/scheme-r6rs.value_to_string(value)
 ```
 
@@ -55,8 +60,11 @@ test "eval program" {
     Some(Int(255)) => ()
     _ => fail("expected 255")
   }
-  let result = try? eval_program("(car 1)")
-  inspect(result is Err(_), content="true")
+  try eval_program("(car 1)") catch {
+    _ => ()
+  } noraise {
+    _ => fail("expected car on a non-pair to raise")
+  }
 }
 ```
 
