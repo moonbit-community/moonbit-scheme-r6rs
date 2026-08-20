@@ -1,7 +1,10 @@
 import {
   "bobzhang/scheme-r6rs" @scheme_r6rs,
-  "moonbit-community/miniio",
-  "moonbit-community/miniio/io",
+  "moonbitlang/core/argparse",
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitlang/async/io",
+  "moonbitlang/async/stdio",
 }
 
 supported_targets = "wasm"

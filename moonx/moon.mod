@@ -4,7 +4,7 @@ version = "0.1.0"
 
 import {
   "bobzhang/scheme-r6rs@0.1.0",
-  "moonbit-community/miniio@0.2.1",
+  "moonbitlang/async@0.21.0",
 }
 
 license = "MIT"
