@@ -11,7 +11,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Moon
         run: |
@@ -31,7 +31,7 @@ jobs:
         run: |
           moon fmt && git diff --exit-code
           moon info && git diff --exit-code
-      
+
       - name: moon test
         run: |
           moon test --target all
