@@ -3890,41 +3890,28 @@ priv struct ImportPhases {
 fn parse_for_phases(
   items : Array[@core.Datum],
 ) -> ImportPhases raise @core.EvalError {
-  match items {
-    [] => raise EvalError("invalid import set")
-    _ => {
-      let (run, expand) = for i = 0, run = false, expand = false; i <
-                             items.length(); {
-        // invariant : i >= 0 && i <= items.length()
-        // decreases : items.length() - i
-        // assert : i <= items.length()
-        let item = items[i]
-        match item {
-          Symbol("run") => continue i + 1, true, expand
-          Symbol("expand") => continue i + 1, run, true
-          Pair(_, _) | Nil =>
-            match datum_list_to_array(item) {
-              [Symbol("meta"), Int(n)] =>
-                if n == 0 {
-                  continue i + 1, true, expand
-                } else if n > 0 {
-                  continue i + 1, run, true
-                } else {
-                  raise EvalError("invalid import set")
-                }
-              _ => raise EvalError("invalid import set")
-            }
+  if items.is_empty() {
+    raise EvalError("invalid import set")
+  }
+  let mut run = false
+  let mut expand = false
+  for item in items {
+    match item {
+      Symbol("run") => run = true
+      Symbol("expand") => expand = true
+      Pair(_, _) | Nil =>
+        match datum_list_to_array(item) {
+          [Symbol("meta"), Int(0)] => run = true
+          [Symbol("meta"), Int(n)] if n > 0 => expand = true
           _ => raise EvalError("invalid import set")
         }
-      } nobreak {
-        (run, expand)
-      }
-      if !run && !expand {
-        raise EvalError("invalid import set")
-      }
-      { run, expand }
+      _ => raise EvalError("invalid import set")
     }
   }
+  if !run && !expand {
+    raise EvalError("invalid import set")
+  }
+  { run, expand }
 }
 
 ///|

@@ -35,22 +35,13 @@ fn apply_numeric_primitive(
     | Tan
     | Asin
     | Acos
-    | Atan
-    | Numerator
-    | Denominator
-    | Abs
-    | Quotient
-    | Remainder
-    | Modulo
-    | Gcd
-    | Lcm
-    | Max
-    | Min
-    | Floor
-    | Ceiling
-    | Truncate
-    | Round
-    | BitwiseAnd
+    | Atan => Some(apply_numeric_primitive_core(prim, args))
+    Numerator | Denominator | Abs | Quotient | Remainder | Modulo =>
+      Some(apply_integer_primitive_core(prim, args))
+    Gcd | Lcm | Max | Min => Some(apply_integer_fold_primitive_core(prim, args))
+    Floor | Ceiling | Truncate | Round =>
+      Some(apply_rounding_primitive_core(prim, args))
+    BitwiseAnd
     | BitwiseIor
     | BitwiseXor
     | BitwiseNot
@@ -64,8 +55,8 @@ fn apply_numeric_primitive(
     | BitwiseBitField
     | BitwiseCopyBitField
     | BitwiseRotateBitField
-    | BitwiseReverseBitField
-    | FixnumP
+    | BitwiseReverseBitField => Some(apply_bitwise_primitive_core(prim, args))
+    FixnumP
     | FixnumWidth
     | LeastFixnum
     | GreatestFixnum
@@ -107,8 +98,8 @@ fn apply_numeric_primitive(
     | FxReverseBitField
     | FxArithmeticShift
     | FxArithmeticShiftLeft
-    | FxArithmeticShiftRight
-    | FlonumP
+    | FxArithmeticShiftRight => Some(apply_fixnum_primitive_core(prim, args))
+    FlonumP
     | RealToFlonum
     | FixnumToFlonum
     | FlEq
@@ -153,7 +144,7 @@ fn apply_numeric_primitive(
     | FlAcos
     | FlAtan
     | FlSqrt
-    | FlExpt => Some(apply_numeric_primitive_core(prim, args))
+    | FlExpt => Some(apply_flonum_primitive_core(prim, args))
     _ => None
   }
 }
@@ -868,6 +859,17 @@ fn apply_numeric_primitive_core(
             "arity mismatch: expected 1 or 2 got \{args.length()}",
           )
       }
+    _ => raise EvalError("internal error: numeric primitive dispatch")
+  }
+}
+
+///|
+/// Apply integer and real rounding primitives.
+fn apply_integer_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     Numerator =>
       match args {
         [value] =>
@@ -1003,36 +1005,39 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
+    _ => raise EvalError("internal error: integer primitive dispatch")
+  }
+}
+
+///|
+/// Apply integer fold and extremum primitives.
+fn apply_integer_fold_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     Gcd => {
-      let (use_big, acc_int, acc_big) = for i = 0, use_big = false, acc_int = 0, acc_big = bigint_from_int(
-                                                0,
-                                              ); i < args.length(); {
-        // invariant : i >= 0 && i <= args.length()
-        // decreases : args.length() - i
-        // assert : use_big || acc_big == bigint_from_int(0)
-        let value = value_as_exact_integer(args[i])
+      let mut use_big = false
+      let mut acc_int = 0
+      let mut acc_big = bigint_from_int(0)
+      for arg in args {
+        let value = value_as_exact_integer(arg)
         match value {
           Int(n) =>
             if use_big {
-              let next_acc_big = bigint_gcd(acc_big, bigint_from_int(n))
-              continue i + 1, true, acc_int, next_acc_big
+              acc_big = bigint_gcd(acc_big, bigint_from_int(n))
             } else {
-              let next_acc_int = gcd(acc_int, n)
-              continue i + 1, false, next_acc_int, acc_big
+              acc_int = gcd(acc_int, n)
             }
           BigInt(n) => {
-            let base_big = if use_big {
-              acc_big
-            } else {
-              bigint_from_int(acc_int)
+            if !use_big {
+              acc_big = bigint_from_int(acc_int)
+              use_big = true
             }
-            let next_acc_big = bigint_gcd(base_big, n)
-            continue i + 1, true, acc_int, next_acc_big
+            acc_big = bigint_gcd(acc_big, n)
           }
           _ => raise EvalError("type error: integer expected")
         }
-      } nobreak {
-        (use_big, acc_int, acc_big)
       }
       if use_big {
         Datum(
@@ -1046,49 +1051,41 @@ fn apply_numeric_primitive_core(
       }
     }
     Lcm => {
-      let (use_big, acc_int, acc_big) = for i = 0, use_big = false, acc_int = 1, acc_big = bigint_from_int(
-                                                1,
-                                              ); i < args.length(); {
-        // invariant : i >= 0 && i <= args.length()
-        // decreases : args.length() - i
-        // assert : use_big || acc_big == bigint_from_int(1)
-        let value = value_as_exact_integer(args[i])
+      let mut use_big = false
+      let mut acc_int = 1
+      let mut acc_big = bigint_from_int(1)
+      for arg in args {
+        let value = value_as_exact_integer(arg)
         match value {
           Int(n) =>
             if use_big {
               let n_big = bigint_from_int(n)
-              let next_acc_big = if acc_big.is_zero() || n_big.is_zero() {
+              acc_big = if acc_big.is_zero() || n_big.is_zero() {
                 bigint_from_int(0)
               } else {
                 let g = bigint_gcd(acc_big, n_big)
                 bigint_abs(acc_big / g * n_big)
               }
-              continue i + 1, true, acc_int, next_acc_big
             } else if acc_int == 0 || n == 0 {
-              continue i + 1, false, 0, acc_big
+              acc_int = 0
             } else {
               let g = gcd(acc_int, n)
-              let next_acc_int = int_abs(acc_int / g * n)
-              continue i + 1, false, next_acc_int, acc_big
+              acc_int = int_abs(acc_int / g * n)
             }
           BigInt(n) => {
-            let base_big = if use_big {
-              acc_big
-            } else {
-              bigint_from_int(acc_int)
+            if !use_big {
+              acc_big = bigint_from_int(acc_int)
+              use_big = true
             }
-            let next_acc_big = if base_big.is_zero() || n.is_zero() {
+            acc_big = if acc_big.is_zero() || n.is_zero() {
               bigint_from_int(0)
             } else {
-              let g = bigint_gcd(base_big, n)
-              bigint_abs(base_big / g * n)
+              let g = bigint_gcd(acc_big, n)
+              bigint_abs(acc_big / g * n)
             }
-            continue i + 1, true, acc_int, next_acc_big
           }
           _ => raise EvalError("type error: integer expected")
         }
-      } nobreak {
-        (use_big, acc_int, acc_big)
       }
       if use_big {
         Datum(
@@ -1105,19 +1102,14 @@ fn apply_numeric_primitive_core(
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, .. rest] => {
-          let best = value_as_number(first)
-          let has_inexact = best is Float(_)
-          let (best, has_inexact) = for i = 0, best = best, has_inexact = has_inexact; i <
-                                       rest.length(); {
-            // invariant : i >= 0 && i <= rest.length()
-            // decreases : rest.length() - i
-            // assert : i <= rest.length()
-            let cur = value_as_number(rest[i])
-            let next_best = if num_less(best, cur) { cur } else { best }
-            let next_has_inexact = has_inexact || cur is Float(_)
-            continue i + 1, next_best, next_has_inexact
-          } nobreak {
-            (best, has_inexact)
+          let mut best = value_as_number(first)
+          let mut has_inexact = best is Float(_)
+          for value in rest {
+            let cur = value_as_number(value)
+            if num_less(best, cur) {
+              best = cur
+            }
+            has_inexact = has_inexact || cur is Float(_)
           }
           if has_inexact {
             Datum(Float(number_to_float(best)))
@@ -1130,19 +1122,14 @@ fn apply_numeric_primitive_core(
       match args {
         [] => raise arity_mismatch(1, 0)
         [first, .. rest] => {
-          let best = value_as_number(first)
-          let has_inexact = best is Float(_)
-          let (best, has_inexact) = for i = 0, best = best, has_inexact = has_inexact; i <
-                                       rest.length(); {
-            // invariant : i >= 0 && i <= rest.length()
-            // decreases : rest.length() - i
-            // assert : i <= rest.length()
-            let cur = value_as_number(rest[i])
-            let next_best = if num_greater(best, cur) { cur } else { best }
-            let next_has_inexact = has_inexact || cur is Float(_)
-            continue i + 1, next_best, next_has_inexact
-          } nobreak {
-            (best, has_inexact)
+          let mut best = value_as_number(first)
+          let mut has_inexact = best is Float(_)
+          for value in rest {
+            let cur = value_as_number(value)
+            if num_greater(best, cur) {
+              best = cur
+            }
+            has_inexact = has_inexact || cur is Float(_)
           }
           if has_inexact {
             Datum(Float(number_to_float(best)))
@@ -1151,6 +1138,17 @@ fn apply_numeric_primitive_core(
           }
         }
       }
+    _ => raise EvalError("internal error: integer fold primitive dispatch")
+  }
+}
+
+///|
+/// Apply real rounding primitives.
+fn apply_rounding_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     Floor =>
       match args {
         [num_value] => {
@@ -1235,6 +1233,17 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(1, args.length())
       }
+    _ => raise EvalError("internal error: rounding primitive dispatch")
+  }
+}
+
+///|
+/// Apply generic bitwise primitives.
+fn apply_bitwise_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     BitwiseAnd =>
       match args {
         [] => Datum(Int(-1))
@@ -1433,6 +1442,17 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(3, args.length())
       }
+    _ => raise EvalError("internal error: bitwise primitive dispatch")
+  }
+}
+
+///|
+/// Apply fixnum primitives.
+fn apply_fixnum_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     FixnumP =>
       match args {
         [value] => bool_value(value_is_fixnum(value))
@@ -2014,6 +2034,17 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
+    _ => raise EvalError("internal error: fixnum primitive dispatch")
+  }
+}
+
+///|
+/// Apply flonum primitives.
+fn apply_flonum_primitive_core(
+  prim : @core.Primitive,
+  args : Array[@core.Value],
+) -> @core.Value raise @core.EvalError {
+  match prim {
     FlonumP =>
       match args {
         [Datum(datum)] =>
@@ -2489,7 +2520,7 @@ fn apply_numeric_primitive_core(
         }
         _ => raise arity_mismatch(2, args.length())
       }
-    _ => raise EvalError("internal error: numeric primitive dispatch")
+    _ => raise EvalError("internal error: flonum primitive dispatch")
   }
 }
 

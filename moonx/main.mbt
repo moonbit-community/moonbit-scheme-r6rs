@@ -1,5 +1,5 @@
 ///|
-const VERSION : String = "0.1.0"
+const VERSION : String = "0.1.1"
 
 ///|
 priv enum InputSource {
