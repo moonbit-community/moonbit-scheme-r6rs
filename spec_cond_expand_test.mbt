@@ -1,8 +1,8 @@
 ///|
 test "r6rs cond-expand" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (r6rs 1) (else 2))
         ),
@@ -11,8 +11,8 @@ test "r6rs cond-expand" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand ((and r6rs (not no-such)) 3) (else 4))
         ),
@@ -21,8 +21,8 @@ test "r6rs cond-expand" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (no-such 5) (else 6))
         ),
@@ -37,10 +37,13 @@ test "r6rs cond-expand" {
     #|  (define x 5))
     #|(import (ce-test))
     #|(cond-expand ((library (ce-test)) x) (else 0))
-  inspect(value_to_string(eval_program(lib_prog)), content="5")
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(lib_prog)),
+    content="5",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (ratios 7) (else 8))
         ),
@@ -49,8 +52,8 @@ test "r6rs cond-expand" {
     content="7",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (exact-closed 9) (else 10))
         ),
@@ -63,8 +66,8 @@ test "r6rs cond-expand" {
 ///|
 test "r6rs cond-expand: feature and error branches" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (full-unicode 1) (else 2))
         ),
@@ -73,8 +76,8 @@ test "r6rs cond-expand: feature and error branches" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand (exact-complex 1) (else 2))
         ),
@@ -83,8 +86,8 @@ test "r6rs cond-expand: feature and error branches" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand ((and r6rs no-such) 1) (else 2))
         ),
@@ -93,8 +96,8 @@ test "r6rs cond-expand: feature and error branches" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond-expand ((or no-such) 1) (else 2))
         ),
@@ -103,14 +106,14 @@ test "r6rs cond-expand: feature and error branches" {
     content="2",
   )
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(cond-expand ((library)) (else 1))
       ),
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(cond-expand ((not a b) 1) (else 2))
       ),

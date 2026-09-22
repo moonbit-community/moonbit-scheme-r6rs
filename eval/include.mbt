@@ -7,8 +7,8 @@ let include_registry : Ref[Map[String, String]] = Ref({})
 /// # Example
 /// ```mbt check
 /// test "include registry" {
-///   register_include_source("mem.scm", "(+ 1 2)")
-///   let value = eval_program("(include \"mem.scm\")")
+///   @eval.register_include_source("mem.scm", "(+ 1 2)")
+///   let value = @eval.eval_program("(include \"mem.scm\")")
 ///   inspect(@runtime.value_to_string(value), content="3")
 /// }
 /// ```

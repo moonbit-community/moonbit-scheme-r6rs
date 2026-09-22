@@ -4,7 +4,10 @@ test "r6rs do: accumulation" {
     #|(do ((k 0 (+ k 1))
     #|     (acc 0 (+ acc k)))
     #|    ((= k 5) acc))
-  inspect(value_to_string(eval_program(program)), content="10")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="10",
+  )
 }
 
 ///|
@@ -15,12 +18,18 @@ test "r6rs do: default step and commands" {
     #|       (y 5))
     #|      ((= k 3) (list x y))
     #|    (set! x (+ x 2))))
-  inspect(value_to_string(eval_program(program)), content="(6 5)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(6 5)",
+  )
 }
 
 ///|
 test "r6rs do: no bindings" {
   let program =
     #|(do () ((> 1 0) 42))
-  inspect(value_to_string(eval_program(program)), content="42")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="42",
+  )
 }

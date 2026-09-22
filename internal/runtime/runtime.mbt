@@ -5,7 +5,7 @@ priv struct Counter {
 
 ///|
 fn Counter::new() -> Counter {
-  { cell: Ref(0) }
+  { cell: Ref(0), }
 }
 
 ///|
@@ -76,8 +76,8 @@ let record_type_id_registry : Ref[Map[Int, @core.RecordTypeDescriptor]] = Ref({}
 /// # Example
 /// ```mbt check
 /// test "gensym prefix" {
-///   let a = gensym("x")
-///   let b = gensym("x")
+///   let a = @runtime.gensym("x")
+///   let b = @runtime.gensym("x")
 ///   inspect(a != b, content="true")
 ///   guard a is [.. "x__gs", .. _rest] else { fail("expected gensym prefix") }
 /// }
@@ -309,9 +309,9 @@ pub fn enum_set_member_by_name(set : @core.EnumSet, name : String) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "enum set from names" {
-///   let set = enum_set_from_names(["a", "b"], ["b"])
-///   inspect(enum_set_member_by_name(set, "b"), content="true")
-///   inspect(enum_set_member_by_name(set, "a"), content="false")
+///   let set = @runtime.enum_set_from_names(["a", "b"], ["b"])
+///   inspect(@runtime.enum_set_member_by_name(set, "b"), content="true")
+///   inspect(@runtime.enum_set_member_by_name(set, "a"), content="false")
 /// }
 /// ```
 pub fn enum_set_from_names(
@@ -417,10 +417,17 @@ pub fn is_procedure_value(value : @core.Value) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "record type ancestry" {
-///   let base = make_record_type("base", None, false, false, None, [])
-///   let child = make_record_type("child", Some(base), false, false, None, [])
-///   inspect(record_type_is_a(child, base), content="true")
-///   inspect(record_type_is_a(base, child), content="false")
+///   let base = @runtime.make_record_type("base", None, false, false, None, [])
+///   let child = @runtime.make_record_type(
+///     "child",
+///     Some(base),
+///     false,
+///     false,
+///     None,
+///     [],
+///   )
+///   inspect(@runtime.record_type_is_a(child, base), content="true")
+///   inspect(@runtime.record_type_is_a(base, child), content="false")
 /// }
 /// ```
 pub fn record_type_is_a(
@@ -458,9 +465,9 @@ pub fn lookup_library(name : String) -> Map[String, @core.Binding]? {
 /// # Example
 /// ```mbt check
 /// test "output string port" {
-///   let port = new_output_string_port()
-///   port_write(port, "hi")
-///   inspect(port_get_output_string(port), content="hi")
+///   let port = @runtime.new_output_string_port()
+///   @runtime.port_write(port, "hi")
+///   inspect(@runtime.port_get_output_string(port), content="hi")
 /// }
 /// ```
 pub fn new_output_string_port() -> @core.Port {
@@ -488,9 +495,9 @@ pub fn set_current_output_port(port : @core.Port) -> Unit {
 /// # Example
 /// ```mbt check
 /// test "port_write" {
-///   let port = new_output_string_port()
-///   port_write(port, "ok")
-///   inspect(port_get_output_string(port), content="ok")
+///   let port = @runtime.new_output_string_port()
+///   @runtime.port_write(port, "ok")
+///   inspect(@runtime.port_get_output_string(port), content="ok")
 /// }
 /// ```
 pub fn port_write(port : @core.Port, text : String) -> Unit {
@@ -505,8 +512,8 @@ pub fn port_write(port : @core.Port, text : String) -> Unit {
 /// # Example
 /// ```mbt check
 /// test "port_get_output_string empty" {
-///   let port = new_output_string_port()
-///   inspect(port_get_output_string(port), content="")
+///   let port = @runtime.new_output_string_port()
+///   inspect(@runtime.port_get_output_string(port), content="")
 /// }
 /// ```
 pub fn port_get_output_string(port : @core.Port) -> String {
@@ -521,9 +528,9 @@ pub fn port_get_output_string(port : @core.Port) -> String {
 /// # Example
 /// ```mbt check
 /// test "datum_unlabel unwraps label" {
-///   let cell = Ref(Datum::Int(1))
-///   let labeled = Datum::Label(1, cell)
-///   match datum_unlabel(labeled) {
+///   let cell = Ref(@runtime.Datum::Int(1))
+///   let labeled = @runtime.Datum::Label(1, cell)
+///   match @runtime.datum_unlabel(labeled) {
 ///     Int(1) => ()
 ///     _ => fail("expected int datum")
 ///   }
@@ -563,12 +570,12 @@ fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
 /// ```mbt check
 /// test "symbol_name" {
 ///   debug_inspect(
-///     symbol_name(Symbol("x")),
+///     @runtime.symbol_name(Symbol("x")),
 ///     content=(
 ///       #|Some("x")
 ///     ),
 ///   )
-///   debug_inspect(symbol_name(Int(1)), content="None")
+///   debug_inspect(@runtime.symbol_name(Int(1)), content="None")
 /// }
 /// ```
 pub fn symbol_name(expr : @core.Datum) -> String? {

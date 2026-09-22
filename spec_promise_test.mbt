@@ -1,8 +1,8 @@
 ///|
 test "r6rs promises" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(force (delay (+ 1 2)))
         ),
@@ -11,8 +11,8 @@ test "r6rs promises" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((p (delay 1)))
           #|  (promise? p))
@@ -22,8 +22,8 @@ test "r6rs promises" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(promise? 1)
         ),
@@ -37,10 +37,13 @@ test "r6rs promises" {
     #|    (force p)
     #|    (force p)
     #|    count))
-  inspect(value_to_string(eval_program(memo_prog)), content="1")
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(memo_prog)),
+    content="1",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(force (make-promise (lambda () 42)))
         ),

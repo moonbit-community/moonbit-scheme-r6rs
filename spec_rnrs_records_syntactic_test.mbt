@@ -9,20 +9,23 @@ test "r6rs libraries: records syntactic" {
     #|  (y point-y))
     #|(let ((p (make-point 1 2)))
     #|  (list (point? p) (point-x p) (point-y p)))
-  inspect(value_to_string(eval_program(program)), content="(#t 1 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t 1 2)",
+  )
 }
 
 ///|
 test "r6rs libraries: records syntactic errors" {
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin (import (rnrs records syntactic)) (define-record-type))
       ),
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin
         #|  (import (rnrs records syntactic))

@@ -13,7 +13,7 @@ test "r6rs libraries: fixnums predicates and limits" {
     #|        (> hi 0)
     #|        (not (fixnum? (string->number "1000000000000000000000000000000000000000")))))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t #t)",
   )
 }
@@ -33,7 +33,7 @@ test "r6rs libraries: fixnum comparisons and predicates" {
     #|      (fxodd? 3)
     #|      (fxeven? 4))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t #t #t #t #t)",
   )
 }
@@ -48,7 +48,10 @@ test "r6rs libraries: fixnum arithmetic" {
     #|      (fx* 2 3 4)
     #|      (fxmin 5 2 9)
     #|      (fxmax 5 2 9))
-  inspect(value_to_string(eval_program(program)), content="(6 5 -5 24 2 9)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(6 5 -5 24 2 9)",
+  )
 }
 
 ///|
@@ -61,7 +64,10 @@ test "r6rs libraries: fixnum division" {
     #|      (fxmod -7 3)
     #|      (fxdiv0 -7 3)
     #|      (fxmod0 -7 3))
-  inspect(value_to_string(eval_program(program)), content="(2 1 -3 2 -2 -1)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 1 -3 2 -2 -1)",
+  )
 }
 
 ///|
@@ -78,7 +84,7 @@ test "r6rs libraries: fixnum carry ops" {
     #|        (lambda () (fx-/carry (least-fixnum) 1 0))
     #|        (lambda (s c) (list (= s (greatest-fixnum)) (= c -1)))))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((3 0) (2 0) (6 0) (#t #t) (#t #t))",
   )
 }
@@ -92,7 +98,10 @@ test "r6rs libraries: fixnum bitwise ops" {
     #|      (fxxor 12 10)
     #|      (fxnot 0)
     #|      (fxif 12 10 5))
-  inspect(value_to_string(eval_program(program)), content="(8 14 6 -1 9)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(8 14 6 -1 9)",
+  )
 }
 
 ///|
@@ -112,7 +121,7 @@ test "r6rs libraries: fixnum bit fields and shifts" {
     #|      (fxarithmetic-shift-left 1 2)
     #|      (fxarithmetic-shift-right -8 1))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(3 4 3 #t 9 15 10 3 3 8 4 -4)",
   )
 }
@@ -120,7 +129,7 @@ test "r6rs libraries: fixnum bit fields and shifts" {
 ///|
 test "r6rs libraries: fixnum errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (rnrs arithmetic fixnums))
         #|(fx+ (greatest-fixnum) 1)
@@ -132,7 +141,7 @@ test "r6rs libraries: fixnum errors" {
     _ => fail("expected fixnum overflow")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (rnrs arithmetic fixnums))
         #|(fx+ 1/2 1)
@@ -158,10 +167,12 @@ test "r6rs libraries: fixnum arity and edge cases" {
     #|      (fxdiv 6 3)
     #|      (fxmod 6 3))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t 2 0)",
   )
-  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
+  let expect_err = (expr : String) => {
+    expect_error(() => @scheme-r6rs.eval_program(expr))
+  }
   expect_err("(begin (import (rnrs arithmetic fixnums)) (fixnum? 1 2))")
   expect_err("(begin (import (rnrs arithmetic fixnums)) (fixnum-width 1))")
   expect_err("(begin (import (rnrs arithmetic fixnums)) (least-fixnum 1))")

@@ -8,7 +8,10 @@ test "r6rs libraries: control when/unless" {
     #|(define y 0)
     #|(unless #f (set! y 5))
     #|(list x y)
-  inspect(value_to_string(eval_program(program)), content="(2 5)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 5)",
+  )
 }
 
 ///|
@@ -16,5 +19,8 @@ test "r6rs libraries: control syntax keyword exports" {
   let program =
     #|(import (only (rnrs control) case-lambda do))
     #|#t
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }

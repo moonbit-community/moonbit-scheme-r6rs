@@ -1,8 +1,8 @@
 ///|
 test "r6rs easy: numbers and booleans" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(+ 1 2 3)
         ),
@@ -11,8 +11,8 @@ test "r6rs easy: numbers and booleans" {
     content="6",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(+)
         ),
@@ -21,8 +21,8 @@ test "r6rs easy: numbers and booleans" {
     content="0",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(*)
         ),
@@ -31,8 +31,8 @@ test "r6rs easy: numbers and booleans" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(- 10)
         ),
@@ -41,8 +41,8 @@ test "r6rs easy: numbers and booleans" {
     content="-10",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(- 10 3 2)
         ),
@@ -51,8 +51,8 @@ test "r6rs easy: numbers and booleans" {
     content="5",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(= 2 2 2)
         ),
@@ -61,8 +61,8 @@ test "r6rs easy: numbers and booleans" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(< 1 2 3)
         ),
@@ -71,8 +71,8 @@ test "r6rs easy: numbers and booleans" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(< 1 2 2)
         ),
@@ -81,8 +81,8 @@ test "r6rs easy: numbers and booleans" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|#t
         ),
@@ -91,8 +91,8 @@ test "r6rs easy: numbers and booleans" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|#f
         ),
@@ -105,8 +105,8 @@ test "r6rs easy: numbers and booleans" {
 ///|
 test "r6rs easy: lists and quote" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|'abc
         ),
@@ -115,8 +115,8 @@ test "r6rs easy: lists and quote" {
     content="abc",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|'()
         ),
@@ -125,8 +125,8 @@ test "r6rs easy: lists and quote" {
     content="()",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|'(1 2 3)
         ),
@@ -135,8 +135,8 @@ test "r6rs easy: lists and quote" {
     content="(1 2 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cons 1 2)
         ),
@@ -145,8 +145,8 @@ test "r6rs easy: lists and quote" {
     content="(1 . 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cons 1 (cons 2 ()))
         ),
@@ -155,8 +155,8 @@ test "r6rs easy: lists and quote" {
     content="(1 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(car '(9 8))
         ),
@@ -165,8 +165,8 @@ test "r6rs easy: lists and quote" {
     content="9",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cdr '(9 8))
         ),
@@ -175,8 +175,8 @@ test "r6rs easy: lists and quote" {
     content="(8)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(null? ())
         ),
@@ -185,8 +185,8 @@ test "r6rs easy: lists and quote" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(pair? '(1 2))
         ),
@@ -195,8 +195,8 @@ test "r6rs easy: lists and quote" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list 1 2 3)
         ),
@@ -209,8 +209,8 @@ test "r6rs easy: lists and quote" {
 ///|
 test "r6rs easy: strings" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|"hi"
         ),
@@ -219,8 +219,8 @@ test "r6rs easy: strings" {
     content="\"hi\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(begin (define s "ok") s)
         ),

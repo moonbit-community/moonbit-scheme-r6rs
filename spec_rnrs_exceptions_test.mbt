@@ -5,7 +5,10 @@ test "r6rs libraries: exceptions" {
     #|(with-exception-handler
     #|  (lambda (e) 99)
     #|  (lambda () (raise-continuable 1)))
-  inspect(value_to_string(eval_program(program)), content="99")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="99",
+  )
 }
 
 ///|
@@ -13,7 +16,10 @@ test "r6rs libraries: exceptions guard export" {
   let program =
     #|(import (only (rnrs exceptions) guard))
     #|#t
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
@@ -25,5 +31,8 @@ test "r6rs libraries: syntax-violation optional subform" {
     #|                   (syntax-violation-subform ex)))
     #|            (else 'bad))
     #|  (syntax-violation 'who "msg" 'form))
-  inspect(value_to_string(eval_program(program)), content="(form #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(form #f)",
+  )
 }

@@ -41,26 +41,26 @@ printf '(+ 10 32)\n' | moon -C cmd run main -- -
 ```mbt check
 ///|
 test "eval program" {
-  let value = eval_program("(+ 1 2)")
-  inspect(value_to_string(value), content="3")
-  let list_value = eval_program("(list 1 2 3)")
-  inspect(value_to_string(list_value), content="(1 2 3)")
-  let forms = parse_program("(+ 1 2)")
+  let value = @scheme-r6rs.eval_program("(+ 1 2)")
+  inspect(@scheme-r6rs.value_to_string(value), content="3")
+  let list_value = @scheme-r6rs.eval_program("(list 1 2 3)")
+  inspect(@scheme-r6rs.value_to_string(list_value), content="(1 2 3)")
+  let forms = @scheme-r6rs.parse_program("(+ 1 2)")
   inspect(forms.length(), content="1")
-  let values = eval_program_all("(define x 1) (+ x 2)")
+  let values = @scheme-r6rs.eval_program_all("(define x 1) (+ x 2)")
   inspect(values.length(), content="2")
-  register_include_source("mem.scm", "(+ 2 3)")
-  let included = eval_program("(include \"mem.scm\")")
-  inspect(value_to_string(included), content="5")
-  match parse_number_token("10") {
+  @scheme-r6rs.register_include_source("mem.scm", "(+ 2 3)")
+  let included = @scheme-r6rs.eval_program("(include \"mem.scm\")")
+  inspect(@scheme-r6rs.value_to_string(included), content="5")
+  match @scheme-r6rs.parse_number_token("10") {
     Some(Int(10)) => ()
     _ => fail("expected int")
   }
-  match parse_number_token("ff", radix=16) {
+  match @scheme-r6rs.parse_number_token("ff", radix=16) {
     Some(Int(255)) => ()
     _ => fail("expected 255")
   }
-  try eval_program("(car 1)") catch {
+  try @scheme-r6rs.eval_program("(car 1)") catch {
     _ => ()
   } noraise {
     _ => fail("expected car on a non-pair to raise")

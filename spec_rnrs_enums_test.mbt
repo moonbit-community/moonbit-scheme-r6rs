@@ -4,7 +4,10 @@ test "r6rs libraries: enums" {
     #|(import (rnrs enums))
     #|(let ((colors (make-enumeration '(red green))))
     #|  (enum-set->list colors))
-  inspect(value_to_string(eval_program(program)), content="(red green)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(red green)",
+  )
 }
 
 ///|
@@ -13,5 +16,8 @@ test "r6rs libraries: enums define-enumeration export" {
     #|(import (rnrs enums))
     #|(define-enumeration color (red green) color-set)
     #|(enum-set->list (color-set '(red)))
-  inspect(value_to_string(eval_program(program)), content="(red)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(red)",
+  )
 }

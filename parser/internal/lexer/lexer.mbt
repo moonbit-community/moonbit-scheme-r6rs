@@ -12,13 +12,13 @@ pub struct Reader {
 /// # Example
 /// ```mbt check
 /// test "Reader::new basics" {
-///   let r = Reader::new("foo bar")
+///   let r = @lexer.Reader::new("foo bar")
 ///   inspect(r.read_token(), content="foo")
 /// }
 /// ```
 pub fn Reader::new(src : String) -> Reader {
   let chars = src.to_array()
-  { chars, pos: 0, fold_case: false, labels: Map::from_array([]) }
+  { chars, pos: 0, fold_case: false, labels: Map::from_array([]), }
 }
 
 ///|
@@ -27,7 +27,7 @@ pub fn Reader::new(src : String) -> Reader {
 /// # Example
 /// ```mbt check
 /// test "peek does not consume" {
-///   let r = Reader::new("ab")
+///   let r = @lexer.Reader::new("ab")
 ///   guard r.peek() is Some('a') else { fail("expected a") }
 ///   guard r.peek() is Some('a') else { fail("expected a again") }
 /// }
@@ -48,7 +48,7 @@ fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
 /// # Example
 /// ```mbt check
 /// test "peek_next" {
-///   let r = Reader::new("ab")
+///   let r = @lexer.Reader::new("ab")
 ///   guard r.peek_next() is Some('b') else { fail("expected b") }
 ///   guard r.peek() is Some('a') else { fail("expected a") }
 /// }
@@ -81,8 +81,8 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[@core.Datum]? {
 /// # Example
 /// ```mbt check
 /// test "label set/get" {
-///   let r = Reader::new("x")
-///   let cell = Ref(Datum::Nil)
+///   let r = @lexer.Reader::new("x")
+///   let cell = Ref(@lexer.Datum::Nil)
 ///   r.label_set(1, cell)
 ///   guard r.label_get(1) is Some(_) else { fail("expected label") }
 ///   guard r.label_get(2) is None else { fail("expected missing label") }
@@ -102,7 +102,7 @@ pub fn Reader::label_set(
 /// # Example
 /// ```mbt check
 /// test "next advances reader" {
-///   let r = Reader::new("ab")
+///   let r = @lexer.Reader::new("ab")
 ///   guard r.next() is Some('a') else { fail("expected a") }
 ///   guard r.next() is Some('b') else { fail("expected b") }
 ///   guard r.next() is None else { fail("expected eof") }
@@ -139,7 +139,7 @@ fn is_delim(ch : Char) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "skip whitespace and comments" {
-///   let r = Reader::new("  ; hi\nfoo")
+///   let r = @lexer.Reader::new("  ; hi\nfoo")
 ///   r.skip_ws_and_comments()
 ///   guard r.peek() is Some('f') else { fail("expected f") }
 /// }
@@ -230,7 +230,7 @@ fn Reader::skip_block_comment(self : Reader) -> Unit raise @core.ParseError {
 /// # Example
 /// ```mbt check
 /// test "ellipsis start" {
-///   let r = Reader::new("...")
+///   let r = @lexer.Reader::new("...")
 ///   inspect(r.is_ellipsis_start(), content="true")
 /// }
 /// ```
@@ -251,7 +251,7 @@ pub fn Reader::is_ellipsis_start(self : Reader) -> Bool {
 /// # Example
 /// ```mbt check
 /// test "read token" {
-///   let r = Reader::new("alpha beta")
+///   let r = @lexer.Reader::new("alpha beta")
 ///   inspect(r.read_token(), content="alpha")
 /// }
 /// ```
@@ -355,7 +355,7 @@ fn digit_value(ch : Char) -> Int? {
 /// # Example
 /// ```mbt check
 /// test "read string literal" {
-///   let r = Reader::new("\"hi\"")
+///   let r = @lexer.Reader::new("\"hi\"")
 ///   ignore(r.next()) // consume opening quote
 ///   inspect(r.read_string(), content="hi")
 /// }

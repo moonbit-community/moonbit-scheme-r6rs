@@ -26,21 +26,21 @@ fn[T] expect_error(f : () -> T raise @core.ParseError) -> Unit raise {
 
 ///|
 test "parse basics" {
-  let forms = parse_program("(+ 1 2)")
+  let forms = @parser.parse_program("(+ 1 2)")
   inspect(forms.length(), content="1")
-  match parse_number_token("10") {
+  match @parser.parse_number_token("10") {
     Some(_) => ()
     None => fail("expected number")
   }
-  match parse_number_token("-10") {
+  match @parser.parse_number_token("-10") {
     Some(Int(-10)) => ()
     _ => fail("expected -10")
   }
-  match parse_number_token("3/4") {
+  match @parser.parse_number_token("3/4") {
     Some(Rat(3, 4)) => ()
     _ => fail("expected 3/4")
   }
-  match parse_number_token("1+2i") {
+  match @parser.parse_number_token("1+2i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(1), Int(2)) => ()
@@ -48,43 +48,43 @@ test "parse basics" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("1e2") {
+  match @parser.parse_number_token("1e2") {
     Some(Float(f)) => inspect(f == 100.0, content="true")
     _ => fail("expected 100.0")
   }
-  match parse_number_token("1.5") {
+  match @parser.parse_number_token("1.5") {
     Some(Float(f)) => inspect(f == 1.5, content="true")
     _ => fail("expected 1.5")
   }
-  match parse_number_token("ff", radix=16) {
+  match @parser.parse_number_token("ff", radix=16) {
     Some(Int(255)) => ()
     _ => fail("expected 255")
   }
-  match parse_number_token("not-a-number") {
+  match @parser.parse_number_token("not-a-number") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_program("#\\x41 #\\space") {
+  match @parser.parse_program("#\\x41 #\\space") {
     [Char('A'), Char(' '), ..] => ()
     _ => fail("expected char literals")
   }
-  match parse_program("#t #f") {
+  match @parser.parse_program("#t #f") {
     [Bool(true), Bool(false), ..] => ()
     _ => fail("expected booleans")
   }
-  match parse_program("\"hi\"") {
+  match @parser.parse_program("\"hi\"") {
     [String(text), ..] => inspect(text.val, content="hi")
     _ => fail("expected string")
   }
-  match parse_program("#vu8(1 2)") {
+  match @parser.parse_program("#vu8(1 2)") {
     [ByteVector(items), ..] => inspect(items.length(), content="2")
     _ => fail("expected bytevector")
   }
-  match parse_program("#(1 2)") {
+  match @parser.parse_program("#(1 2)") {
     [Vector(items), ..] => inspect(items.length(), content="2")
     _ => fail("expected vector")
   }
-  match parse_program("(a . b)") {
+  match @parser.parse_program("(a . b)") {
     [Pair(car, cdr), ..] =>
       match (car.val, cdr.val) {
         (Symbol("a"), Symbol("b")) => ()
@@ -92,7 +92,7 @@ test "parse basics" {
       }
     _ => fail("expected dotted pair")
   }
-  match parse_program("(a ;comment\n b)") {
+  match @parser.parse_program("(a ;comment\n b)") {
     [Pair(car, cdr), ..] =>
       match (car.val, cdr.val) {
         (Symbol("a"), Pair(next, tail)) =>
@@ -104,7 +104,7 @@ test "parse basics" {
       }
     _ => fail("expected list")
   }
-  match parse_program("ABC", fold_case=true) {
+  match @parser.parse_program("ABC", fold_case=true) {
     [Symbol("abc"), ..] => ()
     _ => fail("expected folded symbol")
   }
@@ -112,7 +112,7 @@ test "parse basics" {
 
 ///|
 test "parse quote" {
-  match parse_program("'a") {
+  match @parser.parse_program("'a") {
     [Pair(car, cdr), ..] =>
       match (car.val, cdr.val) {
         (Symbol("quote"), Pair(expr, tail)) =>
@@ -128,7 +128,7 @@ test "parse quote" {
 
 ///|
 test "parse labels" {
-  let forms = parse_program("#1=(a) #1#")
+  let forms = @parser.parse_program("#1=(a) #1#")
   match forms {
     [Label(label1, cell1), Label(label2, cell2), ..] => {
       inspect(label1 == label2, content="true")
@@ -144,7 +144,7 @@ test "parse labels" {
 
 ///|
 test "parse block comment" {
-  match parse_program("#| comment |# 1") {
+  match @parser.parse_program("#| comment |# 1") {
     [Int(1), ..] => ()
     _ => fail("expected int after comment")
   }
@@ -152,92 +152,92 @@ test "parse block comment" {
 
 ///|
 test "parse errors" {
-  expect_error(() => parse_program("#| unterminated"))
+  expect_error(() => @parser.parse_program("#| unterminated"))
 }
 
 ///|
 test "parse number edge cases" {
-  match parse_number_token("#x10") {
+  match @parser.parse_number_token("#x10") {
     Some(Int(16)) => ()
     _ => fail("expected 16")
   }
-  match parse_number_token("#o10") {
+  match @parser.parse_number_token("#o10") {
     Some(Int(8)) => ()
     _ => fail("expected 8")
   }
-  match parse_number_token("#d10") {
+  match @parser.parse_number_token("#d10") {
     Some(Int(10)) => ()
     _ => fail("expected 10")
   }
-  match parse_number_token("#x") {
+  match @parser.parse_number_token("#x") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#b#x10") {
+  match @parser.parse_number_token("#b#x10") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#e#e1") {
+  match @parser.parse_number_token("#e#e1") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#i#e1") {
+  match @parser.parse_number_token("#i#e1") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#q10") {
+  match @parser.parse_number_token("#q10") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#b101", radix=10) {
+  match @parser.parse_number_token("#b101", radix=10) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#xA/B") {
+  match @parser.parse_number_token("#xA/B") {
     Some(Rat(10, 11)) => ()
     _ => fail("expected hex rational")
   }
-  match parse_number_token("1.5", radix=16) {
+  match @parser.parse_number_token("1.5", radix=16) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1/2", radix=16) {
+  match @parser.parse_number_token("1/2", radix=16) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("0/5") {
+  match @parser.parse_number_token("0/5") {
     Some(Int(0)) => ()
     _ => fail("expected 0/5 -> 0")
   }
-  match parse_number_token("4/2") {
+  match @parser.parse_number_token("4/2") {
     Some(Int(2)) => ()
     _ => fail("expected 4/2 -> 2")
   }
-  match parse_number_token("1/0") {
+  match @parser.parse_number_token("1/0") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1/-2") {
+  match @parser.parse_number_token("1/-2") {
     Some(Rat(-1, 2)) => ()
     _ => fail("expected -1/2")
   }
-  match parse_number_token("1e") {
+  match @parser.parse_number_token("1e") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1.2.3") {
+  match @parser.parse_number_token("1.2.3") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#i10") {
+  match @parser.parse_number_token("#i10") {
     Some(Float(f)) if f == 10.0 => ()
     _ => fail("expected inexact 10.0")
   }
-  match parse_number_token("#i1/2") {
+  match @parser.parse_number_token("#i1/2") {
     Some(Float(f)) if f == 0.5 => ()
     _ => fail("expected inexact 0.5")
   }
-  match parse_number_token("#ii") {
+  match @parser.parse_number_token("#ii") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Float(f)) if f == 1.0 => ()
@@ -245,7 +245,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#i+i") {
+  match @parser.parse_number_token("#i+i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Float(f)) if f == 1.0 => ()
@@ -253,7 +253,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#i-i") {
+  match @parser.parse_number_token("#i-i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Float(f)) if f == -1.0 => ()
@@ -261,47 +261,47 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#o10", radix=10) {
+  match @parser.parse_number_token("#o10", radix=10) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1/2", radix=10) {
+  match @parser.parse_number_token("1/2", radix=10) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1", radix=1) {
+  match @parser.parse_number_token("1", radix=1) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1000000000000000000000000000000/2") {
+  match @parser.parse_number_token("1000000000000000000000000000000/2") {
     Some(BigInt(_)) => ()
     _ => fail("expected big int")
   }
-  match parse_number_token("0/1000000000000000000000000000000") {
+  match @parser.parse_number_token("0/1000000000000000000000000000000") {
     Some(Int(0)) => ()
     _ => fail("expected 0")
   }
-  match parse_number_token("1000000000000000000000000000000/0") {
+  match @parser.parse_number_token("1000000000000000000000000000000/0") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1@@2") {
+  match @parser.parse_number_token("1@@2") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("@1") {
+  match @parser.parse_number_token("@1") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1@") {
+  match @parser.parse_number_token("1@") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1@0") {
+  match @parser.parse_number_token("1@0") {
     Some(Float(f)) if f == 1.0 => ()
     _ => fail("expected 1.0")
   }
-  match parse_number_token("i") {
+  match @parser.parse_number_token("i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Int(1)) => ()
@@ -309,7 +309,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("+i") {
+  match @parser.parse_number_token("+i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Int(1)) => ()
@@ -317,7 +317,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("-i") {
+  match @parser.parse_number_token("-i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Int(-1)) => ()
@@ -325,35 +325,35 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("1e-2") {
+  match @parser.parse_number_token("1e-2") {
     Some(Float(f)) => inspect(f == 0.01, content="true")
     _ => fail("expected 0.01")
   }
-  match parse_number_token("#e1e-2") {
+  match @parser.parse_number_token("#e1e-2") {
     Some(Rat(1, 100)) => ()
     _ => fail("expected 1/100")
   }
-  match parse_number_token("#e1.2e-3") {
+  match @parser.parse_number_token("#e1.2e-3") {
     Some(_) => ()
     _ => fail("expected exact decimal")
   }
-  match parse_number_token("#e1.2.3") {
+  match @parser.parse_number_token("#e1.2.3") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#e.") {
+  match @parser.parse_number_token("#e.") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#i#x10") {
+  match @parser.parse_number_token("#i#x10") {
     Some(Float(f)) if f == 16.0 => ()
     _ => fail("expected 16.0")
   }
-  match parse_number_token("#d10", radix=10) {
+  match @parser.parse_number_token("#d10", radix=10) {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1+i") {
+  match @parser.parse_number_token("1+i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(1), Int(1)) => ()
@@ -361,7 +361,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("1-i") {
+  match @parser.parse_number_token("1-i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(1), Int(-1)) => ()
@@ -369,7 +369,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("2i") {
+  match @parser.parse_number_token("2i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(0), Int(2)) => ()
@@ -377,26 +377,26 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#i1000000000000") {
+  match @parser.parse_number_token("#i1000000000000") {
     Some(Float(f)) if f == 1000000000000.0 => ()
     _ => fail("expected inexact big int")
   }
-  match parse_number_token("#i1000000000000/1000000000001") {
+  match @parser.parse_number_token("#i1000000000000/1000000000001") {
     Some(Float(_)) => ()
     _ => fail("expected inexact big rat")
   }
   match
-    parse_number_token(
+    @parser.parse_number_token(
       "1000000000000000000000000000000/1000000000000000000000000000000",
     ) {
     Some(Int(1)) => ()
     _ => fail("expected 1")
   }
-  match parse_number_token("1000000000000000000000000000000/-3") {
+  match @parser.parse_number_token("1000000000000000000000000000000/-3") {
     Some(BigRat(_, _)) => ()
     _ => fail("expected big rat")
   }
-  match parse_number_token("1+1000000000000i") {
+  match @parser.parse_number_token("1+1000000000000i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(1), BigInt(_)) => ()
@@ -404,15 +404,15 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#x/") {
+  match @parser.parse_number_token("#x/") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("#xA/Z") {
+  match @parser.parse_number_token("#xA/Z") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1+1/2i") {
+  match @parser.parse_number_token("1+1/2i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Int(1), Rat(1, 2)) => ()
@@ -420,7 +420,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#i1+i") {
+  match @parser.parse_number_token("#i1+i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Float(r), Float(i)) if r == 1.0 && i == 1.0 => ()
@@ -428,7 +428,7 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("#i1-i") {
+  match @parser.parse_number_token("#i1-i") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Float(r), Float(i)) if r == 1.0 && i == -1.0 => ()
@@ -436,15 +436,15 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("a+1i") {
+  match @parser.parse_number_token("a+1i") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1+ai") {
+  match @parser.parse_number_token("1+ai") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1@2") {
+  match @parser.parse_number_token("1@2") {
     Some(Complex(real, imag)) =>
       match (real.val, imag.val) {
         (Float(_), Float(_)) => ()
@@ -452,11 +452,11 @@ test "parse number edge cases" {
       }
     _ => fail("expected complex")
   }
-  match parse_number_token("i@2") {
+  match @parser.parse_number_token("i@2") {
     None => ()
     _ => fail("expected None")
   }
-  match parse_number_token("1@i") {
+  match @parser.parse_number_token("1@i") {
     None => ()
     _ => fail("expected None")
   }
@@ -464,7 +464,7 @@ test "parse number edge cases" {
 
 ///|
 test "parse label edge cases" {
-  match parse_program("#12=(a) #12#") {
+  match @parser.parse_program("#12=(a) #12#") {
     [Label(label1, cell1), Label(label2, cell2), ..] => {
       inspect(label1 == label2, content="true")
       cell1.val = Symbol("y")
@@ -475,11 +475,11 @@ test "parse label edge cases" {
     }
     _ => fail("expected labels")
   }
-  match parse_program("#1a#") {
+  match @parser.parse_program("#1a#") {
     [Symbol("#1a#"), ..] => ()
     _ => fail("expected symbol")
   }
-  match parse_program("#1") {
+  match @parser.parse_program("#1") {
     [Symbol("#1"), ..] => ()
     _ => fail("expected symbol")
   }
@@ -487,15 +487,15 @@ test "parse label edge cases" {
 
 ///|
 test "parse char edge cases" {
-  match parse_program("#\\linefeed #\\backspace #\\tab") {
+  match @parser.parse_program("#\\linefeed #\\backspace #\\tab") {
     [Char('\n'), Char('\u{8}'), Char('\t'), ..] => ()
     _ => fail("expected named chars")
   }
-  match parse_program("#\\unknown #\\xZZ #\\") {
+  match @parser.parse_program("#\\unknown #\\xZZ #\\") {
     [Symbol("#\\unknown"), Symbol("#\\xZZ"), Symbol("#\\"), ..] => ()
     _ => fail("expected invalid char tokens as symbols")
   }
-  match parse_program("#1x") {
+  match @parser.parse_program("#1x") {
     [Symbol("#1x"), ..] => ()
     _ => fail("expected invalid label token as symbol")
   }
@@ -503,15 +503,15 @@ test "parse char edge cases" {
 
 ///|
 test "parse structural errors" {
-  expect_error(() => parse_program("("))
-  expect_error(() => parse_program("(.)"))
-  expect_error(() => parse_program("(1 . 2 3)"))
-  expect_error(() => parse_program("#(1 . 2)"))
-  expect_error(() => parse_program("#vu8(256)"))
-  expect_error(() => parse_program("#vu8(a)"))
-  expect_error(() => parse_program(")"))
-  expect_error(() => parse_program("#1= #1= 1"))
-  expect_error(() => parse_program("#1#"))
-  expect_error(() => parse_program("#;"))
+  expect_error(() => @parser.parse_program("("))
+  expect_error(() => @parser.parse_program("(.)"))
+  expect_error(() => @parser.parse_program("(1 . 2 3)"))
+  expect_error(() => @parser.parse_program("#(1 . 2)"))
+  expect_error(() => @parser.parse_program("#vu8(256)"))
+  expect_error(() => @parser.parse_program("#vu8(a)"))
+  expect_error(() => @parser.parse_program(")"))
+  expect_error(() => @parser.parse_program("#1= #1= 1"))
+  expect_error(() => @parser.parse_program("#1#"))
+  expect_error(() => @parser.parse_program("#;"))
 }
 ```

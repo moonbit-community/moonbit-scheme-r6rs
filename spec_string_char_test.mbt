@@ -1,8 +1,8 @@
 ///|
 test "r6rs char and string primitives" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|#\a
         ),
@@ -11,8 +11,8 @@ test "r6rs char and string primitives" {
     content="#\\a",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|#\space
         ),
@@ -21,8 +21,8 @@ test "r6rs char and string primitives" {
     content="#\\space",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|#\newline
         ),
@@ -31,8 +31,8 @@ test "r6rs char and string primitives" {
     content="#\\newline",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char? #\a)
         ),
@@ -41,8 +41,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char? "a")
         ),
@@ -51,8 +51,8 @@ test "r6rs char and string primitives" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string? "hi")
         ),
@@ -61,8 +61,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string #\a #\b)
         ),
@@ -71,8 +71,8 @@ test "r6rs char and string primitives" {
     content="\"ab\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(make-string 3 #\x)
         ),
@@ -81,8 +81,8 @@ test "r6rs char and string primitives" {
     content="\"xxx\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(make-string 0)
         ),
@@ -94,26 +94,38 @@ test "r6rs char and string primitives" {
     #|(let ((s (string #\a #\b #\c)))
     #|  (string-set! s 1 #\x)
     #|  s)
-  inspect(value_to_string(eval_program(set_program)), content="\"axc\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(set_program)),
+    content="\"axc\"",
+  )
   let fill_program =
     #|(let ((s (string #\a #\b #\c #\d)))
     #|  (string-fill! s #\x 1 3)
     #|  s)
-  inspect(value_to_string(eval_program(fill_program)), content="\"axxd\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(fill_program)),
+    content="\"axxd\"",
+  )
   let copy_program =
     #|(let ((to (string #\a #\b #\c #\d))
     #|      (from (string #\x #\y #\z)))
     #|  (string-copy! to 1 from 0 2)
     #|  to)
-  inspect(value_to_string(eval_program(copy_program)), content="\"axyd\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(copy_program)),
+    content="\"axyd\"",
+  )
   let overlap_program =
     #|(let ((s (string #\a #\b #\c #\d)))
     #|  (string-copy! s 1 s 0 3)
     #|  s)
-  inspect(value_to_string(eval_program(overlap_program)), content="\"aabc\"")
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(overlap_program)),
+    content="\"aabc\"",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-length "hi")
         ),
@@ -122,8 +134,8 @@ test "r6rs char and string primitives" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-append "a" "b" "c")
         ),
@@ -132,8 +144,8 @@ test "r6rs char and string primitives" {
     content="\"abc\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-append)
         ),
@@ -142,8 +154,8 @@ test "r6rs char and string primitives" {
     content="\"\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-ref "hi" 0)
         ),
@@ -152,8 +164,8 @@ test "r6rs char and string primitives" {
     content="#\\h",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-ref "hi" 1)
         ),
@@ -162,8 +174,8 @@ test "r6rs char and string primitives" {
     content="#\\i",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-copy "hi")
         ),
@@ -172,8 +184,8 @@ test "r6rs char and string primitives" {
     content="\"hi\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-copy "hello" 2)
         ),
@@ -182,8 +194,8 @@ test "r6rs char and string primitives" {
     content="\"llo\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-copy "hello" 1 4)
         ),
@@ -192,8 +204,8 @@ test "r6rs char and string primitives" {
     content="\"ell\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(substring "hello" 1 4)
         ),
@@ -202,8 +214,8 @@ test "r6rs char and string primitives" {
     content="\"ell\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string->list "hi")
         ),
@@ -212,8 +224,8 @@ test "r6rs char and string primitives" {
     content="(#\\h #\\i)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string->list "hello" 1)
         ),
@@ -222,8 +234,8 @@ test "r6rs char and string primitives" {
     content="(#\\e #\\l #\\l #\\o)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string->list "hello" 1 4)
         ),
@@ -232,8 +244,8 @@ test "r6rs char and string primitives" {
     content="(#\\e #\\l #\\l)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list->string '(#\h #\i))
         ),
@@ -242,8 +254,8 @@ test "r6rs char and string primitives" {
     content="\"hi\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list->string '())
         ),
@@ -252,8 +264,8 @@ test "r6rs char and string primitives" {
     content="\"\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-map char-upcase "ab")
         ),
@@ -262,8 +274,8 @@ test "r6rs char and string primitives" {
     content="\"AB\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-map char-downcase "AB")
         ),
@@ -275,10 +287,13 @@ test "r6rs char and string primitives" {
     #|(let ((n 0))
     #|  (string-for-each (lambda (ch) (set! n (+ n 1))) "abc")
     #|  n)
-  inspect(value_to_string(eval_program(for_each_program)), content="3")
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(for_each_program)),
+    content="3",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(symbol->string 'hello)
         ),
@@ -287,8 +302,8 @@ test "r6rs char and string primitives" {
     content="\"hello\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string->symbol "hello")
         ),
@@ -297,8 +312,8 @@ test "r6rs char and string primitives" {
     content="hello",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char=? #\a #\a #\a)
         ),
@@ -307,8 +322,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char<? #\a #\b #\c)
         ),
@@ -317,8 +332,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char>? #\c #\b #\a)
         ),
@@ -327,8 +342,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char<=? #\a #\a #\b)
         ),
@@ -337,8 +352,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char>=? #\c #\c #\b)
         ),
@@ -347,8 +362,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-ci=? #\A #\a)
         ),
@@ -357,8 +372,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-ci<? #\A #\b)
         ),
@@ -367,8 +382,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char->integer #\A)
         ),
@@ -377,8 +392,8 @@ test "r6rs char and string primitives" {
     content="65",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(integer->char 97)
         ),
@@ -387,8 +402,8 @@ test "r6rs char and string primitives" {
     content="#\\a",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-alphabetic? #\a)
         ),
@@ -397,8 +412,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-numeric? #\9)
         ),
@@ -407,8 +422,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-whitespace? #\space)
         ),
@@ -417,8 +432,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-upper-case? #\A)
         ),
@@ -427,8 +442,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-lower-case? #\a)
         ),
@@ -437,8 +452,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-upcase #\a)
         ),
@@ -447,8 +462,8 @@ test "r6rs char and string primitives" {
     content="#\\A",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-downcase #\A)
         ),
@@ -457,8 +472,8 @@ test "r6rs char and string primitives" {
     content="#\\a",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-foldcase #\A)
         ),
@@ -467,8 +482,8 @@ test "r6rs char and string primitives" {
     content="#\\a",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-alphabetic? #\x4E2D)
         ),
@@ -477,8 +492,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-numeric? #\x0661)
         ),
@@ -487,8 +502,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-whitespace? #\x00A0)
         ),
@@ -497,8 +512,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-upper-case? #\x00C5)
         ),
@@ -507,8 +522,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-lower-case? #\x00E5)
         ),
@@ -517,8 +532,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char-ci=? #\x00C5 #\x00E5)
         ),
@@ -527,8 +542,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char->integer (char-upcase #\x00E5))
         ),
@@ -537,8 +552,8 @@ test "r6rs char and string primitives" {
     content="197",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char->integer (char-downcase #\x00C5))
         ),
@@ -547,8 +562,8 @@ test "r6rs char and string primitives" {
     content="229",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(char->integer (char-foldcase #\x00C5))
         ),
@@ -557,8 +572,8 @@ test "r6rs char and string primitives" {
     content="229",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-ci=? "\x00C5;" "\x00E5;")
         ),
@@ -567,8 +582,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(map char->integer (string->list (string-upcase "\x00E5;")))
         ),
@@ -577,8 +592,8 @@ test "r6rs char and string primitives" {
     content="(197)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(map char->integer (string->list (string-downcase "\x00C5;")))
         ),
@@ -587,8 +602,8 @@ test "r6rs char and string primitives" {
     content="(229)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(map char->integer (string->list (string-foldcase "\x00C5;")))
         ),
@@ -597,8 +612,8 @@ test "r6rs char and string primitives" {
     content="(229)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string=? "hi" "hi")
         ),
@@ -607,8 +622,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string<? "a" "ab")
         ),
@@ -617,8 +632,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string>? "b" "a")
         ),
@@ -627,8 +642,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string<=? "a" "a" "b")
         ),
@@ -637,8 +652,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string>=? "c" "c" "b")
         ),
@@ -647,8 +662,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-ci=? "A" "a")
         ),
@@ -657,8 +672,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-ci<? "a" "B")
         ),
@@ -667,8 +682,8 @@ test "r6rs char and string primitives" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-upcase "Abc")
         ),
@@ -677,8 +692,8 @@ test "r6rs char and string primitives" {
     content="\"ABC\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-downcase "AbC")
         ),
@@ -687,8 +702,8 @@ test "r6rs char and string primitives" {
     content="\"abc\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-foldcase "AbC")
         ),
@@ -701,7 +716,7 @@ test "r6rs char and string primitives" {
 ///|
 test "r6rs string-ref: errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-ref "a" 1)
       ),
@@ -712,7 +727,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for out of range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(list->string '(#\a 1))
       ),
@@ -723,7 +738,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for non-char list->string")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-copy "a" 1 0)
       ),
@@ -734,7 +749,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for invalid string-copy range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(substring "hi" 1 3)
       ),
@@ -745,7 +760,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for invalid substring range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-map char-upcase "a" "bb")
       ),
@@ -756,7 +771,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for string length mismatch")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(make-string -1)
       ),
@@ -771,7 +786,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for invalid make-string length")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-set! "a" 1 #\b)
       ),
@@ -782,7 +797,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for out of range string-set!")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-fill! "a" #\b 1 0)
       ),
@@ -793,7 +808,7 @@ test "r6rs string-ref: errors" {
     _ => fail("expected EvalError for invalid string-fill! range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string-copy! "a" 0 "bc")
       ),
@@ -808,7 +823,7 @@ test "r6rs string-ref: errors" {
 ///|
 test "r6rs char/string compare: errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(char=? #\a "a")
       ),
@@ -819,7 +834,7 @@ test "r6rs char/string compare: errors" {
     _ => fail("expected EvalError for non-char")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(string<? "a" #\b)
       ),
@@ -830,7 +845,7 @@ test "r6rs char/string compare: errors" {
     _ => fail("expected EvalError for non-string")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(integer->char -1)
       ),
@@ -848,21 +863,35 @@ test "r6rs char/string compare: errors" {
 
 ///|
 test "r6rs char/string compare: arity" {
-  inspect(value_to_string(eval_program("(char=?)")), content="#t")
-  inspect(value_to_string(eval_program("(char=? #\\a)")), content="#t")
-  inspect(value_to_string(eval_program("(string=?)")), content="#t")
-  inspect(value_to_string(eval_program("(string=? \"a\")")), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(char=?)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(char=? #\\a)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(string=?)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(string=? \"a\")")),
+    content="#t",
+  )
 }
 
 ///|
 test "r6rs symbol/string conversion: errors" {
-  expect_error(() => eval_program("(symbol->string 1)"))
-  expect_error(() => eval_program("(string->symbol 1)"))
+  expect_error(() => @scheme-r6rs.eval_program("(symbol->string 1)"))
+  expect_error(() => @scheme-r6rs.eval_program("(string->symbol 1)"))
 }
 
 ///|
 test "r6rs strings: large index errors" {
   expect_error(() => {
-    eval_program("(string-ref \"a\" 123456789012345678901234567890)")
+    @scheme-r6rs.eval_program(
+      "(string-ref \"a\" 123456789012345678901234567890)",
+    )
   })
 }

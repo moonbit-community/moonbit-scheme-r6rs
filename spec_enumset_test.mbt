@@ -6,7 +6,10 @@ test "r6rs enum-sets: define-enumeration and membership" {
     #|(list (enum-set-member? 'red c1)
     #|      (enum-set-member? 'green c1)
     #|      (enum-set-subset? c1 color))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #t)",
+  )
 }
 
 ///|
@@ -21,7 +24,7 @@ test "r6rs enum-sets: union/intersection/difference/complement" {
     #|      (enum-set->list (enum-set-difference f3 f1))
     #|      (enum-set->list (enum-set-complement f1)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((apple banana cherry) (apple) (banana cherry) (banana cherry))",
   )
 }
@@ -33,7 +36,7 @@ test "r6rs enum-sets: make-enumeration and indexer" {
     #|(define idx (enum-set-indexer colors))
     #|(list (enum-set->list colors) (idx 'red) (idx 'cyan))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((red green blue) 0 #f)",
   )
 }
@@ -46,7 +49,10 @@ test "r6rs enum-sets: projection" {
     #|(define bs (big-set '(a d)))
     #|(define proj (enum-set-projection bs small))
     #|(enum-set->list proj)
-  inspect(value_to_string(eval_program(program)), content="(d)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(d)",
+  )
 }
 
 ///|
@@ -57,10 +63,10 @@ test "r6rs enum-sets: universe mismatch error" {
     #|(define sa ((enum-set-constructor a) '(a)))
     #|(define sb ((enum-set-constructor b) '(c)))
     #|(enum-set-union sa sb)
-  expect_error(() => eval_program(program))
+  expect_error(() => @scheme-r6rs.eval_program(program))
 }
 
 ///|
 test "r6rs enum-sets: duplicate symbol error" {
-  expect_error(() => eval_program("(make-enumeration '(a a))"))
+  expect_error(() => @scheme-r6rs.eval_program("(make-enumeration '(a a))"))
 }

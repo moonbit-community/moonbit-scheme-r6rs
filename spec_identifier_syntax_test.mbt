@@ -8,5 +8,8 @@ test "r6rs identifier-syntax: reference and set!" {
     #|      (counter storage)
     #|      ((set! counter v) (set! storage v))))
     #|  (list counter (begin (set! counter 5) counter)))
-  inspect(value_to_string(eval_program(program)), content="(1 5)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 5)",
+  )
 }

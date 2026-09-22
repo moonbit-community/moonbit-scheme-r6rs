@@ -682,7 +682,7 @@ fn rename_proc_expansion(
   let renames : Map[String, String] = Map([])
   let captures : Map[String, @core.Value] = Map([])
   let renamed = rename_proc_datum(datum, def_env, call_ctx, renames, captures)
-  { datum: renamed, captures }
+  { datum: renamed, captures, }
 }
 
 ///|
@@ -763,7 +763,7 @@ fn expand_macro_rules(
               value_to_syntax_datum(value)
             }
           }
-          return { datum: expanded, captures }
+          return { datum: expanded, captures, }
         }
     }
     continue i + 1

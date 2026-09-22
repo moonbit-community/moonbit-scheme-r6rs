@@ -12,7 +12,10 @@ test "r6rs libraries: syntax-case make-variable-transformer" {
     #|  (list counter
     #|        (begin (set! counter 5) counter)
     #|        (procedure? (make-variable-transformer (lambda (x) x)))))
-  inspect(value_to_string(eval_program(program)), content="(1 5 #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 5 #t)",
+  )
 }
 
 ///|
@@ -30,7 +33,7 @@ test "r6rs libraries: syntax-case generate-temporaries" {
     #|        (eq? (syntax->datum (car temps))
     #|             (syntax->datum (cadr temps)))))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #f #f #f)",
   )
 }
@@ -50,7 +53,10 @@ test "r6rs libraries: generate-temporaries preserves context" {
     #|                  (x2 (datum->syntax t 'x)))
     #|             (if (free-identifier=? x2 sx) #'#t #'#f))))))
     #|    (ctx-check)))
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
@@ -66,7 +72,7 @@ test "r6rs libraries: syntax-case value exports" {
     #|        (eval '(syntax->datum (datum->syntax 'a '(1 2))) env)
     #|        (procedure? (eval 'syntax-violation env))))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #f #t #t (a b) (1 2) #t)",
   )
 }
@@ -77,7 +83,10 @@ test "r6rs libraries: datum->syntax optional source" {
     #|(begin
     #|  (import (rnrs syntax-case))
     #|  (syntax->datum (datum->syntax #'x 'y 'source)))
-  inspect(value_to_string(eval_program(program)), content="y")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="y",
+  )
 }
 
 ///|
@@ -87,13 +96,16 @@ test "r6rs libraries: syntax-case syntactic keyword exports" {
     #|  (import (only (rnrs syntax-case)
     #|                syntax-case with-syntax syntax quasisyntax unsyntax unsyntax-splicing))
     #|  #t)
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
 test "r6rs libraries: syntax-case excludes syntax-rules" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (only (rnrs syntax-case) syntax-rules))
         #|#t

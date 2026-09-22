@@ -6,7 +6,10 @@ test "r6rs libraries: mutable-pairs" {
     #|  (set-car! p 3)
     #|  (set-cdr! p 4)
     #|  p)
-  inspect(value_to_string(eval_program(program)), content="(3 . 4)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(3 . 4)",
+  )
 }
 
 ///|
@@ -18,5 +21,8 @@ test "r6rs libraries: mutable-strings" {
     #|  (string-copy! s 1 "xy" 0 2)
     #|  (string-fill! s #\! 4 5)
     #|  s)
-  inspect(value_to_string(eval_program(program)), content="\"Hxyl!\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="\"Hxyl!\"",
+  )
 }

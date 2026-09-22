@@ -4,13 +4,16 @@ test "begin-for-syntax defines macros" {
     #|(begin-for-syntax
     #|  (define-syntax mk (syntax-rules () ((_ x) x))))
     #|(mk 7)
-  inspect(value_to_string(eval_program(program)), content="7")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="7",
+  )
 }
 
 ///|
 test "begin-for-syntax does not export values" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin-for-syntax (define x 1))
         #|x
@@ -33,9 +36,12 @@ test "import for run filters macros" {
     #|  (define-syntax m (syntax-rules () ((_ ) 42))))
     #|(import (for (phase-lib) run))
     #|val
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(library (phase-lib)
         #|  (export val m)
@@ -63,9 +69,12 @@ test "import for expand filters values" {
     #|  (define-syntax m (syntax-rules () ((_ ) 42))))
     #|(import (for (phase-lib) expand))
     #|(m)
-  inspect(value_to_string(eval_program(program)), content="42")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="42",
+  )
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(library (phase-lib)
         #|  (export val m)
@@ -93,9 +102,12 @@ test "import for meta 2 behaves like expand" {
     #|  (define-syntax m (syntax-rules () ((_ ) 42))))
     #|(import (for (phase-lib2) (meta 2)))
     #|(m)
-  inspect(value_to_string(eval_program(program)), content="42")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="42",
+  )
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(library (phase-lib2)
         #|  (export val m)
@@ -123,5 +135,8 @@ test "import for run expand includes macros and values" {
     #|  (define-syntax m (syntax-rules () ((_ ) 42))))
     #|(import (for (phase-both) run expand))
     #|(list val (m))
-  inspect(value_to_string(eval_program(program)), content="(7 42)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(7 42)",
+  )
 }

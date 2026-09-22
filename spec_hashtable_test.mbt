@@ -11,7 +11,10 @@ test "r6rs hashtable: basic ops" {
     #|(define size2 (hashtable-size ht))
     #|(hashtable-clear! ht)
     #|(list size1 a1 c1 size2 (hashtable-size ht))
-  inspect(value_to_string(eval_program(program)), content="(2 1 #f 1 0)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 1 #f 1 0)",
+  )
 }
 
 ///|
@@ -21,7 +24,10 @@ test "r6rs hashtable: update and default" {
     #|(hashtable-update! ht 'a (lambda (x) (+ x 1)) 0)
     #|(hashtable-update! ht 'a (lambda (x) (+ x 1)) 0)
     #|(hashtable-ref ht 'a 0)
-  inspect(value_to_string(eval_program(program)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="2",
+  )
 }
 
 ///|
@@ -30,7 +36,10 @@ test "r6rs hashtable: custom equivalence" {
     #|(define ht (make-hashtable (lambda (x) 0) (lambda (a b) #t)))
     #|(hashtable-set! ht 'a 10)
     #|(hashtable-ref ht 'b 0)
-  inspect(value_to_string(eval_program(program)), content="10")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="10",
+  )
 }
 
 ///|
@@ -40,7 +49,10 @@ test "r6rs hashtable: eqv and equal equivalence" {
     #|(define ht-equal (make-hashtable (lambda (x) 0) equal?))
     #|(list (eq? (hashtable-equivalence-function ht-eqv) eqv?)
     #|      (eq? (hashtable-equivalence-function ht-equal) equal?))
-  inspect(value_to_string(eval_program(program)), content="(#t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t)",
+  )
 }
 
 ///|
@@ -58,7 +70,10 @@ test "r6rs hashtable: copy and entries" {
     #|      (procedure? eq-proc)
     #|      (boolean? hash-proc)
     #|      pair)
-  inspect(value_to_string(eval_program(program)), content="(#f #t #t (k 42))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#f #t #t (k 42))",
+  )
 }
 
 ///|
@@ -68,7 +83,7 @@ test "r6rs hashtable: immutable set fails" {
     #|(hashtable-set! ht 'a 1)
     #|(define ht2 (hashtable-copy ht #f))
     #|(hashtable-set! ht2 'b 2)
-  try eval_program(program) catch {
+  try @scheme-r6rs.eval_program(program) catch {
     err => inspect(err, content="EvalError(\"hashtable is immutable\")")
   } noraise {
     _ => fail("expected immutable hashtable error")
@@ -80,7 +95,7 @@ test "r6rs hashtable: invalid equivalence function" {
   let program =
     #|(define ht (make-hashtable (lambda (x) 0) 1))
     #|(hashtable-size ht)
-  expect_error(() => eval_program(program))
+  expect_error(() => @scheme-r6rs.eval_program(program))
 }
 
 ///|
@@ -90,5 +105,5 @@ test "r6rs hashtable: immutable update error" {
     #|(hashtable-set! ht 'a 1)
     #|(define imm (hashtable-copy ht #f))
     #|(hashtable-update! imm 'a (lambda (x) (+ x 1)) 0)
-  expect_error(() => eval_program(program))
+  expect_error(() => @scheme-r6rs.eval_program(program))
 }

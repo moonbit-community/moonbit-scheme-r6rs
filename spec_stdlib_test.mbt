@@ -1,8 +1,8 @@
 ///|
 test "stdlib: list helpers" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(fold-left + 0 '(1 2 3))
         ),
@@ -11,8 +11,8 @@ test "stdlib: list helpers" {
     content="6",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(fold-right cons '() '(1 2 3))
         ),
@@ -21,8 +21,8 @@ test "stdlib: list helpers" {
     content="(1 2 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(filter (lambda (x) (> x 2)) '(1 2 3 4))
         ),
@@ -31,8 +31,8 @@ test "stdlib: list helpers" {
     content="(3 4)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(remove (lambda (x) (= x 2)) '(1 2 3 2))
         ),
@@ -41,8 +41,8 @@ test "stdlib: list helpers" {
     content="(1 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(find (lambda (x) (> x 2)) '(1 2 3 4))
         ),
@@ -51,8 +51,8 @@ test "stdlib: list helpers" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(any odd? '(2 4 5))
         ),
@@ -61,8 +61,8 @@ test "stdlib: list helpers" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(every odd? '(1 3 5))
         ),
@@ -71,8 +71,8 @@ test "stdlib: list helpers" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(take '(1 2 3 4) 2)
         ),
@@ -81,8 +81,8 @@ test "stdlib: list helpers" {
     content="(1 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(drop '(1 2 3 4) 2)
         ),
@@ -91,8 +91,8 @@ test "stdlib: list helpers" {
     content="(3 4)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(take-while (lambda (x) (< x 3)) '(1 2 3 1))
         ),
@@ -101,8 +101,8 @@ test "stdlib: list helpers" {
     content="(1 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(drop-while (lambda (x) (< x 3)) '(1 2 3 1))
         ),
@@ -111,8 +111,8 @@ test "stdlib: list helpers" {
     content="(3 1)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(append-map (lambda (x) (list x x)) '(1 2))
         ),
@@ -125,8 +125,8 @@ test "stdlib: list helpers" {
 ///|
 test "stdlib: extended helpers" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(count odd? '(1 2 3 4 5))
         ),
@@ -135,8 +135,8 @@ test "stdlib: extended helpers" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-index (lambda (x) (= x 3)) '(1 2 3 4))
         ),
@@ -145,8 +145,8 @@ test "stdlib: extended helpers" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-index (lambda (x) (= x 9)) '(1 2 3))
         ),
@@ -155,8 +155,8 @@ test "stdlib: extended helpers" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(partition odd? '(1 2 3 4))
         ),
@@ -165,8 +165,8 @@ test "stdlib: extended helpers" {
     content="((1 3) (2 4))",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(zip '(1 2) '(a b c))
         ),
@@ -175,8 +175,8 @@ test "stdlib: extended helpers" {
     content="((1 a) (2 b))",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(unzip '((1 a) (2 b)))
         ),
@@ -185,8 +185,8 @@ test "stdlib: extended helpers" {
     content="((1 2) (a b))",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(last '(1 2 3))
         ),
@@ -195,8 +195,8 @@ test "stdlib: extended helpers" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-join '("a" "b" "c") ",")
         ),
@@ -205,8 +205,8 @@ test "stdlib: extended helpers" {
     content="\"a,b,c\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(string-join '() ",")
         ),
@@ -215,8 +215,8 @@ test "stdlib: extended helpers" {
     content="\"\"",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-tabulate 5 (lambda (n) (* n n)))
         ),
@@ -225,8 +225,8 @@ test "stdlib: extended helpers" {
     content="(0 1 4 9 16)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-tabulate 0 (lambda (n) n))
         ),

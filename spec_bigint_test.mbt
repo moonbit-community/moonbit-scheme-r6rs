@@ -12,7 +12,7 @@ test "r6rs bigints: arithmetic and rationals" {
     #|    (/ 1 big)))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(4294967301 4294967291 12884901888 2147483648 1/4294967296)",
   )
 }
@@ -29,7 +29,7 @@ test "r6rs bigints: number<->string" {
     #|    (string->number "1/4294967296")))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(\"100000000\" 4294967296 \"1/4294967296\" 1/4294967296)",
   )
 }
@@ -56,7 +56,7 @@ test "r6rs bigints: rounding and predicates" {
     #|    (nan? big)))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(2147483648 -2147483648 -2147483648 2147483648 #t #t #t #t #t #t #f #f)",
   )
 }
@@ -71,7 +71,7 @@ test "r6rs bigints: expt" {
     #|    (expt 4294967296 2)))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(1 -1 18446744073709551616)",
   )
 }
@@ -84,5 +84,8 @@ test "r6rs bigints: exact-integer-sqrt" {
     #|    (lambda () (exact-integer-sqrt 18446744073709551616))
     #|    (lambda (s r) (list s r))))
     #|
-  inspect(value_to_string(eval_program(program)), content="(4294967296 0)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(4294967296 0)",
+  )
 }

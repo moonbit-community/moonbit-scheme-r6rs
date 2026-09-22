@@ -3,7 +3,10 @@ test "r6rs libraries: records inspection" {
   let program =
     #|(import (rnrs records inspection))
     #|(record? (cons 1 2))
-  inspect(value_to_string(eval_program(program)), content="#f")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#f",
+  )
 }
 
 ///|
@@ -19,9 +22,12 @@ test "r6rs libraries: records inspection details" {
     #|(list (record? p)
     #|      (record-type-name (record-rtd p))
     #|      (record-type-field-names (record-rtd p)))
-  inspect(value_to_string(eval_program(program)), content="(#t point (x y))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t point (x y))",
+  )
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin (import (rnrs records inspection)) (record-rtd 1))
       ),
