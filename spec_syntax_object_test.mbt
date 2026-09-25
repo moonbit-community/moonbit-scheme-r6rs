@@ -1,8 +1,8 @@
 ///|
 test "r6rs syntax: helpers" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(syntax->datum (syntax (a b)))
         ),
@@ -11,8 +11,8 @@ test "r6rs syntax: helpers" {
     content="(a b)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(identifier? 'a)
         ),
@@ -21,8 +21,8 @@ test "r6rs syntax: helpers" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(identifier? '(a b))
         ),
@@ -31,8 +31,8 @@ test "r6rs syntax: helpers" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(syntax->datum (datum->syntax 'a '(1 2)))
         ),
@@ -41,8 +41,8 @@ test "r6rs syntax: helpers" {
     content="(1 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x 1)) (syntax->datum (syntax x)))
         ),
@@ -51,8 +51,8 @@ test "r6rs syntax: helpers" {
     content="x",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x (syntax x)))
           #|  (syntax->datum (datum->syntax x (list x))))
@@ -66,8 +66,8 @@ test "r6rs syntax: helpers" {
 ///|
 test "r6rs syntax: predicates and identifier equality" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(syntax? 1)
         ),
@@ -76,8 +76,8 @@ test "r6rs syntax: predicates and identifier equality" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(syntax? (syntax (a b)))
         ),
@@ -86,8 +86,8 @@ test "r6rs syntax: predicates and identifier equality" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(free-identifier=? 'a 'a)
         ),
@@ -96,8 +96,8 @@ test "r6rs syntax: predicates and identifier equality" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(bound-identifier=? 'a 'b)
         ),
@@ -115,7 +115,10 @@ test "r6rs syntax: datum->syntax context identity" {
     #|  (list (free-identifier=? (datum->syntax a 'x) (datum->syntax a 'x))
     #|        (free-identifier=? (datum->syntax a 'x) (datum->syntax b 'x))
     #|        (bound-identifier=? (datum->syntax a 'x) (datum->syntax b 'x))))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #f)",
+  )
 }
 
 ///|
@@ -142,7 +145,10 @@ test "r6rs syntax: identifier equality respects lexical bindings" {
     #|          (same-bound? x)
     #|          (let ((x 'inner))
     #|            (list (same? x) (same-bound? x))))))
-  inspect(value_to_string(eval_program(program)), content="(#t #t (#f #f))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t (#f #f))",
+  )
 }
 
 ///|
@@ -154,5 +160,8 @@ test "r6rs syntax: datum->syntax respects binding contexts" {
     #|  (list (free-identifier=? (datum->syntax a 'x) (datum->syntax a 'x))
     #|        (free-identifier=? (datum->syntax a 'x) (datum->syntax b 'x))
     #|        (bound-identifier=? (datum->syntax a 'x) (datum->syntax b 'x))))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #f)",
+  )
 }

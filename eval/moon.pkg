@@ -3,7 +3,6 @@ import {
   "bobzhang/scheme-r6rs/parser",
   "bobzhang/scheme-r6rs/internal/runtime",
   "moonbitlang/core/bigint",
-  "moonbitlang/core/buffer",
   "moonbitlang/core/string",
   "moonbitlang/core/math",
 }

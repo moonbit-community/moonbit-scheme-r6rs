@@ -6,13 +6,16 @@ test "r6rs libraries: records procedural" {
     #|  (make-record-type-descriptor 'point #f #f #f #f
     #|    '#((mutable x))))
     #|(record-type-descriptor? rtd)
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
 test "r6rs libraries: records procedural errors" {
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin
         #|  (import (rnrs records procedural))
@@ -21,7 +24,7 @@ test "r6rs libraries: records procedural errors" {
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin
         #|  (import (rnrs records procedural))

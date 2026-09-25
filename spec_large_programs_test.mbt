@@ -23,7 +23,7 @@ test "large program: quicksort with macro" {
     #|    (when (not (sorted? result)) (set! ok #f))
     #|    (list ok result)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t (1 1 2 3 3 4 5 5 5 6 9))",
   )
 }
@@ -59,7 +59,10 @@ test "large program: n-queens count" {
     #|                                   (enumerate-interval 1 n)))
     #|                            (queen-cols (- k 1) n))))))
     #|  (length (queen-cols 7 7)))
-  inspect(value_to_string(eval_program(program)), content="40")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="40",
+  )
 }
 
 ///|
@@ -80,7 +83,10 @@ test "large program: prime sum" {
     #|                          (cdr lst)))))))
     #|  (define primes (sieve (range 2 100)))
     #|  (apply + primes))
-  inspect(value_to_string(eval_program(program)), content="1060")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="1060",
+  )
 }
 
 ///|
@@ -94,7 +100,10 @@ test "large program: takeuchi recursion" {
     #|             (tak (- y 1) z x)
     #|             (tak (- z 1) x y))))
     #|  (tak 18 12 6))
-  inspect(value_to_string(eval_program(program)), content="7")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="7",
+  )
 }
 
 ///|
@@ -106,7 +115,10 @@ test "large program: tree sum" {
     #|          ((pair? t) (+ (tree-sum (car t)) (tree-sum (cdr t))))
     #|          (else t)))
     #|  (tree-sum '(1 (2 (3 4) 5) (6 7) 8)))
-  inspect(value_to_string(eval_program(program)), content="36")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="36",
+  )
 }
 
 ///|
@@ -125,7 +137,10 @@ test "large program: matrix multiply" {
     #|             (map (lambda (col) (dot row col)) cols))
     #|           a)))
     #|  (matmul '((1 2 3) (4 5 6)) '((7 8) (9 10) (11 12))))
-  inspect(value_to_string(eval_program(program)), content="((58 64) (139 154))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((58 64) (139 154))",
+  )
 }
 
 ///|
@@ -143,7 +158,10 @@ test "large program: call/cc early exit" {
     #|        (walk tree)
     #|        #f)))
     #|  (find-negative '(1 (2 3) (4 (-5 6)) 7)))
-  inspect(value_to_string(eval_program(program)), content="-5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="-5",
+  )
 }
 
 ///|
@@ -170,7 +188,10 @@ test "large program: mergesort" {
     #|               (right (cadr parts)))
     #|          (merge (mergesort left) (mergesort right)))))
     #|  (mergesort '(8 3 7 4 9 2 6 5 1)))
-  inspect(value_to_string(eval_program(program)), content="(1 2 3 4 5 6 7 8 9)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2 3 4 5 6 7 8 9)",
+  )
 }
 
 ///|
@@ -203,7 +224,10 @@ test "large program: symbolic differentiation" {
     #|             (make-product (deriv (cadr expr) var) (caddr expr))))
     #|          (else 'unknown)))
     #|  (deriv '(* x (+ x 3)) 'x))
-  inspect(value_to_string(eval_program(program)), content="(+ x (+ x 3))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(+ x (+ x 3))",
+  )
 }
 
 ///|
@@ -223,7 +247,10 @@ test "large program: permutations count" {
     #|                           (perms (remove-one x lst))))
     #|                    lst))))
     #|  (length (perms '(1 2 3 4))))
-  inspect(value_to_string(eval_program(program)), content="24")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="24",
+  )
 }
 
 ///|
@@ -239,7 +266,10 @@ test "large program: memoized fibonacci" {
     #|            (hashtable-set! table n value)
     #|            value))))
     #|  (fib 20))
-  inspect(value_to_string(eval_program(program)), content="6765")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="6765",
+  )
 }
 
 ///|
@@ -254,7 +284,10 @@ test "large program: towers of hanoi" {
     #|                (hanoi (- n 1) spare to from))))
     #|  (define moves (hanoi 5 'a 'b 'c))
     #|  (list (length moves) (car moves) (car (reverse moves))))
-  inspect(value_to_string(eval_program(program)), content="(31 (a b) (a b))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(31 (a b) (a b))",
+  )
 }
 
 ///|
@@ -301,7 +334,10 @@ test "large program: meta-circular evaluator" {
     #|  (list
     #|    (m-eval '((lambda (x) (if (< x 10) (+ x 1) (* x 2))) 7) base-env)
     #|    (m-eval '((lambda (x) ((lambda (y) (+ x y)) 5)) 3) base-env)))
-  inspect(value_to_string(eval_program(program)), content="(8 8)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(8 8)",
+  )
 }
 
 ///|
@@ -327,7 +363,10 @@ test "large program: binary search tree" {
     #|                (inorder (node-right t)))))
     #|  (define tree (fold-left (lambda (t x) (insert x t)) '() '(5 3 7 2 4 6 8 5 1)))
     #|  (inorder tree))
-  inspect(value_to_string(eval_program(program)), content="(1 2 3 4 5 6 7 8)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2 3 4 5 6 7 8)",
+  )
 }
 
 ///|
@@ -350,7 +389,10 @@ test "large program: graph path dfs" {
     #|                          (if path (cons v path) (loop (cdr ns))))))))))
     #|    (walk start '()))
     #|  (dfs 'a 'f))
-  inspect(value_to_string(eval_program(program)), content="(a b d f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(a b d f)",
+  )
 }
 
 ///|
@@ -383,7 +425,7 @@ test "large program: lazy stream primes" {
     #|        (cons (stream-car s) (stream-take (stream-cdr s) (- n 1)))))
     #|  (stream-take primes 10))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(2 3 5 7 11 13 17 19 23 29)",
   )
 }

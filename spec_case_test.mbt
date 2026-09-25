@@ -2,10 +2,16 @@
 test "r6rs case: datum matching" {
   let program =
     #|(case 2 ((1) 10) ((2 3) 20) (else 30))
-  inspect(value_to_string(eval_program(program)), content="20")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="20",
+  )
   let program2 =
     #|(case 'b ((a) 1) ((b c) 2) (else 3))
-  inspect(value_to_string(eval_program(program2)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program2)),
+    content="2",
+  )
 }
 
 ///|
@@ -15,7 +21,10 @@ test "r6rs case: => clause" {
     #|  ((1 2 3) 10)
     #|  ((4) => (lambda (x) (+ x 1)))
     #|  (else 0))
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -24,7 +33,10 @@ test "r6rs cond: => clause" {
     #|(cond
     #|  ((+ 1 2) => (lambda (x) (+ x 1)))
     #|  (else 0))
-  inspect(value_to_string(eval_program(program)), content="4")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="4",
+  )
 }
 
 ///|
@@ -34,14 +46,20 @@ test "r6rs let: named let" {
     #|  (if (< k 5)
     #|    (loop (+ k 1) (+ acc k))
     #|    acc))
-  inspect(value_to_string(eval_program(program)), content="10")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="10",
+  )
 }
 
 ///|
 test "r6rs letrec*: sequential init" {
   let program =
     #|(letrec* ((x 1) (y (+ x 2))) y)
-  inspect(value_to_string(eval_program(program)), content="3")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="3",
+  )
 }
 
 ///|
@@ -50,13 +68,16 @@ test "r6rs letrec: mutual recursion" {
     #|(letrec ((even? (lambda (n) (if (zero? n) #t (odd? (- n 1)))))
     #|         (odd? (lambda (n) (if (zero? n) #f (even? (- n 1))))))
     #|  (even? 4))
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
 test "r6rs letrec: uninitialized use" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(letrec ((x 1) (y (+ x 2))) y)
       ),

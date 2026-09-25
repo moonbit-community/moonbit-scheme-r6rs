@@ -5,7 +5,10 @@ test "r6rs macro: nested ellipsis list" {
     #|  (syntax-rules ()
     #|    ((pack ((a ...) ...)) (list (list a ...) ...))))
     #|(pack ((1 2) (3 4 5)))
-  inspect(value_to_string(eval_program(program)), content="((1 2) (3 4 5))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2) (3 4 5))",
+  )
 }
 
 ///|
@@ -15,7 +18,10 @@ test "r6rs macro: nested ellipsis list empty" {
     #|  (syntax-rules ()
     #|    ((pack ((a ...) ...)) (list (list a ...) ...))))
     #|(pack (() (1 2)))
-  inspect(value_to_string(eval_program(program)), content="(() (1 2))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(() (1 2))",
+  )
 }
 
 ///|
@@ -25,7 +31,10 @@ test "r6rs macro: nested ellipsis vector template" {
     #|  (syntax-rules ()
     #|    ((matrix ((a ...) ...)) (vector (vector a ...) ...))))
     #|(matrix ((1 2) (3 4)))
-  inspect(value_to_string(eval_program(program)), content="#(#(1 2) #(3 4))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#(#(1 2) #(3 4))",
+  )
 }
 
 ///|
@@ -35,5 +44,8 @@ test "r6rs macro: nested ellipsis vector pattern" {
     #|  (syntax-rules ()
     #|    ((vpack #((a ...) ...)) (list (list a ...) ...))))
     #|(vpack #((1 2) (3 4)))
-  inspect(value_to_string(eval_program(program)), content="((1 2) (3 4))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2) (3 4))",
+  )
 }

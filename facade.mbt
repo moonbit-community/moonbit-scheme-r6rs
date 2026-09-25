@@ -4,7 +4,7 @@
 /// # Example
 /// ```mbt check
 /// test "facade parse program" {
-///   let forms = parse_program("#\\a")
+///   let forms = @scheme-r6rs.parse_program("#\\a")
 ///   match forms {
 ///     [Char('a'), ..] => ()
 ///     _ => fail("expected char datum")
@@ -15,7 +15,7 @@
 /// # Example
 /// ```mbt check
 /// test "facade parse program fold case" {
-///   let forms = parse_program("ABC", fold_case=true)
+///   let forms = @scheme-r6rs.parse_program("ABC", fold_case=true)
 ///   match forms {
 ///     [Symbol("abc"), ..] => ()
 ///     _ => fail("expected folded symbol")
@@ -38,11 +38,11 @@ pub fn parse_program(
 /// # Example
 /// ```mbt check
 /// test "facade parse number token" {
-///   match parse_number_token("10") {
+///   match @scheme-r6rs.parse_number_token("10") {
 ///     Some(Int(10)) => ()
 ///     _ => fail("expected integer")
 ///   }
-///   match parse_number_token("ff", radix=16) {
+///   match @scheme-r6rs.parse_number_token("ff", radix=16) {
 ///     Some(Int(255)) => ()
 ///     _ => fail("expected 255")
 ///   }
@@ -61,8 +61,8 @@ pub fn parse_number_token(tok : String, radix? : Int) -> @core.Datum? {
 /// # Example
 /// ```mbt check
 /// test "facade eval" {
-///   let value = eval_program("(+ 1 2)")
-///   inspect(value_to_string(value), content="3")
+///   let value = @scheme-r6rs.eval_program("(+ 1 2)")
+///   inspect(@scheme-r6rs.value_to_string(value), content="3")
 /// }
 /// ```
 pub fn eval_program(src : String) -> @core.Value raise {
@@ -75,7 +75,7 @@ pub fn eval_program(src : String) -> @core.Value raise {
 /// # Example
 /// ```mbt check
 /// test "facade eval all" {
-///   let values = eval_program_all("(define x 1) (+ x 2)")
+///   let values = @scheme-r6rs.eval_program_all("(define x 1) (+ x 2)")
 ///   inspect(values.length(), content="2")
 /// }
 /// ```
@@ -89,9 +89,9 @@ pub fn eval_program_all(src : String) -> Array[@core.Value] raise {
 /// # Example
 /// ```mbt check
 /// test "facade include" {
-///   register_include_source("mem.scm", "(+ 1 2)")
-///   let value = eval_program("(include \"mem.scm\")")
-///   inspect(value_to_string(value), content="3")
+///   @scheme-r6rs.register_include_source("mem.scm", "(+ 1 2)")
+///   let value = @scheme-r6rs.eval_program("(include \"mem.scm\")")
+///   inspect(@scheme-r6rs.value_to_string(value), content="3")
 /// }
 /// ```
 pub fn register_include_source(path : String, content : String) -> Unit {
@@ -104,8 +104,8 @@ pub fn register_include_source(path : String, content : String) -> Unit {
 /// # Example
 /// ```mbt check
 /// test "facade value to string" {
-///   let value = eval_program("(+ 1 2)")
-///   inspect(value_to_string(value), content="3")
+///   let value = @scheme-r6rs.eval_program("(+ 1 2)")
+///   inspect(@scheme-r6rs.value_to_string(value), content="3")
 /// }
 /// ```
 pub fn value_to_string(value : @core.Value) -> String {

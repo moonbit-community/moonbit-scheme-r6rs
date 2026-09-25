@@ -6,7 +6,10 @@ test "r6rs dynamic-wind: basic ordering" {
     #|                (lambda () (display "b" out))
     #|                (lambda () (display "c" out)))
     #|  (get-output-string out))
-  inspect(value_to_string(eval_program(program)), content="\"abc\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="\"abc\"",
+  )
 }
 
 ///|
@@ -24,7 +27,10 @@ test "r6rs dynamic-wind: continuation re-entry" {
     #|                (lambda () (display "C" out)))
     #|  (if k (let ((kk k)) (set! k #f) (kk 0)) #f)
     #|  (get-output-string out))
-  inspect(value_to_string(eval_program(program)), content="\"ABDCADC\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="\"ABDCADC\"",
+  )
 }
 
 ///|
@@ -33,5 +39,8 @@ test "r6rs parameterize: dynamic parameters" {
     #|(begin
     #|  (define p (make-parameter 10))
     #|  (list (p) (parameterize ((p 20)) (p)) (p)))
-  inspect(value_to_string(eval_program(program)), content="(10 20 10)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(10 20 10)",
+  )
 }

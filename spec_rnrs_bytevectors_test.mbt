@@ -3,7 +3,10 @@ test "r6rs libraries: bytevectors" {
   let program =
     #|(import (rnrs bytevectors))
     #|(bytevector->u8-list (bytevector 1 2 3))
-  inspect(value_to_string(eval_program(program)), content="(1 2 3)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2 3)",
+  )
 }
 
 ///|
@@ -20,7 +23,7 @@ test "r6rs libraries: bytevector integer refs" {
     #|        (bytevector-uint-ref bv 0 (endianness big) 2)
     #|        (bytevector-sint-ref bv 4 (endianness little) 2)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(258 513 -1 16909060 67305985 -1 258 -1)",
   )
 }
@@ -38,7 +41,7 @@ test "r6rs libraries: bytevector integer set!" {
     #|    (bytevector-s16-set! bv 0 (endianness big) -1)
     #|    (bytevector->u8-list bv)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((1 2 4 3) (255 255))",
   )
 }
@@ -58,7 +61,7 @@ test "r6rs libraries: bytevector s8 ref/set" {
     #|    (bytevector-s8-set! bv 1 -128)
     #|    (bytevector->u8-list bv)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((0 127 -128 -1) (255 128))",
   )
 }
@@ -76,7 +79,7 @@ test "r6rs libraries: bytevector copy and fill" {
     #|        (bytevector->u8-list target)
     #|        (bytevector->u8-list bv)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((2 3) (0 1 2 0) (1 2 9 9))",
   )
 }
@@ -89,7 +92,10 @@ test "r6rs libraries: bytevector native endianness" {
     #|  (list (eq? (endianness big) 'big)
     #|        (= (bytevector-u16-native-ref bv 0)
     #|           (bytevector-u16-ref bv 0 (native-endianness)))))
-  inspect(value_to_string(eval_program(program)), content="(#t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t)",
+  )
 }
 
 ///|
@@ -103,13 +109,16 @@ test "r6rs libraries: bytevector=?" {
     #|  (list (bytevector=? a b)
     #|        (bytevector=? a c)
     #|        (bytevector=? a d)))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #f)",
+  )
 }
 
 ///|
 test "r6rs libraries: bytevector=? errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (rnrs bytevectors))
         #|(bytevector=? #vu8(1 2) '(1 2))
@@ -134,7 +143,7 @@ test "r6rs libraries: utf8 conversions" {
     #|        (bytevector->u8-list (string->utf8 s 1 3))
     #|        (utf8->string (bytevector 65 66 67) 1 3)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((65 206 187 240 159 152 128) #t (206 187 240 159 152 128) \"BC\")",
   )
 }
@@ -142,7 +151,7 @@ test "r6rs libraries: utf8 conversions" {
 ///|
 test "r6rs libraries: utf8->string invalid" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (rnrs bytevectors))
         #|(utf8->string (bytevector 128))

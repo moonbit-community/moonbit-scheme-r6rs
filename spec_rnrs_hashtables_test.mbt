@@ -5,7 +5,10 @@ test "r6rs libraries: hashtables" {
     #|(let ((h (make-eqv-hashtable)))
     #|  (hashtable-set! h 'a 1)
     #|  (hashtable-ref h 'a #f))
-  inspect(value_to_string(eval_program(program)), content="1")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="1",
+  )
 }
 
 ///|
@@ -25,5 +28,8 @@ test "r6rs libraries: hash helpers" {
     #|        (= eq1 eq2)
     #|        (exact-integer? a)
     #|        (>= a 0)))
-  inspect(value_to_string(eval_program(program)), content="(#t #t #t #t #t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t #t #t #t #t)",
+  )
 }

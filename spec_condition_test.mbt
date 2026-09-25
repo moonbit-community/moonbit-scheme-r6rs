@@ -5,7 +5,10 @@ test "r6rs conditions: simple condition" {
     #|(define c1 (make-c 1))
     #|(list (condition? c1) (c? c1) (c-x c1)
     #|      (record? (condition c1)) (condition? (condition c1)))
-  inspect(value_to_string(eval_program(program)), content="(#t #t 1 #t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t 1 #t #t)",
+  )
 }
 
 ///|
@@ -17,7 +20,10 @@ test "r6rs conditions: compound conditions" {
     #|(define cc (condition c1 c2))
     #|(list (condition? cc) (record? cc) (c? cc) (c-x cc)
     #|      (map c-x (simple-conditions cc)))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #t 1 (1 2))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #t 1 (1 2))",
+  )
 }
 
 ///|
@@ -31,5 +37,8 @@ test "r6rs conditions: subtype predicates and accessors" {
     #|(define pred (condition-predicate rtd))
     #|(define acc (condition-accessor rtd (record-accessor rtd 1)))
     #|(list (c? c3) (c1? c3) (c-x c3) (c1-y c3) (pred cc) (acc cc))
-  inspect(value_to_string(eval_program(program)), content="(#t #t 10 20 #t 20)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t 10 20 #t 20)",
+  )
 }

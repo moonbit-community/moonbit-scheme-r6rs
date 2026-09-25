@@ -4,12 +4,12 @@
 /// # Example
 /// ```mbt check
 /// test "Binding::new" {
-///   let binding = Binding::new(1, Void)
+///   let binding = @core.Binding::new(1, Void)
 ///   inspect(binding.id(), content="1")
 /// }
 /// ```
 pub fn Binding::new(id : Int, value : Value) -> Binding {
-  { id, value }
+  { id, value, }
 }
 
 ///|
@@ -18,7 +18,7 @@ pub fn Binding::new(id : Int, value : Value) -> Binding {
 /// # Example
 /// ```mbt check
 /// test "Binding::id" {
-///   let binding = Binding::new(7, Void)
+///   let binding = @core.Binding::new(7, Void)
 ///   inspect(binding.id(), content="7")
 /// }
 /// ```
@@ -32,7 +32,7 @@ pub fn Binding::id(self : Binding) -> Int {
 /// # Example
 /// ```mbt check
 /// test "Binding::value" {
-///   let binding = Binding::new(1, Void)
+///   let binding = @core.Binding::new(1, Void)
 ///   match binding.value() {
 ///     Void => ()
 ///     _ => fail("expected void")

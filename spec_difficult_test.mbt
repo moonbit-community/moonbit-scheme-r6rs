@@ -6,14 +6,17 @@ test "r6rs hard: letrec and recursion" {
     #|                    1
     #|                    (* n (fact (- n 1)))))))
     #|  (fact 5))
-  inspect(value_to_string(eval_program(program)), content="120")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="120",
+  )
 }
 
 ///|
 test "r6rs hard: and/or short-circuit" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(and #t 1 2)
         ),
@@ -22,8 +25,8 @@ test "r6rs hard: and/or short-circuit" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(and #f unknown)
         ),
@@ -32,8 +35,8 @@ test "r6rs hard: and/or short-circuit" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(or #t unknown)
         ),
@@ -42,8 +45,8 @@ test "r6rs hard: and/or short-circuit" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(or #f 42)
         ),
@@ -52,8 +55,8 @@ test "r6rs hard: and/or short-circuit" {
     content="42",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(not #f)
         ),
@@ -62,8 +65,8 @@ test "r6rs hard: and/or short-circuit" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(not 1)
         ),
@@ -76,8 +79,8 @@ test "r6rs hard: and/or short-circuit" {
 ///|
 test "r6rs hard: cond and apply" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond ((< 1 0) 1)
           #|      ((< 1 2) 2)
@@ -88,8 +91,8 @@ test "r6rs hard: cond and apply" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(apply + '(1 2 3))
         ),
@@ -98,8 +101,8 @@ test "r6rs hard: cond and apply" {
     content="6",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(apply (lambda (x y) (* x y)) (list 2 3))
         ),
@@ -111,14 +114,14 @@ test "r6rs hard: cond and apply" {
 
 ///|
 test "r6rs hard: eval_program_all" {
-  let results = eval_program_all(
+  let results = @scheme-r6rs.eval_program_all(
     (
       #|(+ 1 2)
       #|(* 3 4)
     ),
   )
-  inspect(value_to_string(results[0]), content="3")
-  inspect(value_to_string(results[1]), content="12")
+  inspect(@scheme-r6rs.value_to_string(results[0]), content="3")
+  inspect(@scheme-r6rs.value_to_string(results[1]), content="12")
 }
 
 ///|
@@ -131,7 +134,10 @@ test "r6rs large: tak" {
     #|                       (tak (- y 1) z x)
     #|                       (tak (- z 1) x y))))))
     #|  (tak 12 6 0))
-  inspect(value_to_string(eval_program(program)), content="1")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="1",
+  )
 }
 
 ///|
@@ -150,13 +156,16 @@ test "r6rs large: sieve" {
     #|                      (cons (car lst)
     #|                            (sieve (remove-multiples (car lst) (cdr lst))))))))
     #|  (sieve '(2 3 4 5 6 7 8 9 10 11)))
-  inspect(value_to_string(eval_program(program)), content="(2 3 5 7 11)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 3 5 7 11)",
+  )
 }
 
 ///|
 test "r6rs hard: errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|x
       ),
@@ -167,7 +176,7 @@ test "r6rs hard: errors" {
     _ => fail("expected EvalError for unbound variable")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|((lambda (x) x) 1 2)
       ),
@@ -179,7 +188,7 @@ test "r6rs hard: errors" {
     _ => fail("expected EvalError for arity mismatch")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(car 1)
       ),

@@ -55,7 +55,7 @@ priv struct Counter {
 
 ///|
 fn Counter::new() -> Counter {
-  { cell: Ref(0) }
+  { cell: Ref(0), }
 }
 
 ///|
@@ -253,7 +253,7 @@ fn next_do_name() -> String {
 /// # Example
 /// ```mbt check
 /// test "eval program" {
-///   let value = eval_program("(+ 1 2)")
+///   let value = @eval.eval_program("(+ 1 2)")
 ///   inspect(@runtime.value_to_string(value), content="3")
 /// }
 /// ```
@@ -271,7 +271,7 @@ pub fn eval_program(src : String) -> @core.Value raise {
 /// # Example
 /// ```mbt check
 /// test "eval program all" {
-///   let values = eval_program_all("(define x 1) (+ x 2)")
+///   let values = @eval.eval_program_all("(define x 1) (+ x 2)")
 ///   inspect(values.length(), content="2")
 ///   inspect(@runtime.value_to_string(values[1]), content="3")
 /// }
@@ -3497,7 +3497,7 @@ fn parse_library_name_spec(
       if names.is_empty() {
         raise EvalError("invalid library name")
       }
-      { base: names.join("."), version }
+      { base: names.join("."), version, }
     }
   }
 }
@@ -3525,7 +3525,7 @@ fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
       if names.is_empty() {
         raise EvalError("invalid library name")
       }
-      { base: names.join("."), version_ref }
+      { base: names.join("."), version_ref, }
     }
   }
 }
@@ -3911,7 +3911,7 @@ fn parse_for_phases(
   if !run && !expand {
     raise EvalError("invalid import set")
   }
-  { run, expand }
+  { run, expand, }
 }
 
 ///|

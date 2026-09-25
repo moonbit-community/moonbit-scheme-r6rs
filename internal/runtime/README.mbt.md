@@ -15,24 +15,24 @@ conversion.
 ```mbt check
 ///|
 test "runtime entry points compile" {
-  let _env = env_new()
-  let _port = new_output_string_port()
+  let _env = @runtime.env_new()
+  let _port = @runtime.new_output_string_port()
 }
 ```
 
 ```mbt check
 ///|
 test "string port" {
-  let port = new_output_string_port()
-  port_write(port, "hi")
-  inspect(port_get_output_string(port), content="hi")
+  let port = @runtime.new_output_string_port()
+  @runtime.port_write(port, "hi")
+  inspect(@runtime.port_get_output_string(port), content="hi")
 }
 
 ///|
 test "env basics" {
-  let env = env_new()
-  env_define(env, "x", Datum(Int(1)))
-  match env_lookup_optional(env, "x") {
+  let env = @runtime.env_new()
+  @runtime.env_define(env, "x", Datum(Int(1)))
+  match @runtime.env_lookup_optional(env, "x") {
     Some(Datum(Int(1))) => ()
     _ => fail("expected bound value")
   }
@@ -40,10 +40,10 @@ test "env basics" {
 
 ///|
 test "env set" {
-  let env = env_new()
-  env_define(env, "x", Datum(Int(1)))
-  env_set(env, "x", Datum(Int(2)))
-  match env_lookup_optional(env, "x") {
+  let env = @runtime.env_new()
+  @runtime.env_define(env, "x", Datum(Int(1)))
+  @runtime.env_set(env, "x", Datum(Int(2)))
+  match @runtime.env_lookup_optional(env, "x") {
     Some(Datum(Int(2))) => ()
     _ => fail("expected updated value")
   }
@@ -51,11 +51,11 @@ test "env set" {
 
 ///|
 test "env clone" {
-  let env = env_new()
-  env_define(env, "x", Datum(Int(1)))
-  let cloned = env_clone(env)
-  env_set(env, "x", Datum(Int(2)))
-  match env_lookup_optional(cloned, "x") {
+  let env = @runtime.env_new()
+  @runtime.env_define(env, "x", Datum(Int(1)))
+  let cloned = @runtime.env_clone(env)
+  @runtime.env_set(env, "x", Datum(Int(2)))
+  match @runtime.env_lookup_optional(cloned, "x") {
     Some(Datum(Int(1))) => ()
     _ => fail("expected cloned value to stay 1")
   }
@@ -63,15 +63,15 @@ test "env clone" {
 
 ///|
 test "gensym unique suffix" {
-  let a = gensym("x")
-  let b = gensym("x")
+  let a = @runtime.gensym("x")
+  let b = @runtime.gensym("x")
   inspect(a != b, content="true")
   guard a is [.. "x__gs", .. _rest] else { fail("expected gensym prefix") }
 }
 
 ///|
 test "symbol name" {
-  match symbol_name(Symbol("x")) {
+  match @runtime.symbol_name(Symbol("x")) {
     Some("x") => ()
     _ => fail("expected symbol name")
   }
@@ -79,29 +79,29 @@ test "symbol name" {
 
 ///|
 test "enum set from names" {
-  let set = enum_set_from_names(["a", "b"], ["b"])
-  inspect(enum_set_member_by_name(set, "b"), content="true")
-  inspect(enum_set_member_by_name(set, "a"), content="false")
+  let set = @runtime.enum_set_from_names(["a", "b"], ["b"])
+  inspect(@runtime.enum_set_member_by_name(set, "b"), content="true")
+  inspect(@runtime.enum_set_member_by_name(set, "a"), content="false")
 }
 
 ///|
 test "enum set index" {
-  debug_inspect(enum_set_index_of(["a", "b"], "b"), content="Some(1)")
+  debug_inspect(@runtime.enum_set_index_of(["a", "b"], "b"), content="Some(1)")
 }
 
 ///|
 test "enum set universe equal" {
   let base = ["a", "b"]
-  let same = enum_set_from_names(base, [])
-  let other = enum_set_from_names(["b", "a"], [])
-  inspect(enum_set_universe_equal(same, same), content="true")
-  inspect(enum_set_universe_equal(same, other), content="false")
+  let same = @runtime.enum_set_from_names(base, [])
+  let other = @runtime.enum_set_from_names(["b", "a"], [])
+  inspect(@runtime.enum_set_universe_equal(same, same), content="true")
+  inspect(@runtime.enum_set_universe_equal(same, other), content="false")
 }
 
 ///|
 test "value to string" {
-  let value = Value::Datum(Int(5))
-  inspect(value_to_string(value), content="5")
+  let value = @runtime.Value::Datum(Int(5))
+  inspect(@runtime.value_to_string(value), content="5")
 }
 
 ///|
@@ -110,11 +110,14 @@ test "printer datum rendering" {
   let record = @core.Record::new(1, record_type, [])
   let record_for_condition = @core.Record::new(2, record_type, [])
   let condition = @core.Condition::new(1, [record_for_condition])
-  let label_cell = Ref(Datum::Nil)
-  let label = Datum::Label(1, label_cell)
+  let label_cell = Ref(@runtime.Datum::Nil)
+  let label = @runtime.Datum::Label(1, label_cell)
   label_cell.val = label
-  let proper_list = Datum::Pair(Ref(Int(1)), Ref(Pair(Ref(Int(2)), Ref(Nil))))
-  let dotted_list = Datum::Pair(Ref(Int(1)), Ref(Int(2)))
+  let proper_list = @runtime.Datum::Pair(
+    Ref(Int(1)),
+    Ref(Pair(Ref(Int(2)), Ref(Nil))),
+  )
+  let dotted_list = @runtime.Datum::Pair(Ref(Int(1)), Ref(Int(2)))
   let entries : Array[(@core.Datum, String)] = [
     (Nil, "()"),
     (Bool(true), "#t"),
@@ -150,13 +153,13 @@ test "printer datum rendering" {
   ]
   for entry in entries {
     let (datum, expected) = entry
-    inspect(value_to_string(Datum(datum)), content=expected)
+    inspect(@runtime.value_to_string(Datum(datum)), content=expected)
   }
 }
 
 ///|
 test "value to string variants" {
-  let env = env_new()
+  let env = @runtime.env_new()
   let record_type = @core.RecordType::new(1, "r", None, false, false, None, [])
   let record = @core.Record::new(1, record_type, [])
   let ctor_desc_for_type = @core.RecordConstructorDescriptor::new(
@@ -176,7 +179,7 @@ test "value to string variants" {
   )
   let enum_set = @core.EnumSet::new(1, ["a"], [true])
   let table = @core.Hashtable::new(1, true, Eq, None, [])
-  let port = new_output_string_port()
+  let port = @runtime.new_output_string_port()
   let promise = @core.Promise::new(1, Value(Void))
   let eval_env = @core.EvalEnv::new(1, env)
   let syntax_obj = @core.SyntaxObject::new(Symbol("x"), [], None)
@@ -196,13 +199,13 @@ test "value to string variants" {
   ]
   for entry in values {
     let (value, expected) = entry
-    inspect(value_to_string(value), content=expected)
+    inspect(@runtime.value_to_string(value), content=expected)
   }
 }
 
 ///|
 test "datum unlabel" {
-  match datum_unlabel(Int(3)) {
+  match @runtime.datum_unlabel(Int(3)) {
     Int(3) => ()
     _ => fail("expected same datum")
   }
@@ -210,10 +213,10 @@ test "datum unlabel" {
 
 ///|
 test "strip syntax datum" {
-  let wrapped = Datum::Value(
+  let wrapped = @runtime.Datum::Value(
     SyntaxObject(@core.SyntaxObject::new(Symbol("x"), [], None)),
   )
-  match strip_syntax_datum(wrapped) {
+  match @runtime.strip_syntax_datum(wrapped) {
     Symbol("x") => ()
     _ => fail("expected symbol")
   }
@@ -222,28 +225,28 @@ test "strip syntax datum" {
 ///|
 test "env error paths" {
   let empty : @core.Env = []
-  try env_set(empty, "x", Void) catch {
+  try @runtime.env_set(empty, "x", Void) catch {
     _ => ()
   } noraise {
     _ => fail("expected env_set on an empty environment to raise")
   }
-  inspect(env_lookup_optional(empty, "x") is None, content="true")
-  let env = env_new()
-  try env_set(env, "x", Void) catch {
+  inspect(@runtime.env_lookup_optional(empty, "x") is None, content="true")
+  let env = @runtime.env_new()
+  try @runtime.env_set(env, "x", Void) catch {
     _ => ()
   } noraise {
     _ => fail("expected env_set with a missing binding to raise")
   }
-  inspect(is_procedure_value(Void), content="false")
+  inspect(@runtime.is_procedure_value(Void), content="false")
 }
 
 ///|
 test "enum set error paths" {
   let short = @core.EnumSet::new(1, ["a"], [true])
   let long = @core.EnumSet::new(2, ["a", "b"], [true, false])
-  inspect(enum_set_universe_equal(short, long), content="false")
-  inspect(enum_set_member_by_name(short, "missing"), content="false")
-  try enum_set_from_names(["a"], ["b"]) catch {
+  inspect(@runtime.enum_set_universe_equal(short, long), content="false")
+  inspect(@runtime.enum_set_member_by_name(short, "missing"), content="false")
+  try @runtime.enum_set_from_names(["a"], ["b"]) catch {
     _ => ()
   } noraise {
     _ => fail("expected an unknown enum name to raise")
@@ -252,32 +255,32 @@ test "enum set error paths" {
 
 ///|
 test "syntax helpers extra" {
-  let syntax = Datum::Value(
+  let syntax = @runtime.Datum::Value(
     SyntaxObject(@core.SyntaxObject::new(Symbol("x"), [1], None)),
   )
-  match symbol_name(syntax) {
+  match @runtime.symbol_name(syntax) {
     Some("x") => ()
     _ => fail("expected symbol name")
   }
-  let complex = Datum::Complex(Ref(Int(1)), Ref(Int(2)))
-  match syntax_wrap_root(complex, [1]) {
+  let complex = @runtime.Datum::Complex(Ref(Int(1)), Ref(Int(2)))
+  match @runtime.syntax_wrap_root(complex, [1]) {
     Complex(_, _) => ()
     _ => fail("expected complex")
   }
-  match syntax_add_scope(complex, 2) {
+  match @runtime.syntax_add_scope(complex, 2) {
     Complex(_, _) => ()
     _ => fail("expected complex")
   }
-  match syntax_add_scope(syntax, 1) {
+  match @runtime.syntax_add_scope(syntax, 1) {
     Value(SyntaxObject(obj)) => inspect(obj.scopes.length(), content="1")
     _ => fail("expected syntax object")
   }
-  match syntax_add_scope(syntax, 2) {
+  match @runtime.syntax_add_scope(syntax, 2) {
     Value(SyntaxObject(obj)) => inspect(obj.scopes.length(), content="2")
     _ => fail("expected syntax object")
   }
-  let vector = Datum::Vector([Symbol("y")])
-  match syntax_add_scope(vector, 2) {
+  let vector = @runtime.Datum::Vector([Symbol("y")])
+  match @runtime.syntax_add_scope(vector, 2) {
     Vector(items) =>
       match items[0] {
         Value(SyntaxObject(_)) => ()
@@ -285,11 +288,11 @@ test "syntax helpers extra" {
       }
     _ => fail("expected vector")
   }
-  let pair = Datum::Pair(Ref(Symbol("p")), Ref(Nil))
-  let wrapped_pair = Datum::Value(
+  let pair = @runtime.Datum::Pair(Ref(Symbol("p")), Ref(Nil))
+  let wrapped_pair = @runtime.Datum::Value(
     SyntaxObject(@core.SyntaxObject::new(pair, [3], None)),
   )
-  match syntax_add_scope(wrapped_pair, 4) {
+  match @runtime.syntax_add_scope(wrapped_pair, 4) {
     Value(SyntaxObject(obj)) =>
       match obj.datum {
         Pair(_, _) => ()
@@ -297,10 +300,10 @@ test "syntax helpers extra" {
       }
     _ => fail("expected syntax object")
   }
-  let cell = Ref(Datum::Nil)
-  let label = Datum::Label(1, cell)
+  let cell = Ref(@runtime.Datum::Nil)
+  let label = @runtime.Datum::Label(1, cell)
   cell.val = label
-  match datum_unlabel(label) {
+  match @runtime.datum_unlabel(label) {
     Label(_, _) => ()
     _ => fail("expected label")
   }
@@ -308,7 +311,7 @@ test "syntax helpers extra" {
 
 ///|
 test "record type alias without uid" {
-  reset_record_type_registry()
+  @runtime.reset_record_type_registry()
   let record_type = @core.RecordType::new(
     50,
     "doc/alias",
@@ -325,8 +328,8 @@ test "record type alias without uid" {
     None,
   )
   let desc = @core.RecordTypeDescriptor::new(50, record_type, ctor_desc)
-  register_record_type_alias("doc/alias", desc)
-  match lookup_record_type_descriptor("doc/alias") {
+  @runtime.register_record_type_alias("doc/alias", desc)
+  match @runtime.lookup_record_type_descriptor("doc/alias") {
     Some(_) => ()
     _ => fail("expected record type alias")
   }
@@ -334,9 +337,9 @@ test "record type alias without uid" {
 
 ///|
 test "library exports" {
-  let binding = make_binding(Datum(Int(1)))
-  register_library("doc/runtime-lib", { "x": binding })
-  match lookup_library("doc/runtime-lib") {
+  let binding = @runtime.make_binding(Datum(Int(1)))
+  @runtime.register_library("doc/runtime-lib", { "x": binding })
+  match @runtime.lookup_library("doc/runtime-lib") {
     Some(exports) =>
       match exports.get("x") {
         Some(exported) =>

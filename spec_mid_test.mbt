@@ -1,8 +1,8 @@
 ///|
 test "r6rs mid: control and bindings" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(if #t 1 2)
         ),
@@ -11,8 +11,8 @@ test "r6rs mid: control and bindings" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(if #f 1 2)
         ),
@@ -21,8 +21,8 @@ test "r6rs mid: control and bindings" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(begin (define x 1) (set! x 5) x)
         ),
@@ -31,8 +31,8 @@ test "r6rs mid: control and bindings" {
     content="5",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(begin (define x 3) (define y 4) (+ x y))
         ),
@@ -45,8 +45,8 @@ test "r6rs mid: control and bindings" {
 ///|
 test "r6rs mid: lambda and lexical scope" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|((lambda (x) (+ x 1)) 4)
         ),
@@ -55,8 +55,8 @@ test "r6rs mid: lambda and lexical scope" {
     content="5",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(begin
           #|  (define x 1)
@@ -68,8 +68,8 @@ test "r6rs mid: lambda and lexical scope" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(procedure? +)
         ),
@@ -78,8 +78,8 @@ test "r6rs mid: lambda and lexical scope" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(procedure? (lambda (x) x))
         ),
@@ -92,8 +92,8 @@ test "r6rs mid: lambda and lexical scope" {
 ///|
 test "r6rs mid: let forms" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x 1) (y 2)) (+ x y))
         ),
@@ -102,8 +102,8 @@ test "r6rs mid: let forms" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let* ((x 1) (y (+ x 2))) y)
         ),

@@ -4,7 +4,10 @@ test "reader: datum and block comments" {
     #|(begin
     #|  (list 1 #;2 3 #| drop |# 4))
     #|
-  inspect(value_to_string(eval_program(program)), content="(1 3 4)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 3 4)",
+  )
 }
 
 ///|
@@ -13,7 +16,10 @@ test "reader: nested block comments" {
     #|(begin
     #|  (list 1 #| outer #| inner |# outer |# 2))
     #|
-  inspect(value_to_string(eval_program(program)), content="(1 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2)",
+  )
 }
 
 ///|
@@ -22,7 +28,10 @@ test "reader: delimited identifiers" {
     #|(begin
     #|  (symbol->string '|a b|))
     #|
-  inspect(value_to_string(eval_program(program)), content="\"a b\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="\"a b\"",
+  )
 }
 
 ///|
@@ -39,7 +48,7 @@ test "reader: character literals" {
     #|    (char->integer #\return)))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(65 32 7 27 127 0 13)",
   )
 }
@@ -51,7 +60,7 @@ test "reader: string escapes" {
     #|  (map char->integer (string->list "A\x41;\n\t\v\f\r\b\a")))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(65 65 10 9 11 12 13 8 7)",
   )
 }
@@ -67,7 +76,7 @@ test "reader: fold-case directives" {
     #|  (list a b (symbol->string 'AbC)))
     #|
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(\"abc\" \"AbC\" \"AbC\")",
   )
 }
@@ -80,7 +89,10 @@ test "reader: fold-case unicode identifiers" {
     #|  (define \x03A9; 42)
     #|  \x03C9;)
     #|
-  inspect(value_to_string(eval_program(program)), content="42")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="42",
+  )
 }
 
 ///|
@@ -89,7 +101,10 @@ test "reader: identifier hex escapes" {
     #|(begin
     #|  (symbol->string '|a\x41;|))
     #|
-  inspect(value_to_string(eval_program(program)), content="\"aA\"")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="\"aA\"",
+  )
 }
 
 ///|
@@ -99,7 +114,10 @@ test "reader: string line continuation" {
     #|  (map char->integer (string->list "a\
     #|    b")))
     #|
-  inspect(value_to_string(eval_program(program)), content="(97 98)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(97 98)",
+  )
 }
 
 ///|
@@ -111,7 +129,10 @@ test "reader: datum labels" {
     #|  (set-car! y 'z)
     #|  x)
     #|
-  inspect(value_to_string(eval_program(program)), content="#1=(z b)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#1=(z b)",
+  )
 }
 
 ///|
@@ -121,5 +142,8 @@ test "reader: datum labels cycle" {
     #|  (define x '#1=(a . #1#))
     #|  x)
     #|
-  inspect(value_to_string(eval_program(program)), content="#1=(a . #1#)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#1=(a . #1#)",
+  )
 }

@@ -8,7 +8,10 @@ test "r6rs macro: ellipsis in templates" {
     #|(let ((x 0))
     #|  (when #t (set! x 1) (set! x (+ x 1)))
     #|  x)
-  inspect(value_to_string(eval_program(program)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="2",
+  )
   let program2 =
     #|(define-syntax when
     #|  (syntax-rules ()
@@ -17,7 +20,10 @@ test "r6rs macro: ellipsis in templates" {
     #|(let ((x 0))
     #|  (when #f (set! x 1))
     #|  x)
-  inspect(value_to_string(eval_program(program2)), content="0")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program2)),
+    content="0",
+  )
 }
 
 ///|
@@ -27,7 +33,10 @@ test "r6rs macro: ellipsis with list patterns" {
     #|  (syntax-rules ()
     #|    ((pairs (a b) ...) (list (list a b) ...))))
     #|(pairs (1 2) (3 4))
-  inspect(value_to_string(eval_program(program)), content="((1 2) (3 4))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2) (3 4))",
+  )
 }
 
 ///|
@@ -40,7 +49,7 @@ test "r6rs macro: literal ellipsis pattern (syntax-rules)" {
     #|    ((_ x) 'single)))
     #|(list (ellipsis-lit 1 ...) (ellipsis-lit 1 2) (ellipsis-lit 1))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(literal pair single)",
   )
 }
@@ -52,7 +61,10 @@ test "r6rs macro: literal ellipsis template (syntax-rules)" {
     #|  (syntax-rules (...)
     #|    ((_ x) (syntax->datum (syntax (x ...))))))
     #|(show 1)
-  inspect(value_to_string(eval_program(program)), content="(1 ...)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 ...)",
+  )
 }
 
 ///|
@@ -62,7 +74,10 @@ test "r6rs macro: custom ellipsis identifier" {
     #|  (syntax-rules ::: ()
     #|    ((collect x :::) (list x :::))))
     #|(collect 1 2 3)
-  inspect(value_to_string(eval_program(program)), content="(1 2 3)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2 3)",
+  )
 }
 
 ///|
@@ -73,7 +88,10 @@ test "r6rs macro: custom ellipsis leaves ... as literal" {
     #|    ((dot ...) 'ok)
     #|    ((dot x) x)))
     #|(dot ...)
-  inspect(value_to_string(eval_program(program)), content="ok")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="ok",
+  )
 }
 
 ///|
@@ -83,7 +101,10 @@ test "r6rs macro: ellipsis in middle of pattern" {
     #|  (syntax-rules ()
     #|    ((tail a ... b) (list a ... b))))
     #|(list (tail 1 2 3) (tail 1))
-  inspect(value_to_string(eval_program(program)), content="((1 2 3) (1))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2 3) (1))",
+  )
 }
 
 ///|
@@ -95,13 +116,16 @@ test "r6rs macro: ellipsis enforces repeated bindings" {
     #|    ((_ (x ...) (y ...)) 'diff)))
     #|(list (same-seq (1 2) (1 2))
     #|      (same-seq (1 2) (1 3)))
-  inspect(value_to_string(eval_program(program)), content="(same diff)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(same diff)",
+  )
 }
 
 ///|
 test "r6rs macro: invalid ellipsis in pattern" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -119,7 +143,7 @@ test "r6rs macro: invalid ellipsis in pattern" {
 ///|
 test "r6rs macro: invalid ellipsis in template" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -137,7 +161,7 @@ test "r6rs macro: invalid ellipsis in template" {
 ///|
 test "r6rs macro: invalid ellipsis depth" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -155,7 +179,7 @@ test "r6rs macro: invalid ellipsis depth" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (fewer in template)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -173,7 +197,7 @@ test "r6rs macro: invalid nested ellipsis depth (fewer in template)" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (more in template)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -191,7 +215,7 @@ test "r6rs macro: invalid nested ellipsis depth (more in template)" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector fewer in template)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -209,7 +233,7 @@ test "r6rs macro: invalid nested ellipsis depth (vector fewer in template)" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector more in template)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -227,7 +251,7 @@ test "r6rs macro: invalid nested ellipsis depth (vector more in template)" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()
@@ -245,7 +269,7 @@ test "r6rs macro: invalid nested ellipsis depth (vector fewer in quasisyntax)" {
 ///|
 test "r6rs macro: invalid nested ellipsis depth (vector more in quasisyntax)" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (syntax-rules ()

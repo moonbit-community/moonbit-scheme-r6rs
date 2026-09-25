@@ -5,7 +5,10 @@ test "r6rs condition stdlib: &message and accessors" {
     #|(list (record-type-descriptor? &message)
     #|      (message-condition? c)
     #|      (condition-message c))
-  inspect(value_to_string(eval_program(program)), content="(#t #t \"hi\")")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t \"hi\")",
+  )
 }
 
 ///|
@@ -18,7 +21,7 @@ test "r6rs condition stdlib: error constructs compound condition" {
     #|          (else 'bad))
     #|  (error 'who "boom" 1 2))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(\"boom\" who (1 2))",
   )
 }

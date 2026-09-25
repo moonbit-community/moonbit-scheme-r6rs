@@ -277,8 +277,8 @@ fn parse_rat_token(tok : String) -> @core.Datum? {
   let view = tok[:]
   match find_unique_char(view, '/') {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
-      let num_view = view.sub(end=slash)
-      let den_view = view.sub(start=slash + 1)
+      let num_view = view.exact_view(end=slash)
+      let den_view = view.exact_view(start=slash + 1)
       let num_str = num_view.to_owned()
       let den_str = den_view.to_owned()
       match (parse_integer_token(num_str), parse_integer_token(den_str)) {
@@ -429,8 +429,8 @@ fn split_exp_token(tok : String) -> (String, Int)? {
   } else if idx == 0 || idx + 1 == view.length() {
     None
   } else {
-    let base_view = view.sub(end=idx)
-    let exp_view = view.sub(start=idx + 1)
+    let base_view = view.exact_view(end=idx)
+    let exp_view = view.exact_view(start=idx + 1)
     let base = base_view.to_owned()
     let exp_str = exp_view.to_owned()
     parse_int_token(exp_str).map(exp => (base, exp))
@@ -512,8 +512,8 @@ fn parse_rat_token_radix(tok : String, radix : Int) -> @core.Datum? {
   let view = tok[:]
   match find_unique_char(view, '/') {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
-      let num_view = view.sub(end=slash)
-      let den_view = view.sub(start=slash + 1)
+      let num_view = view.exact_view(end=slash)
+      let den_view = view.exact_view(start=slash + 1)
       let num_str = num_view.to_owned()
       let den_str = den_view.to_owned()
       match
@@ -760,8 +760,8 @@ fn parse_complex_token(
       if at == 0 || at + 1 == view.length() {
         return None
       }
-      let left_view = view.sub(end=at)
-      let right_view = view.sub(start=at + 1)
+      let left_view = view.exact_view(end=at)
+      let right_view = view.exact_view(start=at + 1)
       let left = left_view.to_owned()
       let right = right_view.to_owned()
       let r = match
@@ -804,8 +804,8 @@ fn parse_complex_token(
   }
   match find_complex_split(core_chars, radix) {
     Some(split) => {
-      let real_view = core_chars.sub(end=split)
-      let imag_view = core_chars.sub(start=split)
+      let real_view = core_chars.exact_view(end=split)
+      let imag_view = core_chars.exact_view(start=split)
       let real_str = real_view.to_owned()
       let real = match
         parse_real_token_with_settings(real_str, radix, exactness, allow_rat) {
@@ -927,11 +927,11 @@ fn parse_number_prefix(
 /// # Example
 /// ```mbt check
 /// test "parse number token" {
-///   match parse_number_token("10") {
+///   match @parser.parse_number_token("10") {
 ///     Some(Int(10)) => ()
 ///     _ => fail("expected integer")
 ///   }
-///   match parse_number_token("ff", radix=16) {
+///   match @parser.parse_number_token("ff", radix=16) {
 ///     Some(Int(255)) => ()
 ///     _ => fail("expected 255")
 ///   }
@@ -971,7 +971,7 @@ fn parse_char_token(tok : String) -> Char? {
           if lower.length() >= 2 {
             match lower.get_char(0) {
               Some('x') => {
-                let hex_view = rest.sub(start=1)
+                let hex_view = rest.exact_view(start=1)
                 return match parse_hex_digits(hex_view) {
                   Some(value) => value.to_char()
                   None => None
@@ -1329,7 +1329,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
 /// # Example
 /// ```mbt check
 /// test "parse program" {
-///   let forms = parse_program("#\\a")
+///   let forms = @parser.parse_program("#\\a")
 ///   match forms {
 ///     [Char('a'), ..] => ()
 ///     _ => fail("expected char datum")
@@ -1340,7 +1340,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
 /// # Example
 /// ```mbt check
 /// test "parse program fold case" {
-///   let forms = parse_program("ABC", fold_case=true)
+///   let forms = @parser.parse_program("ABC", fold_case=true)
 ///   match forms {
 ///     [Symbol("abc"), ..] => ()
 ///     _ => fail("expected folded symbol")

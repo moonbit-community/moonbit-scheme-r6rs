@@ -1,8 +1,8 @@
 ///|
 test "r6rs equality predicates" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(eq? 1 1)
         ),
@@ -11,8 +11,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(boolean=? #t #t #t)
         ),
@@ -21,8 +21,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(boolean=? #t #f)
         ),
@@ -31,8 +31,8 @@ test "r6rs equality predicates" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(symbol=? 'a 'a 'a)
         ),
@@ -41,8 +41,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(symbol=? 'a 'b)
         ),
@@ -51,8 +51,8 @@ test "r6rs equality predicates" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(eqv? #t #t)
         ),
@@ -61,8 +61,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(equal? '(1 2) '(1 2))
         ),
@@ -71,8 +71,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(eq? "hi" "hi")
         ),
@@ -81,8 +81,8 @@ test "r6rs equality predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(eq? 'a 'b)
         ),
@@ -91,8 +91,8 @@ test "r6rs equality predicates" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(eq? '(1 2) '(1 3))
         ),
@@ -105,8 +105,8 @@ test "r6rs equality predicates" {
 ///|
 test "r6rs list utilities" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list? '())
         ),
@@ -115,8 +115,8 @@ test "r6rs list utilities" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list? '(1 2 3))
         ),
@@ -125,8 +125,8 @@ test "r6rs list utilities" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list? '(1 . 2))
         ),
@@ -135,8 +135,8 @@ test "r6rs list utilities" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(length '())
         ),
@@ -145,8 +145,8 @@ test "r6rs list utilities" {
     content="0",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(length '(1 2 3))
         ),
@@ -155,8 +155,8 @@ test "r6rs list utilities" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(make-list 3 'a)
         ),
@@ -165,8 +165,8 @@ test "r6rs list utilities" {
     content="(a a a)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(length (make-list 4))
         ),
@@ -175,8 +175,8 @@ test "r6rs list utilities" {
     content="4",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-ref '(a b c) 1)
         ),
@@ -185,8 +185,8 @@ test "r6rs list utilities" {
     content="b",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list-tail '(a b c d) 2)
         ),
@@ -195,8 +195,8 @@ test "r6rs list utilities" {
     content="(c d)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cadr '(1 2 3))
         ),
@@ -205,8 +205,8 @@ test "r6rs list utilities" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(caddr '(1 2 3 4))
         ),
@@ -215,8 +215,8 @@ test "r6rs list utilities" {
     content="3",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cddr '(1 2 3))
         ),
@@ -225,8 +225,8 @@ test "r6rs list utilities" {
     content="(3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(caar '((1 2) (3 4)))
         ),
@@ -235,8 +235,8 @@ test "r6rs list utilities" {
     content="1",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(member 2 '(1 2 3))
         ),
@@ -245,8 +245,8 @@ test "r6rs list utilities" {
     content="(2 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(memq 2 '(1 2 3))
         ),
@@ -255,8 +255,8 @@ test "r6rs list utilities" {
     content="(2 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(memv 2 '(1 2 3))
         ),
@@ -265,8 +265,8 @@ test "r6rs list utilities" {
     content="(2 3)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(assoc 'b '((a . 1) (b . 2)))
         ),
@@ -275,8 +275,8 @@ test "r6rs list utilities" {
     content="(b . 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(assq 'b '((a . 1) (b . 2)))
         ),
@@ -285,8 +285,8 @@ test "r6rs list utilities" {
     content="(b . 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(assv 'b '((a . 1) (b . 2)))
         ),
@@ -295,8 +295,8 @@ test "r6rs list utilities" {
     content="(b . 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(map (lambda (x) (+ x 1)) '(1 2 3))
         ),
@@ -305,8 +305,8 @@ test "r6rs list utilities" {
     content="(2 3 4)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(map + '(1 2 3) '(4 5 6))
         ),
@@ -318,31 +318,46 @@ test "r6rs list utilities" {
     #|(let ((acc 0))
     #|  (for-each (lambda (x) (set! acc (+ acc x))) '(1 2 3))
     #|  acc)
-  inspect(value_to_string(eval_program(foreach_prog)), content="6")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(foreach_prog)),
+    content="6",
+  )
   let set_car_prog =
     #|(let ((p (cons 1 2)))
     #|  (set-car! p 9)
     #|  p)
-  inspect(value_to_string(eval_program(set_car_prog)), content="(9 . 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(set_car_prog)),
+    content="(9 . 2)",
+  )
   let set_cdr_prog =
     #|(let ((p (cons 1 2)))
     #|  (set-cdr! p 9)
     #|  p)
-  inspect(value_to_string(eval_program(set_cdr_prog)), content="(1 . 9)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(set_cdr_prog)),
+    content="(1 . 9)",
+  )
   let copy_prog =
     #|(let ((xs (list 1 2 3))
     #|      (ys (list-copy (list 1 2 3))))
     #|  ys)
-  inspect(value_to_string(eval_program(copy_prog)), content="(1 2 3)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(copy_prog)),
+    content="(1 2 3)",
+  )
   let copy_mutate_prog =
     #|(let* ((xs (list 1 2 3))
     #|       (ys (list-copy xs)))
     #|  (set-car! xs 9)
     #|  ys)
-  inspect(value_to_string(eval_program(copy_mutate_prog)), content="(1 2 3)")
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(copy_mutate_prog)),
+    content="(1 2 3)",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(append)
         ),
@@ -351,8 +366,8 @@ test "r6rs list utilities" {
     content="()",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(append '(1 2) '(3 4))
         ),
@@ -361,8 +376,8 @@ test "r6rs list utilities" {
     content="(1 2 3 4)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(append '(1 2) '(3 . 4))
         ),
@@ -371,8 +386,8 @@ test "r6rs list utilities" {
     content="(1 2 3 . 4)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((p (lambda (x) x)))
           #|  (eq? p (car (list p))))
@@ -382,8 +397,8 @@ test "r6rs list utilities" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((p (lambda (x) x))
           #|      (cell (cons 1 2)))
@@ -395,8 +410,8 @@ test "r6rs list utilities" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((p (lambda (x) x))
           #|      (cell (cons 1 2)))
@@ -408,8 +423,8 @@ test "r6rs list utilities" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((p (lambda (x) x)))
           #|  (append '(1) p))
@@ -419,8 +434,8 @@ test "r6rs list utilities" {
     content="(1 . #<procedure>)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(reverse '(1 2 3))
         ),
@@ -433,7 +448,7 @@ test "r6rs list utilities" {
 ///|
 test "r6rs list utilities: errors" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(length '(1 . 2))
       ),
@@ -445,7 +460,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for improper list")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(list-ref '(1 2) 2)
       ),
@@ -456,7 +471,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for list-ref out of range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(list-tail '(1 2) 3)
       ),
@@ -467,7 +482,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for list-tail out of range")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(make-list -1)
       ),
@@ -482,7 +497,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for negative make-list length")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(member 3 '(1 . 2))
       ),
@@ -494,7 +509,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for improper list")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(assoc 'a '(1 2))
       ),
@@ -505,7 +520,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for non-pair alist entry")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(map (lambda (x) x) '(1 . 2))
       ),
@@ -517,7 +532,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for improper list in map")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(set-car! '() 1)
       ),
@@ -528,7 +543,7 @@ test "r6rs list utilities: errors" {
     _ => fail("expected EvalError for set-car! on non-pair")
   }
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(list-copy '(1 . 2))
       ),
@@ -543,14 +558,26 @@ test "r6rs list utilities: errors" {
 
 ///|
 test "r6rs equality predicates: arity" {
-  inspect(value_to_string(eval_program("(boolean=?)")), content="#t")
-  inspect(value_to_string(eval_program("(boolean=? #t)")), content="#t")
-  inspect(value_to_string(eval_program("(symbol=?)")), content="#t")
-  inspect(value_to_string(eval_program("(symbol=? 'a)")), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(boolean=?)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(boolean=? #t)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(symbol=?)")),
+    content="#t",
+  )
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program("(symbol=? 'a)")),
+    content="#t",
+  )
 }
 
 ///|
 test "r6rs equality predicates: type errors" {
-  expect_error(() => eval_program("(boolean=? #t 1)"))
-  expect_error(() => eval_program("(symbol=? 'a 1)"))
+  expect_error(() => @scheme-r6rs.eval_program("(boolean=? #t 1)"))
+  expect_error(() => @scheme-r6rs.eval_program("(symbol=? 'a 1)"))
 }

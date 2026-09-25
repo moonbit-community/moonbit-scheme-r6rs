@@ -8,7 +8,10 @@ test "r6rs records: constructor and accessors" {
     #|  (y point-y))
     #|(let ((p (make-point 1 2)))
     #|  (list (point? p) (point-x p) (point-y p)))
-  inspect(value_to_string(eval_program(program)), content="(#t 1 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t 1 2)",
+  )
 }
 
 ///|
@@ -22,7 +25,10 @@ test "r6rs records: mutator" {
     #|(let ((p (make-point 1 2)))
     #|  (set-point-x! p 9)
     #|  (point-x p))
-  inspect(value_to_string(eval_program(program)), content="9")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="9",
+  )
 }
 
 ///|
@@ -34,7 +40,10 @@ test "r6rs records: predicate false" {
     #|  (x point-x)
     #|  (y point-y))
     #|(point? 1)
-  inspect(value_to_string(eval_program(program)), content="#f")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#f",
+  )
 }
 
 ///|
@@ -52,7 +61,10 @@ test "r6rs records: inheritance" {
     #|  (color color-point-color))
     #|(let ((p (make-color-point 1 2 'red)))
     #|  (list (point? p) (color-point? p) (point-x p) (color-point-color p)))
-  inspect(value_to_string(eval_program(program)), content="(#t #t 1 red)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t 1 red)",
+  )
 }
 
 ///|
@@ -75,7 +87,10 @@ test "r6rs records: protocol" {
     #|  (color color-point-color))
     #|(let ((p (make-color-point 1 2)))
     #|  (color-point-color p))
-  inspect(value_to_string(eval_program(program)), content="blue")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="blue",
+  )
 }
 
 ///|
@@ -105,7 +120,7 @@ test "r6rs records: descriptors and flags" {
     #|        (record-type-field-names rtd)
     #|        (color-point-color (ctor 3 4 'blue))))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t color-point point #t #f (x y color) blue)",
   )
 }
@@ -140,7 +155,7 @@ test "r6rs records: procedural accessors and mutators" {
     #|        (record-type-field-mutable? rtd-color 0)
     #|        (record-type-field-mutable? rtd-color 2)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #f blue #f #t)",
   )
 }
@@ -169,7 +184,7 @@ test "r6rs records: uid and generative" {
     #|        (record-type-generative? rtd-c)
     #|        (record-type-uid rtd-c)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #f #f color-uid)",
   )
 }
@@ -190,7 +205,10 @@ test "r6rs records: opaque behavior" {
     #|(let ((s (make-secret 1))
     #|      (c (make-child 2 3)))
     #|  (list (record? s) (record? c)))
-  inspect(value_to_string(eval_program(program)), content="(#f #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#f #f)",
+  )
 }
 
 ///|
@@ -203,7 +221,7 @@ test "r6rs records: opaque record-rtd error" {
     #|  (x secret-x))
     #|(let ((s (make-secret 1)))
     #|  (record-rtd s))
-  try eval_program(program) catch {
+  try @scheme-r6rs.eval_program(program) catch {
     err => inspect(err, content="EvalError(\"record type is opaque\")")
   } noraise {
     _ => fail("expected record type is opaque")
@@ -223,7 +241,7 @@ test "r6rs records: sealed parent error" {
     #|  child?
     #|  (parent base)
     #|  (y child-y))
-  try eval_program(program) catch {
+  try @scheme-r6rs.eval_program(program) catch {
     err => inspect(err, content="EvalError(\"invalid define-record-type\")")
   } noraise {
     _ => fail("expected invalid define-record-type")
@@ -248,7 +266,7 @@ test "r6rs records: procedural descriptors" {
     #|        (record-type-field-mutable? rtd 0)
     #|        (record-type-field-mutable? rtd 1)))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t point 1 2 #t #f)",
   )
 }
@@ -280,7 +298,10 @@ test "r6rs records: procedural protocol with parent" {
     #|(define acc2 (record-accessor rtd2 2))
     #|(let ((r (make-r2 1 2 3)))
     #|  (list (acc0 r) (acc1 r) (acc2 r)))
-  inspect(value_to_string(eval_program(program)), content="(2 3 4)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 3 4)",
+  )
 }
 
 ///|
@@ -293,5 +314,8 @@ test "r6rs records: procedural nongenerative uid" {
     #|  (make-record-type-descriptor 'b #f 'u #f #f
     #|    '#((immutable x))))
     #|(eqv? rtd1 rtd2)
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }

@@ -7,7 +7,10 @@ test "r6rs macro: define-syntax basics" {
     #|(let ((x 1))
     #|  (inc x)
     #|  x)
-  inspect(value_to_string(eval_program(program)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="2",
+  )
   let program2 =
     #|(define-syntax swap!
     #|  (syntax-rules ()
@@ -15,7 +18,10 @@ test "r6rs macro: define-syntax basics" {
     #|(let ((x 1) (y 2))
     #|  (swap! x y)
     #|  (list x y))
-  inspect(value_to_string(eval_program(program2)), content="(2 1)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program2)),
+    content="(2 1)",
+  )
 }
 
 ///|
@@ -25,13 +31,19 @@ test "r6rs macro: syntax-rules literals" {
     #|  (syntax-rules (then else)
     #|    ((my-if test then a else b) (if test a b))))
     #|(my-if #t then 1 else 2)
-  inspect(value_to_string(eval_program(program)), content="1")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="1",
+  )
   let program2 =
     #|(define-syntax my-if
     #|  (syntax-rules (then else)
     #|    ((my-if test then a else b) (if test a b))))
     #|(my-if #f then 1 else 2)
-  inspect(value_to_string(eval_program(program2)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program2)),
+    content="2",
+  )
 }
 
 ///|
@@ -43,7 +55,10 @@ test "r6rs macro: literals respect bindings" {
     #|    ((_ x) 'literal)
     #|    ((_ y) 'other)))
     #|(list (pick x) (let ((x 'local)) (pick x)))
-  inspect(value_to_string(eval_program(program)), content="(literal other)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(literal other)",
+  )
 }
 
 ///|
@@ -53,7 +68,10 @@ test "r6rs macro: quote strips syntax objects" {
     #|  (syntax-rules ()
     #|    ((literal-pair) '(a b))))
     #|(literal-pair)
-  inspect(value_to_string(eval_program(program)), content="(a b)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(a b)",
+  )
 }
 
 ///|
@@ -66,7 +84,10 @@ test "r6rs macro: hygiene with internal bindings" {
     #|        (if t t b)))))
     #|(let ((t 1))
     #|  (or2 #f t))
-  inspect(value_to_string(eval_program(program)), content="1")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="1",
+  )
 }
 
 ///|
@@ -76,7 +97,10 @@ test "r6rs macro: dotted list pattern" {
     #|  (syntax-rules ()
     #|    ((split-dot (a . b)) (list a b))))
     #|(split-dot (1 . 2))
-  inspect(value_to_string(eval_program(program)), content="(1 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(1 2)",
+  )
 }
 
 ///|
@@ -89,7 +113,10 @@ test "r6rs macro: chained expansions" {
     #|  (syntax-rules ()
     #|    ((add2 x) (add1 (add1 x)))))
     #|(add2 3)
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -104,7 +131,10 @@ test "r6rs macro: definition environment bindings" {
     #|      ((_ x) (helper x)))))
     #|(import (def-env))
     #|(m 2)
-  inspect(value_to_string(eval_program(program)), content="12")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="12",
+  )
 }
 
 ///|
@@ -120,7 +150,10 @@ test "r6rs macro: procedural definition environment" {
     #|(import (proc-env))
     #|(let ((helper (lambda (x) (+ x 100))))
     #|  (m))
-  inspect(value_to_string(eval_program(program)), content="13")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="13",
+  )
 }
 
 ///|
@@ -131,7 +164,10 @@ test "r6rs macro: procedural use-site identifiers" {
     #|    (datum->syntax stx 'x)))
     #|(let ((x 7))
     #|  (get-x))
-  inspect(value_to_string(eval_program(program)), content="7")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="7",
+  )
 }
 
 ///|
@@ -141,7 +177,10 @@ test "r6rs macro: procedural transformer expression" {
     #|  (let ((d '(quote ok)))
     #|    (lambda (stx) (datum->syntax stx d))))
     #|(const-ok)
-  inspect(value_to_string(eval_program(program)), content="ok")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="ok",
+  )
 }
 
 ///|
@@ -159,7 +198,10 @@ test "r6rs macro: procedural identifier equality" {
     #|            #'#t
     #|            #'#f))))
     #|  (check))
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
@@ -174,7 +216,10 @@ test "r6rs macro: datum->syntax def and use-site contexts" {
     #|          (list 'list use def)))))
     #|  (let ((x 'use))
     #|    (pick-x x)))
-  inspect(value_to_string(eval_program(program)), content="(use def)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(use def)",
+  )
 }
 
 ///|
@@ -186,7 +231,10 @@ test "r6rs macro: procedural transformer with syntax-case" {
     #|      (syntax-case stx ()
     #|        ((_ x) #`(+ x #,k))))))
     #|(addk 3)
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -202,7 +250,7 @@ test "r6rs macro: syntax-rules preserves syntax forms" {
     #|(define d (syntax->datum (make-stx 1 2)))
     #|(list a b c d)
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t 1 #t (list 1 2))",
   )
 }
@@ -216,7 +264,10 @@ test "r6rs macro: syntax-case ellipsis template" {
     #|      ((_ (a b) ...)
     #|       #'(list (list a b) ...)))))
     #|(sc-pairs (1 2) (3 4))
-  inspect(value_to_string(eval_program(program)), content="((1 2) (3 4))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2) (3 4))",
+  )
 }
 
 ///|
@@ -228,7 +279,10 @@ test "r6rs macro: syntax-case nested ellipsis" {
     #|      ((_ ((x ...) ...))
     #|       #'(list (list x ...) ...)))))
     #|(sc-nested ((1 2) (3 4 5)))
-  inspect(value_to_string(eval_program(program)), content="((1 2) (3 4 5))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((1 2) (3 4 5))",
+  )
 }
 
 ///|
@@ -245,7 +299,10 @@ test "r6rs macro: syntax-case fender" {
     #|      ((_ x) #f #'(+ x 1))
     #|      ((_ x) #'x))))
     #|(list (sc-true 2) (sc-false 2))
-  inspect(value_to_string(eval_program(program)), content="(3 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(3 2)",
+  )
 }
 
 ///|
@@ -258,13 +315,16 @@ test "r6rs macro: syntax-case with-syntax" {
     #|       (with-syntax ((y x))
     #|         #'(list y y))))))
     #|(sc-dup 5)
-  inspect(value_to_string(eval_program(program)), content="(5 5)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(5 5)",
+  )
 }
 
 ///|
 test "r6rs macro: syntax-case transformer errors" {
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (a b)
@@ -275,7 +335,7 @@ test "r6rs macro: syntax-case transformer errors" {
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (stx)
@@ -296,7 +356,10 @@ test "r6rs macro: identifier-syntax templates" {
     #|  (identifier-syntax
     #|    ((vect x) #(x y))))
     #|#t
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
@@ -309,7 +372,10 @@ test "r6rs macro: identifier-syntax patterns" {
     #|  (identifier-syntax
     #|    ((vecpat #(a b)) (list a b))))
     #|#t
-  inspect(value_to_string(eval_program(program)), content="#t")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#t",
+  )
 }
 
 ///|
@@ -323,13 +389,16 @@ test "r6rs macro: syntax-case with-syntax bodies" {
     #|         #'(list y y)
     #|         #'(list y))))))
     #|(sc-begin 5)
-  inspect(value_to_string(eval_program(program)), content="(5)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(5)",
+  )
 }
 
 ///|
 test "r6rs macro: with-syntax errors" {
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (stx)
@@ -340,7 +409,7 @@ test "r6rs macro: with-syntax errors" {
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (stx)
@@ -351,7 +420,7 @@ test "r6rs macro: with-syntax errors" {
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (stx)
@@ -362,7 +431,7 @@ test "r6rs macro: with-syntax errors" {
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(define-syntax bad
         #|  (lambda (stx)
@@ -384,7 +453,10 @@ test "r6rs macro: syntax-case literal matching" {
     #|      ((_ other x) #'(list 'no x)))))
     #|(list (sc-lit kw 1)
     #|      (let ((kw 'shadow)) (sc-lit kw 2)))
-  inspect(value_to_string(eval_program(program)), content="((ok 1) (no 2))")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="((ok 1) (no 2))",
+  )
 }
 
 ///|
@@ -394,7 +466,10 @@ test "r6rs macro: vector template ellipsis" {
     #|  (syntax-rules ()
     #|    ((_ x ...) #(x ...))))
     #|(vlist 1 2 3)
-  inspect(value_to_string(eval_program(program)), content="#(1 2 3)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#(1 2 3)",
+  )
 }
 
 ///|
@@ -429,7 +504,7 @@ test "r6rs macro: syntax-case literal pattern matrix" {
     #|      (lit-case (1 . 2))
     #|      (lit-case sym))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(\"one\" \"big\" \"rat\" \"bigrat\" \"complex\" \"float\" \"char\" \"string\" \"vector\" \"bytevector\" \"pair\" \"sym\")",
   )
 }
@@ -443,13 +518,16 @@ test "r6rs macro: quasisyntax vector ellipsis" {
     #|      ((_ (x ...) y)
     #|       (quasisyntax #(x ... y))))))
     #|(qvec (1 2 3) 4)
-  inspect(value_to_string(eval_program(program)), content="#(1 2 3 4)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="#(1 2 3 4)",
+  )
 }
 
 ///|
 test "r6rs macro: syntax-case clause error" {
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(begin
         #|  (define-syntax bad

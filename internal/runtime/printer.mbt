@@ -21,7 +21,7 @@ priv struct PrinterState {
 
 ///|
 fn PrinterState::new() -> PrinterState {
-  { labels: {} }
+  { labels: {}, }
 }
 
 ///|
@@ -191,8 +191,8 @@ fn datum_list_to_string_state(
 /// # Example
 /// ```mbt check
 /// test "value to string" {
-///   let value = Value::Datum(Int(7))
-///   inspect(value_to_string(value), content="7")
+///   let value = @runtime.Value::Datum(Int(7))
+///   inspect(@runtime.value_to_string(value), content="7")
 /// }
 /// ```
 pub fn value_to_string(value : @core.Value) -> String {

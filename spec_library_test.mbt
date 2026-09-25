@@ -7,7 +7,10 @@ test "r6rs libraries: define and import" {
     #|  (define (add1 x) (+ x 1)))
     #|(import (math))
     #|(add1 4)
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -19,7 +22,10 @@ test "r6rs libraries: exported bindings" {
     #|  (define answer 42))
     #|(import (data))
     #|answer
-  inspect(value_to_string(eval_program(program)), content="42")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="42",
+  )
 }
 
 ///|
@@ -35,7 +41,10 @@ test "r6rs libraries: library imports" {
     #|  (define (add2 x) (inc (inc x))))
     #|(import (user))
     #|(add2 3)
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -48,7 +57,10 @@ test "r6rs libraries: import sets" {
     #|  (define b 2))
     #|(import (only (base-only) a))
     #|a
-  inspect(value_to_string(eval_program(only_prog)), content="1")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(only_prog)),
+    content="1",
+  )
   let except_prog =
     #|(library (base-except)
     #|  (export a b)
@@ -57,7 +69,10 @@ test "r6rs libraries: import sets" {
     #|  (define b 4))
     #|(import (except (base-except) a))
     #|b
-  inspect(value_to_string(eval_program(except_prog)), content="4")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(except_prog)),
+    content="4",
+  )
   let rename_prog =
     #|(library (base-rename)
     #|  (export a b)
@@ -66,7 +81,10 @@ test "r6rs libraries: import sets" {
     #|  (define b 6))
     #|(import (rename (base-rename) (a x) (b y)))
     #|(+ x y)
-  inspect(value_to_string(eval_program(rename_prog)), content="11")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(rename_prog)),
+    content="11",
+  )
   let prefix_prog =
     #|(library (base-prefix)
     #|  (export a b)
@@ -75,7 +93,10 @@ test "r6rs libraries: import sets" {
     #|  (define b 8))
     #|(import (prefix (base-prefix) pre-))
     #|(+ pre-a pre-b)
-  inspect(value_to_string(eval_program(prefix_prog)), content="15")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(prefix_prog)),
+    content="15",
+  )
   let nested_prog =
     #|(library (base-nested)
     #|  (export a b)
@@ -84,7 +105,10 @@ test "r6rs libraries: import sets" {
     #|  (define b 10))
     #|(import (only (prefix (base-nested) pre-) pre-b))
     #|pre-b
-  inspect(value_to_string(eval_program(nested_prog)), content="10")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(nested_prog)),
+    content="10",
+  )
   let for_prog =
     #|(library (base-for)
     #|  (export a)
@@ -92,7 +116,10 @@ test "r6rs libraries: import sets" {
     #|  (define a 12))
     #|(import (for (base-for) run))
     #|a
-  inspect(value_to_string(eval_program(for_prog)), content="12")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(for_prog)),
+    content="12",
+  )
 }
 
 ///|
@@ -104,7 +131,10 @@ test "r6rs libraries: export rename" {
     #|  (define (add1 x) (+ x 1)))
     #|(import (export-rename))
     #|(inc 4)
-  inspect(value_to_string(eval_program(program)), content="5")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="5",
+  )
 }
 
 ///|
@@ -116,7 +146,10 @@ test "r6rs libraries: versioned names" {
     #|  (define val 99))
     #|(import (ver-lib (1 0)))
     #|val
-  inspect(value_to_string(eval_program(program)), content="99")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="99",
+  )
 }
 
 ///|
@@ -132,7 +165,10 @@ test "r6rs libraries: version references" {
     #|  (define val 20))
     #|(import (ver-ref (>= 1 0)))
     #|val
-  inspect(value_to_string(eval_program(program)), content="20")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="20",
+  )
   let program2 =
     #|(library (ver-and (1 0))
     #|  (export val)
@@ -144,7 +180,10 @@ test "r6rs libraries: version references" {
     #|  (define val 200))
     #|(import (ver-and (and (>= (1 0)) (< (2 0)))))
     #|val
-  inspect(value_to_string(eval_program(program2)), content="100")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program2)),
+    content="100",
+  )
 }
 
 ///|
@@ -160,7 +199,10 @@ test "r6rs libraries: version reference operators" {
     #|  (define val 20))
     #|(import (ver-gt (> (1 0))))
     #|val
-  inspect(value_to_string(eval_program(gt_prog)), content="20")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(gt_prog)),
+    content="20",
+  )
   let le_prog =
     #|(library (ver-le (1 0))
     #|  (export val)
@@ -172,7 +214,10 @@ test "r6rs libraries: version reference operators" {
     #|  (define val 22))
     #|(import (ver-le (<= (1 0))))
     #|val
-  inspect(value_to_string(eval_program(le_prog)), content="11")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(le_prog)),
+    content="11",
+  )
   let not_prog =
     #|(library (ver-not (1 0))
     #|  (export val)
@@ -184,7 +229,10 @@ test "r6rs libraries: version reference operators" {
     #|  (define val 40))
     #|(import (ver-not (not (1 0))))
     #|val
-  inspect(value_to_string(eval_program(not_prog)), content="40")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(not_prog)),
+    content="40",
+  )
   let lt_prog =
     #|(library (ver-lt (1 0))
     #|  (export val)
@@ -196,7 +244,10 @@ test "r6rs libraries: version reference operators" {
     #|  (define val 24))
     #|(import (ver-lt (< (2 0))))
     #|val
-  inspect(value_to_string(eval_program(lt_prog)), content="12")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(lt_prog)),
+    content="12",
+  )
 }
 
 ///|
@@ -206,7 +257,10 @@ test "r6rs libraries: base syntax keyword import" {
     #|              define lambda if set! begin syntax-rules identifier-syntax))
     #|(define x 0)
     #|((lambda (v) (if v (begin (set! x 2) x) x)) #t)
-  inspect(value_to_string(eval_program(program)), content="2")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="2",
+  )
 }
 
 ///|
@@ -220,7 +274,10 @@ test "r6rs libraries: macro import sets" {
     #|      ((_ x) (list x 'ok)))))
     #|(import (prefix (macro-prefix) pre-))
     #|(pre-m 1)
-  inspect(value_to_string(eval_program(prefix_prog)), content="(1 ok)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(prefix_prog)),
+    content="(1 ok)",
+  )
   let rename_prog =
     #|(library (macro-rename)
     #|  (export m)
@@ -230,13 +287,16 @@ test "r6rs libraries: macro import sets" {
     #|      ((_ x) (list x 'ok)))))
     #|(import (rename (macro-rename) (m mm)))
     #|(mm 2)
-  inspect(value_to_string(eval_program(rename_prog)), content="(2 ok)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(rename_prog)),
+    content="(2 ok)",
+  )
 }
 
 ///|
 test "r6rs libraries: base excludes syntax-case" {
   try
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (only (rnrs base) syntax-case))
         #|#t
@@ -251,17 +311,19 @@ test "r6rs libraries: base excludes syntax-case" {
 
 ///|
 test "r6rs libraries: import error cases" {
-  expect_error(() => eval_program("(import (no-such-lib))"))
-  expect_error(() => eval_program("(import (only (rnrs base) no-such-binding))"))
+  expect_error(() => @scheme-r6rs.eval_program("(import (no-such-lib))"))
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program("(import (only (rnrs base) no-such-binding))")
+  })
+  expect_error(() => {
+    @scheme-r6rs.eval_program(
       (
         #|(import (rename (rnrs base) (car x) (car y)))
       ),
     )
   })
   expect_error(() => {
-    eval_program(
+    @scheme-r6rs.eval_program(
       (
         #|(import (rename (rnrs base) (car x) (cdr x)))
       ),

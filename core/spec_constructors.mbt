@@ -6,7 +6,7 @@ pub fn Closure::new(
   body : Array[Datum],
   env : Env,
 ) -> Closure {
-  { id, params, rest, body, env }
+  { id, params, rest, body, env, }
 }
 
 ///|
@@ -15,22 +15,22 @@ pub fn CaseClosure::new(
   clauses : Array[CaseClause],
   env : Env,
 ) -> CaseClosure {
-  { id, clauses, env }
+  { id, clauses, env, }
 }
 
 ///|
 pub fn EvalEnv::new(id : Int, env : Env) -> EvalEnv {
-  { id, env }
+  { id, env, }
 }
 
 ///|
 pub fn Parameter::new(id : Int, value : Value, converter : Value?) -> Parameter {
-  { id, value: Ref(value), converter }
+  { id, value: Ref(value), converter, }
 }
 
 ///|
 pub fn Promise::new(id : Int, state : PromiseState) -> Promise {
-  { id, state: Ref(state) }
+  { id, state: Ref(state), }
 }
 
 ///|
@@ -39,7 +39,7 @@ pub fn SyntaxRule::new(
   template : Datum,
   fender : Datum?,
 ) -> SyntaxRule {
-  { pattern, template, fender }
+  { pattern, template, fender, }
 }
 
 ///|
@@ -50,7 +50,7 @@ pub fn SyntaxRules::new(
   kind : SyntaxRulesKind,
   def_env : Env,
 ) -> SyntaxRules {
-  { literals, rules, ellipsis, kind, def_env }
+  { literals, rules, ellipsis, kind, def_env, }
 }
 
 ///|
@@ -59,7 +59,7 @@ pub fn SyntaxObject::new(
   scopes : Array[Int],
   binding_id : Int?,
 ) -> SyntaxObject {
-  { datum, scopes, binding_id }
+  { datum, scopes, binding_id, }
 }
 
 ///|
@@ -68,7 +68,7 @@ pub fn CaseClause::new(
   rest : String?,
   body : Array[Datum],
 ) -> CaseClause {
-  { params, rest, body }
+  { params, rest, body, }
 }
 
 ///|
@@ -80,5 +80,5 @@ pub fn GuardHandler::new(
   resume_value : Value,
   handlers : Array[Value],
 ) -> GuardHandler {
-  { id, name, clauses, env, resume_value, handlers }
+  { id, name, clauses, env, resume_value, handlers, }
 }

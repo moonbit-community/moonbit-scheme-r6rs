@@ -8,7 +8,10 @@ test "r6rs libraries: flonums predicates and conversion" {
     #|      (flonum? (fixnum->flonum 3))
     #|      (flinteger? 2.0)
     #|      (flinteger? 2.5))
-  inspect(value_to_string(eval_program(program)), content="(#t #f #t #t #t #f)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #f #t #t #t #f)",
+  )
 }
 
 ///|
@@ -29,7 +32,7 @@ test "r6rs libraries: flonums comparisons and predicates" {
     #|      (flinfinite? +inf.0)
     #|      (flnan? +nan.0))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t #t #t #t #t #t #t #t)",
   )
 }
@@ -48,7 +51,7 @@ test "r6rs libraries: flonums arithmetic" {
     #|      (= (flmin 1.0 3.0 2.0) 1.0)
     #|      (= (flabs -3.0) 3.0))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t #t #t #t)",
   )
 }
@@ -68,7 +71,7 @@ test "r6rs libraries: flonums division and remainder" {
     #|      (= (fldiv0 -7.0 3.0) -2.0)
     #|      (= (flmod0 -7.0 3.0) -1.0))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="((#t #t) (#t #t) #t #t #t #t)",
   )
 }
@@ -85,7 +88,7 @@ test "r6rs libraries: flonums numerator/denominator and rounding" {
     #|      (fl=? (flround 2.5) 2.0)
     #|      (fl=? (flround 3.5) 4.0))
   inspect(
-    value_to_string(eval_program(program)),
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
     content="(#t #t #t #t #t #t #t)",
   )
 }
@@ -98,7 +101,10 @@ test "r6rs libraries: flonums elementary functions" {
     #|      (fl=? (flexpt 2.0 3.0) 8.0)
     #|      (fl=? (flatan 0.0) 0.0)
     #|      (fl=? (flatan 0.0 1.0) 0.0))
-  inspect(value_to_string(eval_program(program)), content="(#t #t #t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t #t #t)",
+  )
 }
 
 ///|
@@ -107,12 +113,17 @@ test "r6rs libraries: flonums condition types" {
     #|(import (rnrs arithmetic flonums))
     #|(list (no-infinities-violation? (make-no-infinities-violation))
     #|      (no-nans-violation? (make-no-nans-violation)))
-  inspect(value_to_string(eval_program(program)), content="(#t #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t)",
+  )
 }
 
 ///|
 test "r6rs libraries: flonum arity and type errors" {
-  let expect_err = (expr : String) => expect_error(() => eval_program(expr))
+  let expect_err = (expr : String) => {
+    expect_error(() => @scheme-r6rs.eval_program(expr))
+  }
   expect_err("(begin (import (rnrs arithmetic flonums)) (flsqrt))")
   expect_err("(begin (import (rnrs arithmetic flonums)) (flatan))")
   expect_err("(begin (import (rnrs arithmetic flonums)) (flatan 1.0 2.0 3.0))")

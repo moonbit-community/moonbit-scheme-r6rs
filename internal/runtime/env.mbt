@@ -4,9 +4,9 @@
 /// # Example
 /// ```mbt check
 /// test "env define and lookup" {
-///   let env = env_new()
-///   env_define(env, "x", Datum(Int(1)))
-///   match env_lookup_optional(env, "x") {
+///   let env = @runtime.env_new()
+///   @runtime.env_define(env, "x", Datum(Int(1)))
+///   match @runtime.env_lookup_optional(env, "x") {
 ///     Some(Datum(Int(1))) => ()
 ///     _ => fail("expected bound value")
 ///   }
@@ -32,11 +32,11 @@ pub fn env_extend(env : @core.Env) -> @core.Env {
 /// # Example
 /// ```mbt check
 /// test "env clone isolates frames" {
-///   let env = env_new()
-///   env_define(env, "x", Datum(Int(1)))
-///   let cloned = env_clone(env)
-///   env_set(env, "x", Datum(Int(2)))
-///   match env_lookup_optional(cloned, "x") {
+///   let env = @runtime.env_new()
+///   @runtime.env_define(env, "x", Datum(Int(1)))
+///   let cloned = @runtime.env_clone(env)
+///   @runtime.env_set(env, "x", Datum(Int(2)))
+///   match @runtime.env_lookup_optional(cloned, "x") {
 ///     Some(Datum(Int(1))) => ()
 ///     _ => fail("expected cloned value to stay 1")
 ///   }
@@ -102,7 +102,7 @@ pub fn env_define(env : @core.Env, name : String, value : @core.Value) -> Unit {
 /// # Example
 /// ```mbt check
 /// test "make binding" {
-///   let binding = make_binding(Datum(Int(1)))
+///   let binding = @runtime.make_binding(Datum(Int(1)))
 ///   match binding.value() {
 ///     Datum(Int(1)) => ()
 ///     _ => fail("expected datum binding")
@@ -137,8 +137,8 @@ pub fn env_binding_id_optional(env : @core.Env, name : String) -> Int? {
 /// # Example
 /// ```mbt check
 /// test "env lookup missing" {
-///   let env = env_new()
-///   try env_lookup(env, "missing") catch {
+///   let env = @runtime.env_new()
+///   try @runtime.env_lookup(env, "missing") catch {
 ///     _ => ()
 ///   } noraise {
 ///     _ => fail("expected error")
@@ -164,10 +164,10 @@ pub fn env_lookup_optional(env : @core.Env, name : String) -> @core.Value? {
 /// # Example
 /// ```mbt check
 /// test "env set" {
-///   let env = env_new()
-///   env_define(env, "x", Datum(Int(1)))
-///   env_set(env, "x", Datum(Int(2)))
-///   match env_lookup_optional(env, "x") {
+///   let env = @runtime.env_new()
+///   @runtime.env_define(env, "x", Datum(Int(1)))
+///   @runtime.env_set(env, "x", Datum(Int(2)))
+///   match @runtime.env_lookup_optional(env, "x") {
 ///     Some(Datum(Int(2))) => ()
 ///     _ => fail("expected updated value")
 ///   }

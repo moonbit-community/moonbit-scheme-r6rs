@@ -6,5 +6,8 @@ test "r6rs tco: tail recursion" {
     #|                    acc
     #|                    (loop (- n 1) (+ acc n))))))
     #|  (loop 20000 0))
-  inspect(value_to_string(eval_program(program)), content="200010000")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="200010000",
+  )
 }

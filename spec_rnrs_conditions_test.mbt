@@ -4,7 +4,10 @@ test "r6rs libraries: conditions basics" {
     #|(import (rnrs conditions))
     #|(define c (make-message-condition "hi"))
     #|(list (message-condition? c) (condition-message c))
-  inspect(value_to_string(eval_program(program)), content="(#t \"hi\")")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t \"hi\")",
+  )
 }
 
 ///|
@@ -19,7 +22,10 @@ test "r6rs libraries: conditions compound" {
     #|      (message-condition? (car parts))
     #|      (condition-message (car parts))
     #|      (warning? (car (cdr parts))))
-  inspect(value_to_string(eval_program(program)), content="(#t #t \"a\" #t)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t #t \"a\" #t)",
+  )
 }
 
 ///|
@@ -29,7 +35,10 @@ test "r6rs libraries: define-condition-type" {
     #|(define-condition-type &c &condition make-c c? (x c-x))
     #|(define c (make-c 42))
     #|(list (c? c) (c-x c))
-  inspect(value_to_string(eval_program(program)), content="(#t 42)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t 42)",
+  )
 }
 
 ///|
@@ -40,5 +49,8 @@ test "r6rs libraries: syntax violations" {
     #|(list (syntax-violation? s)
     #|      (syntax-violation-form s)
     #|      (syntax-violation-subform s))
-  inspect(value_to_string(eval_program(program)), content="(#t form subform)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(#t form subform)",
+  )
 }

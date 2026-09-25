@@ -1,5 +1,11 @@
 import {
   "bobzhang/scheme-r6rs/core",
-  "moonbitlang/core/bigint",
-  "moonbitlang/core/buffer",
 }
+
+import {
+  "moonbitlang/core/bigint",
+} for "test"
+
+import {
+  "moonbitlang/core/bigint",
+} for "wbtest"

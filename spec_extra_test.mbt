@@ -1,8 +1,8 @@
 ///|
 test "r6rs extra: pairs, apply, and predicates" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|'(1 . 2)
         ),
@@ -11,8 +11,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="(1 . 2)",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cdr '(1 . 2))
         ),
@@ -21,8 +21,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(list)
         ),
@@ -31,8 +31,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="()",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(apply + 1 2 '(3 4))
         ),
@@ -41,8 +41,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="10",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(cond ((< 1 2)) (else 3))
         ),
@@ -51,8 +51,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(procedure? 1)
         ),
@@ -61,8 +61,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(symbol? 'a)
         ),
@@ -71,8 +71,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="#t",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(boolean? 1)
         ),
@@ -81,8 +81,8 @@ test "r6rs extra: pairs, apply, and predicates" {
     content="#f",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(number? #t)
         ),
@@ -95,8 +95,8 @@ test "r6rs extra: pairs, apply, and predicates" {
 ///|
 test "r6rs extra: mutation and short-circuit" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x 1))
           #|  (let ((f (lambda () x)))
@@ -108,8 +108,8 @@ test "r6rs extra: mutation and short-circuit" {
     content="2",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x 0))
           #|  (and #f (set! x 1))
@@ -120,8 +120,8 @@ test "r6rs extra: mutation and short-circuit" {
     content="0",
   )
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|(let ((x 0))
           #|  (or #t (set! x 1))
@@ -136,8 +136,8 @@ test "r6rs extra: mutation and short-circuit" {
 ///|
 test "r6rs extra: string escapes" {
   inspect(
-    value_to_string(
-      eval_program(
+    @scheme-r6rs.value_to_string(
+      @scheme-r6rs.eval_program(
         (
           #|"a\n"
         ),

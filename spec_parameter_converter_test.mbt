@@ -4,7 +4,10 @@ test "r6rs make-parameter: converter" {
     #|(begin
     #|  (define p (make-parameter 1 (lambda (x) (+ x 1))))
     #|  (list (p) (parameterize ((p 5)) (p)) (p)))
-  inspect(value_to_string(eval_program(program)), content="(2 6 2)")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="(2 6 2)",
+  )
 }
 
 ///|
@@ -14,5 +17,8 @@ test "r6rs make-parameter: converter on set" {
     #|  (define p (make-parameter 0 (lambda (x) (+ x 2))))
     #|  (p 5)
     #|  (p))
-  inspect(value_to_string(eval_program(program)), content="7")
+  inspect(
+    @scheme-r6rs.value_to_string(@scheme-r6rs.eval_program(program)),
+    content="7",
+  )
 }
