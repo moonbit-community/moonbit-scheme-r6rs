@@ -1,9 +1,9 @@
 name = "bobzhang/scheme"
 
-version = "0.1.2"
+version = "0.1.3"
 
 import {
-  "bobzhang/scheme-r6rs@0.1.2",
+  "bobzhang/scheme-r6rs@0.1.3",
   "moonbitlang/async@0.22.4",
 }
 

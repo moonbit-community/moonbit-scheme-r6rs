@@ -1,6 +1,6 @@
 name = "bobzhang/scheme-r6rs"
 
-version = "0.1.2"
+version = "0.1.3"
 
 import {
   "moonbitlang/async@0.22.4",
