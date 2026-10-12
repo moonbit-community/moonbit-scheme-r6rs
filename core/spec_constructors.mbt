@@ -1,6 +1,6 @@
 ///|
 pub fn Closure::new(
-  id : Int,
+  id : Int32,
   params : Array[String],
   rest : String?,
   body : Array[Datum],
@@ -11,7 +11,7 @@ pub fn Closure::new(
 
 ///|
 pub fn CaseClosure::new(
-  id : Int,
+  id : Int32,
   clauses : Array[CaseClause],
   env : Env,
 ) -> CaseClosure {
@@ -19,17 +19,21 @@ pub fn CaseClosure::new(
 }
 
 ///|
-pub fn EvalEnv::new(id : Int, env : Env) -> EvalEnv {
+pub fn EvalEnv::new(id : Int32, env : Env) -> EvalEnv {
   { id, env, }
 }
 
 ///|
-pub fn Parameter::new(id : Int, value : Value, converter : Value?) -> Parameter {
+pub fn Parameter::new(
+  id : Int32,
+  value : Value,
+  converter : Value?,
+) -> Parameter {
   { id, value: Ref(value), converter, }
 }
 
 ///|
-pub fn Promise::new(id : Int, state : PromiseState) -> Promise {
+pub fn Promise::new(id : Int32, state : PromiseState) -> Promise {
   { id, state: Ref(state), }
 }
 
@@ -56,8 +60,8 @@ pub fn SyntaxRules::new(
 ///|
 pub fn SyntaxObject::new(
   datum : Datum,
-  scopes : Array[Int],
-  binding_id : Int?,
+  scopes : Array[Int32],
+  binding_id : Int32?,
 ) -> SyntaxObject {
   { datum, scopes, binding_id, }
 }
@@ -73,7 +77,7 @@ pub fn CaseClause::new(
 
 ///|
 pub fn GuardHandler::new(
-  id : Int,
+  id : Int32,
   name : String,
   clauses : Array[Datum],
   env : Env,

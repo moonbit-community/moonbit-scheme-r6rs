@@ -1,16 +1,16 @@
 ///|
-pub fn Port::new_output_string(id : Int, initial : String) -> Port {
+pub fn Port::new_output_string(id : Int32, initial : String) -> Port {
   let buffer = Ref::Ref(initial)
   { id, kind: OutputString(buffer), }
 }
 
 ///|
-pub fn Winder::new_proc(id : Int, before : Value, after : Value) -> Winder {
+pub fn Winder::new_proc(id : Int32, before : Value, after : Value) -> Winder {
   { id, kind: Proc(before, after), }
 }
 
 ///|
-pub fn Winder::new_params(id : Int, bindings : Array[ParamBinding]) -> Winder {
+pub fn Winder::new_params(id : Int32, bindings : Array[ParamBinding]) -> Winder {
   { id, kind: Params(bindings), }
 }
 
@@ -21,7 +21,7 @@ pub fn RecordField::new(name : String, mutable : Bool) -> RecordField {
 
 ///|
 pub fn RecordType::new(
-  id : Int,
+  id : Int32,
   name : String,
   parent : RecordType?,
   is_sealed : Bool,
@@ -34,7 +34,7 @@ pub fn RecordType::new(
 
 ///|
 pub fn Record::new(
-  id : Int,
+  id : Int32,
   record_type : RecordType,
   values : Array[Value],
 ) -> Record {
@@ -43,7 +43,7 @@ pub fn Record::new(
 }
 
 ///|
-pub fn Condition::new(id : Int, components : Array[Record]) -> Condition {
+pub fn Condition::new(id : Int32, components : Array[Record]) -> Condition {
   { id, components, }
 }
 
@@ -54,7 +54,7 @@ pub fn HashtableEntry::new(key : Value, value : Value) -> HashtableEntry {
 
 ///|
 pub fn Hashtable::new(
-  id : Int,
+  id : Int32,
   mutable : Bool,
   equiv : HashtableEquiv,
   hash : Value?,
@@ -65,7 +65,7 @@ pub fn Hashtable::new(
 
 ///|
 pub fn EnumSet::new(
-  id : Int,
+  id : Int32,
   universe : Array[String],
   members : Array[Bool],
 ) -> EnumSet {
@@ -73,23 +73,26 @@ pub fn EnumSet::new(
 }
 
 ///|
-pub fn EnumSetProc::new(id : Int, kind : EnumSetProcKind) -> EnumSetProc {
+pub fn EnumSetProc::new(id : Int32, kind : EnumSetProcKind) -> EnumSetProc {
   { id, kind, }
 }
 
 ///|
-pub fn RecordProc::new(id : Int, kind : RecordProcKind) -> RecordProc {
+pub fn RecordProc::new(id : Int32, kind : RecordProcKind) -> RecordProc {
   { id, kind, }
 }
 
 ///|
-pub fn ConditionProc::new(id : Int, kind : ConditionProcKind) -> ConditionProc {
+pub fn ConditionProc::new(
+  id : Int32,
+  kind : ConditionProcKind,
+) -> ConditionProc {
   { id, kind, }
 }
 
 ///|
 pub fn RecordConstructorDescriptor::new(
-  id : Int,
+  id : Int32,
   record_type : RecordType,
   parent_desc : RecordConstructorDescriptor?,
   protocol : Value?,
@@ -99,7 +102,7 @@ pub fn RecordConstructorDescriptor::new(
 
 ///|
 pub fn RecordTypeDescriptor::new(
-  id : Int,
+  id : Int32,
   record_type : RecordType,
   constructor_desc : RecordConstructorDescriptor,
 ) -> RecordTypeDescriptor {
@@ -133,7 +136,7 @@ pub fn GuardInfo::new(
 
 ///|
 pub fn Continuation::new(
-  id : Int,
+  id : Int32,
   kont : Kont,
   handlers : Array[Value],
   winds : Array[Winder],

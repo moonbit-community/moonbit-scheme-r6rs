@@ -127,7 +127,7 @@ pub fn env_lookup_binding(
 
 ///|
 /// Look up a binding id by name, returning None if missing.
-pub fn env_binding_id_optional(env : @core.Env, name : String) -> Int? {
+pub fn env_binding_id_optional(env : @core.Env, name : String) -> Int32? {
   env.get_binding(name).map(binding => binding.id())
 }
 

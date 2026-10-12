@@ -8,7 +8,7 @@
 ///   inspect(binding.id(), content="1")
 /// }
 /// ```
-pub fn Binding::new(id : Int, value : Value) -> Binding {
+pub fn Binding::new(id : Int32, value : Value) -> Binding {
   { id, value, }
 }
 
@@ -22,7 +22,7 @@ pub fn Binding::new(id : Int, value : Value) -> Binding {
 ///   inspect(binding.id(), content="7")
 /// }
 /// ```
-pub fn Binding::id(self : Binding) -> Int {
+pub fn Binding::id(self : Binding) -> Int32 {
   self.id
 }
 

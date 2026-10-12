@@ -6,7 +6,7 @@ fn apply_bytevector_primitive(
 ) -> @core.Value? raise @core.EvalError {
   match prim {
     ByteVector => {
-      let items : Array[Int] = args.map(arg => value_as_byte(arg))
+      let items : Array[Int32] = args.map(arg => value_as_byte(arg))
       Some(Datum(ByteVector(items)))
     }
     MakeByteVector =>
@@ -16,7 +16,7 @@ fn apply_bytevector_primitive(
             {
               let len = value_as_nonnegative_int(len_value)
               let fill = 0
-              let items : Array[Int] = []
+              let items : Array[Int32] = []
               for _ in 0..<len {
                 items.push(fill)
               }
@@ -28,7 +28,7 @@ fn apply_bytevector_primitive(
             {
               let len = value_as_nonnegative_int(len_value)
               let fill = value_as_byte(fill_value)
-              let items : Array[Int] = []
+              let items : Array[Int32] = []
               for _ in 0..<len {
                 items.push(fill)
               }
@@ -154,7 +154,7 @@ fn apply_bytevector_primitive(
             at,
             to_items.length(),
           )
-          let temp : Array[Int] = []
+          let temp : Array[Int32] = []
           for i in 0..<count {
             temp.push(from_items[start + i])
           }
@@ -169,7 +169,7 @@ fn apply_bytevector_primitive(
           )
       }
     ByteVectorAppend => {
-      let items : Array[Int] = []
+      let items : Array[Int32] = []
       for arg in args {
         let vec = value_as_bytevector(arg)
         items.push_iter(vec.iter())
@@ -235,7 +235,7 @@ fn apply_bytevector_primitive(
             {
               let datum = value_as_datum(datum_value)
               let items = datum_list_to_array(datum)
-              let bytes : Array[Int] = items.map(item => {
+              let bytes : Array[Int32] = items.map(item => {
                 match item {
                   Int(n) => {
                     if n < 0 || n > 255 {

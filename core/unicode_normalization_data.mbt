@@ -2,7 +2,7 @@
 // Source: Python's unicodedata tables.
 
 ///|
-const DECOMP_CANON_COUNT : Int = 2061
+const DECOMP_CANON_COUNT : Int32 = 2061
 
 ///|
 let decomp_canon_data : ReadOnlyArray[Char] = [
@@ -928,7 +928,7 @@ let decomp_canon_data : ReadOnlyArray[Char] = [
 ]
 
 ///|
-const DECOMP_COMPAT_COUNT : Int = 3675
+const DECOMP_COMPAT_COUNT : Int32 = 3675
 
 ///|
 let decomp_compat_data : ReadOnlyArray[Char] = [
@@ -2555,7 +2555,7 @@ let decomp_compat_data : ReadOnlyArray[Char] = [
 ]
 
 ///|
-const COMBINING_CLASS_COUNT : Int = 872
+const COMBINING_CLASS_COUNT : Int32 = 872
 
 ///|
 let combining_class_data_raw : ReadOnlyArray[Char] = [
@@ -2785,7 +2785,7 @@ let combining_class_data_raw : ReadOnlyArray[Char] = [
 ]
 
 ///|
-const COMPOSITION_COUNT : Int = 941
+const COMPOSITION_COUNT : Int32 = 941
 
 ///|
 let composition_data_raw : ReadOnlyArray[Char] = [

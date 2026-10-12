@@ -1,6 +1,6 @@
 ///|
 priv struct Counter {
-  cell : Ref[Int]
+  cell : Ref[Int32]
 }
 
 ///|
@@ -9,7 +9,7 @@ fn Counter::new() -> Counter {
 }
 
 ///|
-fn Counter::next(self : Counter) -> Int {
+fn Counter::next(self : Counter) -> Int32 {
   let id = self.cell.val
   self.cell.val = id + 1
   id
@@ -68,7 +68,8 @@ let record_type_uid_registry : Ref[Map[String, @core.RecordTypeDescriptor]] = Re
 )
 
 ///|
-let record_type_id_registry : Ref[Map[Int, @core.RecordTypeDescriptor]] = Ref({})
+let record_type_id_registry : Ref[Map[Int32, @core.RecordTypeDescriptor]] = Ref({},
+)
 
 ///|
 /// Generate a fresh symbol name with a gensym suffix.
@@ -89,69 +90,69 @@ pub fn gensym(base : String) -> String {
 
 ///|
 /// Allocate a new syntax context id.
-pub fn next_syntax_context() -> Int {
+pub fn next_syntax_context() -> Int32 {
   syntax_context_counter.next()
 }
 
 ///|
 /// Allocate a new binding id.
-fn next_binding_id() -> Int {
+fn next_binding_id() -> Int32 {
   binding_counter.next()
 }
 
 ///|
-fn next_port_id() -> Int {
+fn next_port_id() -> Int32 {
   port_counter.next()
 }
 
 ///|
-fn next_record_type_id() -> Int {
+fn next_record_type_id() -> Int32 {
   record_type_counter.next()
 }
 
 ///|
-fn next_record_id() -> Int {
+fn next_record_id() -> Int32 {
   record_counter.next()
 }
 
 ///|
-fn next_record_proc_id() -> Int {
+fn next_record_proc_id() -> Int32 {
   record_proc_counter.next()
 }
 
 ///|
-fn next_record_type_desc_id() -> Int {
+fn next_record_type_desc_id() -> Int32 {
   record_type_desc_counter.next()
 }
 
 ///|
-fn next_record_ctor_desc_id() -> Int {
+fn next_record_ctor_desc_id() -> Int32 {
   record_ctor_desc_counter.next()
 }
 
 ///|
-fn next_condition_id() -> Int {
+fn next_condition_id() -> Int32 {
   condition_counter.next()
 }
 
 ///|
-fn next_condition_proc_id() -> Int {
+fn next_condition_proc_id() -> Int32 {
   condition_proc_counter.next()
 }
 
 ///|
 /// Allocate a new hashtable id.
-fn next_hashtable_id() -> Int {
+fn next_hashtable_id() -> Int32 {
   hashtable_counter.next()
 }
 
 ///|
-fn next_enum_set_id() -> Int {
+fn next_enum_set_id() -> Int32 {
   enum_set_counter.next()
 }
 
 ///|
-fn next_enum_set_proc_id() -> Int {
+fn next_enum_set_proc_id() -> Int32 {
   enum_set_proc_counter.next()
 }
 
@@ -285,7 +286,7 @@ pub fn enum_set_universe_equal(a : @core.EnumSet, b : @core.EnumSet) -> Bool {
 
 ///|
 /// Find the index of a symbol in an enum-set universe.
-pub fn enum_set_index_of(universe : Array[String], name : String) -> Int? {
+pub fn enum_set_index_of(universe : Array[String], name : String) -> Int32? {
   for i, item in universe {
     if item == name {
       return Some(i)
@@ -390,7 +391,7 @@ pub fn lookup_record_type_descriptor_by_uid(
 ///|
 /// Look up a record type descriptor by internal id.
 pub fn lookup_record_type_descriptor_by_id(
-  id : Int,
+  id : Int32,
 ) -> @core.RecordTypeDescriptor? {
   record_type_id_registry.val.get(id)
 }
@@ -537,7 +538,7 @@ pub fn port_get_output_string(port : @core.Port) -> String {
 /// }
 /// ```
 pub fn datum_unlabel(value : @core.Datum) -> @core.Datum {
-  let seen : Array[Int] = []
+  let seen : Array[Int32] = []
   for cur = value; true; {
     // invariant : seen.length() >= 0
     // TODO(decreases) : list length not explicit; possible bug
@@ -589,7 +590,7 @@ pub fn symbol_name(expr : @core.Datum) -> String? {
 ///|
 
 ///|
-fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
+fn scopes_with_added(scopes : Array[Int32], scope : Int32) -> Array[Int32] {
   if scopes.contains(scope) {
     scopes.copy()
   } else {
@@ -617,7 +618,7 @@ pub fn strip_syntax_datum(datum : @core.Datum) -> @core.Datum {
 
 ///|
 /// Wrap datum leaves in syntax objects with given scopes.
-fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
+fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int32]) -> @core.Datum {
   match datum {
     Symbol(name) =>
       Value(SyntaxObject(@core.SyntaxObject::new(Symbol(name), scopes, None)))
@@ -641,7 +642,7 @@ fn syntax_wrap_datum(datum : @core.Datum, scopes : Array[Int]) -> @core.Datum {
 /// Wrap a datum in syntax objects unless already wrapped.
 pub fn syntax_wrap_root(
   datum : @core.Datum,
-  scopes : Array[Int],
+  scopes : Array[Int32],
 ) -> @core.Datum {
   match datum {
     Symbol(_) => datum
@@ -652,7 +653,7 @@ pub fn syntax_wrap_root(
 
 ///|
 /// Add a scope to every syntax object within a datum.
-pub fn syntax_add_scope(datum : @core.Datum, scope : Int) -> @core.Datum {
+pub fn syntax_add_scope(datum : @core.Datum, scope : Int32) -> @core.Datum {
   match datum {
     Symbol(name) =>
       Value(SyntaxObject(@core.SyntaxObject::new(Symbol(name), [scope], None)))

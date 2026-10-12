@@ -1,15 +1,15 @@
 ///|
-fn digit_value(ch : Char) -> Int? {
+fn digit_value(ch : Char) -> Int32? {
   match ch {
-    '0'..='9' => Some(ch.to_int() - '0'.to_int())
-    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
-    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    '0'..<='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..<='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..<='F' => Some(ch.to_int() - 'A'.to_int() + 10)
     _ => None
   }
 }
 
 ///|
-fn parse_decimal_digits(chars : StringView) -> Int? {
+fn parse_decimal_digits(chars : StringView) -> Int32? {
   match chars {
     [] => None
     _ => {
@@ -26,7 +26,7 @@ fn parse_decimal_digits(chars : StringView) -> Int? {
 }
 
 ///|
-fn parse_int_token(tok : String) -> Int? {
+fn parse_int_token(tok : String) -> Int32? {
   let view = tok[:]
   match view {
     [] => None
@@ -38,7 +38,7 @@ fn parse_int_token(tok : String) -> Int? {
 
 ///|
 /// Create an imaginary unit (1 or -1) based on exactness.
-fn make_imag_unit(sign : Int, exactness : Char?) -> @core.Datum {
+fn make_imag_unit(sign : Int32, exactness : Char?) -> @core.Datum {
   match exactness {
     Some('i') | Some('I') => Float(Float::from_int(sign))
     _ => Int(sign)
@@ -48,7 +48,7 @@ fn make_imag_unit(sign : Int, exactness : Char?) -> @core.Datum {
 ///|
 
 ///|
-fn parse_label_token(tok : String) -> (Bool, Int)? {
+fn parse_label_token(tok : String) -> (Bool, Int32)? {
   let view = tok[:]
   match view {
     ['#', .. digits, last] =>
@@ -61,7 +61,7 @@ fn parse_label_token(tok : String) -> (Bool, Int)? {
 }
 
 ///|
-fn int_abs(value : Int) -> Int {
+fn int_abs(value : Int32) -> Int32 {
   if value < 0 {
     -value
   } else {
@@ -70,8 +70,8 @@ fn int_abs(value : Int) -> Int {
 }
 
 ///|
-fn gcd(a : Int, b : Int) -> Int {
-  for x = Int::abs(a), y = Int::abs(b); y != 0; {
+fn gcd(a : Int32, b : Int32) -> Int32 {
+  for x = Int32::abs(a), y = Int32::abs(b); y != 0; {
     // invariant : x >= 0 && y >= 0
     // decreases : y
     // assert : y >= 0
@@ -82,7 +82,7 @@ fn gcd(a : Int, b : Int) -> Int {
 }
 
 ///|
-fn normalize_rat(num : Int, den : Int) -> @core.Datum? {
+fn normalize_rat(num : Int32, den : Int32) -> @core.Datum? {
   if den == 0 {
     None
   } else if num == 0 {
@@ -101,7 +101,7 @@ fn normalize_rat(num : Int, den : Int) -> @core.Datum? {
 }
 
 ///|
-fn bigint_from_int(value : Int) -> @bigint.BigInt {
+fn bigint_from_int(value : Int32) -> @bigint.BigInt {
   @bigint.BigInt::from_int(value)
 }
 
@@ -120,7 +120,7 @@ fn bigint_abs(value : @bigint.BigInt) -> @bigint.BigInt {
 }
 
 ///|
-fn bigint_to_int_option(value : @bigint.BigInt) -> Int? {
+fn bigint_to_int_option(value : @bigint.BigInt) -> Int32? {
   let int_max = 2147483647
   let int_min = -2147483648
   if value.compare_int(int_max) > 0 || value.compare_int(int_min) < 0 {
@@ -180,7 +180,7 @@ fn pair_new(car : @core.Datum, cdr : @core.Datum) -> @core.Datum {
 ///|
 
 ///|
-fn parse_bigint_token_radix(tok : String, radix : Int) -> @bigint.BigInt? {
+fn parse_bigint_token_radix(tok : String, radix : Int32) -> @bigint.BigInt? {
   if radix < 2 || radix > 36 {
     return None
   }
@@ -235,7 +235,7 @@ fn parse_integer_token(tok : String) -> @core.Datum? {
 }
 
 ///|
-fn parse_integer_token_radix(tok : String, radix : Int) -> @core.Datum? {
+fn parse_integer_token_radix(tok : String, radix : Int32) -> @core.Datum? {
   parse_bigint_token_radix(tok, radix).map(value => {
     integer_datum_from_bigint(value)
   })
@@ -252,9 +252,9 @@ fn view_contains_char(chars : StringView, target : Char) -> Bool {
 }
 
 ///|
-fn find_unique_char(chars : StringView, target : Char) -> Int? {
+fn find_unique_char(chars : StringView, target : Char) -> Int32? {
   let target_code = target.to_int()
-  let found : Int? = for i = 0, found = None; i < chars.length(); {
+  let found : Int32? = for i = 0, found = None; i < chars.length(); {
     // invariant : i >= 0 && i <= chars.length()
     // invariant : found is None || (found is Some(idx) && idx < i)
     // decreases : chars.length() - i
@@ -376,7 +376,7 @@ fn parse_float_token(tok : String) -> Float? {
 ///|
 
 ///|
-fn pow10_bigint(exp : Int) -> @bigint.BigInt {
+fn pow10_bigint(exp : Int32) -> @bigint.BigInt {
   let ten = bigint_from_int(10)
   for i = 0, acc = bigint_from_int(1); i < exp; {
     // invariant : i >= 0 && i <= exp
@@ -389,7 +389,7 @@ fn pow10_bigint(exp : Int) -> @bigint.BigInt {
 }
 
 ///|
-fn pow10_float(exp : Int) -> Float {
+fn pow10_float(exp : Int32) -> Float {
   let limit = int_abs(exp)
   let ten = Float::from_int(10)
   let result = for i = 0, acc = Float::from_int(1); i < limit; {
@@ -408,7 +408,7 @@ fn pow10_float(exp : Int) -> Float {
 }
 
 ///|
-fn split_exp_token(tok : String) -> (String, Int)? {
+fn split_exp_token(tok : String) -> (String, Int32)? {
   let view = tok[:]
   let lower_e = 'e'.to_int()
   let upper_e = 'E'.to_int()
@@ -508,7 +508,7 @@ fn parse_exact_decimal(tok : String) -> @core.Datum? {
 }
 
 ///|
-fn parse_rat_token_radix(tok : String, radix : Int) -> @core.Datum? {
+fn parse_rat_token_radix(tok : String, radix : Int32) -> @core.Datum? {
   let view = tok[:]
   match find_unique_char(view, '/') {
     Some(slash) if slash > 0 && slash + 1 < view.length() => {
@@ -618,7 +618,7 @@ fn make_complex_datum(real : @core.Datum, imag : @core.Datum) -> @core.Datum {
 ///|
 fn parse_special_float_token(
   tok : String,
-  radix : Int,
+  radix : Int32,
   exactness : Char?,
 ) -> @core.Datum? {
   if radix != 10 {
@@ -643,7 +643,7 @@ fn parse_special_float_token(
 ///|
 fn parse_real_token_with_settings(
   tok : String,
-  radix : Int,
+  radix : Int32,
   exactness : Char?,
   allow_rat : Bool,
 ) -> @core.Datum? {
@@ -712,7 +712,7 @@ fn parse_real_token_with_settings(
 }
 
 ///|
-fn find_complex_split(core_chars : StringView, radix : Int) -> Int? {
+fn find_complex_split(core_chars : StringView, radix : Int32) -> Int32? {
   match core_chars {
     [] | [_] => None
     _ => {
@@ -746,7 +746,7 @@ fn find_complex_split(core_chars : StringView, radix : Int) -> Int? {
 ///|
 fn parse_complex_token(
   tok : String,
-  radix : Int,
+  radix : Int32,
   exactness : Char?,
   allow_rat : Bool,
 ) -> @core.Datum? {
@@ -843,7 +843,7 @@ fn parse_complex_token(
 ///|
 fn parse_number_token_internal(
   tok : String,
-  radix_override : Int?,
+  radix_override : Int32?,
 ) -> @core.Datum? {
   let view = tok[:]
   let (rest_view, radix, exactness) = match
@@ -866,8 +866,8 @@ fn parse_number_token_internal(
 ///|
 fn parse_number_prefix(
   view : StringView,
-  radix_override : Int?,
-) -> (StringView, Int, Char?)? {
+  radix_override : Int32?,
+) -> (StringView, Int32, Char?)? {
   let base_radix = match radix_override {
     Some(r) => r
     None => 10
@@ -875,10 +875,10 @@ fn parse_number_prefix(
   let disallow_radix = radix_override is Some(_)
   fn step(
     view : StringView,
-    radix : Int,
+    radix : Int32,
     exactness : Char?,
     disallow_radix : Bool,
-  ) -> (StringView, Int, Char?)? {
+  ) -> (StringView, Int32, Char?)? {
     match view {
       ['#', tag, .. rest] =>
         match tag {
@@ -937,12 +937,12 @@ fn parse_number_prefix(
 ///   }
 /// }
 /// ```
-pub fn parse_number_token(tok : String, radix? : Int) -> @core.Datum? {
+pub fn parse_number_token(tok : String, radix? : Int32) -> @core.Datum? {
   parse_number_token_internal(tok, radix)
 }
 
 ///|
-fn parse_hex_digits(chars : StringView) -> Int? {
+fn parse_hex_digits(chars : StringView) -> Int32? {
   match chars {
     [] => None
     _ => {
@@ -1349,7 +1349,7 @@ fn read_expr(r : @lexer.Reader) -> @core.Datum raise @core.ParseError {
 /// ```
 pub fn parse_program(
   src : String,
-  fold_case? : Bool = false,
+  fold_case~ : Bool = false,
 ) -> Array[@core.Datum] raise @core.ParseError {
   let r = {
     let r = @lexer.Reader::new(src)

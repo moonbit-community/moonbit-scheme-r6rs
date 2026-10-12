@@ -16,7 +16,7 @@ fn escape_string(s : String) -> String {
 
 ///|
 priv struct PrinterState {
-  labels : Map[Int, Int]
+  labels : Map[Int32, Int32]
 }
 
 ///|
@@ -25,7 +25,7 @@ fn PrinterState::new() -> PrinterState {
 }
 
 ///|
-fn PrinterState::label_flags(self : PrinterState, id : Int) -> Int {
+fn PrinterState::label_flags(self : PrinterState, id : Int32) -> Int32 {
   match self.labels.get(id) {
     Some(value) => value
     None => 0
@@ -35,8 +35,8 @@ fn PrinterState::label_flags(self : PrinterState, id : Int) -> Int {
 ///|
 fn PrinterState::set_label_flags(
   self : PrinterState,
-  id : Int,
-  flags : Int,
+  id : Int32,
+  flags : Int32,
 ) -> Unit {
   self.labels[id] = flags
 }
@@ -150,7 +150,7 @@ fn vector_to_string_state(
 }
 
 ///|
-fn bytevector_to_string(items : Array[Int]) -> String {
+fn bytevector_to_string(items : Array[Int32]) -> String {
   let joined = items.map(item => item.to_string()).join(" ")
   "#vu8(\{joined})"
 }

@@ -48,7 +48,7 @@ pub fn parse_program(
 ///   }
 /// }
 /// ```
-pub fn parse_number_token(tok : String, radix? : Int) -> @core.Datum? {
+pub fn parse_number_token(tok : String, radix? : Int32) -> @core.Datum? {
   match radix {
     Some(value) => @parser.parse_number_token(tok, radix=value)
     None => @parser.parse_number_token(tok)

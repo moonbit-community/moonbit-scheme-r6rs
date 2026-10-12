@@ -455,8 +455,8 @@ fn merge_bindings(
 ///|
 fn binding_select(
   value : BindingVal,
-  indices : Array[Int],
-  depth : Int,
+  indices : Array[Int32],
+  depth : Int32,
 ) -> @core.Datum? {
   match value {
     Leaf(datum) => if depth < indices.length() { None } else { Some(datum) }
@@ -476,7 +476,11 @@ fn binding_select(
 }
 
 ///|
-fn binding_len_at(value : BindingVal, indices : Array[Int], depth : Int) -> Int {
+fn binding_len_at(
+  value : BindingVal,
+  indices : Array[Int32],
+  depth : Int32,
+) -> Int32 {
   match value {
     Leaf(_) => 0
     Seq(values) =>
@@ -501,8 +505,8 @@ fn binding_len_at(value : BindingVal, indices : Array[Int], depth : Int) -> Int 
 ///|
 fn binding_has_repeat_at(
   value : BindingVal,
-  indices : Array[Int],
-  depth : Int,
+  indices : Array[Int32],
+  depth : Int32,
 ) -> Bool {
   match value {
     Leaf(_) => false
@@ -586,7 +590,7 @@ priv struct MacroExpansion {
 ///|
 
 ///|
-fn scopes_equal_macro(left : Array[Int], right : Array[Int]) -> Bool {
+fn scopes_equal_macro(left : Array[Int32], right : Array[Int32]) -> Bool {
   if left.length() != right.length() {
     false
   } else {
@@ -625,7 +629,7 @@ fn rename_proc_symbol(
 fn rename_proc_datum(
   datum : @core.Datum,
   def_env : @core.Env,
-  call_ctx : Int,
+  call_ctx : Int32,
   renames : Map[String, String],
   captures : Map[String, @core.Value],
 ) -> @core.Datum {
@@ -677,7 +681,7 @@ fn rename_proc_datum(
 fn rename_proc_expansion(
   datum : @core.Datum,
   def_env : @core.Env,
-  call_ctx : Int,
+  call_ctx : Int32,
 ) -> MacroExpansion {
   let renames : Map[String, String] = Map([])
   let captures : Map[String, @core.Value] = Map([])
@@ -809,7 +813,7 @@ fn expand_macro(
 }
 
 ///|
-fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
+fn scopes_with_added(scopes : Array[Int32], scope : Int32) -> Array[Int32] {
   if scopes.contains(scope) {
     scopes.copy()
   } else {
@@ -822,7 +826,7 @@ fn scopes_with_added(scopes : Array[Int], scope : Int) -> Array[Int] {
 ///|
 fn syntax_add_scope_with_env(
   datum : @core.Datum,
-  scope : Int,
+  scope : Int32,
   env : @core.Env,
 ) -> @core.Datum {
   match datum {
@@ -873,7 +877,7 @@ fn syntax_add_scope_with_env(
 ///|
 fn wrap_pattern_datum(
   value : @core.Datum,
-  scope : Int?,
+  scope : Int32?,
   env : @core.Env,
 ) -> @core.Datum {
   match scope {
@@ -921,7 +925,7 @@ fn rewrite_template_expr(
               datum_is_symbol(head, "quasisyntax") ||
               datum_is_symbol(head, "with-syntax")
             if is_template_form {
-              let indices : Array[Int] = []
+              let indices : Array[Int32] = []
               let expanded = expand_template_indexed(
                 expr, bindings, renames, ellipsis, ellipsis_active, error_message,
                 indices, env, true,
@@ -994,7 +998,7 @@ fn match_pattern(
   literals : Array[String],
   ellipsis : String,
   bindings : Map[String, BindingVal],
-  scope : Int?,
+  scope : Int32?,
   def_env : @core.Env,
   use_env : @core.Env,
 ) -> Bool {
@@ -1093,7 +1097,7 @@ fn match_pattern_list(
   literals : Array[String],
   ellipsis : String,
   bindings : Map[String, BindingVal],
-  scope : Int?,
+  scope : Int32?,
   def_env : @core.Env,
   use_env : @core.Env,
 ) -> Bool {
@@ -1108,11 +1112,11 @@ fn match_pattern_list(
 fn collect_repeat_bindings(
   repeat_pat : @core.Datum,
   inputs : Array[@core.Datum],
-  start : Int,
-  count : Int,
+  start : Int32,
+  count : Int32,
   literals : Array[String],
   ellipsis : String,
-  scope : Int?,
+  scope : Int32?,
   def_env : @core.Env,
   use_env : @core.Env,
 ) -> Map[String, BindingVal]? {
@@ -1163,13 +1167,13 @@ fn collect_repeat_bindings(
 fn match_pattern_list_from(
   pats : Array[@core.Datum],
   inputs : Array[@core.Datum],
-  pat_idx : Int,
-  inp_idx : Int,
+  pat_idx : Int32,
+  inp_idx : Int32,
   literals : Array[String],
   ellipsis : String,
   ellipsis_active : Bool,
   bindings : Map[String, BindingVal],
-  scope : Int?,
+  scope : Int32?,
   def_env : @core.Env,
   use_env : @core.Env,
 ) -> Bool {
@@ -1415,7 +1419,7 @@ fn array_datum_equal(
 }
 
 ///|
-fn array_int_equal(left : Array[Int], right : Array[Int]) -> Bool {
+fn array_int_equal(left : Array[Int32], right : Array[Int32]) -> Bool {
   if left.length() != right.length() {
     false
   } else {
@@ -1629,7 +1633,7 @@ fn expand_with_syntax(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
@@ -1722,7 +1726,7 @@ fn expand_template(
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
-  let indices : Array[Int] = []
+  let indices : Array[Int32] = []
   expand_template_indexed(
     template, bindings, renames, ellipsis, ellipsis_active, error_message, indices,
     env, template_forms,
@@ -1737,7 +1741,7 @@ fn expand_template_indexed(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
@@ -1833,7 +1837,7 @@ fn expand_template_quasisyntax(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
 ) -> @core.Datum raise @core.EvalError {
   match template {
@@ -1902,7 +1906,7 @@ fn expand_symbol(
   name : String,
   bindings : Map[String, BindingVal],
   renames : Map[String, String],
-  indices : Array[Int],
+  indices : Array[Int32],
   error_message : String,
 ) -> @core.Datum raise @core.EvalError {
   match bindings.get(name) {
@@ -1927,7 +1931,7 @@ fn expand_template_list(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
@@ -1953,7 +1957,7 @@ fn expand_template_list(
         // invariant : j >= 0 && j <= count
         // decreases : count - j
         // assert : j <= count
-        let next_indices : Array[Int] = []
+        let next_indices : Array[Int32] = []
         for idx in indices {
           next_indices.push(idx)
         }
@@ -1995,7 +1999,7 @@ fn expand_template_list_quasisyntax(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
 ) -> @core.Datum raise @core.EvalError {
   let expanded : Array[@core.Datum] = []
@@ -2020,7 +2024,7 @@ fn expand_template_list_quasisyntax(
         // invariant : j >= 0 && j <= count
         // decreases : count - j
         // assert : j <= count
-        let next_indices : Array[Int] = []
+        let next_indices : Array[Int32] = []
         for idx in indices {
           next_indices.push(idx)
         }
@@ -2061,7 +2065,7 @@ fn expand_template_vector(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
   template_forms : Bool,
 ) -> @core.Datum raise @core.EvalError {
@@ -2087,7 +2091,7 @@ fn expand_template_vector(
         // invariant : j >= 0 && j <= count
         // decreases : count - j
         // assert : j <= count
-        let next_indices : Array[Int] = []
+        let next_indices : Array[Int32] = []
         for idx in indices {
           next_indices.push(idx)
         }
@@ -2129,7 +2133,7 @@ fn expand_template_vector_quasisyntax(
   ellipsis : String,
   ellipsis_active : Bool,
   error_message : String,
-  indices : Array[Int],
+  indices : Array[Int32],
   env : @core.Env,
 ) -> @core.Datum raise @core.EvalError {
   let expanded : Array[@core.Datum] = []
@@ -2154,7 +2158,7 @@ fn expand_template_vector_quasisyntax(
         // invariant : j >= 0 && j <= count
         // decreases : count - j
         // assert : j <= count
-        let next_indices : Array[Int] = []
+        let next_indices : Array[Int32] = []
         for idx in indices {
           next_indices.push(idx)
         }
@@ -2191,8 +2195,8 @@ fn expand_template_vector_quasisyntax(
 fn max_binding_len(
   template : @core.Datum,
   bindings : Map[String, BindingVal],
-  indices : Array[Int],
-) -> Int {
+  indices : Array[Int32],
+) -> Int32 {
   match template {
     Symbol(name) =>
       match bindings.get(name) {
@@ -2253,7 +2257,7 @@ fn template_has_repeat_binding(
   template : @core.Datum,
   bindings : Map[String, BindingVal],
   ellipsis : String,
-  indices : Array[Int],
+  indices : Array[Int32],
 ) -> Bool {
   match template {
     Symbol(name) =>

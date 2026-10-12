@@ -102,4 +102,4 @@ async fn main {
 }
 
 ///|
-fn exit_process(code : Int) = "wasi_snapshot_preview1" "proc_exit"
+fn exit_process(code : Int32) = "wasi_snapshot_preview1" "proc_exit"
