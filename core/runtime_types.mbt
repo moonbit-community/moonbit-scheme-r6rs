@@ -7,7 +7,7 @@ pub enum PortKind {
 ///|
 /// Runtime port descriptor.
 pub struct Port {
-  id : Int
+  id : Int32
   kind : PortKind
 }
 
@@ -20,7 +20,7 @@ pub struct RecordField {
 ///|
 /// Record type metadata used by the runtime.
 pub struct RecordType {
-  id : Int
+  id : Int32
   name : String
   parent : RecordType?
   is_sealed : Bool
@@ -32,7 +32,7 @@ pub struct RecordType {
 ///|
 /// Record instance with boxed fields.
 pub struct Record {
-  id : Int
+  id : Int32
   record_type : RecordType
   fields : Array[Ref[Value]]
 }
@@ -40,7 +40,7 @@ pub struct Record {
 ///|
 /// Condition value containing record components.
 pub struct Condition {
-  id : Int
+  id : Int32
   components : Array[Record]
 }
 
@@ -61,7 +61,7 @@ pub struct HashtableEntry {
 ///|
 /// Hashtable with configured equivalence and hash function.
 pub struct Hashtable {
-  id : Int
+  id : Int32
   mutable : Bool
   equiv : HashtableEquiv
   hash : Value?
@@ -71,7 +71,7 @@ pub struct Hashtable {
 ///|
 /// Enum set value with a fixed universe ordering.
 pub struct EnumSet {
-  id : Int
+  id : Int32
   universe : Array[String]
   members : Array[Bool]
 }
@@ -84,7 +84,7 @@ pub(all) enum EnumSetProcKind {
 
 ///|
 pub struct EnumSetProc {
-  id : Int
+  id : Int32
   kind : EnumSetProcKind
 }
 
@@ -92,8 +92,8 @@ pub struct EnumSetProc {
 pub(all) enum RecordProcKind {
   Constructor(RecordType)
   Predicate(RecordType)
-  Accessor(RecordType, Int)
-  Mutator(RecordType, Int)
+  Accessor(RecordType, Int32)
+  Mutator(RecordType, Int32)
   ProtocolN(RecordType, RecordConstructorDescriptor)
   ProtocolP(RecordType, Array[Value])
 }
@@ -101,26 +101,26 @@ pub(all) enum RecordProcKind {
 ///|
 /// Record-related procedure wrapper.
 pub struct RecordProc {
-  id : Int
+  id : Int32
   kind : RecordProcKind
 }
 
 ///|
 pub(all) enum ConditionProcKind {
   Predicate(RecordType)
-  Accessor(RecordType, Int)
+  Accessor(RecordType, Int32)
 }
 
 ///|
 /// Condition-related procedure wrapper.
 pub struct ConditionProc {
-  id : Int
+  id : Int32
   kind : ConditionProcKind
 }
 
 ///|
 pub struct RecordConstructorDescriptor {
-  id : Int
+  id : Int32
   record_type : RecordType
   parent_desc : RecordConstructorDescriptor?
   protocol : Value?
@@ -128,7 +128,7 @@ pub struct RecordConstructorDescriptor {
 
 ///|
 pub struct RecordTypeDescriptor {
-  id : Int
+  id : Int32
   record_type : RecordType
   constructor_desc : RecordConstructorDescriptor
 }
@@ -150,7 +150,7 @@ pub struct ParamBinding {
 /// Record field binding details for generated accessors.
 pub struct RecordFieldBinding {
   accessor : String
-  index : Int
+  index : Int32
   mutator : String?
 }
 
@@ -168,7 +168,7 @@ pub struct RecordFieldBinding {
 /// ```
 pub fn RecordFieldBinding::new(
   accessor : String,
-  index : Int,
+  index : Int32,
   mutator : String?,
 ) -> RecordFieldBinding {
   { accessor, index, mutator, }
@@ -182,7 +182,7 @@ pub fn RecordFieldBinding::accessor(self : RecordFieldBinding) -> String {
 
 ///|
 /// Return the field index.
-pub fn RecordFieldBinding::index(self : RecordFieldBinding) -> Int {
+pub fn RecordFieldBinding::index(self : RecordFieldBinding) -> Int32 {
   self.index
 }
 
@@ -218,7 +218,7 @@ pub enum WinderKind {
 
 ///|
 pub struct Winder {
-  id : Int
+  id : Int32
   kind : WinderKind
 }
 
@@ -243,24 +243,31 @@ pub(all) enum Kont {
   Or(Array[Datum], Env, Kont)
   Cond(Array[Datum], Array[Datum], Env, Kont)
   CondArrow(Value, Kont)
-  Let(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
-  LetStar(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
-  LetRec(Array[(String, Datum)], Int, Env, Array[Datum], Kont)
-  LetRecInit(Array[(String, Datum)], Int, Array[Value], Env, Array[Datum], Kont)
+  Let(Array[(String, Datum)], Int32, Array[Value], Env, Array[Datum], Kont)
+  LetStar(Array[(String, Datum)], Int32, Env, Array[Datum], Kont)
+  LetRec(Array[(String, Datum)], Int32, Env, Array[Datum], Kont)
+  LetRecInit(
+    Array[(String, Datum)],
+    Int32,
+    Array[Value],
+    Env,
+    Array[Datum],
+    Kont
+  )
   LetValues(
     Array[(Formals, Datum)],
-    Int,
+    Int32,
     Array[Array[(String, Value)]],
     Env,
     Array[Datum],
     Kont
   )
-  LetStarValues(Array[(Formals, Datum)], Int, Env, Array[Datum], Kont)
+  LetStarValues(Array[(Formals, Datum)], Int32, Env, Array[Datum], Kont)
   DefineValues(Formals, Env, Kont)
   SyntaxCase(Array[Datum], Env, Kont)
   ParameterizeParam(
     Array[(Datum, Datum)],
-    Int,
+    Int32,
     Array[Parameter],
     Array[Value],
     Env,
@@ -269,7 +276,7 @@ pub(all) enum Kont {
   )
   ParameterizeValue(
     Array[(Datum, Datum)],
-    Int,
+    Int32,
     Array[Parameter],
     Array[Value],
     Env,
@@ -278,7 +285,7 @@ pub(all) enum Kont {
   )
   ParameterizeConvert(
     Array[(Datum, Datum)],
-    Int,
+    Int32,
     Array[Parameter],
     Array[Value],
     Env,
@@ -312,8 +319,8 @@ pub(all) enum Kont {
     Env,
     Kont
   )
-  HashtableFindResult(Hashtable, Value, Int, HashtableOp, Kont)
-  HashtableUpdateApply(Hashtable, Value, Int, Bool, Kont)
+  HashtableFindResult(Hashtable, Value, Int32, HashtableOp, Kont)
+  HashtableUpdateApply(Hashtable, Value, Int32, Bool, Kont)
   MapStep(Value, Array[Datum], Array[Datum], Bool, Kont)
   VectorMapFinalize(Kont)
   StringMapFinalize(Kont)
@@ -330,7 +337,7 @@ pub(all) enum Kont {
 ///|
 /// First-class continuation value.
 pub struct Continuation {
-  id : Int
+  id : Int32
   kont : Kont
   handlers : Array[Value]
   winds : Array[Winder]

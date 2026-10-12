@@ -190,7 +190,7 @@ fn apply_primitive_core(
               Symbol(name) => (name, [], None)
               Value(SyntaxObject(obj)) =>
                 if @runtime.datum_unlabel(obj.datum) is Symbol(name) {
-                  let copied : Array[Int] = []
+                  let copied : Array[Int32] = []
                   for scope in obj.scopes {
                     copied.push(scope)
                   }

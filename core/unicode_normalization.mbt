@@ -1,29 +1,29 @@
 ///|
-const HANGUL_S_BASE : Int = 0xAC00
+const HANGUL_S_BASE : Int32 = 0xAC00
 
 ///|
-const HANGUL_L_BASE : Int = 0x1100
+const HANGUL_L_BASE : Int32 = 0x1100
 
 ///|
-const HANGUL_V_BASE : Int = 0x1161
+const HANGUL_V_BASE : Int32 = 0x1161
 
 ///|
-const HANGUL_T_BASE : Int = 0x11A7
+const HANGUL_T_BASE : Int32 = 0x11A7
 
 ///|
-const HANGUL_L_COUNT : Int = 19
+const HANGUL_L_COUNT : Int32 = 19
 
 ///|
-const HANGUL_V_COUNT : Int = 21
+const HANGUL_V_COUNT : Int32 = 21
 
 ///|
-const HANGUL_T_COUNT : Int = 28
+const HANGUL_T_COUNT : Int32 = 28
 
 ///|
-const HANGUL_N_COUNT : Int = HANGUL_V_COUNT * HANGUL_T_COUNT
+const HANGUL_N_COUNT : Int32 = HANGUL_V_COUNT * HANGUL_T_COUNT
 
 ///|
-const HANGUL_S_COUNT : Int = HANGUL_L_COUNT * HANGUL_N_COUNT
+const HANGUL_S_COUNT : Int32 = HANGUL_L_COUNT * HANGUL_N_COUNT
 
 ///|
 let canon_decomp_data : ReadOnlyArray[Char] = decomp_canon_data
@@ -40,7 +40,7 @@ let composition_data : ReadOnlyArray[Char] = composition_data_raw
 ///|
 fn build_decomp_map(
   data : ReadOnlyArray[Char],
-  count : Int,
+  count : Int32,
 ) -> Map[Char, Array[Char]] {
   let map = Map::from_array([], capacity=count)
   for i = 0; i < data.length(); {
@@ -70,8 +70,8 @@ fn build_decomp_map(
 ///|
 fn build_combining_class_map(
   data : ReadOnlyArray[Char],
-  count : Int,
-) -> Map[Char, Int] {
+  count : Int32,
+) -> Map[Char, Int32] {
   let map = Map::from_array([], capacity=count)
   for i = 0; i < data.length(); {
     // invariant : i >= 0 && i < data.length()
@@ -89,8 +89,8 @@ fn build_combining_class_map(
 ///|
 fn build_composition_map(
   data : ReadOnlyArray[Char],
-  count : Int,
-) -> Map[UInt, Char] {
+  count : Int32,
+) -> Map[UInt32, Char] {
   let map = Map::from_array([], capacity=count)
   for i = 0; i + 2 < data.length(); {
     // invariant : i >= 0 && i + 2 < data.length()
@@ -119,19 +119,19 @@ let compat_decomp_map : Map[Char, Array[Char]] = build_decomp_map(
 )
 
 ///|
-let combining_class_map : Map[Char, Int] = build_combining_class_map(
+let combining_class_map : Map[Char, Int32] = build_combining_class_map(
   combining_class_data,
   COMBINING_CLASS_COUNT,
 )
 
 ///|
-let composition_map : Map[UInt, Char] = build_composition_map(
+let composition_map : Map[UInt32, Char] = build_composition_map(
   composition_data,
   COMPOSITION_COUNT,
 )
 
 ///|
-fn combining_class(ch : Char) -> Int {
+fn combining_class(ch : Char) -> Int32 {
   match combining_class_map.get(ch) {
     Some(cls) => cls
     None => 0
@@ -139,7 +139,7 @@ fn combining_class(ch : Char) -> Int {
 }
 
 ///|
-fn compose_key(starter : Char, combining : Char) -> UInt {
+fn compose_key(starter : Char, combining : Char) -> UInt32 {
   (starter.to_uint() << 21) | combining.to_uint()
 }
 
@@ -201,7 +201,7 @@ fn decompose_string(s : String, compat : Bool) -> Array[Char] {
 }
 
 ///|
-fn insert_sorted_by_ccc(segment : Array[Char], ch : Char, ccc : Int) -> Unit {
+fn insert_sorted_by_ccc(segment : Array[Char], ch : Char, ccc : Int32) -> Unit {
   let start = segment.length()
   segment.push(ch)
   let insert_at = for i = start; i > 0; {
@@ -304,8 +304,8 @@ fn hangul_compose(starter : Char, combining : Char) -> Char? {
 fn try_compose(
   starter : Char,
   combining : Char,
-  last_ccc : Int,
-  ccc : Int,
+  last_ccc : Int32,
+  ccc : Int32,
 ) -> Char? {
   if last_ccc != 0 && last_ccc >= ccc {
     return None

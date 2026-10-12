@@ -100,19 +100,19 @@ pub extend EvalError with Eq::{not_equal, equal}
 pub(all) enum Datum {
   Nil
   Bool(Bool)
-  Int(Int)
+  Int(Int32)
   BigInt(@bigint.BigInt)
-  Rat(Int, Int)
+  Rat(Int32, Int32)
   BigRat(@bigint.BigInt, @bigint.BigInt)
   Float(Float)
   Complex(Ref[Datum], Ref[Datum])
-  Label(Int, Ref[Datum])
+  Label(Int32, Ref[Datum])
   Char(Char)
   String(Ref[String])
   Symbol(String)
   Pair(Ref[Datum], Ref[Datum])
   Vector(Array[Datum])
-  ByteVector(Array[Int])
+  ByteVector(Array[Int32])
   Record(Record)
   Condition(Condition)
   Value(Value)
@@ -515,7 +515,7 @@ pub extend Primitive with Eq::{not_equal, equal}
 
 ///|
 pub struct Binding {
-  id : Int
+  id : Int32
   value : Value
 }
 
@@ -562,7 +562,7 @@ pub(all) enum MacroTransformer {
 
 ///|
 pub struct Closure {
-  id : Int
+  id : Int32
   params : Array[String]
   rest : String?
   body : Array[Datum]
@@ -578,14 +578,14 @@ pub struct CaseClause {
 
 ///|
 pub struct CaseClosure {
-  id : Int
+  id : Int32
   clauses : Array[CaseClause]
   env : Env
 }
 
 ///|
 pub struct GuardHandler {
-  id : Int
+  id : Int32
   name : String
   clauses : Array[Datum]
   env : Env
@@ -595,7 +595,7 @@ pub struct GuardHandler {
 
 ///|
 pub struct Parameter {
-  id : Int
+  id : Int32
   value : Ref[Value]
   converter : Value?
 }
@@ -608,21 +608,21 @@ pub(all) enum PromiseState {
 
 ///|
 pub struct Promise {
-  id : Int
+  id : Int32
   state : Ref[PromiseState]
 }
 
 ///|
 pub struct EvalEnv {
-  id : Int
+  id : Int32
   env : Env
 }
 
 ///|
 pub struct SyntaxObject {
   datum : Datum
-  scopes : Array[Int]
-  binding_id : Int?
+  scopes : Array[Int32]
+  binding_id : Int32?
 }
 
 ///|

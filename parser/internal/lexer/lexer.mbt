@@ -1,9 +1,9 @@
 ///|
 pub struct Reader {
   chars : Array[Char]
-  mut pos : Int
+  mut pos : Int32
   mut fold_case : Bool
-  labels : Map[Int, Ref[@core.Datum]]
+  labels : Map[Int32, Ref[@core.Datum]]
 }
 
 ///|
@@ -38,7 +38,7 @@ pub fn Reader::peek(self : Reader) -> Char? {
 
 ///|
 /// Peek ahead by a fixed offset without consuming input.
-fn Reader::peek_offset(self : Reader, offset : Int) -> Char? {
+fn Reader::peek_offset(self : Reader, offset : Int32) -> Char? {
   self.chars.get(self.pos + offset)
 }
 
@@ -59,7 +59,7 @@ pub fn Reader::peek_next(self : Reader) -> Char? {
 
 ///|
 /// Advance the reader by a fixed number of characters.
-fn Reader::advance(self : Reader, count : Int) -> Unit {
+fn Reader::advance(self : Reader, count : Int32) -> Unit {
   self.pos = self.pos + count
 }
 
@@ -71,7 +71,7 @@ pub fn Reader::set_fold_case(self : Reader, value : Bool) -> Unit {
 
 ///|
 /// Look up a label cell by id.
-pub fn Reader::label_get(self : Reader, label : Int) -> Ref[@core.Datum]? {
+pub fn Reader::label_get(self : Reader, label : Int32) -> Ref[@core.Datum]? {
   self.labels.get(label)
 }
 
@@ -90,7 +90,7 @@ pub fn Reader::label_get(self : Reader, label : Int) -> Ref[@core.Datum]? {
 /// ```
 pub fn Reader::label_set(
   self : Reader,
-  label : Int,
+  label : Int32,
   cell : Ref[@core.Datum],
 ) -> Unit {
   self.labels[label] = cell
@@ -340,11 +340,11 @@ fn Reader::read_identifier_escape(self : Reader) -> Char raise @core.ParseError 
 
 ///|
 /// Convert a digit character to its numeric value.
-fn digit_value(ch : Char) -> Int? {
+fn digit_value(ch : Char) -> Int32? {
   match ch {
-    '0'..='9' => Some(ch.to_int() - '0'.to_int())
-    'a'..='f' => Some(ch.to_int() - 'a'.to_int() + 10)
-    'A'..='F' => Some(ch.to_int() - 'A'.to_int() + 10)
+    '0'..<='9' => Some(ch.to_int() - '0'.to_int())
+    'a'..<='f' => Some(ch.to_int() - 'a'.to_int() + 10)
+    'A'..<='F' => Some(ch.to_int() - 'A'.to_int() + 10)
     _ => None
   }
 }

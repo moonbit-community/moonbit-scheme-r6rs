@@ -1,6 +1,6 @@
 ///|
 /// Build a standardized arity mismatch error.
-fn arity_mismatch(expected : Int, got : Int) -> @core.EvalError {
+fn arity_mismatch(expected : Int32, got : Int32) -> @core.EvalError {
   EvalError("arity mismatch: expected \{expected} got \{got}")
 }
 
@@ -35,7 +35,7 @@ priv enum CompareMode {
 }
 
 ///|
-fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
+fn compare_ok(mode : CompareMode, cmp : Int32) -> Bool {
   match mode {
     CmpEq => cmp == 0
     CmpLt => cmp < 0
@@ -48,7 +48,7 @@ fn compare_ok(mode : CompareMode, cmp : Int) -> Bool {
 ///|
 
 ///|
-fn scopes_equal(left : Array[Int], right : Array[Int]) -> Bool {
+fn scopes_equal(left : Array[Int32], right : Array[Int32]) -> Bool {
   if left.length() != right.length() {
     false
   } else {
@@ -154,7 +154,7 @@ fn value_equal(left : @core.Value, right : @core.Value) -> Bool {
 ///|
 fn identifier_info(
   value : @core.Value,
-) -> (String, Array[Int], Int?) raise @core.EvalError {
+) -> (String, Array[Int32], Int32?) raise @core.EvalError {
   match value {
     Datum(d) =>
       if @runtime.datum_unlabel(d) is Symbol(name) {
@@ -300,7 +300,7 @@ fn number_to_float(value : @core.Datum) -> Float raise @core.EvalError {
 }
 
 ///|
-fn number_to_rat(value : @core.Datum) -> (Int, Int) raise @core.EvalError {
+fn number_to_rat(value : @core.Datum) -> (Int32, Int32) raise @core.EvalError {
   let real_value = datum_to_real(value)
   match real_value {
     Int(n) => (n, 1)
@@ -325,7 +325,7 @@ fn number_to_bigrat(
 
 ///|
 /// Absolute value for Int.
-fn int_abs(value : Int) -> Int {
+fn int_abs(value : Int32) -> Int32 {
   if value < 0 {
     -value
   } else {
@@ -342,7 +342,7 @@ fn int_abs(value : Int) -> Int {
 ///   inspect(gcd(48, 18), content="6")
 /// }
 /// ```
-fn gcd(a : Int, b : Int) -> Int {
+fn gcd(a : Int32, b : Int32) -> Int32 {
   for x = int_abs(a), y = int_abs(b); y != 0; {
     // invariant : x >= 0 && y >= 0
     // decreases : y
@@ -355,7 +355,7 @@ fn gcd(a : Int, b : Int) -> Int {
 
 ///|
 /// Convert an Int into a BigInt.
-fn bigint_from_int(value : Int) -> @bigint.BigInt {
+fn bigint_from_int(value : Int32) -> @bigint.BigInt {
   @bigint.BigInt::from_int(value)
 }
 
@@ -377,7 +377,7 @@ fn bigint_abs(value : @bigint.BigInt) -> @bigint.BigInt {
 
 ///|
 /// Convert a BigInt into Int if it fits.
-fn bigint_to_int_option(value : @bigint.BigInt) -> Int? {
+fn bigint_to_int_option(value : @bigint.BigInt) -> Int32? {
   let int_max = 2147483647
   let int_min = -2147483648
   if value.compare_int(int_max) > 0 || value.compare_int(int_min) < 0 {
@@ -412,7 +412,7 @@ fn bigint_gcd(a : @bigint.BigInt, b : @bigint.BigInt) -> @bigint.BigInt {
 ///   }
 /// }
 /// ```
-fn normalize_rat(num : Int, den : Int) -> @core.Datum? {
+fn normalize_rat(num : Int32, den : Int32) -> @core.Datum? {
   if den == 0 {
     None
   } else if num == 0 {
@@ -514,8 +514,8 @@ fn inexact_component_to_exact(
 
 ///|
 fn normalize_rat_or_error(
-  num : Int,
-  den : Int,
+  num : Int32,
+  den : Int32,
 ) -> @core.Datum raise @core.EvalError {
   match normalize_rat(num, den) {
     Some(result) => result
@@ -655,7 +655,7 @@ fn complex_from_float(real : Float, imag : Float) -> @core.Datum {
 }
 
 ///|
-fn float_to_int_exact(value : Float) -> Int? {
+fn float_to_int_exact(value : Float) -> Int32? {
   let n = value.to_int()
   if value == Float::from_int(n) {
     Some(n)
@@ -665,7 +665,7 @@ fn float_to_int_exact(value : Float) -> Int? {
 }
 
 ///|
-fn pow_int(base : Int, exp : Int) -> Int {
+fn pow_int(base : Int32, exp : Int32) -> Int32 {
   for result = 1, b = base, e = exp; e > 0; {
     // invariant : e >= 0
     // decreases : e
@@ -678,7 +678,7 @@ fn pow_int(base : Int, exp : Int) -> Int {
 }
 
 ///|
-fn pow_bigint_int(base : @bigint.BigInt, exp : Int) -> @bigint.BigInt {
+fn pow_bigint_int(base : @bigint.BigInt, exp : Int32) -> @bigint.BigInt {
   let one = bigint_from_int(1)
   for result = one, b = base, e = exp; e > 0; {
     // invariant : e >= 0
@@ -710,7 +710,7 @@ fn pow_bigint_bigint(
 }
 
 ///|
-fn pow_float_int(base : Float, exp : Int) -> Float {
+fn pow_float_int(base : Float, exp : Int32) -> Float {
   for result = Float::from_int(1), b = base, e = exp; e > 0; {
     // invariant : e >= 0
     // decreases : e
@@ -1054,7 +1054,7 @@ fn num_greater_eq(
 }
 
 ///|
-fn rat_floor(num : Int, den : Int) -> Int {
+fn rat_floor(num : Int32, den : Int32) -> Int32 {
   let q = num / den
   let r = num % den
   if r == 0 {
@@ -1067,7 +1067,7 @@ fn rat_floor(num : Int, den : Int) -> Int {
 }
 
 ///|
-fn rat_ceiling(num : Int, den : Int) -> Int {
+fn rat_ceiling(num : Int32, den : Int32) -> Int32 {
   let q = num / den
   let r = num % den
   if r == 0 {
@@ -1080,7 +1080,7 @@ fn rat_ceiling(num : Int, den : Int) -> Int {
 }
 
 ///|
-fn rat_round(num : Int, den : Int) -> Int {
+fn rat_round(num : Int32, den : Int32) -> Int32 {
   let q = num / den
   let r = num % den
   if r == 0 {
@@ -1160,7 +1160,7 @@ fn bigrat_round(num : @bigint.BigInt, den : @bigint.BigInt) -> @bigint.BigInt {
 }
 
 ///|
-fn float_floor_int(value : Float) -> Int {
+fn float_floor_int(value : Float) -> Int32 {
   let n = value.to_int()
   if value == Float::from_int(n) {
     n
@@ -1172,7 +1172,7 @@ fn float_floor_int(value : Float) -> Int {
 }
 
 ///|
-fn float_ceiling_int(value : Float) -> Int {
+fn float_ceiling_int(value : Float) -> Int32 {
   let n = value.to_int()
   if value == Float::from_int(n) {
     n
@@ -1184,7 +1184,7 @@ fn float_ceiling_int(value : Float) -> Int {
 }
 
 ///|
-fn float_round_int(value : Float) -> Int {
+fn float_round_int(value : Float) -> Int32 {
   let floor_n = float_floor_int(value)
   let diff = value - Float::from_int(floor_n)
   if diff < 0.5 {
@@ -1231,7 +1231,7 @@ fn chars_rev_to_string(chars : Array[Char]) -> String {
 }
 
 ///|
-fn int_to_string_radix(value : Int, radix : Int) -> String {
+fn int_to_string_radix(value : Int32, radix : Int32) -> String {
   if value == 0 {
     return "0"
   }
@@ -1252,7 +1252,7 @@ fn int_to_string_radix(value : Int, radix : Int) -> String {
 }
 
 ///|
-fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int) -> String {
+fn bigint_to_string_radix(value : @bigint.BigInt, radix : Int32) -> String {
   if value.is_zero() {
     return "0"
   }
@@ -1303,8 +1303,8 @@ fn value_as_string_ref(
 ///|
 fn string_replace_range(
   s : String,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   fill : Char,
 ) -> String raise @core.EvalError {
   let len = s.length()
@@ -1348,7 +1348,7 @@ fn char_from_int_value(value : @core.Value) -> Char raise @core.EvalError {
 }
 
 ///|
-fn exact_integer_sqrt(n : Int) -> (Int, Int) {
+fn exact_integer_sqrt(n : Int32) -> (Int32, Int32) {
   if n <= 0 {
     if n == 0 {
       return (0, 0)
@@ -1411,7 +1411,7 @@ fn exact_integer_sqrt_bigint(
 }
 
 ///|
-fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
+fn rationalize_float(value : Float, tol : Float) -> (Int32, Int32) {
   if value == 0.0 {
     return (0, 1)
   }
@@ -1445,7 +1445,7 @@ fn rationalize_float(value : Float, tol : Float) -> (Int, Int) {
 }
 
 ///|
-fn value_as_int_index(value : @core.Value) -> Int raise @core.EvalError {
+fn value_as_int_index(value : @core.Value) -> Int32 raise @core.EvalError {
   match value {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
@@ -1579,7 +1579,7 @@ fn exact_sqrt_real(value : @core.Datum) -> @core.Datum? raise @core.EvalError {
 }
 
 ///|
-fn value_as_nonnegative_int(value : @core.Value) -> Int raise @core.EvalError {
+fn value_as_nonnegative_int(value : @core.Value) -> Int32 raise @core.EvalError {
   let n = value_as_int_index(value)
   if n < 0 {
     raise EvalError("type error: exact nonnegative integer expected")
@@ -1588,10 +1588,10 @@ fn value_as_nonnegative_int(value : @core.Value) -> Int raise @core.EvalError {
 }
 
 ///|
-let fixnum_width_cache : Ref[Int] = Ref(0)
+let fixnum_width_cache : Ref[Int32] = Ref(0)
 
 ///|
-fn fixnum_width_value() -> Int {
+fn fixnum_width_value() -> Int32 {
   let cached = fixnum_width_cache.val
   if cached != 0 {
     return cached
@@ -1671,7 +1671,7 @@ fn value_as_fixnum_datum(
 }
 
 ///|
-fn value_as_fixnum_int(value : @core.Value) -> Int raise @core.EvalError {
+fn value_as_fixnum_int(value : @core.Value) -> Int32 raise @core.EvalError {
   let big = value_as_fixnum_bigint(value)
   match bigint_to_int_option(big) {
     Some(v) => v
@@ -1682,7 +1682,7 @@ fn value_as_fixnum_int(value : @core.Value) -> Int raise @core.EvalError {
 ///|
 fn value_as_nonnegative_fixnum_int(
   value : @core.Value,
-) -> Int raise @core.EvalError {
+) -> Int32 raise @core.EvalError {
   let n = value_as_fixnum_int(value)
   if n < 0 {
     raise EvalError("type error: exact nonnegative integer expected")
@@ -1732,7 +1732,7 @@ fn value_as_flonum(value : @core.Value) -> Float raise @core.EvalError {
 }
 
 ///|
-fn value_as_integer_flonum(value : @core.Value) -> Int raise @core.EvalError {
+fn value_as_integer_flonum(value : @core.Value) -> Int32 raise @core.EvalError {
   let f = value_as_flonum(value)
   if !float_is_finite(f) {
     raise EvalError("type error: integer-valued flonum expected")
@@ -1810,7 +1810,7 @@ priv enum BitOp {
 }
 
 ///|
-fn bigint_pow2(exp : Int) -> @bigint.BigInt {
+fn bigint_pow2(exp : Int32) -> @bigint.BigInt {
   pow_bigint_int(bigint_from_int(2), exp)
 }
 
@@ -1820,7 +1820,7 @@ fn bigint_ge(left : @bigint.BigInt, right : @bigint.BigInt) -> Bool {
 }
 
 ///|
-fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int {
+fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int32 {
   if bigint_is_zero(value) {
     return 0
   }
@@ -1836,7 +1836,7 @@ fn bigint_bit_length_nonneg(value : @bigint.BigInt) -> Int {
 }
 
 ///|
-fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int {
+fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int32 {
   let two = bigint_from_int(2)
   for n = value, count = 0; n.compare_int(0) > 0; {
     // invariant : n.compare_int(0) >= 0
@@ -1851,7 +1851,7 @@ fn bigint_bit_count_nonneg(value : @bigint.BigInt) -> Int {
 }
 
 ///|
-fn bigint_twos_length(value : @bigint.BigInt) -> Int {
+fn bigint_twos_length(value : @bigint.BigInt) -> Int32 {
   if value.compare_int(0) >= 0 {
     bigint_bit_length_nonneg(value)
   } else {
@@ -1860,7 +1860,7 @@ fn bigint_twos_length(value : @bigint.BigInt) -> Int {
 }
 
 ///|
-fn bigint_to_twos(value : @bigint.BigInt, width : Int) -> @bigint.BigInt {
+fn bigint_to_twos(value : @bigint.BigInt, width : Int32) -> @bigint.BigInt {
   if value.compare_int(0) >= 0 {
     value
   } else {
@@ -1869,7 +1869,7 @@ fn bigint_to_twos(value : @bigint.BigInt, width : Int) -> @bigint.BigInt {
 }
 
 ///|
-fn bigint_from_twos(value : @bigint.BigInt, width : Int) -> @bigint.BigInt {
+fn bigint_from_twos(value : @bigint.BigInt, width : Int32) -> @bigint.BigInt {
   let limit = bigint_pow2(width - 1)
   if bigint_ge(value, limit) {
     value - bigint_pow2(width)
@@ -1946,7 +1946,7 @@ fn datum_bitwise_not(value : @core.Datum) -> @core.Datum raise @core.EvalError {
 ///|
 fn datum_arithmetic_shift(
   value : @core.Datum,
-  shift : Int,
+  shift : Int32,
 ) -> @core.Datum raise @core.EvalError {
   let big = datum_to_bigint(value)
   if shift == 0 {
@@ -1968,7 +1968,7 @@ fn datum_arithmetic_shift(
 }
 
 ///|
-fn datum_bitwise_length(value : @core.Datum) -> Int raise @core.EvalError {
+fn datum_bitwise_length(value : @core.Datum) -> Int32 raise @core.EvalError {
   let big = datum_to_bigint(value)
   if big.compare_int(0) >= 0 {
     bigint_bit_length_nonneg(big)
@@ -1978,7 +1978,7 @@ fn datum_bitwise_length(value : @core.Datum) -> Int raise @core.EvalError {
 }
 
 ///|
-fn datum_bitwise_bit_count(value : @core.Datum) -> Int raise @core.EvalError {
+fn datum_bitwise_bit_count(value : @core.Datum) -> Int32 raise @core.EvalError {
   let big = datum_to_bigint(value)
   if big.compare_int(0) >= 0 {
     bigint_bit_count_nonneg(big)
@@ -1990,7 +1990,7 @@ fn datum_bitwise_bit_count(value : @core.Datum) -> Int raise @core.EvalError {
 ///|
 fn datum_bitwise_bit_set(
   value : @core.Datum,
-  index : Int,
+  index : Int32,
 ) -> Bool raise @core.EvalError {
   let big = datum_to_bigint(value)
   let mask = bigint_pow2(index)
@@ -2001,8 +2001,8 @@ fn datum_bitwise_bit_set(
 ///|
 fn datum_bitwise_bit_field(
   value : @core.Datum,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
     raise EvalError("index out of range")
@@ -2020,8 +2020,8 @@ fn datum_bitwise_bit_field(
 ///|
 fn datum_bitwise_copy_bit_field(
   value : @core.Datum,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
   from : @core.Datum,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
@@ -2049,9 +2049,9 @@ fn datum_bitwise_copy_bit_field(
 ///|
 fn datum_bitwise_rotate_bit_field(
   value : @core.Datum,
-  start : Int,
-  end : Int,
-  count : Int,
+  start : Int32,
+  end : Int32,
+  count : Int32,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
     raise EvalError("index out of range")
@@ -2080,8 +2080,8 @@ fn datum_bitwise_rotate_bit_field(
 ///|
 fn datum_bitwise_reverse_bit_field(
   value : @core.Datum,
-  start : Int,
-  end : Int,
+  start : Int32,
+  end : Int32,
 ) -> @core.Datum raise @core.EvalError {
   if end < start {
     raise EvalError("index out of range")
@@ -2113,7 +2113,7 @@ fn datum_bitwise_reverse_bit_field(
 }
 
 ///|
-fn check_index(idx : Int, len : Int) -> Unit raise @core.EvalError {
+fn check_index(idx : Int32, len : Int32) -> Unit raise @core.EvalError {
   if idx < 0 || idx >= len {
     raise EvalError("index out of range")
   }
@@ -2121,9 +2121,9 @@ fn check_index(idx : Int, len : Int) -> Unit raise @core.EvalError {
 
 ///|
 fn check_slice_range(
-  start : Int,
-  end : Int,
-  len : Int,
+  start : Int32,
+  end : Int32,
+  len : Int32,
 ) -> Unit raise @core.EvalError {
   if start < 0 || end < start || end > len {
     raise EvalError("index out of range")
@@ -2133,12 +2133,12 @@ fn check_slice_range(
 ///|
 /// Validate copy ranges and return the number of elements to copy.
 fn check_copy_range(
-  start : Int,
-  end : Int,
-  from_len : Int,
-  at : Int,
-  to_len : Int,
-) -> Int raise @core.EvalError {
+  start : Int32,
+  end : Int32,
+  from_len : Int32,
+  at : Int32,
+  to_len : Int32,
+) -> Int32 raise @core.EvalError {
   check_slice_range(start, end, from_len)
   if at < 0 {
     raise EvalError("index out of range")
@@ -2269,7 +2269,7 @@ fn compare_chain_symbol(
 }
 
 ///|
-fn hash_string_value(s : String) -> Int {
+fn hash_string_value(s : String) -> Int32 {
   let modulus = 2147483647
   let factor = 65599
   for i = 0, hash = 0; i < s.length(); {
@@ -2430,7 +2430,9 @@ fn parse_field_specs(
 }
 
 ///|
-fn value_as_bytevector(value : @core.Value) -> Array[Int] raise @core.EvalError {
+fn value_as_bytevector(
+  value : @core.Value,
+) -> Array[Int32] raise @core.EvalError {
   match value {
     Datum(datum) =>
       match @runtime.datum_unlabel(datum) {
@@ -2442,7 +2444,7 @@ fn value_as_bytevector(value : @core.Value) -> Array[Int] raise @core.EvalError 
 }
 
 ///|
-fn value_as_byte(value : @core.Value) -> Int raise @core.EvalError {
+fn value_as_byte(value : @core.Value) -> Int32 raise @core.EvalError {
   match value {
     Datum(Int(n)) => {
       if n < 0 || n > 255 {
@@ -2482,7 +2484,9 @@ fn endianness_from_value(value : @core.Value) -> Endian raise @core.EvalError {
 }
 
 ///|
-fn bytevector_size_from_value(value : @core.Value) -> Int raise @core.EvalError {
+fn bytevector_size_from_value(
+  value : @core.Value,
+) -> Int32 raise @core.EvalError {
   let size = value_as_nonnegative_int(value)
   if size <= 0 || size > 8 {
     raise EvalError("size out of range")
@@ -2492,9 +2496,9 @@ fn bytevector_size_from_value(value : @core.Value) -> Int raise @core.EvalError 
 
 ///|
 fn check_bytevector_range(
-  start : Int,
-  size : Int,
-  len : Int,
+  start : Int32,
+  size : Int32,
+  len : Int32,
 ) -> Unit raise @core.EvalError {
   if start < 0 || start + size > len {
     raise EvalError("index out of range")
@@ -2508,8 +2512,8 @@ fn utf8_raise_invalid() -> Unit raise @core.EvalError {
 
 ///|
 fn utf8_encode_char(
-  codepoint : Int,
-  bytes : Array[Int],
+  codepoint : Int32,
+  bytes : Array[Int32],
 ) -> Unit raise @core.EvalError {
   if codepoint < 0 || codepoint > 0x10FFFF {
     utf8_raise_invalid()
@@ -2535,21 +2539,21 @@ fn utf8_encode_char(
 }
 
 ///|
-fn string_char_length(s : String) -> Int {
+fn string_char_length(s : String) -> Int32 {
   s.char_length()
 }
 
 ///|
 fn string_to_utf8_bytes(
   s : String,
-  start : Int,
-  end : Int,
-) -> Array[Int] raise @core.EvalError {
+  start : Int32,
+  end : Int32,
+) -> Array[Int32] raise @core.EvalError {
   let len = s.char_length()
   if start < 0 || end < start || end > len {
     raise EvalError("index out of range")
   }
-  let bytes : Array[Int] = []
+  let bytes : Array[Int32] = []
   let mut idx = 0
   for ch in s {
     if idx >= start && idx < end {
@@ -2562,9 +2566,9 @@ fn string_to_utf8_bytes(
 
 ///|
 fn utf8_decode_to_string(
-  items : Array[Int],
-  start : Int,
-  end : Int,
+  items : Array[Int32],
+  start : Int32,
+  end : Int32,
 ) -> String raise @core.EvalError {
   if start < 0 || end < start || end > items.length() {
     raise EvalError("index out of range")
@@ -2650,9 +2654,9 @@ fn utf8_decode_to_string(
 
 ///|
 fn bytevector_uint_ref(
-  items : Array[Int],
-  start : Int,
-  size : Int,
+  items : Array[Int32],
+  start : Int32,
+  size : Int32,
   endian : Endian,
 ) -> @bigint.BigInt {
   let base = bigint_from_int(256)
@@ -2683,9 +2687,9 @@ fn bytevector_uint_ref(
 
 ///|
 fn bytevector_uint_set(
-  items : Array[Int],
-  start : Int,
-  size : Int,
+  items : Array[Int32],
+  start : Int32,
+  size : Int32,
   endian : Endian,
   value : @bigint.BigInt,
 ) -> Unit raise @core.EvalError {
@@ -2694,7 +2698,7 @@ fn bytevector_uint_set(
     raise EvalError("integer out of range")
   }
   let base = bigint_from_int(256)
-  let bytes : Array[Int] = []
+  let bytes : Array[Int32] = []
   for i = 0, v = value; i < size; {
     // invariant : i >= 0 && i <= size
     // decreases : size - i
@@ -2729,9 +2733,9 @@ fn bytevector_uint_set(
 
 ///|
 fn bytevector_sint_ref(
-  items : Array[Int],
-  start : Int,
-  size : Int,
+  items : Array[Int32],
+  start : Int32,
+  size : Int32,
   endian : Endian,
 ) -> @bigint.BigInt {
   let unsigned = bytevector_uint_ref(items, start, size, endian)
@@ -2746,7 +2750,7 @@ fn bytevector_sint_ref(
 ///|
 fn bytevector_sint_to_uint(
   value : @bigint.BigInt,
-  size : Int,
+  size : Int32,
 ) -> @bigint.BigInt raise @core.EvalError {
   let sign_bit = bigint_pow2(size * 8 - 1)
   let limit = bigint_pow2(size * 8)
@@ -2891,7 +2895,7 @@ fn value_as_condition_type_descriptor(
 ///|
 fn record_accessor_info(
   value : @core.Value,
-) -> (@core.RecordType, Int) raise @core.EvalError {
+) -> (@core.RecordType, Int32) raise @core.EvalError {
   match value {
     RecordProc(proc) =>
       match proc.kind {

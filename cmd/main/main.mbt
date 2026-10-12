@@ -122,4 +122,4 @@ async fn main {
 
 ///|
 #cfg(target="native")
-extern "C" fn exit(code : Int) = "exit"
+extern "C" fn exit(code : Int32) = "exit"

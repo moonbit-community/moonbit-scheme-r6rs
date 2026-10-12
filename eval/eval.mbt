@@ -50,7 +50,7 @@ fn register_builtin_libraries(env : @core.Env) -> Unit raise @core.EvalError {
 
 ///|
 priv struct Counter {
-  cell : Ref[Int]
+  cell : Ref[Int32]
 }
 
 ///|
@@ -59,7 +59,7 @@ fn Counter::new() -> Counter {
 }
 
 ///|
-fn Counter::next(self : Counter) -> Int {
+fn Counter::next(self : Counter) -> Int32 {
   let id = self.cell.val
   self.cell.val = id + 1
   id
@@ -69,7 +69,7 @@ fn Counter::next(self : Counter) -> Int {
 let closure_counter : Counter = Counter::new()
 
 ///|
-fn next_closure_id() -> Int {
+fn next_closure_id() -> Int32 {
   closure_counter.next()
 }
 
@@ -87,7 +87,7 @@ fn make_closure(
 let parameter_counter : Counter = Counter::new()
 
 ///|
-fn next_parameter_id() -> Int {
+fn next_parameter_id() -> Int32 {
   parameter_counter.next()
 }
 
@@ -128,7 +128,7 @@ fn parameter_with_converter(
 let promise_counter : Counter = Counter::new()
 
 ///|
-fn next_promise_id() -> Int {
+fn next_promise_id() -> Int32 {
   promise_counter.next()
 }
 
@@ -141,7 +141,7 @@ fn make_promise(thunk : @core.Value) -> @core.Promise {
 let eval_env_counter : Counter = Counter::new()
 
 ///|
-fn next_eval_env_id() -> Int {
+fn next_eval_env_id() -> Int32 {
   eval_env_counter.next()
 }
 
@@ -205,7 +205,7 @@ priv enum MachineState {
 let winder_counter : Counter = Counter::new()
 
 ///|
-fn next_winder_id() -> Int {
+fn next_winder_id() -> Int32 {
   winder_counter.next()
 }
 
@@ -229,12 +229,12 @@ let continuation_counter : Counter = Counter::new()
 let guard_handler_counter : Counter = Counter::new()
 
 ///|
-fn next_continuation_id() -> Int {
+fn next_continuation_id() -> Int32 {
   continuation_counter.next()
 }
 
 ///|
-fn next_guard_handler_id() -> Int {
+fn next_guard_handler_id() -> Int32 {
   guard_handler_counter.next()
 }
 
@@ -1198,7 +1198,7 @@ fn unwrap_form(expr : @core.Datum, name : String) -> @core.Datum? {
 fn quasiquote_expand(
   expr : @core.Datum,
   env : @core.Env,
-  depth : Int,
+  depth : Int32,
 ) -> @core.Datum raise @core.EvalError {
   match unwrap_form(expr, "quasiquote") {
     Some(arg) =>
@@ -1282,7 +1282,7 @@ fn quasiquote_expand(
 fn quasisyntax_expand(
   expr : @core.Datum,
   env : @core.Env,
-  depth : Int,
+  depth : Int32,
 ) -> @core.Datum raise @core.EvalError {
   match unwrap_form(expr, "quasisyntax") {
     Some(arg) =>
@@ -1407,7 +1407,7 @@ fn parse_formals(expr : @core.Datum) -> @core.Formals raise @core.EvalError {
 }
 
 ///|
-fn arity_mismatch_at_least(expected : Int, got : Int) -> @core.EvalError {
+fn arity_mismatch_at_least(expected : Int32, got : Int32) -> @core.EvalError {
   EvalError("arity mismatch: expected at least \{expected} got \{got}")
 }
 
@@ -1462,7 +1462,7 @@ fn formals_bindings(
 }
 
 ///|
-fn formals_accept_len(formals : @core.Formals, arg_len : Int) -> Bool {
+fn formals_accept_len(formals : @core.Formals, arg_len : Int32) -> Bool {
   match formals.rest {
     None => arg_len == formals.params.length()
     Some(_) => arg_len >= formals.params.length()
@@ -1790,7 +1790,7 @@ fn apply_winder_after(
 fn common_wind_prefix(
   current : Array[@core.Winder],
   target : Array[@core.Winder],
-) -> Int {
+) -> Int32 {
   for i = 0; i < current.length() && i < target.length(); {
     // invariant : i >= 0 && i <= current.length()
     // invariant : i >= 0 && i <= target.length()
@@ -2553,7 +2553,7 @@ fn eval_define_record_type_state(
     raise EvalError("invalid define-record-type")
   }
   let fields : Array[@core.RecordField] = []
-  let field_index : Map[String, Int] = Map([])
+  let field_index : Map[String, Int32] = Map([])
   for i = 0; i < ctor_fields.length(); {
     // invariant : i >= 0 && i <= ctor_fields.length()
     // decreases : ctor_fields.length() - i
@@ -3109,7 +3109,7 @@ fn hashtable_key_equal(
 fn hashtable_find_state(
   table : @core.Hashtable,
   key : @core.Value,
-  idx : Int,
+  idx : Int32,
   op : @core.HashtableOp,
   kont : @core.Kont,
   handlers : Array[@core.Value],
@@ -3140,7 +3140,7 @@ fn hashtable_find_state(
 fn hashtable_found_state(
   table : @core.Hashtable,
   key : @core.Value,
-  idx : Int,
+  idx : Int32,
   op : @core.HashtableOp,
   kont : @core.Kont,
   handlers : Array[@core.Value],
@@ -3315,16 +3315,16 @@ fn apply_hashtable_update(
 ///|
 priv struct LibraryNameSpec {
   base : String
-  version : Array[Int]?
+  version : Array[Int32]?
 }
 
 ///|
 priv enum VersionRef {
-  VersionExact(Array[Int])
-  VersionGt(Array[Int])
-  VersionGe(Array[Int])
-  VersionLt(Array[Int])
-  VersionLe(Array[Int])
+  VersionExact(Array[Int32])
+  VersionGt(Array[Int32])
+  VersionGe(Array[Int32])
+  VersionLt(Array[Int32])
+  VersionLe(Array[Int32])
   VersionAnd(Array[VersionRef])
   VersionOr(Array[VersionRef])
   VersionNot(Ref[VersionRef])
@@ -3339,7 +3339,7 @@ priv struct LibraryRef {
 ///|
 priv struct LibraryVersionInfo {
   name : String
-  version : Array[Int]
+  version : Array[Int32]
   has_version : Bool
 }
 
@@ -3353,7 +3353,7 @@ fn reset_library_version_registry() -> Unit {
 }
 
 ///|
-fn format_version_suffix(version : Array[Int]) -> String {
+fn format_version_suffix(version : Array[Int32]) -> String {
   let versions : Array[String] = []
   for part in version {
     versions.push(part.to_string())
@@ -3363,7 +3363,7 @@ fn format_version_suffix(version : Array[Int]) -> String {
 }
 
 ///|
-fn library_full_name(base : String, version : Array[Int]?) -> String {
+fn library_full_name(base : String, version : Array[Int32]?) -> String {
   match version {
     Some(value) => "\{base}.\{format_version_suffix(value)}"
     None => base
@@ -3373,7 +3373,7 @@ fn library_full_name(base : String, version : Array[Int]?) -> String {
 ///|
 fn register_library_entry(
   base : String,
-  version : Array[Int]?,
+  version : Array[Int32]?,
   exports : Map[String, @core.Binding],
 ) -> Unit {
   let name = library_full_name(base, version)
@@ -3399,11 +3399,11 @@ fn register_library_entry(
 ///|
 fn parse_version_items(
   items : ArrayView[@core.Datum],
-) -> Array[Int] raise @core.EvalError {
+) -> Array[Int32] raise @core.EvalError {
   match items {
     [] => raise EvalError("invalid library name")
     _ => {
-      let versions : Array[Int] = []
+      let versions : Array[Int32] = []
       for part in items {
         match part {
           Int(n) =>
@@ -3421,14 +3421,14 @@ fn parse_version_items(
 }
 
 ///|
-fn parse_version_list(expr : @core.Datum) -> Array[Int] raise @core.EvalError {
+fn parse_version_list(expr : @core.Datum) -> Array[Int32] raise @core.EvalError {
   parse_version_items(datum_list_to_array(expr))
 }
 
 ///|
 fn parse_version_ref_version(
   items : ArrayView[@core.Datum],
-) -> Array[Int] raise @core.EvalError {
+) -> Array[Int32] raise @core.EvalError {
   match items {
     [] => raise EvalError("invalid library name")
     [item] if item is Pair(_, _) || item is Nil => parse_version_list(item)
@@ -3531,7 +3531,7 @@ fn parse_library_ref(expr : @core.Datum) -> LibraryRef raise @core.EvalError {
 }
 
 ///|
-fn compare_versions(left : Array[Int], right : Array[Int]) -> Int {
+fn compare_versions(left : Array[Int32], right : Array[Int32]) -> Int32 {
   let min_len = if left.length() < right.length() {
     left.length()
   } else {
@@ -3563,7 +3563,7 @@ fn compare_versions(left : Array[Int], right : Array[Int]) -> Int {
 }
 
 ///|
-fn version_ref_matches(version : Array[Int], reference : VersionRef) -> Bool {
+fn version_ref_matches(version : Array[Int32], reference : VersionRef) -> Bool {
   match reference {
     VersionExact(expected) => compare_versions(version, expected) == 0
     VersionGt(expected) => compare_versions(version, expected) > 0
